@@ -124,11 +124,21 @@ import { RandomizationConfig } from './randomization.service';
                 <p class="text-xs text-red-600 mt-1">Block sizes must be multiples of the total treatment ratio ({{totalRatio}}).</p>
               }
             </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="maxSubjectsPerStratum" class="block text-sm font-medium text-gray-700 mb-1">Max Subjects per Stratum</label>
-                <input id="maxSubjectsPerStratum" type="number" formControlName="maxSubjectsPerStratum" min="1" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Max Subjects per Stratum</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" formArrayName="stratumCaps">
+                @for (capControl of stratumCaps.controls; track i; let i = $index) {
+                  <div [formGroupName]="i" class="flex flex-col p-3 border border-gray-200 rounded-md bg-gray-50">
+                    <span class="text-xs font-semibold text-gray-600 mb-1 truncate" [title]="capControl.get('levels')?.value.join(' | ')">
+                      {{ capControl.get('levels')?.value.join(' | ') || 'Overall / Default' }}
+                    </span>
+                    <input type="number" formControlName="cap" min="1" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-3 py-1.5 border" placeholder="Max subjects">
+                  </div>
+                }
               </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-2">
               <div>
                 <label for="seed" class="block text-sm font-medium text-gray-700 mb-1">Random Seed (Optional)</label>
                 <input id="seed" type="text" formControlName="seed" placeholder="Auto-generated if empty" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border">
@@ -197,13 +207,24 @@ export class ConfigFormComponent {
     ]),
     sitesStr: ['101, 102, 103', Validators.required],
     blockSizesStr: ['4, 6', Validators.required],
-    maxSubjectsPerStratum: [20, [Validators.required, Validators.min(1)]],
+    stratumCaps: this.fb.array([]),
     seed: [''],
     subjectIdMask: ['[SiteID]-[StratumCode]-[001]', Validators.required]
   }, { validators: this.validateBlockSizes.bind(this) });
 
+  strataCombinations: string[][] = [];
+
   dropdownOpen = false;
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
+
+  ngOnInit() {
+    // Subscribe to changes in strata to dynamically compute stratumCaps form controls
+    this.form.get('strata')?.valueChanges.subscribe(() => {
+      this.updateStratumCaps();
+    });
+    // Trigger initial calculation
+    this.updateStratumCaps();
+  }
 
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
@@ -214,6 +235,48 @@ export class ConfigFormComponent {
 
   get arms() { return this.form.get('arms') as FormArray; }
   get strata() { return this.form.get('strata') as FormArray; }
+  get stratumCaps() { return this.form.get('stratumCaps') as FormArray; }
+
+  updateStratumCaps() {
+    const strataVals = this.strata.value as {id: string, name: string, levelsStr: string}[];
+    let combinations: string[][] = [];
+
+    const validStrata = strataVals.filter(s => s.levelsStr && s.levelsStr.trim() !== '');
+
+    if (validStrata.length === 0) {
+      combinations = [[]]; // Default empty combination
+    } else {
+      const levelsList = validStrata.map(s =>
+        s.levelsStr.split(',').map(l => l.trim()).filter(l => l)
+      );
+
+      // Cartesian product
+      combinations = levelsList.reduce((acc, curr) => {
+        const res: string[][] = [];
+        for (const a of acc) {
+          for (const c of curr) {
+            res.push([...a, c]);
+          }
+        }
+        return res;
+      }, [[]] as string[][]);
+    }
+
+    this.strataCombinations = combinations;
+    const currentCaps = this.stratumCaps.value as {levels: string[], cap: number}[];
+    this.stratumCaps.clear();
+
+    combinations.forEach(combo => {
+      // Try to preserve existing cap value if combo matches
+      const existing = currentCaps.find(c => c.levels.join('|') === combo.join('|'));
+      const capValue = existing ? existing.cap : 20;
+
+      this.stratumCaps.push(this.fb.group({
+        levels: [combo],
+        cap: [capValue, [Validators.required, Validators.min(1)]]
+      }));
+    });
+  }
   
   get totalRatio() {
     return this.arms.controls.reduce((sum, control) => sum + (control.get('ratio')?.value || 0), 0);
@@ -278,7 +341,7 @@ export class ConfigFormComponent {
         levels: s.levelsStr.split(',').map((l: string) => l.trim()).filter((l: string) => l)
       })),
       blockSizes: val.blockSizesStr.split(',').map((s: string) => parseInt(s.trim(), 10)).filter((n: number) => !isNaN(n)),
-      maxSubjectsPerStratum: val.maxSubjectsPerStratum,
+      stratumCaps: val.stratumCaps,
       seed: val.seed || undefined,
       subjectIdMask: val.subjectIdMask
     };

@@ -14,6 +14,11 @@ export interface StratificationFactor {
   levels: string[];
 }
 
+export interface StratumCap {
+  levels: string[];
+  cap: number;
+}
+
 export interface RandomizationConfig {
   protocolId: string;
   studyName: string;
@@ -22,7 +27,7 @@ export interface RandomizationConfig {
   sites: string[];
   strata: StratificationFactor[];
   blockSizes: number[];
-  maxSubjectsPerStratum: number;
+  stratumCaps: StratumCap[];
   seed: string;
   subjectIdMask: string;
 }
@@ -87,14 +92,27 @@ export class RandomizationService {
 
       const schema: GeneratedSchema[] = [];
 
+      // Convert caps to a dictionary for easy lookup
+      const capsDict: Record<string, number> = {};
+      if (config.stratumCaps) {
+        config.stratumCaps.forEach(c => {
+          capsDict[c.levels.join('|')] = c.cap;
+        });
+      }
+
       for (const site of config.sites) {
         let siteSubjectCount = 0;
         for (const stratum of strataCombinations) {
+          // Determine the cap for this specific stratum combination
+          // Ordered by the strata definitions
+          const comboKey = config.strata.map(s => stratum[s.id] || '').join('|');
+          const maxSubjectsPerStratum = capsDict[comboKey] || 0;
+
           let stratumSubjectCount = 0;
           let blockNumber = 1;
 
           // Generate enough blocks for the site/stratum
-          while (stratumSubjectCount < config.maxSubjectsPerStratum) {
+          while (stratumSubjectCount < maxSubjectsPerStratum) {
             // Pick a random block size from the allowed sizes
             const blockSizeIndex = Math.floor(rng() * config.blockSizes.length);
             const blockSize = config.blockSizes[blockSizeIndex];
@@ -149,7 +167,7 @@ export class RandomizationService {
                 treatmentArmId: arm.id
               });
 
-              if (stratumSubjectCount >= config.maxSubjectsPerStratum) break;
+              if (stratumSubjectCount >= maxSubjectsPerStratum) break;
             }
             blockNumber++;
           }

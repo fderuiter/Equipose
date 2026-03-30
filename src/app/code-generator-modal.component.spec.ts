@@ -30,7 +30,12 @@ describe('CodeGeneratorModalComponent', () => {
           { id: 'strata2', name: 'Strata 2', levels: ['Yes', 'No'] }
         ],
         blockSizes: [3, 6],
-        maxSubjectsPerStratum: 10,
+        stratumCaps: [
+          { levels: ['Low', 'Yes'], cap: 10 },
+          { levels: ['Low', 'No'], cap: 15 },
+          { levels: ['High', 'Yes'], cap: 5 },
+          { levels: ['High', 'No'], cap: 20 }
+        ],
         seed: 'test_seed',
         subjectIdMask: '[SiteID]-[StratumCode]-[001]'
       };
@@ -43,7 +48,10 @@ describe('CodeGeneratorModalComponent', () => {
       expect(code).toContain('Study: Test Study');
       expect(code).toContain('sites <- c("Site1", "Site2")');
       expect(code).toContain('block_sizes <- c(3, 6)');
-      expect(code).toContain('max_subjects_per_stratum <- 10');
+      expect(code).toContain('"Low_Yes" = 10');
+      expect(code).toContain('"Low_No" = 15');
+      expect(code).toContain('"High_Yes" = 5');
+      expect(code).toContain('"High_No" = 20');
       expect(code).toContain('arms <- c("Arm A", "Arm B")');
       expect(code).toContain('ratios <- c(1, 2)');
       expect(code).toContain('strata1_levels <- c("Low", "High")');
@@ -78,7 +86,10 @@ describe('CodeGeneratorModalComponent', () => {
       expect(code).toContain('rng = np.random.default_rng(' + component.hashCode("test_seed") + ')');
       expect(code).toContain('sites = ["Site1", "Site2"]');
       expect(code).toContain('block_sizes = [3, 6]');
-      expect(code).toContain('max_subjects_per_stratum = 10');
+      expect(code).toContain('("Low", "Yes"): 10');
+      expect(code).toContain('("Low", "No"): 15');
+      expect(code).toContain('("High", "Yes"): 5');
+      expect(code).toContain('("High", "No"): 20');
       expect(code).toContain('arms = [{"name": "Arm A", "ratio": 1}, {"name": "Arm B", "ratio": 2}]');
       expect(code).toContain('strata_levels = [\n    ["Low", "High"],\n    ["Yes", "No"]\n]');
       expect(code).toContain('strata_names = ["strata1", "strata2"]');
@@ -110,10 +121,18 @@ describe('CodeGeneratorModalComponent', () => {
       expect(code).toContain('%let ratios = 1 2;');
       expect(code).toContain('%let sites = "Site1" "Site2";');
       expect(code).toContain('%let block_sizes = 3 6;');
-      expect(code).toContain('%let max_subjects_per_stratum = 10;');
       expect(code).toContain('%let total_ratio = 3;');
       expect(code).toContain('%let strata1_levels = "Low" "High";');
       expect(code).toContain('%let strata2_levels = "Yes" "No";');
+
+      // Verify dynamic caps logic
+      expect(code).toContain('data _caps;');
+      expect(code).toContain('strata1 = "Low";  strata2 = "Yes";  max_subjects_per_stratum = 10;\n  output;');
+      expect(code).toContain('strata1 = "Low";  strata2 = "No";  max_subjects_per_stratum = 15;\n  output;');
+      expect(code).toContain('strata1 = "High";  strata2 = "Yes";  max_subjects_per_stratum = 5;\n  output;');
+      expect(code).toContain('strata1 = "High";  strata2 = "No";  max_subjects_per_stratum = 20;\n  output;');
+      expect(code).toContain('left join _caps caps on 1=1 and b.strata1 = caps.strata1 and c.strata2 = caps.strata2;');
+
       expect(code).toContain('call streaminit(&seed.);');
       expect(code).toContain('rand(\'uniform\');');
       expect(code).toContain('proc sort data=_blocks;');
@@ -127,7 +146,7 @@ describe('CodeGeneratorModalComponent', () => {
       expect(code).toContain('retain _site_subj_count 0;');
       expect(code).toContain('if first.Site then _site_subj_count = 0;');
       expect(code).toContain('retain _stratum_subj_count;');
-      expect(code).toContain('if _stratum_subj_count <= &max_subjects_per_stratum. then do;');
+      expect(code).toContain('if _stratum_subj_count <= max_subjects_per_stratum then do;');
       expect(code).toContain('SubjectID = cats(Site, "-", put(_site_subj_count, z3.));');
 
       // Verify QC integration
@@ -148,7 +167,7 @@ describe('CodeGeneratorModalComponent', () => {
         sites: [],
         strata: [],
         blockSizes: [],
-        maxSubjectsPerStratum: 0,
+        stratumCaps: [],
         seed: '',
         subjectIdMask: ''
       };

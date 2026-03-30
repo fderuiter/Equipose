@@ -130,6 +130,10 @@ export class CodeGeneratorModalComponent {
     const blockSizes = this.config.blockSizes || [];
     const arms = this.config.arms || [];
     const strata = this.config.strata || [];
+    const caps = this.config.stratumCaps || [];
+
+    // Create a named vector mapping "Level1_Level2" to cap
+    const rCapsVector = caps.map(c => `"${c.levels.join('_')}" = ${c.cap}`).join(',\n  ');
 
     return `# Randomization Schema Generation in R
 # Protocol: ${this.config.protocolId || 'Unknown'}
@@ -144,7 +148,11 @@ set.seed(${this.hashCode(this.config.seed)})
 # Parameters
 sites <- c(${sites.map(s => '"' + s + '"').join(', ')})
 block_sizes <- c(${blockSizes.join(', ')})
-max_subjects_per_stratum <- ${this.config.maxSubjectsPerStratum || 0}
+
+# Stratum Caps
+stratum_caps <- c(
+  ${rCapsVector}
+)
 
 # Treatment Arms
 arms <- c(${arms.map(a => '"' + a.name + '"').join(', ')})
@@ -179,6 +187,10 @@ for (site in sites) {
   site_subject_count <- 0
   for (i in 1:nrow(strata_grid)) {
     stratum <- strata_grid[i, , drop=FALSE]
+    stratum_key <- paste(stratum, collapse="_")
+    if (stratum_key == "") stratum_key <- "" # Handle empty stratum case
+    max_subjects_per_stratum <- if (length(stratum_caps) > 0) unname(stratum_caps[stratum_key]) else 0
+    if (is.na(max_subjects_per_stratum)) max_subjects_per_stratum <- 0
     
     stratum_subject_count <- 0
     block_number <- 1
@@ -238,6 +250,10 @@ print(table(schema$BlockSize))
     const blockSizes = this.config.blockSizes || [];
     const arms = this.config.arms || [];
     const strata = this.config.strata || [];
+    const caps = this.config.stratumCaps || [];
+
+    // Create dictionary mapping tuple of levels to cap
+    const pyCapsDict = caps.map(c => `    (${c.levels.map(l => `"${l}"`).join(', ')}): ${c.cap}`).join(',\n');
 
     return `# Randomization Schema Generation in Python
 # Protocol: ${this.config.protocolId || 'Unknown'}
@@ -253,7 +269,11 @@ rng = np.random.default_rng(${this.hashCode(this.config.seed)})
 # Parameters
 sites = [${sites.map(s => '"' + s + '"').join(', ')}]
 block_sizes = [${blockSizes.join(', ')}]
-max_subjects_per_stratum = ${this.config.maxSubjectsPerStratum || 0}
+
+# Stratum Caps Mapping
+stratum_caps = {
+${pyCapsDict || '    (): 0'}
+}
 
 # Treatment Arms
 arms = [${arms.map(a => `{"name": "${a.name}", "ratio": ${a.ratio}}`).join(', ')}]
@@ -279,6 +299,9 @@ for site in sites:
     for combo in strata_combinations:
         stratum = dict(zip(strata_names, combo))
         
+        # Determine cap for this specific stratum combination
+        max_subjects_per_stratum = stratum_caps.get(combo, 0)
+
         stratum_subject_count = 0
         block_number = 1
         
@@ -336,6 +359,7 @@ print(df['BlockSize'].value_counts())
     const blockSizes = this.config.blockSizes || [];
     const arms = this.config.arms || [];
     const strata = this.config.strata || [];
+    const caps = this.config.stratumCaps || [];
     const totalRatio = arms.reduce((sum, a) => sum + a.ratio, 0);
 
     let code = `/* Randomization Schema Generation in SAS */
@@ -343,7 +367,6 @@ print(df['BlockSize'].value_counts())
 /* Study: ${this.config.studyName || 'Unknown'} */
 
 %let seed = ${this.hashCode(this.config.seed)};
-%let max_subjects_per_stratum = ${this.config.maxSubjectsPerStratum || 0};
 %let total_ratio = ${totalRatio};
 
 /* User-defined Parameters */
@@ -410,6 +433,36 @@ run;
 `;
       }
 
+    }
+
+    // Create the cap mapping dataset
+    code += `
+/* Define Stratum Caps Map */
+data _caps;
+  length max_subjects_per_stratum 8`;
+    if (strata.length > 0) {
+      strata.forEach(s => {
+        code += ` ${s.id} $50`;
+      });
+    }
+    code += `;\n`;
+
+    if (caps.length === 0) {
+        // default empty output just to have the dataset structure
+        code += `  max_subjects_per_stratum = 0; output;\n`;
+    } else {
+        caps.forEach(c => {
+          if (strata.length > 0 && c.levels.length === strata.length) {
+            strata.forEach((s, idx) => {
+              code += `  ${s.id} = "${c.levels[idx]}";`;
+            });
+          }
+          code += `  max_subjects_per_stratum = ${c.cap};\n  output;\n`;
+        });
+    }
+    code += `run;\n`;
+
+    if (strata.length > 0) {
       code += `
 proc sql noprint;
   create table _design as
@@ -418,20 +471,29 @@ proc sql noprint;
         const char = String.fromCharCode(98 + i); // 'b', 'c', etc.
         code += `, ${char}.${strata[i].id}`;
       }
-      code += `
+      // Add the cap join logic
+      code += `, caps.max_subjects_per_stratum
   from _sites a`;
       for (let i = 0; i < strata.length; i++) {
         const char = String.fromCharCode(98 + i);
         code += `
   cross join _strata_${i+1} ${char}`;
       }
+      // Merge caps
+      code += `
+  left join _caps caps on 1=1`;
+      for (let i = 0; i < strata.length; i++) {
+        const char = String.fromCharCode(98 + i);
+        code += ` and ${char}.${strata[i].id} = caps.${strata[i].id}`;
+      }
       code += `;\nquit;\n`;
     } else {
       code += `
 proc sql noprint;
   create table _design as
-  select a.Site
-  from _sites a;
+  select a.Site, caps.max_subjects_per_stratum
+  from _sites a
+  cross join _caps caps;
 quit;
 `;
     }
@@ -440,6 +502,7 @@ quit;
 /* 2. Generate Blocks and Assign Treatments */
 data _blocks;
   set _design;
+  if missing(max_subjects_per_stratum) then max_subjects_per_stratum = 0;
   call streaminit(&seed.);
   length Treatment $50;
 
@@ -447,7 +510,7 @@ data _blocks;
   _subj_count = 0;
   block_num = 1;
 
-  do while (_subj_count < &max_subjects_per_stratum.);
+  do while (_subj_count < max_subjects_per_stratum);
     /* Dynamic Block Selection */
     _rand_val = rand('uniform');
 `;
@@ -510,7 +573,7 @@ data final_schema;
   if first.${lastDesignVar} then _stratum_subj_count = 1;
   else _stratum_subj_count = _stratum_subj_count + 1;
 
-  if _stratum_subj_count <= &max_subjects_per_stratum. then do;
+  if _stratum_subj_count <= max_subjects_per_stratum then do;
     _site_subj_count = _site_subj_count + 1;
 
     /* Format Subject ID */
