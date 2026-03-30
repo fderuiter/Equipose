@@ -223,17 +223,17 @@ print(head(schema))
 # Protocol: ${this.config.protocolId || 'Unknown'}
 # Study: ${this.config.studyName || 'Unknown'}
 
-import random
+import numpy as np
 import itertools
 import pandas as pd
 
 # Set seed for reproducibility
-random.seed("${this.config.seed || '12345'}")
+rng = np.random.default_rng(${this.hashCode(this.config.seed)})
 
 # Parameters
 sites = [${sites.map(s => '"' + s + '"').join(', ')}]
 block_sizes = [${blockSizes.join(', ')}]
-subjects_per_site = ${this.config.subjectsPerSite || 0}
+subjects_per_stratum_cap = ${this.config.subjectsPerSite || 0}
 
 # Treatment Arms
 arms = [${arms.map(a => `{"name": "${a.name}", "ratio": ${a.ratio}}`).join(', ')}]
@@ -257,9 +257,9 @@ for site in sites:
         subject_count = 0
         block_number = 1
         
-        while subject_count < subjects_per_site:
+        while subject_count < subjects_per_stratum_cap:
             # Pick random block size
-            current_block_size = random.choice(block_sizes)
+            current_block_size = rng.choice(block_sizes)
             
             # Generate block
             multiplier = current_block_size // total_ratio
@@ -267,7 +267,7 @@ for site in sites:
             for arm in arms:
                 block.extend([arm["name"]] * int(arm["ratio"] * multiplier))
             
-            random.shuffle(block)
+            rng.shuffle(block)
             
             for treatment in block:
                 subject_count += 1
@@ -280,12 +280,12 @@ for site in sites:
                     "Site": site,
                     "BlockNumber": block_number,
                     "BlockSize": current_block_size,
-                    "Treatment": treatment
+                    "Treatment": treatment,
+                    **stratum
                 }
-                row.update(stratum)
                 schema.append(row)
                 
-                if subject_count >= subjects_per_site:
+                if subject_count >= subjects_per_stratum_cap:
                     break
             
             block_number += 1
