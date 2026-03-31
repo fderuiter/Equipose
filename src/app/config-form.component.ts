@@ -9,6 +9,35 @@ import { RandomizationConfig } from './randomization.service';
   template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
       
+      <div class="mb-2 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md">
+        <div class="flex flex-col sm:flex-row sm:items-start">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3 w-full">
+            <h3 class="text-sm font-medium text-blue-800">Study-Agnostic Randomization Presets</h3>
+            <div class="mt-2 text-sm text-blue-700">
+              <p>Start from scratch or quickly toggle between different strata and complexity options.</p>
+            </div>
+            <!-- Preset Buttons -->
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+              <span class="text-sm font-semibold text-blue-900">Load Preset:</span>
+              <button type="button" (click)="loadPreset('simple')" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                Simple (Unstratified)
+              </button>
+              <button type="button" (click)="loadPreset('standard')" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                Standard (1 Stratum)
+              </button>
+              <button type="button" (click)="loadPreset('complex')" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                Complex (Multi-strata)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Study Metadata -->
       <section>
         <h2 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Study Metadata</h2>
@@ -215,6 +244,55 @@ export class ConfigFormComponent {
   strataCombinations: string[][] = [];
 
   dropdownOpen = false;
+
+  presets = {
+    simple: {
+      protocolId: 'SIMP-001',
+      studyName: 'Simple Unstratified Trial',
+      phase: 'Phase I',
+      arms: [
+        { id: 'A', name: 'Treatment', ratio: 1 },
+        { id: 'B', name: 'Control', ratio: 1 }
+      ],
+      strata: [],
+      sitesStr: 'Site A, Site B',
+      blockSizesStr: '2, 4',
+      subjectIdMask: '[SiteID]-[001]'
+    },
+    standard: {
+      protocolId: 'STD-002',
+      studyName: 'Standard Stratified Trial',
+      phase: 'Phase II',
+      arms: [
+        { id: 'A', name: 'Active', ratio: 1 },
+        { id: 'B', name: 'Placebo', ratio: 1 }
+      ],
+      strata: [
+        { id: 'age', name: 'Age Group', levelsStr: '<65, >=65' }
+      ],
+      sitesStr: '101, 102, 103',
+      blockSizesStr: '4, 6',
+      subjectIdMask: '[SiteID]-[StratumCode]-[001]'
+    },
+    complex: {
+      protocolId: 'CMPX-003',
+      studyName: 'Complex Multi-Strata Trial',
+      phase: 'Phase III',
+      arms: [
+        { id: 'A', name: 'High Dose', ratio: 1 },
+        { id: 'B', name: 'Low Dose', ratio: 1 },
+        { id: 'C', name: 'Placebo', ratio: 1 }
+      ],
+      strata: [
+        { id: 'age', name: 'Age Group', levelsStr: '<65, >=65' },
+        { id: 'gender', name: 'Gender', levelsStr: 'M, F' },
+        { id: 'region', name: 'Region', levelsStr: 'NA, EU' }
+      ],
+      sitesStr: 'US-01, US-02, UK-01, DE-01',
+      blockSizesStr: '3, 6, 9',
+      subjectIdMask: '[SiteID]-[StratumCode]-[001]'
+    }
+  };
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
 
   ngOnInit() {
@@ -236,6 +314,47 @@ export class ConfigFormComponent {
   get arms() { return this.form.get('arms') as FormArray; }
   get strata() { return this.form.get('strata') as FormArray; }
   get stratumCaps() { return this.form.get('stratumCaps') as FormArray; }
+
+  loadPreset(type: 'simple' | 'standard' | 'complex') {
+    const preset = this.presets[type];
+    if (!preset) return;
+
+    // Reset simple values
+    this.form.patchValue({
+      protocolId: preset.protocolId,
+      studyName: preset.studyName,
+      phase: preset.phase,
+      sitesStr: preset.sitesStr,
+      blockSizesStr: preset.blockSizesStr,
+      subjectIdMask: preset.subjectIdMask,
+      seed: ''
+    }, { emitEvent: false });
+
+    // Reset arms array
+    this.arms.clear({ emitEvent: false });
+    preset.arms.forEach(arm => {
+      this.arms.push(this.fb.group({
+        id: [arm.id],
+        name: [arm.name],
+        ratio: [arm.ratio, [Validators.required, Validators.min(1)]]
+      }), { emitEvent: false });
+    });
+
+    // Reset strata array
+    this.strata.clear({ emitEvent: false });
+    preset.strata.forEach(stratum => {
+      this.strata.push(this.fb.group({
+        id: [stratum.id],
+        name: [stratum.name],
+        levelsStr: [stratum.levelsStr, Validators.required]
+      }), { emitEvent: false });
+    });
+
+    // We only want to trigger the value changes ONCE after everything is reset
+    // This allows the reactive listener on this.form.get('strata') to fire
+    this.form.updateValueAndValidity();
+    this.updateStratumCaps();
+  }
 
   updateStratumCaps() {
     const strataVals = this.strata.value as {id: string, name: string, levelsStr: string}[];

@@ -45,4 +45,22 @@ describe('ConfigFormComponent', () => {
     expect(values[2].levels).toEqual(['>=65', 'M']);
     expect(values[3].levels).toEqual(['>=65', 'F']);
   });
+
+  it('should load simple preset', () => {
+    component.loadPreset('simple');
+
+    expect(component.form.get('protocolId')?.value).toBe('SIMP-001');
+    expect(component.arms.length).toBe(2);
+    expect(component.strata.length).toBe(0);
+    expect(component.stratumCaps.length).toBe(1); // Default cap (no strata)
+  });
+
+  it('should load complex preset', () => {
+    component.loadPreset('complex');
+
+    expect(component.form.get('protocolId')?.value).toBe('CMPX-003');
+    expect(component.arms.length).toBe(3);
+    expect(component.strata.length).toBe(3);
+    expect(component.stratumCaps.length).toBe(8); // 2 * 2 * 2 = 8 combinations
+  });
 });
