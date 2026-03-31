@@ -1,0 +1,48 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { ConfigFormComponent } from './config-form.component';
+
+describe('ConfigFormComponent', () => {
+  let component: ConfigFormComponent;
+  let fixture: ComponentFixture<ConfigFormComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ReactiveFormsModule, ConfigFormComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ConfigFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create the component', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('should generate valid distinct stratum caps controls based on combinations', () => {
+    // Add a second strata
+    component.addStratum();
+    const strataArray = component.strata;
+
+    // Set first strata: Age Group
+    strataArray.at(0).get('id')?.setValue('age');
+    strataArray.at(0).get('levelsStr')?.setValue('<65, >=65');
+
+    // Set second strata: Gender
+    strataArray.at(1).get('id')?.setValue('gender');
+    strataArray.at(1).get('levelsStr')?.setValue('M, F');
+
+    // Trigger value changes manually if it didn't trigger
+    component.updateStratumCaps();
+
+    const capsArray = component.stratumCaps;
+    expect(capsArray.length).toBe(4);
+
+    const values = capsArray.value;
+    expect(values[0].levels).toEqual(['<65', 'M']);
+    expect(values[1].levels).toEqual(['<65', 'F']);
+    expect(values[2].levels).toEqual(['>=65', 'M']);
+    expect(values[3].levels).toEqual(['>=65', 'F']);
+  });
+});
