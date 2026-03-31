@@ -130,6 +130,10 @@ export class CodeGeneratorModalComponent {
     const blockSizes = this.config.blockSizes || [];
     const arms = this.config.arms || [];
     const strata = this.config.strata || [];
+    const caps = this.config.stratumCaps || [];
+
+    // Create a named vector mapping "Level1_Level2" to cap
+    const rCapsVector = caps.map(c => `"${c.levels.join('_')}" = ${c.cap}`).join(',\n  ');
 
     return `# Randomization Schema Generation in R
 # Protocol: ${this.config.protocolId || 'Unknown'}
@@ -144,12 +148,21 @@ set.seed(${this.hashCode(this.config.seed)})
 # Parameters
 sites <- c(${sites.map(s => '"' + s + '"').join(', ')})
 block_sizes <- c(${blockSizes.join(', ')})
-subjects_per_site <- ${this.config.subjectsPerSite || 0}
+
+# Stratum Caps
+stratum_caps <- c(
+  ${rCapsVector}
+)
 
 # Treatment Arms
 arms <- c(${arms.map(a => '"' + a.name + '"').join(', ')})
 ratios <- c(${arms.map(a => a.ratio).join(', ')})
 total_ratio <- sum(ratios)
+
+# Block Math Failsafe
+if (any(block_sizes %% total_ratio != 0)) {
+  stop("Block sizes must be exact multiples of the total allocation ratio.")
+}
 
 # Strata
 ${strata.map(s => `${s.id}_levels <- c(${(s.levels || []).map(l => '"' + l + '"').join(', ')})`).join('\n')}
@@ -167,16 +180,22 @@ generate_block <- function(block_size) {
 }
 
 # Generate Schema
-schema <- data.frame()
+schema_list <- list()
+row_idx <- 1
 
 for (site in sites) {
+  site_subject_count <- 0
   for (i in 1:nrow(strata_grid)) {
     stratum <- strata_grid[i, , drop=FALSE]
+    stratum_key <- paste(stratum, collapse="_")
+    if (stratum_key == "") stratum_key <- "" # Handle empty stratum case
+    max_subjects_per_stratum <- if (length(stratum_caps) > 0) unname(stratum_caps[stratum_key]) else 0
+    if (is.na(max_subjects_per_stratum)) max_subjects_per_stratum <- 0
     
-    subject_count <- 0
+    stratum_subject_count <- 0
     block_number <- 1
     
-    while (subject_count < subjects_per_site) {
+    while (stratum_subject_count < max_subjects_per_stratum) {
       # Pick random block size
       current_block_size <- sample(block_sizes, 1)
       
@@ -184,10 +203,11 @@ for (site in sites) {
       current_block <- generate_block(current_block_size)
       
       for (treatment in current_block) {
-        subject_count <- subject_count + 1
+        site_subject_count <- site_subject_count + 1
+        stratum_subject_count <- stratum_subject_count + 1
         
         # Format Subject ID (Simplified)
-        subject_id <- sprintf("%s-%03d", site, subject_count)
+        subject_id <- sprintf("%s-%03d", site, site_subject_count)
         
         row <- data.frame(
           SubjectID = subject_id,
@@ -198,17 +218,29 @@ for (site in sites) {
         )
         row <- cbind(row, stratum)
         
-        schema <- rbind(schema, row)
+        schema_list[[row_idx]] <- row
+        row_idx <- row_idx + 1
         
-        if (subject_count >= subjects_per_site) break
+        if (stratum_subject_count >= max_subjects_per_stratum) break
       }
-      if (subject_count >= subjects_per_site) break
+      if (stratum_subject_count >= max_subjects_per_stratum) break
       block_number <- block_number + 1
     }
   }
 }
 
+schema <- do.call(rbind, schema_list)
 print(head(schema))
+
+cat("\\n--- QC Check: Overall Allocation ---\\n")
+print(table(schema$Treatment))
+
+cat("\\n--- QC Check: Site-Level Balance ---\\n")
+print(table(schema$Site, schema$Treatment))
+
+cat("\\n--- QC Check: Dynamic Block Utilization ---\\n")
+print(table(schema$BlockSize))
+
 # write.csv(schema, "randomization_schema.csv", row.names=FALSE)
 `;
   }
@@ -218,6 +250,10 @@ print(head(schema))
     const blockSizes = this.config.blockSizes || [];
     const arms = this.config.arms || [];
     const strata = this.config.strata || [];
+    const caps = this.config.stratumCaps || [];
+
+    // Create dictionary mapping tuple of levels to cap
+    const pyCapsDict = caps.map(c => `    (${c.levels.map(l => `"${l}"`).join(', ')}): ${c.cap}`).join(',\n');
 
     return `# Randomization Schema Generation in Python
 # Protocol: ${this.config.protocolId || 'Unknown'}
@@ -233,7 +269,11 @@ rng = np.random.default_rng(${this.hashCode(this.config.seed)})
 # Parameters
 sites = [${sites.map(s => '"' + s + '"').join(', ')}]
 block_sizes = [${blockSizes.join(', ')}]
-max_subjects_per_stratum = ${this.config.subjectsPerSite || 0}
+
+# Stratum Caps Mapping
+stratum_caps = {
+${pyCapsDict || '    (): 0'}
+}
 
 # Treatment Arms
 arms = [${arms.map(a => `{"name": "${a.name}", "ratio": ${a.ratio}}`).join(', ')}]
@@ -248,16 +288,24 @@ strata_names = [${strata.map(s => '"' + s.id + '"').join(', ')}]
 # Generate all strata combinations
 strata_combinations = list(itertools.product(*strata_levels))
 
+# Block Math Failsafe
+if any(bs % total_ratio != 0 for bs in block_sizes):
+    raise ValueError("Block sizes must be exact multiples of the total allocation ratio.")
+
 schema = []
 
 for site in sites:
+    site_subject_count = 0
     for combo in strata_combinations:
         stratum = dict(zip(strata_names, combo))
         
-        subject_count = 0
+        # Determine cap for this specific stratum combination
+        max_subjects_per_stratum = stratum_caps.get(combo, 0)
+
+        stratum_subject_count = 0
         block_number = 1
         
-        while subject_count < max_subjects_per_stratum:
+        while stratum_subject_count < max_subjects_per_stratum:
             # Pick random block size
             current_block_size = rng.choice(block_sizes)
             
@@ -270,22 +318,22 @@ for site in sites:
             rng.shuffle(block)
             
             for treatment in block:
-                subject_count += 1
+                site_subject_count += 1
+                stratum_subject_count += 1
                 
                 # Format Subject ID (Simplified)
-                subject_id = f"{site}-{subject_count:03d}"
+                subject_id = f"{site}-{site_subject_count:03d}"
                 
-                row = {
+                schema.append({
                     "SubjectID": subject_id,
                     "Site": site,
                     "BlockNumber": block_number,
                     "BlockSize": current_block_size,
                     "Treatment": treatment,
                     **stratum
-                }
-                schema.append(row)
+                })
                 
-                if subject_count >= max_subjects_per_stratum:
+                if stratum_subject_count >= max_subjects_per_stratum:
                     break
             
             block_number += 1
@@ -311,6 +359,7 @@ print(df['BlockSize'].value_counts())
     const blockSizes = this.config.blockSizes || [];
     const arms = this.config.arms || [];
     const strata = this.config.strata || [];
+    const caps = this.config.stratumCaps || [];
     const totalRatio = arms.reduce((sum, a) => sum + a.ratio, 0);
 
     let code = `/* Randomization Schema Generation in SAS */
@@ -318,7 +367,6 @@ print(df['BlockSize'].value_counts())
 /* Study: ${this.config.studyName || 'Unknown'} */
 
 %let seed = ${this.hashCode(this.config.seed)};
-%let subjects_per_site = ${this.config.subjectsPerSite || 0};
 %let total_ratio = ${totalRatio};
 
 /* User-defined Parameters */
@@ -326,6 +374,25 @@ print(df['BlockSize'].value_counts())
 %let ratios = ${arms.map(a => a.ratio).join(' ')};
 %let block_sizes = ${blockSizes.join(' ')};
 %let sites = ${sites.map(s => `"${s}"`).join(' ')};
+
+/* Block Math Failsafe */
+data _null_;
+  _n_blocks = countw("&block_sizes.", ' ', 'q');
+  do _i = 1 to _n_blocks;
+    _block_size = input(scan("&block_sizes.", _i, ' ', 'q'), best.);
+    if mod(_block_size, &total_ratio.) ^= 0 then do;
+      call symputx('BLOCK_MATH_ERROR', 1);
+      put "ERROR: Block size " _block_size " is not an exact multiple of total allocation ratio " &total_ratio. ".";
+    end;
+  end;
+run;
+
+%macro check_block_math;
+  %if &BLOCK_MATH_ERROR. = 1 %then %do;
+    %abort cancel;
+  %end;
+%mend check_block_math;
+%check_block_math;
 `;
 
     if (strata.length > 0) {
@@ -366,6 +433,36 @@ run;
 `;
       }
 
+    }
+
+    // Create the cap mapping dataset
+    code += `
+/* Define Stratum Caps Map */
+data _caps;
+  length max_subjects_per_stratum 8`;
+    if (strata.length > 0) {
+      strata.forEach(s => {
+        code += ` ${s.id} $50`;
+      });
+    }
+    code += `;\n`;
+
+    if (caps.length === 0) {
+        // default empty output just to have the dataset structure
+        code += `  max_subjects_per_stratum = 0; output;\n`;
+    } else {
+        caps.forEach(c => {
+          if (strata.length > 0 && c.levels.length === strata.length) {
+            strata.forEach((s, idx) => {
+              code += `  ${s.id} = "${c.levels[idx]}";`;
+            });
+          }
+          code += `  max_subjects_per_stratum = ${c.cap};\n  output;\n`;
+        });
+    }
+    code += `run;\n`;
+
+    if (strata.length > 0) {
       code += `
 proc sql noprint;
   create table _design as
@@ -374,20 +471,29 @@ proc sql noprint;
         const char = String.fromCharCode(98 + i); // 'b', 'c', etc.
         code += `, ${char}.${strata[i].id}`;
       }
-      code += `
+      // Add the cap join logic
+      code += `, caps.max_subjects_per_stratum
   from _sites a`;
       for (let i = 0; i < strata.length; i++) {
         const char = String.fromCharCode(98 + i);
         code += `
   cross join _strata_${i+1} ${char}`;
       }
+      // Merge caps
+      code += `
+  left join _caps caps on 1=1`;
+      for (let i = 0; i < strata.length; i++) {
+        const char = String.fromCharCode(98 + i);
+        code += ` and ${char}.${strata[i].id} = caps.${strata[i].id}`;
+      }
       code += `;\nquit;\n`;
     } else {
       code += `
 proc sql noprint;
   create table _design as
-  select a.Site
-  from _sites a;
+  select a.Site, caps.max_subjects_per_stratum
+  from _sites a
+  cross join _caps caps;
 quit;
 `;
     }
@@ -396,6 +502,7 @@ quit;
 /* 2. Generate Blocks and Assign Treatments */
 data _blocks;
   set _design;
+  if missing(max_subjects_per_stratum) then max_subjects_per_stratum = 0;
   call streaminit(&seed.);
   length Treatment $50;
 
@@ -403,7 +510,7 @@ data _blocks;
   _subj_count = 0;
   block_num = 1;
 
-  do while (_subj_count < &subjects_per_site.);
+  do while (_subj_count < max_subjects_per_stratum);
     /* Dynamic Block Selection */
     _rand_val = rand('uniform');
 `;
@@ -458,15 +565,23 @@ run;
 data final_schema;
   set _blocks;
   by ${byVars};
-  retain _seq;
-  if first.${lastDesignVar} then _seq = 1;
-  else _seq = _seq + 1;
 
-  if _seq <= &subjects_per_site.;
+  retain _site_subj_count 0;
+  if first.Site then _site_subj_count = 0;
 
-  /* Format Subject ID */
-  length SubjectID $50;
-  SubjectID = cats(Site, "-", put(_seq, z3.));
+  retain _stratum_subj_count;
+  if first.${lastDesignVar} then _stratum_subj_count = 1;
+  else _stratum_subj_count = _stratum_subj_count + 1;
+
+  if _stratum_subj_count <= max_subjects_per_stratum then do;
+    _site_subj_count = _site_subj_count + 1;
+
+    /* Format Subject ID */
+    length SubjectID $50;
+    SubjectID = cats(Site, "-", put(_site_subj_count, z3.));
+
+    output;
+  end;
 
   drop _:;
 run;

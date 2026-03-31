@@ -9,6 +9,35 @@ import { RandomizationConfig } from './randomization.service';
   template: `
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
       
+      <div class="mb-2 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md">
+        <div class="flex flex-col sm:flex-row sm:items-start">
+          <div class="flex-shrink-0 mt-0.5">
+            <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3 w-full">
+            <h3 class="text-sm font-medium text-blue-800">Study-Agnostic Randomization Presets</h3>
+            <div class="mt-2 text-sm text-blue-700">
+              <p>Start from scratch or quickly toggle between different strata and complexity options.</p>
+            </div>
+            <!-- Preset Buttons -->
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+              <span class="text-sm font-semibold text-blue-900">Load Preset:</span>
+              <button type="button" (click)="loadPreset('simple')" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                Simple (Unstratified)
+              </button>
+              <button type="button" (click)="loadPreset('standard')" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                Standard (1 Stratum)
+              </button>
+              <button type="button" (click)="loadPreset('complex')" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-white hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-colors">
+                Complex (Multi-strata)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Study Metadata -->
       <section>
         <h2 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Study Metadata</h2>
@@ -124,11 +153,21 @@ import { RandomizationConfig } from './randomization.service';
                 <p class="text-xs text-red-600 mt-1">Block sizes must be multiples of the total treatment ratio ({{totalRatio}}).</p>
               }
             </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label for="subjectsPerSite" class="block text-sm font-medium text-gray-700 mb-1">Subjects per Site</label>
-                <input id="subjectsPerSite" type="number" formControlName="subjectsPerSite" min="1" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Max Subjects per Stratum</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" formArrayName="stratumCaps">
+                @for (capControl of stratumCaps.controls; track i; let i = $index) {
+                  <div [formGroupName]="i" class="flex flex-col p-3 border border-gray-200 rounded-md bg-gray-50">
+                    <span class="text-xs font-semibold text-gray-600 mb-1 truncate" [title]="capControl.get('levels')?.value.join(' | ')">
+                      {{ capControl.get('levels')?.value.join(' | ') || 'Overall / Default' }}
+                    </span>
+                    <input type="number" formControlName="cap" min="1" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-3 py-1.5 border" placeholder="Max subjects">
+                  </div>
+                }
               </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-2">
               <div>
                 <label for="seed" class="block text-sm font-medium text-gray-700 mb-1">Random Seed (Optional)</label>
                 <input id="seed" type="text" formControlName="seed" placeholder="Auto-generated if empty" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border">
@@ -197,13 +236,73 @@ export class ConfigFormComponent {
     ]),
     sitesStr: ['101, 102, 103', Validators.required],
     blockSizesStr: ['4, 6', Validators.required],
-    subjectsPerSite: [20, [Validators.required, Validators.min(1)]],
+    stratumCaps: this.fb.array([]),
     seed: [''],
     subjectIdMask: ['[SiteID]-[StratumCode]-[001]', Validators.required]
   }, { validators: this.validateBlockSizes.bind(this) });
 
+  strataCombinations: string[][] = [];
+
   dropdownOpen = false;
+
+  presets = {
+    simple: {
+      protocolId: 'SIMP-001',
+      studyName: 'Simple Unstratified Trial',
+      phase: 'Phase I',
+      arms: [
+        { id: 'A', name: 'Treatment', ratio: 1 },
+        { id: 'B', name: 'Control', ratio: 1 }
+      ],
+      strata: [],
+      sitesStr: 'Site A, Site B',
+      blockSizesStr: '2, 4',
+      subjectIdMask: '[SiteID]-[001]'
+    },
+    standard: {
+      protocolId: 'STD-002',
+      studyName: 'Standard Stratified Trial',
+      phase: 'Phase II',
+      arms: [
+        { id: 'A', name: 'Active', ratio: 1 },
+        { id: 'B', name: 'Placebo', ratio: 1 }
+      ],
+      strata: [
+        { id: 'age', name: 'Age Group', levelsStr: '<65, >=65' }
+      ],
+      sitesStr: '101, 102, 103',
+      blockSizesStr: '4, 6',
+      subjectIdMask: '[SiteID]-[StratumCode]-[001]'
+    },
+    complex: {
+      protocolId: 'CMPX-003',
+      studyName: 'Complex Multi-Strata Trial',
+      phase: 'Phase III',
+      arms: [
+        { id: 'A', name: 'High Dose', ratio: 1 },
+        { id: 'B', name: 'Low Dose', ratio: 1 },
+        { id: 'C', name: 'Placebo', ratio: 1 }
+      ],
+      strata: [
+        { id: 'age', name: 'Age Group', levelsStr: '<65, >=65' },
+        { id: 'gender', name: 'Gender', levelsStr: 'M, F' },
+        { id: 'region', name: 'Region', levelsStr: 'NA, EU' }
+      ],
+      sitesStr: 'US-01, US-02, UK-01, DE-01',
+      blockSizesStr: '3, 6, 9',
+      subjectIdMask: '[SiteID]-[StratumCode]-[001]'
+    }
+  };
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
+
+  ngOnInit() {
+    // Subscribe to changes in strata to dynamically compute stratumCaps form controls
+    this.form.get('strata')?.valueChanges.subscribe(() => {
+      this.updateStratumCaps();
+    });
+    // Trigger initial calculation
+    this.updateStratumCaps();
+  }
 
   @HostListener('document:click', ['$event'])
   clickout(event: Event) {
@@ -214,6 +313,89 @@ export class ConfigFormComponent {
 
   get arms() { return this.form.get('arms') as FormArray; }
   get strata() { return this.form.get('strata') as FormArray; }
+  get stratumCaps() { return this.form.get('stratumCaps') as FormArray; }
+
+  loadPreset(type: 'simple' | 'standard' | 'complex') {
+    const preset = this.presets[type];
+    if (!preset) return;
+
+    // Reset simple values
+    this.form.patchValue({
+      protocolId: preset.protocolId,
+      studyName: preset.studyName,
+      phase: preset.phase,
+      sitesStr: preset.sitesStr,
+      blockSizesStr: preset.blockSizesStr,
+      subjectIdMask: preset.subjectIdMask,
+      seed: ''
+    }, { emitEvent: false });
+
+    // Reset arms array
+    this.arms.clear({ emitEvent: false });
+    preset.arms.forEach(arm => {
+      this.arms.push(this.fb.group({
+        id: [arm.id],
+        name: [arm.name],
+        ratio: [arm.ratio, [Validators.required, Validators.min(1)]]
+      }), { emitEvent: false });
+    });
+
+    // Reset strata array
+    this.strata.clear({ emitEvent: false });
+    preset.strata.forEach(stratum => {
+      this.strata.push(this.fb.group({
+        id: [stratum.id],
+        name: [stratum.name],
+        levelsStr: [stratum.levelsStr, Validators.required]
+      }), { emitEvent: false });
+    });
+
+    // We only want to trigger the value changes ONCE after everything is reset
+    // This allows the reactive listener on this.form.get('strata') to fire
+    this.form.updateValueAndValidity();
+    this.updateStratumCaps();
+  }
+
+  updateStratumCaps() {
+    const strataVals = this.strata.value as {id: string, name: string, levelsStr: string}[];
+    let combinations: string[][] = [];
+
+    const validStrata = strataVals.filter(s => s.levelsStr && s.levelsStr.trim() !== '');
+
+    if (validStrata.length === 0) {
+      combinations = [[]]; // Default empty combination
+    } else {
+      const levelsList = validStrata.map(s =>
+        s.levelsStr.split(',').map(l => l.trim()).filter(l => l)
+      );
+
+      // Cartesian product
+      combinations = levelsList.reduce((acc, curr) => {
+        const res: string[][] = [];
+        for (const a of acc) {
+          for (const c of curr) {
+            res.push([...a, c]);
+          }
+        }
+        return res;
+      }, [[]] as string[][]);
+    }
+
+    this.strataCombinations = combinations;
+    const currentCaps = this.stratumCaps.value as {levels: string[], cap: number}[];
+    this.stratumCaps.clear();
+
+    combinations.forEach(combo => {
+      // Try to preserve existing cap value if combo matches
+      const existing = currentCaps.find(c => c.levels.join('|') === combo.join('|'));
+      const capValue = existing ? existing.cap : 20;
+
+      this.stratumCaps.push(this.fb.group({
+        levels: [combo],
+        cap: [capValue, [Validators.required, Validators.min(1)]]
+      }));
+    });
+  }
   
   get totalRatio() {
     return this.arms.controls.reduce((sum, control) => sum + (control.get('ratio')?.value || 0), 0);
@@ -278,7 +460,7 @@ export class ConfigFormComponent {
         levels: s.levelsStr.split(',').map((l: string) => l.trim()).filter((l: string) => l)
       })),
       blockSizes: val.blockSizesStr.split(',').map((s: string) => parseInt(s.trim(), 10)).filter((n: number) => !isNaN(n)),
-      subjectsPerSite: val.subjectsPerSite,
+      stratumCaps: val.stratumCaps,
       seed: val.seed || undefined,
       subjectIdMask: val.subjectIdMask
     };

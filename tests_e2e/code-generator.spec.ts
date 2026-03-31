@@ -18,7 +18,6 @@ test.describe('Code Generator Modal UI', () => {
     await page.getByLabel(/Protocol ID/i).fill('TEST-PRT-123');
     await page.getByLabel(/Study Name/i).fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
-    await page.getByLabel(/Subjects per Site/i).fill('10');
 
     // Fill Arm details
     const armInputs = page.getByPlaceholder(/Arm Name/i);
