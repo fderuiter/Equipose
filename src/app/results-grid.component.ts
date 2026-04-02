@@ -2,6 +2,7 @@ import { Component, Input, computed, signal } from '@angular/core';
 import { RandomizationResult } from './randomization.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { APP_VERSION } from '../environments/version';
 
 @Component({
   selector: 'app-results-grid',
@@ -168,10 +169,13 @@ export class ResultsGridComponent {
       ];
     });
 
-    const watermark = "DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema.";
-
-    const csvContent = [
-      `"${watermark}"`,
+  const watermark = "DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema.";
+  const timestamp = new Date(data.metadata.generatedAt).toISOString();
+  const csvContent = [
+    `"${watermark}"`,
+    `# App Version: ${APP_VERSION}`,
+    `# Generated At: ${timestamp}`,
+    `# PRNG Algorithm: seedrandom (Alea)`,
       headers.join(','),
       ...rows.map(e => e.join(','))
     ].join('\n');
@@ -207,9 +211,13 @@ export class ResultsGridComponent {
     doc.setTextColor(100);
     doc.text(`Protocol: ${data.metadata.protocolId} - ${data.metadata.studyName}`, 14, 30);
     doc.text(`Phase: ${data.metadata.phase}`, 14, 36);
-    doc.text(`Generated At: ${new Date(data.metadata.generatedAt).toLocaleString()}`, 14, 42);
-    doc.text(`Random Seed: ${data.metadata.seed}`, 14, 48);
-    doc.text(`Status: ${this.isUnblinded() ? 'UNBLINDED' : 'BLINDED'}`, 14, 54);
+
+    const timestamp = new Date(data.metadata.generatedAt).toISOString();
+    doc.text(`App Version: ${APP_VERSION}`, 14, 42);
+    doc.text(`Generated At: ${timestamp}`, 14, 48);
+    doc.text(`PRNG Algorithm: seedrandom (Alea)`, 14, 54);
+    doc.text(`Random Seed: ${data.metadata.seed}`, 14, 60);
+    doc.text(`Status: ${this.isUnblinded() ? 'UNBLINDED' : 'BLINDED'}`, 14, 66);
 
     const strataHeaders = data.metadata.strata?.map(s => s.name || s.id) || [];
     const headers = [['Subject ID', 'Site', ...strataHeaders, 'Block', 'Treatment Arm']];
@@ -226,7 +234,7 @@ export class ResultsGridComponent {
     });
 
     autoTable(doc, {
-      startY: 60,
+      startY: 72,
       head: headers,
       body: rows,
       theme: 'grid',
