@@ -198,4 +198,56 @@ describe('RandomizationService', () => {
       });
     });
   });
+
+  describe('Monte Carlo Statistical Testing', () => {
+    it('should pass Chi-Square Goodness of Fit test for unbiased block distribution across 10,000 runs', () => {
+      return new Promise<void>((resolve) => {
+        let abCount = 0;
+        let baCount = 0;
+        let completed = 0;
+        const totalRuns = 10000;
+
+        for (let i = 0; i < totalRuns; i++) {
+          const config: RandomizationConfig = {
+            protocolId: 'TEST-CHI2',
+            studyName: 'Chi-Square Test Study',
+            phase: 'Phase 1',
+            arms: [
+              { id: '1', name: 'A', ratio: 1 },
+              { id: '2', name: 'B', ratio: 1 }
+            ],
+            sites: ['Site1'],
+            strata: [],
+            blockSizes: [2],
+            stratumCaps: [{ levels: [], cap: 2 }],
+            seed: `chi_square_seed_${i}`,
+            subjectIdMask: '[SiteID]-[001]'
+          };
+
+          service.generateSchema(config).subscribe(result => {
+            const schema = result.schema;
+            if (schema.length === 2) {
+              if (schema[0].treatmentArm === 'A' && schema[1].treatmentArm === 'B') {
+                abCount++;
+              } else if (schema[0].treatmentArm === 'B' && schema[1].treatmentArm === 'A') {
+                baCount++;
+              }
+            }
+
+            completed++;
+            if (completed === totalRuns) {
+              const expected = totalRuns / 2;
+              const chiSquare = ((abCount - expected) ** 2) / expected + ((baCount - expected) ** 2) / expected;
+
+              // 3.841 is the critical value for 1 degree of freedom at a 0.05 significance level.
+              // To pass the Goodness of Fit test (prove distribution doesn't deviate significantly),
+              // the test statistic should be less than the critical value.
+              expect(chiSquare).toBeLessThan(3.841);
+              resolve();
+            }
+          });
+        }
+      });
+    });
+  });
 });
