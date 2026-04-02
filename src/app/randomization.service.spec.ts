@@ -94,4 +94,108 @@ describe('RandomizationService', () => {
       });
     });
   });
+
+  it('should respect treatment ratios within generated blocks', () => {
+    return new Promise<void>((resolve) => {
+      const config: RandomizationConfig = {
+        protocolId: 'TEST-RATIO',
+        studyName: 'Ratio Test Study',
+        phase: 'Phase 1',
+        arms: [
+          { id: '1', name: 'Active', ratio: 2 },
+          { id: '2', name: 'Placebo', ratio: 1 }
+        ],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [3],
+        stratumCaps: [{ levels: [], cap: 30 }], // 10 blocks
+        seed: 'ratio_seed',
+        subjectIdMask: '[SiteID]-[001]'
+      };
+
+      service.generateSchema(config).subscribe(result => {
+        expect(result).toBeTruthy();
+        const schema = result.schema;
+
+        const blocks: Record<number, string[]> = {};
+        schema.forEach(row => {
+          if (!blocks[row.blockNumber]) {
+            blocks[row.blockNumber] = [];
+          }
+          blocks[row.blockNumber].push(row.treatmentArm);
+        });
+
+        Object.keys(blocks).forEach(blockNumberStr => {
+          const block = blocks[parseInt(blockNumberStr, 10)];
+          const activeCount = block.filter(arm => arm === 'Active').length;
+          const placeboCount = block.filter(arm => arm === 'Placebo').length;
+
+          expect(activeCount).toBe(2);
+          expect(placeboCount).toBe(1);
+          expect(block.length).toBe(3);
+        });
+
+        resolve();
+      });
+    });
+  });
+
+  it('should exhibit uniform distribution across block permutations', () => {
+    return new Promise<void>((resolve) => {
+      const config: RandomizationConfig = {
+        protocolId: 'TEST-MC',
+        studyName: 'Monte Carlo Study',
+        phase: 'Phase 1',
+        arms: [
+          { id: '1', name: 'A', ratio: 1 },
+          { id: '2', name: 'B', ratio: 1 }
+        ],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [2],
+        stratumCaps: [{ levels: [], cap: 10000 }], // 5000 blocks
+        seed: 'monte_carlo_seed',
+        subjectIdMask: '[SiteID]-[001]'
+      };
+
+      service.generateSchema(config).subscribe(result => {
+        expect(result).toBeTruthy();
+        const schema = result.schema;
+
+        const blocks: Record<number, string[]> = {};
+        schema.forEach(row => {
+          if (!blocks[row.blockNumber]) {
+            blocks[row.blockNumber] = [];
+          }
+          blocks[row.blockNumber].push(row.treatmentArm);
+        });
+
+        let abCount = 0;
+        let baCount = 0;
+
+        Object.values(blocks).forEach(block => {
+          if (block.length === 2) {
+            if (block[0] === 'A' && block[1] === 'B') {
+              abCount++;
+            } else if (block[0] === 'B' && block[1] === 'A') {
+              baCount++;
+            }
+          }
+        });
+
+        const totalValidBlocks = abCount + baCount;
+        expect(totalValidBlocks).toBe(5000);
+
+        const expectedCount = totalValidBlocks / 2;
+        const marginOfError = totalValidBlocks * 0.05; // 5%
+
+        expect(abCount).toBeGreaterThan(expectedCount - marginOfError);
+        expect(abCount).toBeLessThan(expectedCount + marginOfError);
+        expect(baCount).toBeGreaterThan(expectedCount - marginOfError);
+        expect(baCount).toBeLessThan(expectedCount + marginOfError);
+
+        resolve();
+      });
+    });
+  });
 });
