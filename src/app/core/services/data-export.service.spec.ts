@@ -4,7 +4,10 @@ import { RandomizationResult } from '../../models/randomization.model';
 import jsPDF from 'jspdf';
 import { vi } from 'vitest';
 
-const mockSave = vi.fn();
+const { mockSave } = vi.hoisted(() => {
+  return { mockSave: vi.fn() };
+});
+
 vi.mock('jspdf', () => {
   return {
     default: class {
