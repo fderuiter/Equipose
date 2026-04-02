@@ -4,17 +4,13 @@ import { RandomizationResult } from '../../models/randomization.model';
 import jsPDF from 'jspdf';
 import { vi } from 'vitest';
 
-const { mockSave } = vi.hoisted(() => {
-  return { mockSave: vi.fn() };
-});
-
 vi.mock('jspdf', () => {
   return {
-    default: class {
+    default: class jsPDF {
       setFontSize = vi.fn();
       text = vi.fn();
       setTextColor = vi.fn();
-      save = mockSave;
+      save() {}
     }
   };
 });
@@ -71,10 +67,10 @@ describe('DataExportService', () => {
   });
 
   it('should trigger PDF download with unblinded data', () => {
-    mockSave.mockClear();
+    const saveSpy = vi.spyOn(jsPDF.prototype, 'save').mockImplementation(() => { return {} as any });
 
     service.exportPdf(mockData, true); // isUnblinded = true
 
-    expect(mockSave).toHaveBeenCalledWith('randomization_TEST-001_unblinded.pdf');
+    expect(saveSpy).toHaveBeenCalledWith('randomization_TEST-001_unblinded.pdf');
   });
 });
