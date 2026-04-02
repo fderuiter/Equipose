@@ -168,7 +168,10 @@ export class ResultsGridComponent {
       ];
     });
 
+    const watermark = "DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema.";
+
     const csvContent = [
+      `"${watermark}"`,
       headers.join(','),
       ...rows.map(e => e.join(','))
     ].join('\n');
@@ -190,8 +193,14 @@ export class ResultsGridComponent {
 
     const doc = new jsPDF();
     
+    // Watermark
+    doc.setFontSize(10);
+    doc.setTextColor(255, 0, 0); // Red
+    doc.text('DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema.', 14, 12);
+
     // Header
     doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0); // Black
     doc.text('Randomization Schema Report', 14, 22);
     
     doc.setFontSize(11);
