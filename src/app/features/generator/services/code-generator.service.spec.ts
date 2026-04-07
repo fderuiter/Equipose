@@ -166,6 +166,26 @@ describe('CodeGeneratorService', () => {
         expect(code).toContain('QC Check: Dynamic Block Utilization');
         expect(code).toContain('table(schema$BlockSize)');
       });
+
+      it('should wrap QC checks in an nrow(schema) > 0 guard', () => {
+        const code = service.generateR(fullConfig);
+        expect(code).toContain('if (nrow(schema) > 0)');
+        expect(code).toContain('No rows generated; skipping QC tables.');
+      });
+
+      it('should include the null/empty schema guard with typed empty data.frame columns', () => {
+        const code = service.generateR(fullConfig);
+        expect(code).toContain('is.null(schema) || nrow(schema) == 0');
+        expect(code).toContain('SubjectID = character(0)');
+        expect(code).toContain('Site = character(0)');
+        expect(code).toContain('Treatment = character(0)');
+      });
+
+      it('should handle ncol(stratum) == 0 for unstratified configs', () => {
+        const code = service.generateR(fullConfig);
+        expect(code).toContain('if (ncol(stratum) == 0)');
+        expect(code).toContain('stratum_key <- ""');
+      });
     });
 
     describe('edge cases', () => {
@@ -470,6 +490,19 @@ describe('CodeGeneratorService', () => {
       const hashA = service.generateR(configA).match(/set\.seed\((\d+)\)/)![1];
       const hashB = service.generateR(configB).match(/set\.seed\((\d+)\)/)![1];
       expect(hashA).not.toBe(hashB);
+    });
+
+    it('should produce a seed hash within the safe set.seed() range (0..2147483646)', () => {
+      // R's set.seed() / SAS call streaminit() accept 0..2^31-2; Python SeedSequence also
+      // accepts non-negative integers. Math.abs(-2147483648) === 2147483648, which exceeds
+      // the 31-bit limit, so we use (hash >>> 0) % 2147483647 instead.
+      const seeds = ['abc', 'seedA', 'test123', fullConfig.seed!];
+      for (const s of seeds) {
+        const cfg = { ...fullConfig, seed: s };
+        const rSeed = Number(service.generateR(cfg).match(/set\.seed\((\d+)\)/)![1]);
+        expect(rSeed).toBeGreaterThanOrEqual(0);
+        expect(rSeed).toBeLessThan(2147483647);
+      }
     });
 
     it('should include a Generated At timestamp in all three outputs', () => {

@@ -98,11 +98,10 @@ test.describe('Results Grid Operations', () => {
     const nextBtn = resultsSection.getByRole('button', { name: /Next/i });
     const prevBtn = resultsSection.getByRole('button', { name: /Previous/i });
 
-    // Only run the pagination sub-test when there are multiple pages
-    if (await nextBtn.isEnabled()) {
-      await nextBtn.click();
-      await expect(prevBtn).toBeEnabled();
-    }
+    // The Complex preset reliably produces > 20 rows; assert Next is enabled
+    await expect(nextBtn).toBeEnabled();
+    await nextBtn.click();
+    await expect(prevBtn).toBeEnabled();
   });
 
   test('clicking "Previous" after "Next" should return to the first page', async ({ page }) => {
@@ -110,12 +109,11 @@ test.describe('Results Grid Operations', () => {
     const nextBtn = resultsSection.getByRole('button', { name: /Next/i });
     const prevBtn = resultsSection.getByRole('button', { name: /Previous/i });
 
-    if (await nextBtn.isEnabled()) {
-      await nextBtn.click();
-      await expect(prevBtn).toBeEnabled();
-      await prevBtn.click();
-      await expect(prevBtn).toBeDisabled();
-    }
+    await expect(nextBtn).toBeEnabled();
+    await nextBtn.click();
+    await expect(prevBtn).toBeEnabled();
+    await prevBtn.click();
+    await expect(prevBtn).toBeDisabled();
   });
 
   // ---------------------------------------------------------------------------

@@ -15,7 +15,11 @@ export class CodeGeneratorService {
       hash = ((hash << 5) - hash) + char;
       hash |= 0;
     }
-    return Math.abs(hash);
+    // Use unsigned right-shift to get a non-negative 32-bit integer, then mod into
+    // R's set.seed() / Python's SeedSequence / SAS's call streaminit range (0..2^31-2).
+    // Math.abs(-2147483648) === 2147483648, which exceeds the 31-bit limit; this
+    // approach avoids that edge case entirely.
+    return (hash >>> 0) % 2147483647;
   }
 
   generateR(config: RandomizationConfig): string {
@@ -92,9 +96,16 @@ for (site in sites) {
   # c(1, 0) instead of an empty sequence when there are no rows.
   for (i in seq_len(nrow(strata_grid))) {
     stratum <- strata_grid[i, , drop=FALSE]
-    # unlist() is required to coerce the data.frame row to a plain character vector
-    # before pasting; directly pasting a data.frame can give unexpected results.
-    stratum_key <- paste(unlist(stratum), collapse="_")
+    # In the unstratified case, expand.grid() produces a 1-row, 0-column data.frame.
+    # Force a scalar empty key so the stratum_caps named-vector lookup remains length-1.
+    if (ncol(stratum) == 0) {
+      stratum_key <- ""
+    } else {
+      # unlist() is required to coerce the data.frame row to a plain character vector
+      # before pasting; directly pasting a data.frame can give unexpected results.
+      stratum_key <- paste(unlist(stratum), collapse="_")
+      if (length(stratum_key) == 0) stratum_key <- ""
+    }
     max_subjects_per_stratum <- if (length(stratum_caps) > 0) unname(stratum_caps[stratum_key]) else 0
     if (is.na(max_subjects_per_stratum)) max_subjects_per_stratum <- 0
 
@@ -136,16 +147,35 @@ for (site in sites) {
 }
 
 schema <- do.call(rbind, schema_list)
+
+# Guard: when no subjects were generated (e.g. all caps are 0 or sites is empty),
+# do.call(rbind, list()) returns NULL. Create an empty typed data.frame so that
+# downstream code (print, write.csv) does not error.
+if (is.null(schema) || nrow(schema) == 0) {
+  base_schema <- data.frame(
+    SubjectID = character(0),
+    Site = character(0),
+    BlockNumber = integer(0),
+    BlockSize = integer(0),
+    Treatment = character(0)
+  )
+  schema <- cbind(base_schema, strata_grid[0, , drop=FALSE])
+}
 print(head(schema))
 
-cat("\\n--- QC Check: Overall Allocation ---\\n")
-print(table(schema$Treatment))
+if (nrow(schema) > 0) {
+  cat("\\n--- QC Check: Overall Allocation ---\\n")
+  print(table(schema$Treatment))
 
-cat("\\n--- QC Check: Site-Level Balance ---\\n")
-print(table(schema$Site, schema$Treatment))
+  cat("\\n--- QC Check: Site-Level Balance ---\\n")
+  print(table(schema$Site, schema$Treatment))
 
-cat("\\n--- QC Check: Dynamic Block Utilization ---\\n")
-print(table(schema$BlockSize))
+  cat("\\n--- QC Check: Dynamic Block Utilization ---\\n")
+  print(table(schema$BlockSize))
+} else {
+  cat("\\n--- QC Check ---\\n")
+  cat("No rows generated; skipping QC tables.\\n")
+}
 
 # write.csv(schema, "randomization_schema.csv", row.names=FALSE)
 `;
