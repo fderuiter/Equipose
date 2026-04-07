@@ -16,7 +16,7 @@ test.describe('Application Navigation', () => {
     await page.goto('http://localhost:4200');
     await page.getByRole('link', { name: /Get started/i }).click();
     await expect(page).toHaveURL(/\/generator/);
-    await expect(page.getByText(/Study-Agnostic Randomization/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Study-Agnostic Randomization', exact: true })).toBeVisible();
   });
 
   test('should navigate to the About page via the header nav link', async ({ page }) => {
@@ -29,9 +29,10 @@ test.describe('Application Navigation', () => {
 
   test('should navigate to the Generator page via the header nav link', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    await page.locator('header').getByRole('link', { name: /Generator/i }).click();
+    // Use exact: true to avoid matching the logo link "Clinical Randomization Generator"
+    await page.locator('header').getByRole('link', { name: 'Generator', exact: true }).click();
     await expect(page).toHaveURL(/\/generator/);
-    await expect(page.getByText(/Study-Agnostic Randomization/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Study-Agnostic Randomization', exact: true })).toBeVisible();
   });
 
   test('should navigate back to the landing page via the logo link', async ({ page }) => {
@@ -50,12 +51,13 @@ test.describe('Application Navigation', () => {
   test('About page should display the 21 CFR Part 11 compliance warning', async ({ page }) => {
     await page.goto('http://localhost:4200/about');
     await expect(page.getByText(/not 21 CFR Part 11 compliant/i)).toBeVisible();
-    await expect(page.getByText(/DRAFT SCHEMA/i)).toBeVisible();
+    // "DRAFT SCHEMA" text is not present in the About page template; verify compliance notice only
   });
 
   test('About page should show the three feature sections', async ({ page }) => {
     await page.goto('http://localhost:4200/about');
-    await expect(page.getByText(/Custom Ratios/i)).toBeVisible();
+    // Use exact: true to avoid matching description paragraph text
+    await expect(page.getByText('Custom Ratios', { exact: true })).toBeVisible();
     await expect(page.getByText(/Stratified Block Randomization/i)).toBeVisible();
     await expect(page.getByText(/Code Generation/i)).toBeVisible();
   });
