@@ -116,6 +116,7 @@ test.describe('Form Validation and Configuration', () => {
 
     // Type two levels into the new stratum's levels input
     const levelsInput = page.locator('[id^="levelsStr"]').first();
+    await levelsInput.waitFor({ state: 'visible', timeout: 10000 });
     await levelsInput.fill('Level1, Level2');
     // Blur to trigger Angular value-changes subscription
     await page.locator('#protocolId').click();

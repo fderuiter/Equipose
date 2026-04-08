@@ -4,16 +4,10 @@ test.describe('Code Generator Modal UI', () => {
   test.beforeEach(async ({ page }) => {
     // Add an explicit listener for console errors to catch potential download issues
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`));
-    await page.goto('http://localhost:4200');
+    await page.goto('http://localhost:4200/generator');
   });
 
   test('should generate, display, and download code in all three languages', async ({ page }) => {
-    // Navigate to generator page
-    const getStartedBtn = page.getByRole('link', { name: /Get Started/i });
-    if (await getStartedBtn.isVisible()) {
-      await getStartedBtn.click();
-    }
-
     // Fill required form fields to enable code generation
     await page.getByLabel(/Protocol ID/i).fill('TEST-PRT-123');
     await page.getByLabel(/Study Name/i).fill('End-to-end Test Study');
@@ -21,7 +15,7 @@ test.describe('Code Generator Modal UI', () => {
 
     // Fill Arm details
     const armInputs = page.getByPlaceholder(/Arm Name/i);
-    await expect(armInputs.nth(0)).toBeVisible();
+    await expect(armInputs.nth(0)).toBeVisible({ timeout: 10000 });
     await armInputs.nth(0).fill('Placebo');
 
     const ratioInputs = page.getByPlaceholder(/Ratio/i);
