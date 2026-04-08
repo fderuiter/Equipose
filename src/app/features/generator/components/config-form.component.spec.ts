@@ -20,7 +20,8 @@ describe('ConfigFormComponent', () => {
       codeLanguage: signal('R'),
       generateSchema: vi.fn(),
       openCodeGenerator: vi.fn(),
-      closeCodeGenerator: vi.fn()
+      closeCodeGenerator: vi.fn(),
+      clearResults: vi.fn()
     };
 
     await TestBed.configureTestingModule({
@@ -81,6 +82,37 @@ describe('ConfigFormComponent', () => {
     expect(component.arms.length).toBe(3);
     expect(component.strata.length).toBe(3);
     expect(component.stratumCaps.length).toBe(8); // 2 * 2 * 2 = 8 combinations
+  });
+
+  it('should set correct arm names and ratios after loading the complex preset', () => {
+    component.loadPreset('complex');
+
+    const armsValue = component.arms.value as {id: string; name: string; ratio: number}[];
+    expect(armsValue[0].name).toBe('High Dose');
+    expect(armsValue[1].name).toBe('Low Dose');
+    expect(armsValue[2].name).toBe('Placebo');
+    armsValue.forEach(a => expect(a.ratio).toBe(1));
+  });
+
+  it('should overwrite all previous arm names when switching presets', () => {
+    // Start with the default state (Active, Placebo)
+    expect(component.arms.length).toBe(2);
+    expect((component.arms.at(0).value as {name: string}).name).toBe('Active');
+
+    // Load complex preset – must fully replace, not partially patch
+    component.loadPreset('complex');
+
+    expect(component.arms.length).toBe(3);
+    expect((component.arms.at(0).value as {name: string}).name).toBe('High Dose');
+    expect((component.arms.at(1).value as {name: string}).name).toBe('Low Dose');
+    expect((component.arms.at(2).value as {name: string}).name).toBe('Placebo');
+  });
+
+  it('should call clearResults() when a form field value changes', () => {
+    // Changing any form field must trigger the valueChanges subscription that
+    // calls state.clearResults(), ensuring no stale schema is displayed.
+    component.form.get('protocolId')?.setValue('NEW-ID');
+    expect(mockStateService.clearResults).toHaveBeenCalled();
   });
 
   it('should load the standard preset correctly', () => {
@@ -214,6 +246,27 @@ describe('ConfigFormComponent', () => {
       component.form.get('blockSizesStr')?.setValue('4');
       component.form.updateValueAndValidity();
       expect(component.form.errors?.['invalidBlockSize']).toBeFalsy();
+    });
+
+    it('should re-run the validator after loadPreset() changes the total arm ratio', () => {
+      // Default: 2 arms ratio 1 each → totalRatio = 2. Block "4, 6" → valid.
+      expect(component.form.errors?.['invalidBlockSize']).toBeFalsy();
+
+      // Complex preset: 3 arms ratio 1 each → totalRatio = 3.
+      // Block sizes become "3, 6, 9" → all multiples of 3 → still valid.
+      component.loadPreset('complex');
+      expect(component.form.errors?.['invalidBlockSize']).toBeFalsy();
+      expect(component.form.valid).toBe(true);
+    });
+
+    it('should detect an invalid block size immediately after preset loading changes the ratio', () => {
+      // Complex preset: totalRatio = 3. Force a block size that is NOT a multiple of 3.
+      component.loadPreset('complex');
+      component.form.get('blockSizesStr')?.setValue('4'); // 4 % 3 !== 0
+      component.form.updateValueAndValidity();
+
+      expect(component.form.errors?.['invalidBlockSize']).toBe(true);
+      expect(component.form.valid).toBe(false);
     });
   });
 
