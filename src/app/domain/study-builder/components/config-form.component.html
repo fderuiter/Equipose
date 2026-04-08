@@ -85,6 +85,7 @@
                   type="text"
                   formControlName="name"
                   placeholder="e.g., Placebo"
+                  data-testid="arm-name-input"
                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-3 py-2 border"
                 >
               </div>
@@ -178,6 +179,7 @@
               <div class="pl-8">
                 <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wide">Levels</label>
                 <app-tag-input
+                  data-testid="stratum-levels-input"
                   [control]="stratum.get('levelsStr')!"
                   placeholder="e.g., <65  then press Enter"
                 />

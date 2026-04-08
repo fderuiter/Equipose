@@ -114,14 +114,22 @@ test.describe('Form Validation and Configuration', () => {
     await page.getByRole('button', { name: /Simple \(Unstratified\)/i }).click();
     await page.getByRole('button', { name: /\+ Add Factor/i }).click();
 
-    // Type two levels into the new stratum's levels input
-    const levelsInput = page.locator('[id^="levelsStr"]').first();
+    // Wait for the new stratum row to be fully rendered
+    const strataRows = page.locator('[formArrayName="strata"] > div');
+    await expect(strataRows).toHaveCount(1, { timeout: 5000 });
+
+    // Type two levels into the new stratum's levels tag-input using its placeholder
+    // (placeholder is visible because the new factor starts with no chips)
+    const levelsInput = page.getByPlaceholder(/e\.g\., <65/i).first();
     await levelsInput.waitFor({ state: 'visible', timeout: 10000 });
-    await levelsInput.fill('Level1, Level2');
+    await levelsInput.fill('Level1');
+    await levelsInput.press('Enter');
+    await levelsInput.fill('Level2');
+    await levelsInput.press('Enter');
     // Blur to trigger Angular value-changes subscription
     await page.locator('#protocolId').click();
 
     const capRows = page.locator('[formArrayName="stratumCaps"] > div');
-    await expect(capRows).toHaveCount(2, { timeout: 3000 });
+    await expect(capRows).toHaveCount(2, { timeout: 5000 });
   });
 });

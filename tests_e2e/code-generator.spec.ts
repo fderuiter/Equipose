@@ -13,13 +13,21 @@ test.describe('Code Generator Modal UI', () => {
     await page.getByLabel(/Study Name/i).fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
-    // Arm Name inputs now use placeholder "e.g., Placebo" (card-based UI)
-    const armInputs = page.getByPlaceholder(/e\.g\., Placebo/i);
+    // Arm Name inputs — placeholder updated in the card-based UI
+    const armInputs = page.getByPlaceholder(/e.g., Placebo/i);
     await expect(armInputs.nth(0)).toBeVisible({ timeout: 10000 });
     await armInputs.nth(0).fill('Placebo');
 
-    // Ratio is now a +/− stepper — default value of 1 is already correct, no fill needed.
-    // Sites are already populated from the default form state (101, 102, 103).
+    // Ratio is now a stepper — verify it shows the default value of 1
+    const ratioValue = page.locator('span.tabular-nums').first();
+    await expect(ratioValue).toHaveText('1');
+
+    // Fill Site Details (now a tag-input component).
+    // The inner <input> placeholder is hidden when chips already exist, so scope via the "Sites" label.
+    const siteInput = page.locator('label:has-text("Sites") + app-tag-input input');
+    await expect(siteInput).toBeVisible();
+    await siteInput.fill('Site-001');
+    await siteInput.press('Enter');
 
     // Fill Block Size Details
     const blockInputs = page.locator('#blockSizesStr');
