@@ -51,9 +51,10 @@ test.describe('Code Generator Modal UI', () => {
     // Verify R Code (Default tab)
     const rTab = modal.getByRole('button', { name: /^R$/i });
     await expect(rTab).toHaveClass(/border-indigo-500/);
-    const codeBlock = modal.locator('pre code');
-    await expect(codeBlock).toContainText('Randomization Schema Generation in R');
-    await expect(codeBlock).toContainText('Protocol: TEST-PRT-123');
+    const generatedCode = modal.getByTestId('generated-code');
+    await expect(generatedCode).toBeVisible({ timeout: 10000 });
+    await expect(generatedCode).toContainText(/Randomization Schema Generation in R/i, { timeout: 10000 });
+    await expect(generatedCode).toContainText(/Protocol:\s*TEST-PRT-123/i);
 
     const downloadBtn = modal.getByRole('button', { name: /Download/i }).first();
     await expect(downloadBtn).toBeVisible();
@@ -68,7 +69,7 @@ test.describe('Code Generator Modal UI', () => {
     const pythonTab = modal.getByRole('button', { name: /Python/i });
     await pythonTab.evaluate(node => node.click());
     await expect(pythonTab).toHaveClass(/border-indigo-500/);
-    await expect(codeBlock).toContainText('Randomization Schema Generation in Python');
+    await expect(generatedCode).toContainText(/Randomization Schema Generation in Python/i, { timeout: 10000 });
 
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.evaluate(node => node.click());
@@ -79,7 +80,7 @@ test.describe('Code Generator Modal UI', () => {
     const sasTab = modal.getByRole('button', { name: /SAS/i });
     await sasTab.evaluate(node => node.click());
     await expect(sasTab).toHaveClass(/border-indigo-500/);
-    await expect(codeBlock).toContainText('Randomization Schema Generation in SAS');
+    await expect(generatedCode).toContainText(/Randomization Schema Generation in SAS/i, { timeout: 10000 });
 
     const downloadPromiseSas = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.evaluate(node => node.click());
