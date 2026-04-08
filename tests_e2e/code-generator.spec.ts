@@ -13,19 +13,13 @@ test.describe('Code Generator Modal UI', () => {
     await page.getByLabel(/Study Name/i).fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
-    // Fill Arm details
-    const armInputs = page.getByPlaceholder(/Arm Name/i);
+    // Arm Name inputs now use placeholder "e.g., Placebo" (card-based UI)
+    const armInputs = page.getByPlaceholder(/e\.g\., Placebo/i);
     await expect(armInputs.nth(0)).toBeVisible({ timeout: 10000 });
     await armInputs.nth(0).fill('Placebo');
 
-    const ratioInputs = page.getByPlaceholder(/Ratio/i);
-    await expect(ratioInputs.nth(0)).toBeVisible();
-    await ratioInputs.nth(0).fill('1');
-
-    // Fill Site Details
-    const siteInputs = page.locator('#sitesStr');
-    await expect(siteInputs).toBeVisible();
-    await siteInputs.fill('Site-001');
+    // Ratio is now a +/− stepper — default value of 1 is already correct, no fill needed.
+    // Sites are already populated from the default form state (101, 102, 103).
 
     // Fill Block Size Details
     const blockInputs = page.locator('#blockSizesStr');
