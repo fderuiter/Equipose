@@ -59,7 +59,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
     // The amber disclaimer about seed stripping
     await expect(modal.getByText(/PRNG seed has been stripped/i)).toBeVisible();
-    await expect(modal.getByText(/cryptographically random seed/i)).toBeVisible();
+    await expect(modal.getByTestId('seed-disclaimer-banner')).toBeVisible();
   });
 
   // ── Progress bar ──────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
     await expect(modal.getByText(/Simulations Run/i)).toBeVisible();
     // Should show 10,000
-    await expect(modal.getByText(/10,000/)).toBeVisible();
+    await expect(modal.getByTestId('simulations-run-value')).toHaveText('10,000');
   });
 
   test('completed report should display "Total Subjects Simulated" summary stat', async ({ page }) => {
@@ -225,9 +225,8 @@ test.describe('Monte Carlo Statistical Validation', () => {
     const modal = page.locator('div[role="dialog"]');
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
-    // Click Close button
-    const closeBtn = modal.getByRole('button', { name: /Close/i });
-    await closeBtn.click();
+    // Click Close button in footer
+    await modal.getByTestId('modal-close-footer').click();
 
     // Modal should be gone
     await expect(modal).toBeHidden({ timeout: 5000 });

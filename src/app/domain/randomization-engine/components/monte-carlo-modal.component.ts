@@ -63,7 +63,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-xs text-amber-800 dark:text-amber-300">
+              <p class="text-xs text-amber-800 dark:text-amber-300" data-testid="seed-disclaimer-banner">
                 <strong>Note:</strong> Your specific PRNG seed has been stripped for this simulation. Each of the 10,000 iterations uses a unique, cryptographically random seed to prove the general fairness of the algorithm independent of any specific seed value.
               </p>
             </div>
@@ -93,7 +93,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
               <!-- Summary stats -->
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center">
-                  <p class="text-2xl font-bold text-gray-900 dark:text-slate-100">{{ results.totalIterations | number }}</p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-slate-100" data-testid="simulations-run-value">{{ results.totalIterations | number }}</p>
                   <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Simulations Run</p>
                 </div>
                 <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center">
@@ -201,6 +201,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
                 type="button"
                 (click)="facade.closeMonteCarloModal()"
                 class="inline-flex justify-center rounded-lg border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                data-testid="modal-close-footer"
               >
                 Close
               </button>
