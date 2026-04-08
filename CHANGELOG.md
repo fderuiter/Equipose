@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.3.0...v1.4.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* remove redundant tabular-nums class where font-mono is applied ([0a82353](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/0a82353aebc120c657d88690ae3aa8ad58aa6057))
+
+
+### Features
+
+* implement design system, dark mode, and ThemeService ([0864900](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/086490037f5abbbf5dd9d619faba6670102cb9e3))
+
 # [1.3.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.2.0...v1.3.0) (2026-04-08)
 
 
