@@ -9,7 +9,7 @@ export interface ActiveFilter {
 /**
  * SchemaViewStateService
  *
- * Centralised reactive state layer shared between the analytics dashboard and
+ * Centralized reactive state layer shared between the analytics dashboard and
  * the results grid.  It holds:
  *   - `isUnblinded`    — blinding toggle
  *   - `activeFilter`   — optional chart-driven cross-filter

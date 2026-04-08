@@ -205,7 +205,7 @@ export class SchemaAnalyticsDashboardComponent implements OnDestroy {
   // -------------------------------------------------------------------------
 
   constructor() {
-    // Initialise charts once their host elements appear
+    // Initialize charts once their host elements appear
     effect(() => {
       const donutEl = this.donutContainerRef()?.nativeElement;
       const barEl = this.barContainerRef()?.nativeElement;
