@@ -1,5 +1,5 @@
 import { Component, computed, signal, inject } from '@angular/core';
-import { GeneratorStateService } from '../../../core/services/generator-state.service';
+import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
@@ -13,7 +13,7 @@ import { APP_VERSION } from '../../../../environments/version';
   `]
 })
 export class ResultsGridComponent {
-  public state = inject(GeneratorStateService);
+  public state = inject(RandomizationEngineFacade);
 
   isUnblinded = signal(false);
   currentPage = signal(1);
@@ -93,14 +93,12 @@ export class ResultsGridComponent {
 
     const doc = new jsPDF();
 
-    // Watermark
     doc.setFontSize(10);
-    doc.setTextColor(255, 0, 0); // Red
+    doc.setTextColor(255, 0, 0);
     doc.text('DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema.', 14, 12);
 
-    // Header
     doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0); // Black
+    doc.setTextColor(0, 0, 0);
     doc.text('Randomization Schema Report', 14, 22);
 
     doc.setFontSize(11);
@@ -134,7 +132,7 @@ export class ResultsGridComponent {
       head: headers,
       body: rows,
       theme: 'grid',
-      headStyles: { fillColor: [79, 70, 229] }, // Indigo 600
+      headStyles: { fillColor: [79, 70, 229] },
       styles: { fontSize: 9, cellPadding: 3 },
     });
 

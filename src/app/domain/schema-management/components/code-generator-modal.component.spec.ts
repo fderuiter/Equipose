@@ -1,18 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { CodeGeneratorModalComponent } from './code-generator-modal.component';
-import { GeneratorStateService } from '../../../core/services/generator-state.service';
+import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
-import { RandomizationConfig } from '../../../models/randomization.model';
+import { RandomizationConfig } from '../../core/models/randomization.model';
 
-describe('CodeGeneratorModalComponent', () => {
+describe('CodeGeneratorModalComponent (domain)', () => {
   let component: CodeGeneratorModalComponent;
-  let mockStateService: any;
+  let mockFacade: any;
   let mockCodeGeneratorService: any;
 
   beforeEach(() => {
-    mockStateService = {
+    mockFacade = {
       config: signal<RandomizationConfig | null>(null),
       results: signal(null),
       isGenerating: signal(false),
@@ -21,7 +21,8 @@ describe('CodeGeneratorModalComponent', () => {
       codeLanguage: signal('R'),
       generateSchema: vi.fn(),
       openCodeGenerator: vi.fn(),
-      closeCodeGenerator: vi.fn()
+      closeCodeGenerator: vi.fn(),
+      clearResults: vi.fn()
     };
 
     mockCodeGeneratorService = {
@@ -32,7 +33,7 @@ describe('CodeGeneratorModalComponent', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: GeneratorStateService, useValue: mockStateService },
+        { provide: RandomizationEngineFacade, useValue: mockFacade },
         { provide: CodeGeneratorService, useValue: mockCodeGeneratorService }
       ]
     });
@@ -70,7 +71,7 @@ describe('CodeGeneratorModalComponent', () => {
         seed: 'test_seed',
         subjectIdMask: '[SiteID]-[StratumCode]-[001]'
       };
-      mockStateService.config.set(mockConfig);
+      mockFacade.config.set(mockConfig);
     });
 
     it('should generate valid R code', () => {
@@ -97,7 +98,7 @@ describe('CodeGeneratorModalComponent', () => {
 
   describe('when config properties are undefined', () => {
     beforeEach(() => {
-      mockStateService.config.set(null);
+      mockFacade.config.set(null);
     });
 
     it('should handle missing config gracefully', () => {
@@ -108,16 +109,10 @@ describe('CodeGeneratorModalComponent', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // downloadCode()
-  // ---------------------------------------------------------------------------
   describe('downloadCode()', () => {
     let mockConfig: RandomizationConfig;
 
     beforeEach(() => {
-      // Freeze timers so the 100ms setTimeout inside downloadCode() never fires
-      // during the test run (avoids NotFoundError from removeChild on a
-      // never-appended link element after mocks are restored).
       vi.useFakeTimers();
       globalThis.URL.createObjectURL = vi.fn(() => 'mock://url') as any;
       globalThis.URL.revokeObjectURL = vi.fn() as any;
@@ -134,7 +129,7 @@ describe('CodeGeneratorModalComponent', () => {
         seed: 'dl_seed',
         subjectIdMask: '[SiteID]-[001]'
       };
-      mockStateService.config.set(mockConfig);
+      mockFacade.config.set(mockConfig);
     });
 
     afterEach(() => {
@@ -176,9 +171,6 @@ describe('CodeGeneratorModalComponent', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // copyCode()
-  // ---------------------------------------------------------------------------
   describe('copyCode()', () => {
     let mockConfig: RandomizationConfig;
 
@@ -195,7 +187,7 @@ describe('CodeGeneratorModalComponent', () => {
         seed: 'copy_seed',
         subjectIdMask: '[SiteID]-[001]'
       };
-      mockStateService.config.set(mockConfig);
+      mockFacade.config.set(mockConfig);
     });
 
     it('should write the current code to the clipboard', () => {
@@ -208,7 +200,6 @@ describe('CodeGeneratorModalComponent', () => {
 
       component.activeTab.set('R');
       component.copyCode();
-
       expect(clipboardWriteSpy).toHaveBeenCalledWith('Mock R Code');
     });
 
@@ -224,9 +215,6 @@ describe('CodeGeneratorModalComponent', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Error handling in currentCode getter
-  // ---------------------------------------------------------------------------
   describe('error handling in currentCode', () => {
     it('should return the error string when the code generator throws', () => {
       const mockConfig: RandomizationConfig = {
@@ -244,7 +232,7 @@ describe('CodeGeneratorModalComponent', () => {
       mockCodeGeneratorService.generateR.mockImplementation(() => {
         throw new Error('generation failed');
       });
-      mockStateService.config.set(mockConfig);
+      mockFacade.config.set(mockConfig);
       component.activeTab.set('R');
 
       const code = component.currentCode;
