@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.1.0...v1.2.0) (2026-04-08)
+
+
+### Features
+
+* Architectural refactor - DDD structure, Facade, SignalStore, Web Worker, ESLint boundaries ([00387a0](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/00387a0edbc168f1817d84559d76adbde530dac7))
+* phases 5-7 — parity tests, legacy decommission, build verification ([7c76626](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/7c7662622754707206547af6b1fc5a478e202093)), closes [hi#volume](https://github.com/hi/issues/volume)
+
 # [1.1.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.0.0...v1.1.0) (2026-04-02)
 
 
