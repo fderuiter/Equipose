@@ -1,5 +1,5 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
-import { GeneratorStateService } from '../../../core/services/generator-state.service';
+import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 
 @Component({
@@ -8,14 +8,13 @@ import { CodeGeneratorService } from '../services/code-generator.service';
   templateUrl: './code-generator-modal.component.html'
 })
 export class CodeGeneratorModalComponent implements OnInit {
-  public state = inject(GeneratorStateService);
+  public state = inject(RandomizationEngineFacade);
   private codeGenService = inject(CodeGeneratorService);
 
   activeTab = signal<'R' | 'SAS' | 'Python'>('R');
   copied = signal(false);
 
   ngOnInit() {
-    // Set the initial tab from the state when the modal opens
     this.activeTab.set(this.state.codeLanguage());
   }
 

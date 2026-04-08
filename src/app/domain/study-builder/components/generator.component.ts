@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, effect } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { ConfigFormComponent } from './config-form.component';
-import { ResultsGridComponent } from './results-grid.component';
-import { CodeGeneratorModalComponent } from './code-generator-modal.component';
-import { GeneratorStateService } from '../../../core/services/generator-state.service';
+import { ResultsGridComponent } from '../../schema-management/components/results-grid.component';
+import { CodeGeneratorModalComponent } from '../../schema-management/components/code-generator-modal.component';
+import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,10 +67,9 @@ import { GeneratorStateService } from '../../../core/services/generator-state.se
   `
 })
 export class GeneratorComponent {
-  public state = inject(GeneratorStateService);
+  public state = inject(RandomizationEngineFacade);
   private readonly document = inject(DOCUMENT);
 
-  // Delay to allow Angular to render the results section before scrolling
   private static readonly SCROLL_DELAY_MS = 100;
 
   constructor() {

@@ -1,17 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ConfigFormComponent } from './config-form.component';
-import { GeneratorStateService } from '../../../core/services/generator-state.service';
+import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
+import { StudyBuilderStore } from '../store/study-builder.store';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 
-describe('ConfigFormComponent', () => {
+describe('ConfigFormComponent (domain)', () => {
   let component: ConfigFormComponent;
   let fixture: ComponentFixture<ConfigFormComponent>;
-  let mockStateService: any;
+  let mockFacade: any;
 
   beforeEach(async () => {
-    mockStateService = {
+    mockFacade = {
       config: signal(null),
       results: signal(null),
       isGenerating: signal(false),
@@ -27,7 +28,8 @@ describe('ConfigFormComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ConfigFormComponent],
       providers: [
-        { provide: GeneratorStateService, useValue: mockStateService }
+        { provide: RandomizationEngineFacade, useValue: mockFacade },
+        StudyBuilderStore
       ]
     }).compileComponents();
 
@@ -41,20 +43,16 @@ describe('ConfigFormComponent', () => {
   });
 
   it('should generate valid distinct stratum caps controls based on combinations', () => {
-    // Add a second strata
     component.addStratum();
     const strataArray = component.strata;
 
-    // Set first strata: Age Group
     strataArray.at(0).get('id')?.setValue('age');
     strataArray.at(0).get('levelsStr')?.setValue('<65, >=65');
 
-    // Set second strata: Gender
     strataArray.at(1).get('id')?.setValue('gender');
     strataArray.at(1).get('levelsStr')?.setValue('M, F');
 
-    // Trigger value changes manually if it didn't trigger
-    component.updateStratumCaps();
+    component.syncStratumCaps();
 
     const capsArray = component.stratumCaps;
     expect(capsArray.length).toBe(4);
@@ -87,7 +85,7 @@ describe('ConfigFormComponent', () => {
   it('should set correct arm names and ratios after loading the complex preset', () => {
     component.loadPreset('complex');
 
-    const armsValue = component.arms.value as {id: string; name: string; ratio: number}[];
+    const armsValue = component.arms.value as { id: string; name: string; ratio: number }[];
     expect(armsValue[0].name).toBe('High Dose');
     expect(armsValue[1].name).toBe('Low Dose');
     expect(armsValue[2].name).toBe('Placebo');
@@ -95,24 +93,20 @@ describe('ConfigFormComponent', () => {
   });
 
   it('should overwrite all previous arm names when switching presets', () => {
-    // Start with the default state (Active, Placebo)
     expect(component.arms.length).toBe(2);
-    expect((component.arms.at(0).value as {name: string}).name).toBe('Active');
+    expect((component.arms.at(0).value as { name: string }).name).toBe('Active');
 
-    // Load complex preset – must fully replace, not partially patch
     component.loadPreset('complex');
 
     expect(component.arms.length).toBe(3);
-    expect((component.arms.at(0).value as {name: string}).name).toBe('High Dose');
-    expect((component.arms.at(1).value as {name: string}).name).toBe('Low Dose');
-    expect((component.arms.at(2).value as {name: string}).name).toBe('Placebo');
+    expect((component.arms.at(0).value as { name: string }).name).toBe('High Dose');
+    expect((component.arms.at(1).value as { name: string }).name).toBe('Low Dose');
+    expect((component.arms.at(2).value as { name: string }).name).toBe('Placebo');
   });
 
   it('should call clearResults() when a form field value changes', () => {
-    // Changing any form field must trigger the valueChanges subscription that
-    // calls state.clearResults(), ensuring no stale schema is displayed.
     component.form.get('protocolId')?.setValue('NEW-ID');
-    expect(mockStateService.clearResults).toHaveBeenCalled();
+    expect(mockFacade.clearResults).toHaveBeenCalled();
   });
 
   it('should load the standard preset correctly', () => {
@@ -121,61 +115,51 @@ describe('ConfigFormComponent', () => {
     expect(component.form.get('protocolId')?.value).toBe('STD-002');
     expect(component.arms.length).toBe(2);
     expect(component.strata.length).toBe(1);
-    // 1 stratum with 2 levels (<65, >=65) → 2 combinations
-    expect(component.stratumCaps.length).toBe(2);
+    expect(component.stratumCaps.length).toBe(2); // 2 age levels
   });
 
-  // ---------------------------------------------------------------------------
-  // Form submission
-  // ---------------------------------------------------------------------------
   describe('onSubmit()', () => {
-    it('should call state.generateSchema when the form is valid', () => {
+    it('should call facade.generateSchema when the form is valid', () => {
       component.onSubmit();
-      expect(mockStateService.generateSchema).toHaveBeenCalledTimes(1);
-      const arg = mockStateService.generateSchema.mock.calls[0][0];
+      expect(mockFacade.generateSchema).toHaveBeenCalledTimes(1);
+      const arg = mockFacade.generateSchema.mock.calls[0][0];
       expect(arg.protocolId).toBe(component.form.get('protocolId')?.value);
     });
 
-    it('should NOT call state.generateSchema when the form is invalid', () => {
+    it('should NOT call facade.generateSchema when the form is invalid', () => {
       component.form.get('protocolId')?.setValue('');
       component.onSubmit();
-      expect(mockStateService.generateSchema).not.toHaveBeenCalled();
+      expect(mockFacade.generateSchema).not.toHaveBeenCalled();
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Code generation
-  // ---------------------------------------------------------------------------
   describe('onGenerateCode()', () => {
-    it('should call state.openCodeGenerator with the correct language when the form is valid', () => {
+    it('should call facade.openCodeGenerator with the correct language when the form is valid', () => {
       component.onGenerateCode('R');
-      expect(mockStateService.openCodeGenerator).toHaveBeenCalledTimes(1);
-      const [, lang] = mockStateService.openCodeGenerator.mock.calls[0];
+      expect(mockFacade.openCodeGenerator).toHaveBeenCalledTimes(1);
+      const [, lang] = mockFacade.openCodeGenerator.mock.calls[0];
       expect(lang).toBe('R');
     });
 
     it('should pass SAS as the language when requested', () => {
       component.onGenerateCode('SAS');
-      const [, lang] = mockStateService.openCodeGenerator.mock.calls[0];
+      const [, lang] = mockFacade.openCodeGenerator.mock.calls[0];
       expect(lang).toBe('SAS');
     });
 
     it('should pass Python as the language when requested', () => {
       component.onGenerateCode('Python');
-      const [, lang] = mockStateService.openCodeGenerator.mock.calls[0];
+      const [, lang] = mockFacade.openCodeGenerator.mock.calls[0];
       expect(lang).toBe('Python');
     });
 
-    it('should NOT call state.openCodeGenerator when the form is invalid', () => {
+    it('should NOT call facade.openCodeGenerator when the form is invalid', () => {
       component.form.get('protocolId')?.setValue('');
       component.onGenerateCode('Python');
-      expect(mockStateService.openCodeGenerator).not.toHaveBeenCalled();
+      expect(mockFacade.openCodeGenerator).not.toHaveBeenCalled();
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Arm management
-  // ---------------------------------------------------------------------------
   describe('arm management', () => {
     it('should add a new arm when addArm() is called', () => {
       const before = component.arms.length;
@@ -184,7 +168,7 @@ describe('ConfigFormComponent', () => {
     });
 
     it('should remove an arm when removeArm() is called and there are more than 2 arms', () => {
-      component.addArm(); // now 3 arms
+      component.addArm();
       const before = component.arms.length;
       expect(before).toBeGreaterThan(2);
       component.removeArm(before - 1);
@@ -198,16 +182,12 @@ describe('ConfigFormComponent', () => {
     });
 
     it('should return the sum of all arm ratios from totalRatio', () => {
-      // Default 2 arms with ratio 1 each
       expect(component.totalRatio).toBe(2);
       component.arms.at(0).get('ratio')?.setValue(3);
       expect(component.totalRatio).toBe(4);
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Strata management
-  // ---------------------------------------------------------------------------
   describe('strata management', () => {
     it('should add a new stratum when addStratum() is called', () => {
       const before = component.strata.length;
@@ -223,17 +203,13 @@ describe('ConfigFormComponent', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Block size validator
-  // ---------------------------------------------------------------------------
   describe('validateBlockSizes()', () => {
     it('should have no form errors when all block sizes are multiples of the total ratio', () => {
-      // Default: total ratio = 2, block sizes = "4, 6" — both multiples of 2
       expect(component.form.errors?.['invalidBlockSize']).toBeFalsy();
     });
 
     it('should set invalidBlockSize error when a block size is not a multiple of total ratio', () => {
-      component.form.get('blockSizesStr')?.setValue('3'); // 3 is not a multiple of 2
+      component.form.get('blockSizesStr')?.setValue('3');
       component.form.updateValueAndValidity();
       expect(component.form.errors?.['invalidBlockSize']).toBe(true);
     });
@@ -249,30 +225,21 @@ describe('ConfigFormComponent', () => {
     });
 
     it('should re-run the validator after loadPreset() changes the total arm ratio', () => {
-      // Default: 2 arms ratio 1 each → totalRatio = 2. Block "4, 6" → valid.
       expect(component.form.errors?.['invalidBlockSize']).toBeFalsy();
-
-      // Complex preset: 3 arms ratio 1 each → totalRatio = 3.
-      // Block sizes become "3, 6, 9" → all multiples of 3 → still valid.
       component.loadPreset('complex');
       expect(component.form.errors?.['invalidBlockSize']).toBeFalsy();
       expect(component.form.valid).toBe(true);
     });
 
     it('should detect an invalid block size immediately after preset loading changes the ratio', () => {
-      // Complex preset: totalRatio = 3. Force a block size that is NOT a multiple of 3.
       component.loadPreset('complex');
-      component.form.get('blockSizesStr')?.setValue('4'); // 4 % 3 !== 0
+      component.form.get('blockSizesStr')?.setValue('4');
       component.form.updateValueAndValidity();
-
       expect(component.form.errors?.['invalidBlockSize']).toBe(true);
       expect(component.form.valid).toBe(false);
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // parseCommaSeparated()
-  // ---------------------------------------------------------------------------
   describe('parseCommaSeparated()', () => {
     it('should parse a comma-separated string into a trimmed string array', () => {
       expect(component.parseCommaSeparated(' a, b , c ')).toEqual(['a', 'b', 'c']);

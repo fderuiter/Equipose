@@ -1,12 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ResultsGridComponent } from './results-grid.component';
-import { RandomizationResult } from '../../../models/randomization.model';
+import { RandomizationResult } from '../../core/models/randomization.model';
 import { By } from '@angular/platform-browser';
-import { GeneratorStateService } from '../../../core/services/generator-state.service';
+import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 
-// Mock jsPDF and URL.createObjectURL to prevent errors and actual file downloads
 vi.mock('jspdf', () => {
   return {
     default: class {
@@ -19,50 +18,48 @@ vi.mock('jspdf', () => {
 });
 vi.mock('jspdf-autotable', () => ({ default: vi.fn() }));
 
-describe('ResultsGridComponent', () => {
+describe('ResultsGridComponent (domain)', () => {
   let component: ResultsGridComponent;
   let fixture: ComponentFixture<ResultsGridComponent>;
-  let mockStateService: any;
+  let mockFacade: any;
 
-  const generateMockData = (count: number): RandomizationResult => {
-    return {
-      metadata: {
+  const generateMockData = (count: number): RandomizationResult => ({
+    metadata: {
+      protocolId: 'TEST-123',
+      studyName: 'Test Study',
+      phase: 'Phase II',
+      seed: '12345',
+      generatedAt: '2023-01-01T00:00:00.000Z',
+      strata: [{ id: 'site', name: 'Site', levels: ['Site 1', 'Site 2', 'Site 3'] }],
+      config: {
         protocolId: 'TEST-123',
         studyName: 'Test Study',
         phase: 'Phase II',
-        seed: '12345',
-        generatedAt: '2023-01-01T00:00:00.000Z',
+        arms: [{ id: 't1', name: 'Active', ratio: 1 }],
+        sites: ['Site 1'],
+        blockSizes: [4],
         strata: [{ id: 'site', name: 'Site', levels: ['Site 1', 'Site 2', 'Site 3'] }],
-        config: {
-          protocolId: 'TEST-123',
-          studyName: 'Test Study',
-          phase: 'Phase II',
-          arms: [{id: 't1', name: 'Active', ratio: 1}],
-          sites: ['Site 1'],
-          blockSizes: [4],
-          strata: [{ id: 'site', name: 'Site', levels: ['Site 1', 'Site 2', 'Site 3'] }],
-          stratumCaps: [],
-          seed: '12345',
-          subjectIdMask: 'SUBJ-XXXX'
-        }
-      },
-      schema: Array.from({ length: count }, (_, i) => ({
-        subjectId: `SUBJ-${i + 1}`,
-        site: `Site ${i % 3 + 1}`,
-        stratum: { site: `Site ${i % 3 + 1}` },
-        stratumCode: 'site-1',
-        blockNumber: Math.floor(i / 4) + 1,
-        blockSize: 4,
-        treatmentArmId: i % 2 === 0 ? 't1' : 't2',
-        treatmentArm: i % 2 === 0 ? 'Active' : 'Placebo'
-      }))
-    };
-  };
+        stratumCaps: [],
+        seed: '12345',
+        subjectIdMask: 'SUBJ-XXXX'
+      }
+    },
+    schema: Array.from({ length: count }, (_, i) => ({
+      subjectId: `SUBJ-${i + 1}`,
+      site: `Site ${i % 3 + 1}`,
+      stratum: { site: `Site ${i % 3 + 1}` },
+      stratumCode: 'site-1',
+      blockNumber: Math.floor(i / 4) + 1,
+      blockSize: 4,
+      treatmentArmId: i % 2 === 0 ? 't1' : 't2',
+      treatmentArm: i % 2 === 0 ? 'Active' : 'Placebo'
+    }))
+  });
 
   beforeEach(async () => {
     globalThis.URL.createObjectURL = vi.fn() as any;
 
-    mockStateService = {
+    mockFacade = {
       config: signal(null),
       results: signal(null),
       isGenerating: signal(false),
@@ -71,13 +68,14 @@ describe('ResultsGridComponent', () => {
       codeLanguage: signal('R'),
       generateSchema: vi.fn(),
       openCodeGenerator: vi.fn(),
-      closeCodeGenerator: vi.fn()
+      closeCodeGenerator: vi.fn(),
+      clearResults: vi.fn()
     };
 
     await TestBed.configureTestingModule({
       imports: [ResultsGridComponent],
       providers: [
-        { provide: GeneratorStateService, useValue: mockStateService }
+        { provide: RandomizationEngineFacade, useValue: mockFacade }
       ]
     }).compileComponents();
 
@@ -92,12 +90,12 @@ describe('ResultsGridComponent', () => {
   describe('Pagination', () => {
     it('should compute totalItems, totalPages, startIndex, endIndex and paginatedData correctly', () => {
       const mockResult = generateMockData(45);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       component.currentPage.set(1);
       fixture.detectChanges();
 
       expect(component.totalItems()).toBe(45);
-      expect(component.totalPages()).toBe(3); // 45 / 20 = 2.25 -> 3
+      expect(component.totalPages()).toBe(3);
       expect(component.startIndex()).toBe(0);
       expect(component.endIndex()).toBe(20);
       expect(component.paginatedData().length).toBe(20);
@@ -107,16 +105,13 @@ describe('ResultsGridComponent', () => {
 
     it('should update pagination state when Next button is clicked', () => {
       const mockResult = generateMockData(45);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       component.currentPage.set(1);
       fixture.detectChanges();
 
-      // Find "Next" button
       const buttons = fixture.debugElement.queryAll(By.css('button'));
       const nextButton = buttons.find(b => b.nativeElement.textContent.trim() === 'Next');
-
       expect(nextButton).toBeTruthy();
-
       nextButton?.triggerEventHandler('click', null);
       fixture.detectChanges();
 
@@ -129,32 +124,30 @@ describe('ResultsGridComponent', () => {
 
     it('should not decrement below page 1 when prevPage() is called on the first page', () => {
       const mockResult = generateMockData(45);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       component.currentPage.set(1);
       fixture.detectChanges();
 
       component.prevPage();
       fixture.detectChanges();
-
       expect(component.currentPage()).toBe(1);
     });
 
     it('should not exceed the last page when nextPage() is called on the last page', () => {
       const mockResult = generateMockData(45);
-      mockStateService.results.set(mockResult);
-      component.currentPage.set(3); // page 3 is the last page for 45 items
+      mockFacade.results.set(mockResult);
+      component.currentPage.set(3);
       fixture.detectChanges();
 
       component.nextPage();
       fixture.detectChanges();
-
       expect(component.currentPage()).toBe(3);
     });
 
     it('should show the correct remaining items on the last page', () => {
       const mockResult = generateMockData(45);
-      mockStateService.results.set(mockResult);
-      component.currentPage.set(3); // last page: items 41-45 (5 items)
+      mockFacade.results.set(mockResult);
+      component.currentPage.set(3);
       fixture.detectChanges();
 
       expect(component.paginatedData().length).toBe(5);
@@ -164,16 +157,14 @@ describe('ResultsGridComponent', () => {
 
     it('should navigate forward then backward correctly', () => {
       const mockResult = generateMockData(45);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       component.currentPage.set(1);
       fixture.detectChanges();
 
       component.nextPage();
       expect(component.currentPage()).toBe(2);
-
       component.nextPage();
       expect(component.currentPage()).toBe(3);
-
       component.prevPage();
       expect(component.currentPage()).toBe(2);
     });
@@ -182,67 +173,58 @@ describe('ResultsGridComponent', () => {
   describe('Blinding', () => {
     it('should default to blinded and show *** BLINDED *** in DOM', () => {
       const mockResult = generateMockData(5);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
       expect(component.isUnblinded()).toBe(false);
-
       const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
       expect(rows.length).toBe(5);
 
       const firstRowCols = rows[0].queryAll(By.css('td'));
-      const treatmentCol = firstRowCols[firstRowCols.length - 1]; // Last column is Treatment Arm
+      const treatmentCol = firstRowCols[firstRowCols.length - 1];
       expect(treatmentCol.nativeElement.textContent.trim()).toBe('*** BLINDED ***');
     });
 
     it('should show actual treatment names when unblinded', () => {
       const mockResult = generateMockData(5);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
       component.toggleBlinding();
       fixture.detectChanges();
 
       expect(component.isUnblinded()).toBe(true);
-
       const rows = fixture.debugElement.queryAll(By.css('tbody tr'));
       const firstRowCols = rows[0].queryAll(By.css('td'));
       const treatmentCol = firstRowCols[firstRowCols.length - 1];
-
-      expect(treatmentCol.nativeElement.textContent.trim()).toBe('Active'); // As per generateMockData, SUBJ-1 has 'Active'
+      expect(treatmentCol.nativeElement.textContent.trim()).toBe('Active');
     });
   });
 
   describe('Export Spies', () => {
     it('should trigger exportCsv when CSV button is clicked', () => {
       const mockResult = generateMockData(5);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
       const spy = vi.spyOn(component, 'exportCsv');
-
       const buttons = fixture.debugElement.queryAll(By.css('button'));
       const csvButton = buttons.find(b => b.nativeElement.textContent.trim().includes('CSV'));
-
       expect(csvButton).toBeTruthy();
       csvButton?.triggerEventHandler('click', null);
-
       expect(spy).toHaveBeenCalled();
     });
 
     it('should trigger exportPdf when PDF button is clicked', () => {
       const mockResult = generateMockData(5);
-      mockStateService.results.set(mockResult);
+      mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
       const spy = vi.spyOn(component, 'exportPdf');
-
       const buttons = fixture.debugElement.queryAll(By.css('button'));
       const pdfButton = buttons.find(b => b.nativeElement.textContent.trim().includes('PDF'));
-
       expect(pdfButton).toBeTruthy();
       pdfButton?.triggerEventHandler('click', null);
-
       expect(spy).toHaveBeenCalled();
     });
   });

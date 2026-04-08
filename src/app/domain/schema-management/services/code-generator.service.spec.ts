@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { CodeGeneratorService } from './code-generator.service';
-import { RandomizationConfig } from '../../../models/randomization.model';
+import { RandomizationConfig } from '../../core/models/randomization.model';
 
 describe('CodeGeneratorService', () => {
   let service: CodeGeneratorService;

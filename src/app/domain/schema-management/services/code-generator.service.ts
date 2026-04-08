@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RandomizationConfig } from '../../../models/randomization.model';
+import { RandomizationConfig } from '../../core/models/randomization.model';
 import { APP_VERSION } from '../../../../environments/version';
 
 @Injectable({ providedIn: 'root' })
