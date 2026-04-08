@@ -18,10 +18,17 @@ function buildMockFacade() {
     error: signal<string | null>(null),
     showCodeGenerator: signal(false),
     codeLanguage: signal<'R' | 'SAS' | 'Python'>('R'),
+    // Monte Carlo state
+    showMonteCarloModal: signal(false),
+    isMonteCarloRunning: signal(false),
+    monteCarloProgress: signal(0),
+    monteCarloResults: signal(null),
     generateSchema: vi.fn(),
     openCodeGenerator: vi.fn(),
     closeCodeGenerator: vi.fn(),
-    clearResults: vi.fn()
+    clearResults: vi.fn(),
+    runMonteCarlo: vi.fn(),
+    closeMonteCarloModal: vi.fn()
   };
 }
 

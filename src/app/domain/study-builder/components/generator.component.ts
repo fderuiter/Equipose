@@ -3,12 +3,13 @@ import { DOCUMENT } from '@angular/common';
 import { ConfigFormComponent } from './config-form.component';
 import { ResultsGridComponent } from '../../schema-management/components/results-grid.component';
 import { CodeGeneratorModalComponent } from '../../schema-management/components/code-generator-modal.component';
+import { MonteCarloModalComponent } from '../../randomization-engine/components/monte-carlo-modal.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-generator',
-  imports: [ConfigFormComponent, ResultsGridComponent, CodeGeneratorModalComponent],
+  imports: [ConfigFormComponent, ResultsGridComponent, CodeGeneratorModalComponent, MonteCarloModalComponent],
   template: `
     <div class="space-y-8">
       <!-- Intro -->
@@ -62,6 +63,11 @@ import { RandomizationEngineFacade } from '../../randomization-engine/randomizat
       <!-- Code Generator Modal -->
       @if (state.showCodeGenerator() && state.config()) {
         <app-code-generator-modal></app-code-generator-modal>
+      }
+
+      <!-- Monte Carlo Validation Modal -->
+      @if (state.showMonteCarloModal()) {
+        <app-monte-carlo-modal></app-monte-carlo-modal>
       }
     </div>
   `

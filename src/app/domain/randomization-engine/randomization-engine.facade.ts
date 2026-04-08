@@ -5,7 +5,13 @@ import {
   RandomizationResult
 } from '../core/models/randomization.model';
 import { RandomizationService } from './randomization.service';
-import type { GenerationCommand, WorkerResponse } from './worker/worker-protocol';
+import type {
+  GenerationCommand,
+  MonteCarloCommand,
+  MonteCarloProgressPayload,
+  MonteCarloSuccessPayload,
+  WorkerResponse
+} from './worker/worker-protocol';
 
 /**
  * RandomizationEngineFacade
@@ -29,6 +35,15 @@ export class RandomizationEngineFacade {
     { resolve: (r: RandomizationResult) => void; reject: (e: unknown) => void }
   >();
 
+  private pendingMonteCarloCallbacks = new Map<
+    string,
+    {
+      onProgress: (p: MonteCarloProgressPayload) => void;
+      onSuccess: (r: MonteCarloSuccessPayload) => void;
+      onError: (e: unknown) => void;
+    }
+  >();
+
   // -------------------------------------------------------------------------
   // Public state signals (mirrors the former GeneratorStateService API)
   // -------------------------------------------------------------------------
@@ -41,6 +56,12 @@ export class RandomizationEngineFacade {
   // UI state
   readonly showCodeGenerator = signal(false);
   readonly codeLanguage = signal<'R' | 'SAS' | 'Python'>('R');
+
+  // Monte Carlo state
+  readonly isMonteCarloRunning = signal(false);
+  readonly monteCarloProgress = signal(0);
+  readonly monteCarloResults = signal<MonteCarloSuccessPayload | null>(null);
+  readonly showMonteCarloModal = signal(false);
 
   constructor() {
     if (this.isBrowser) {
@@ -90,6 +111,47 @@ export class RandomizationEngineFacade {
     this.showCodeGenerator.set(false);
   }
 
+  runMonteCarlo(config: RandomizationConfig): void {
+    this.isMonteCarloRunning.set(true);
+    this.monteCarloProgress.set(0);
+    this.monteCarloResults.set(null);
+    this.showMonteCarloModal.set(true);
+
+    if (!this.worker) {
+      this.isMonteCarloRunning.set(false);
+      this.showMonteCarloModal.set(false);
+      return;
+    }
+
+    const id = Math.random().toString(36).substring(2);
+
+    this.pendingMonteCarloCallbacks.set(id, {
+      onProgress: (p: MonteCarloProgressPayload) => {
+        this.monteCarloProgress.set(
+          Math.round((p.iterationsCompleted / p.totalIterations) * 100)
+        );
+      },
+      onSuccess: (r: MonteCarloSuccessPayload) => {
+        this.monteCarloResults.set(r);
+        this.isMonteCarloRunning.set(false);
+        this.monteCarloProgress.set(100);
+      },
+      onError: () => {
+        this.isMonteCarloRunning.set(false);
+        this.showMonteCarloModal.set(false);
+      }
+    });
+
+    const command: MonteCarloCommand = { id, command: 'START_MONTE_CARLO', payload: config };
+    this.worker.postMessage(command);
+  }
+
+  closeMonteCarloModal(): void {
+    this.showMonteCarloModal.set(false);
+    this.monteCarloResults.set(null);
+    this.monteCarloProgress.set(0);
+  }
+
   // -------------------------------------------------------------------------
   // Private helpers
   // -------------------------------------------------------------------------
@@ -103,6 +165,23 @@ export class RandomizationEngineFacade {
 
       this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
         const { id, type, payload } = event.data;
+
+        // Route Monte Carlo messages
+        if (type === 'MONTE_CARLO_PROGRESS') {
+          const mc = this.pendingMonteCarloCallbacks.get(id);
+          if (mc) mc.onProgress(payload as MonteCarloProgressPayload);
+          return;
+        }
+        if (type === 'MONTE_CARLO_SUCCESS') {
+          const mc = this.pendingMonteCarloCallbacks.get(id);
+          if (mc) {
+            this.pendingMonteCarloCallbacks.delete(id);
+            mc.onSuccess(payload as MonteCarloSuccessPayload);
+          }
+          return;
+        }
+
+        // Route standard generation messages
         const callbacks = this.pendingCallbacks.get(id);
         if (!callbacks) return;
         this.pendingCallbacks.delete(id);
@@ -121,6 +200,11 @@ export class RandomizationEngineFacade {
           cb.reject({ error: { error: 'Worker encountered an unexpected error.' } })
         );
         this.pendingCallbacks.clear();
+
+        this.pendingMonteCarloCallbacks.forEach(mc =>
+          mc.onError({ error: { error: 'Worker encountered an unexpected error.' } })
+        );
+        this.pendingMonteCarloCallbacks.clear();
       };
     } catch {
       // Worker construction failed (e.g. in environments that block workers)
