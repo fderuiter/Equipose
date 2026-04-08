@@ -2,9 +2,12 @@
  * Golden-Master parity tests
  *
  * These tests verify that the new pure `generateRandomizationSchema` function
- * produces byte-for-byte identical schema rows (treatment assignments, subject
- * IDs, block numbers) compared to the legacy `RandomizationService` that it
- * replaced.  A single shifted assignment must cause this suite to fail.
+ * produces field-by-field identical schema rows for all deterministic fields
+ * (treatment assignments, subject IDs, block numbers, stratum codes) compared
+ * to the legacy `RandomizationService` that it replaced.  The volatile
+ * `generatedAt` timestamp is excluded from comparisons since it reflects wall
+ * time, not PRNG state.  Any shifted treatment assignment must cause this
+ * suite to fail.
  *
  * The legacy service and the new function share the same `seedrandom` PRNG and
  * the same Fisher-Yates shuffle, so deterministic seeds must yield identical
