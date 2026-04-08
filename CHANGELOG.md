@@ -1,3 +1,23 @@
+# [1.6.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.5.1...v1.6.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* use US English spelling in comments (Centralized, Initialize) ([f40037b](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/f40037bc7bd44c1a7a4807904b0af195eaac3811))
+
+
+### Features
+
+* add Schema Analytics Dashboard with Apache ECharts and cross-filtering ([f1b8a29](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/f1b8a29ffc4643d0aa313f6230b54e3f15fcec89))
+
+## [1.5.1](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.5.0...v1.5.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* address code review - remove unused param, add named constant for auto-seed range ([ea187a9](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/ea187a96a2bac974fe65c51dab476b236bbdd680))
+* allow empty seed in code generator; auto-generate seed when not provided ([4970f8d](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/4970f8dfa154fcb76139cad79afb3a4a18c87256))
+
 # [1.5.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.4.0...v1.5.0) (2026-04-08)
 
 
