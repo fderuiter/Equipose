@@ -1,3 +1,17 @@
+# [1.3.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.2.0...v1.3.0) (2026-04-08)
+
+
+### Bug Fixes
+
+* **e2e:** fix flaky tests - direct navigation and explicit waits ([0c60603](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/0c60603942b49242216531a084e8c5de03187ecb))
+* **e2e:** scope stratum levels locator to app-tag-input input to avoid non-fillable host match ([8264e99](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/8264e999891bf03db0b47887451573deff2766ad))
+* **e2e:** update selectors and interactions for new visual builder UI ([e75583c](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/e75583cfb41518a130eb41457a08307810f2493f))
+
+
+### Features
+
+* interactive visual builder UI with tag inputs, arm cards, and drag-and-drop strata ([2f97dd6](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/2f97dd6c5b04a96b553a7e16443a26332fe4ca3a))
+
 # [1.2.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.1.0...v1.2.0) (2026-04-08)
 
 
