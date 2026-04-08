@@ -259,7 +259,7 @@ describe('CodeGeneratorModalComponent (domain)', () => {
 
       const err = component.errorState();
       expect(err).toBeInstanceOf(CodeGenerationError);
-      expect(err!.message).toBe('raw failure');
+      expect(err!.message).toContain('raw failure');
     });
 
     it('should clear errorState and show code when switching to a tab that succeeds', () => {

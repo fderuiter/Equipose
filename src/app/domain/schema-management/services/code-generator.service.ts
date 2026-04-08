@@ -42,6 +42,18 @@ export class CodeGeneratorService {
     }
   }
 
+  /**
+   * Returns true when the error is already a domain-specific error that
+   * should be propagated as-is without wrapping.
+   */
+  private isKnownError(e: unknown): boolean {
+    return (
+      e instanceof StrataParsingError ||
+      e instanceof MissingSeedError ||
+      e instanceof ConfigurationValidationError
+    );
+  }
+
   private hashCode(str: string | undefined): number {
     // Note: RandomizationService.generateSchema always sets a seed before this runs,
     // so this fallback path should not be reached in normal usage.
@@ -229,7 +241,7 @@ if (nrow(schema) > 0) {
 # write.csv(schema, "randomization_schema.csv", row.names=FALSE)
 `;
     } catch (e) {
-      if (e instanceof StrataParsingError || e instanceof MissingSeedError || e instanceof ConfigurationValidationError) throw e;
+      if (this.isKnownError(e)) throw e;
       throw new TemplateCompilationError('R', e, config);
     }
   }
@@ -357,7 +369,7 @@ print(df['BlockSize'].value_counts())
 # df.to_csv("randomization_schema.csv", index=False)
 `;
     } catch (e) {
-      if (e instanceof StrataParsingError || e instanceof MissingSeedError || e instanceof ConfigurationValidationError) throw e;
+      if (this.isKnownError(e)) throw e;
       throw new TemplateCompilationError('Python', e, config);
     }
   }
@@ -630,7 +642,7 @@ title;
 
       return code.trim() + '\n';
     } catch (e) {
-      if (e instanceof StrataParsingError || e instanceof MissingSeedError || e instanceof ConfigurationValidationError) throw e;
+      if (this.isKnownError(e)) throw e;
       throw new TemplateCompilationError('SAS', e, config);
     }
   }

@@ -49,8 +49,11 @@ export class CodeGeneratorModalComponent implements OnInit {
         this.errorState.set(e);
       } else {
         // Wrap unexpected errors in a generic CodeGenerationError so the UI can display them.
+        const causeMessage = e instanceof Error
+          ? `${e.name}: ${e.message}`
+          : String(e);
         const wrapped = new CodeGenerationError(
-          e instanceof Error ? e.message : 'An unexpected error occurred during code generation.',
+          `An unexpected error occurred during code generation. ${causeMessage}`,
           config
         );
         this.errorState.set(wrapped);
