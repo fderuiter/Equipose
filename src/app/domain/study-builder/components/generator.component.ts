@@ -3,7 +3,6 @@ import { DOCUMENT } from '@angular/common';
 import { ConfigFormComponent } from './config-form.component';
 import { ResultsGridComponent } from '../../schema-management/components/results-grid.component';
 import { CodeGeneratorModalComponent } from '../../schema-management/components/code-generator-modal.component';
-<<<<<<< HEAD
 import { MonteCarloModalComponent } from '../../randomization-engine/components/monte-carlo-modal.component';
 import { SchemaAnalyticsDashboardComponent } from '../../schema-management/components/schema-analytics-dashboard.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
