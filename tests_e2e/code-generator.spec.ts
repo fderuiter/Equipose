@@ -34,6 +34,11 @@ test.describe('Code Generator Modal UI', () => {
     await expect(blockInputs).toBeVisible();
     await blockInputs.fill('2');
 
+    // Fill Random Seed (required by code generator to avoid MissingSeedError)
+    const seedInput = page.locator('#seed');
+    await expect(seedInput).toBeVisible();
+    await seedInput.fill('42');
+
     // Check "Generate Code" button is present and click to open dropdown
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
     await expect(generateCodeBtn).toBeVisible();
