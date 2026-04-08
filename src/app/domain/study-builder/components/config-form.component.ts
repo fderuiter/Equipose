@@ -147,6 +147,13 @@ export class ConfigFormComponent implements OnInit {
     }
   }
 
+  onRunMonteCarlo(): void {
+    if (this.form.valid) {
+      try { this.facade.runMonteCarlo(this.store.buildConfig(this.form.value)); }
+      catch (e) { console.error('Error starting Monte Carlo simulation:', e); alert('Error starting simulation. Please check your configuration.'); }
+    }
+  }
+
   onSubmit(): void {
     if (this.form.valid) {
       try { this.facade.generateSchema(this.store.buildConfig(this.form.value)); }
