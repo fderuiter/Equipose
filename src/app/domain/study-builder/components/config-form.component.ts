@@ -109,8 +109,8 @@ export class ConfigFormComponent implements OnInit {
     if (event.selectedIndex === 3) {
       this.store.setStrata(this.strata.value as StratumFormValue[]);
       this.syncStratumCaps();
-    }
-    if (event.selectedIndex !== 3) {
+    } else {
+      // Clear the reset-warning whenever the user leaves Step 4.
       this.capsWereReset = false;
     }
   }
