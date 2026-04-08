@@ -199,6 +199,10 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     // We stub the Worker constructor so initWorker() picks up our fake instance.
     vi.stubGlobal('Worker', function () { return fakeWorker; });
     (facade as unknown as { initWorker: () => void }).initWorker();
+    // Stub is cleaned up in afterEach to avoid polluting subsequent suites.
+  });
+
+  afterEach(() => {
     vi.unstubAllGlobals();
   });
 

@@ -69,7 +69,7 @@ describe('generateRandomizationSchema – core behaviour', () => {
 
   it('copies config verbatim into metadata.config', () => {
     const result = generateRandomizationSchema(BASE_CONFIG);
-    expect(result.metadata.config).toEqual(result.metadata.config);
+    expect(result.metadata.config).toEqual(BASE_CONFIG);
     expect(result.metadata.protocolId).toBe(BASE_CONFIG.protocolId);
     expect(result.metadata.studyName).toBe(BASE_CONFIG.studyName);
     expect(result.metadata.phase).toBe(BASE_CONFIG.phase);
