@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.8.0...v1.9.0) (2026-04-09)
+
+
+### Features
+
+* typographic system redesign for data-dense environments ([871f6f7](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/871f6f7c21381788980256472b00ced602b63d2f))
+
 # [1.8.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.7.0...v1.8.0) (2026-04-09)
 
 
