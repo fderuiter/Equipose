@@ -619,13 +619,23 @@ describe('CodeGeneratorService', () => {
       it('should handle levels without a marginalCap (uncapped levels omitted from list)', () => {
         const uncappedConfig: RandomizationConfig = {
           ...marginalConfig,
-          strata: [{
-            id: 'sex', name: 'Sex', levels: ['Male', 'Female'],
-            levelDetails: [
-              { name: 'Male', marginalCap: 30 },
-              { name: 'Female' }  // no cap → uncapped
-            ]
-          }]
+          strata: [
+            {
+              id: 'sex', name: 'Sex', levels: ['Male', 'Female'],
+              levelDetails: [
+                { name: 'Male', marginalCap: 30 },
+                { name: 'Female' }  // no cap → uncapped
+              ]
+            },
+            // age must be fully capped so the stronger termination guard is satisfied
+            {
+              id: 'age', name: 'Age Group', levels: ['Young', 'Old'],
+              levelDetails: [
+                { name: 'Young', marginalCap: 20 },
+                { name: 'Old', marginalCap: 40 }
+              ]
+            }
+          ]
         };
         const code = service.generateR(uncappedConfig);
         expect(code).toContain('"Male" = 30');

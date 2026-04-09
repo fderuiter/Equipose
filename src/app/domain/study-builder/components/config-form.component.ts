@@ -217,17 +217,30 @@ export class ConfigFormComponent implements OnInit {
     this.matrixComputed.set(false);
   }
 
-  /** Retrieve a marginal cap for a factor/level. */
-  getMarginalCap(factorId: string, level: string): number {
-    return this.marginalCaps()[factorId]?.[level] ?? 0;
+  /** Retrieve a marginal cap for a factor/level; returns undefined when not set (uncapped). */
+  getMarginalCap(factorId: string, level: string): number | undefined {
+    return this.marginalCaps()[factorId]?.[level];
   }
 
-  /** Update a marginal cap for a given factor level (called from the template). */
-  setMarginalCap(factorId: string, level: string, value: number): void {
-    this.marginalCaps.update(prev => ({
-      ...prev,
-      [factorId]: { ...(prev[factorId] ?? {}), [level]: value }
-    }));
+  /** Update a marginal cap for a given factor level (called from the template).
+   *  Passing undefined removes the cap (level becomes uncapped). */
+  setMarginalCap(factorId: string, level: string, value: number | undefined): void {
+    this.marginalCaps.update(prev => {
+      const factorCaps = { ...(prev[factorId] ?? {}) };
+      if (value === undefined) {
+        delete factorCaps[level];
+      } else {
+        factorCaps[level] = value;
+      }
+      return { ...prev, [factorId]: factorCaps };
+    });
+  }
+
+  /** Parse a raw input string into a marginal cap number or undefined (uncapped). */
+  parseMarginalCapInput(raw: string): number | undefined {
+    if (raw === '') return undefined;
+    const n = +raw;
+    return Number.isNaN(n) ? undefined : n;
   }
 
   /**

@@ -110,24 +110,34 @@ function generateMarginalOnly(
   // Use Map to avoid prototype-pollution risks when level names are user-controlled.
   // Lookup: factorId → (levelName → marginalCap); undefined = uncapped.
   const marginalCapMap = new Map<string, Map<string, number | undefined>>();
-  let hasFiniteCap = false;
+  let hasFullyCappedFactor = false;
   for (const factor of resolvedConfig.strata) {
     const levelMap = new Map<string, number | undefined>();
     if (factor.levelDetails) {
       for (const detail of factor.levelDetails) {
         levelMap.set(detail.name, detail.marginalCap);
-        if (detail.marginalCap !== undefined) hasFiniteCap = true;
       }
     }
     marginalCapMap.set(factor.id, levelMap);
+
+    // A fully-capped factor has a finite cap on every one of its levels.
+    // This guarantees every stratum combination containing this factor is eventually pruned.
+    const allLevelsCapped =
+      factor.levels.length > 0 &&
+      factor.levels.every(lvl => levelMap.get(lvl) !== undefined);
+    if (allLevelsCapped) {
+      hasFullyCappedFactor = true;
+    }
   }
 
-  // Guard: if every level is uncapped the active pool never shrinks and the while-loop
-  // would run indefinitely. Require at least one finite marginal cap.
-  if (!hasFiniteCap) {
+  // Guard: MARGINAL_ONLY terminates only if every possible stratum combination contains
+  // at least one capped level. Requiring one factor where ALL levels have a finite cap
+  // guarantees this: every combination that includes that factor is eventually pruned.
+  if (!hasFullyCappedFactor) {
     throw new Error(
-      'MARGINAL_ONLY randomization requires at least one finite marginal cap to guarantee termination. ' +
-      'Set a marginalCap on at least one stratum level.'
+      'MARGINAL_ONLY randomization requires at least one stratification factor with a finite ' +
+      'marginalCap on every one of its levels to guarantee termination. ' +
+      'Set a marginalCap for all levels of at least one stratum factor.'
     );
   }
 

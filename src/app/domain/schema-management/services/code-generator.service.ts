@@ -79,18 +79,23 @@ export class CodeGeneratorService {
   // ---------------------------------------------------------------------------
 
   /**
-   * Validates that a MARGINAL_ONLY config has at least one finite marginal cap,
-   * which is needed to guarantee the active-pool loop terminates.
+   * Validates that a MARGINAL_ONLY config can guarantee the active-pool loop terminates.
+   * For termination to be guaranteed, every stratum combination must include at least one
+   * capped level. A sufficient condition is that at least one stratification factor has a
+   * finite marginalCap on *every* one of its levels — any combo containing that factor will
+   * eventually be pruned.
    * Throws {@link ConfigurationValidationError} when the guard is not met.
    */
   private validateMarginalOnlyConfig(config: RandomizationConfig): void {
-    const hasFiniteCap = (config.strata || []).some(s =>
-      (s.levelDetails || []).some(d => d.marginalCap !== undefined)
-    );
-    if (!hasFiniteCap) {
+    const hasFullyCappedFactor = (config.strata || []).some(s => {
+      const levelDetails = s.levelDetails || [];
+      return levelDetails.length > 0 && levelDetails.every(d => Number.isFinite(d.marginalCap));
+    });
+    if (!hasFullyCappedFactor) {
       throw new ConfigurationValidationError(
-        'MARGINAL_ONLY cap strategy requires at least one finite marginal cap to guarantee loop termination. ' +
-        'Set a marginalCap on at least one stratum level.',
+        'MARGINAL_ONLY cap strategy requires at least one stratification factor to define a finite ' +
+        'marginalCap for every level, so every stratum combination can be deactivated and the ' +
+        'active-pool loop can terminate.',
         config
       );
     }
@@ -232,6 +237,7 @@ row_idx <- 1
 
 for (site in sites) {
   site_subject_count <- 0L
+  block_number <- 0L
 
   # Per-factor, per-level enrollment counts (reset for each site)
   marginal_counts <- lapply(marginal_caps, function(mc) {
@@ -249,6 +255,7 @@ for (site in sites) {
     # Pick a random block size and generate the block
     current_block_size <- sample(block_sizes, 1)
     current_block <- generate_block(current_block_size)
+    block_number <- block_number + 1L
 
     for (treatment in current_block) {
       # Check marginal caps before enrolling this subject
@@ -269,7 +276,7 @@ for (site in sites) {
       row <- data.frame(
         SubjectID   = subject_id,
         Site        = site,
-        BlockNumber = NA_integer_,
+        BlockNumber = block_number,
         BlockSize   = current_block_size,
         Treatment   = treatment
       )
@@ -418,6 +425,7 @@ for site in sites:
 
     # Active pool of strata combinations
     active_pool = list(strata_combinations)
+    block_number = 0
 
     while active_pool:
         # Randomly select a combination from the active pool
@@ -432,6 +440,7 @@ for site in sites:
         for arm in arms:
             block.extend([arm["name"]] * int(arm["ratio"] * multiplier))
         rng.shuffle(block)
+        block_number += 1
 
         for treatment in block:
             # Check marginal caps before enrolling
@@ -450,7 +459,7 @@ for site in sites:
             schema.append({
                 "SubjectID": subject_id,
                 "Site": site,
-                "BlockNumber": None,
+                "BlockNumber": block_number,
                 "BlockSize": current_block_size,
                 "Treatment": treatment,
                 **stratum
@@ -674,6 +683,7 @@ ${charArrayDecls || '  /* No strata factors */'}
   do _s = 1 to _n_sites;
     Site = dequote(scan("&sites.", _s, ' ', 'q'));
     _site_subj_count = 0;
+    _block_num = 0;
 
     /* Reset active flags and counts for each site */
     do _i = 1 to &n_combos.; _active[_i] = 1; end;
@@ -698,6 +708,7 @@ ${charArrayDecls || '  /* No strata factors */'}
 
       /* Pick a random block size */
 ${blockSizePick}
+      _block_num + 1;
 
       /* Assign stratum output variables from the chosen combination */
 ${strataAssign || '      /* No strata factors */'}
@@ -738,6 +749,7 @@ ${nFactors > 0 ? `        do _f = 1 to &n_factors.;
         SubjectID = cats(Site, '-', put(_site_subj_count, z3.));
         Treatment = _blk[_t];
         BlockSize = block_size;
+        BlockNumber = _block_num;
         output;
 
         /* Update marginal enrollment counts */

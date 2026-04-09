@@ -20,8 +20,8 @@ export interface ArmFormValue {
 
 export interface LevelDetailFormValue {
   name: string;
-  targetPercentage: number;
-  marginalCap: number;
+  targetPercentage?: number;
+  marginalCap?: number;
 }
 
 export interface StudyBuilderFormValue {
