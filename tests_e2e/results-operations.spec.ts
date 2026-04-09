@@ -49,40 +49,31 @@ test.describe('Results Grid Operations', () => {
   // Blinding toggle
   // ---------------------------------------------------------------------------
   test('should start in the blinded state', async ({ page }) => {
-    const firstRowTreatmentCell = page
-      .locator('#results-section tbody tr')
-      .first()
-      .locator('td')
-      .last();
-    await expect(firstRowTreatmentCell).toContainText('*** BLINDED ***');
+    const firstRow = page.locator('[data-testid="result-row"]').first();
+    const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
+    await expect(armCell).toContainText('*** BLINDED ***');
   });
 
   test('should reveal treatment arms after clicking the blinding toggle', async ({ page }) => {
     const toggleLabel = page.locator('#results-section label').filter({ hasText: /Blinded|Unblinded/i });
     await toggleLabel.click();
 
-    const firstRowTreatmentCell = page
-      .locator('#results-section tbody tr')
-      .first()
-      .locator('td')
-      .last();
-    await expect(firstRowTreatmentCell).not.toContainText('*** BLINDED ***');
-    await expect(firstRowTreatmentCell).not.toBeEmpty();
+    const firstRow = page.locator('[data-testid="result-row"]').first();
+    const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
+    await expect(armCell).not.toContainText('*** BLINDED ***');
+    await expect(armCell).not.toBeEmpty();
   });
 
   test('should re-blind the schema when the toggle is clicked a second time', async ({ page }) => {
     const toggleLabel = page.locator('#results-section label').filter({ hasText: /Blinded|Unblinded/i });
-    const firstRowTreatmentCell = page
-      .locator('#results-section tbody tr')
-      .first()
-      .locator('td')
-      .last();
+    const firstRow = page.locator('[data-testid="result-row"]').first();
+    const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
 
     await toggleLabel.click(); // unblind
-    await expect(firstRowTreatmentCell).not.toContainText('*** BLINDED ***');
+    await expect(armCell).not.toContainText('*** BLINDED ***');
 
     await toggleLabel.click(); // re-blind
-    await expect(firstRowTreatmentCell).toContainText('*** BLINDED ***');
+    await expect(armCell).toContainText('*** BLINDED ***');
   });
 
   // ---------------------------------------------------------------------------

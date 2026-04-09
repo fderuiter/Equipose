@@ -41,16 +41,17 @@ test.describe('Schema Generation Flow', () => {
     await expect(paginationControls).toBeVisible();
 
     // Verify initial state is blinded
-    const firstRowTreatmentCell = tableRows.first().locator('td').last();
-    await expect(firstRowTreatmentCell).toContainText('*** BLINDED ***');
+    const firstRow = page.locator('[data-testid="result-row"]').first();
+    const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
+    await expect(armCell).toContainText('*** BLINDED ***');
 
     // Click the "Unblinded" toggle
     const unblindedToggleLabel = page.locator('label').filter({ hasText: 'Blinded' }).or(page.locator('label').filter({ hasText: 'Unblinded' }));
     await unblindedToggleLabel.click();
 
     // Assert the text changes from "*** BLINDED ***"
-    await expect(firstRowTreatmentCell).not.toContainText('*** BLINDED ***');
+    await expect(armCell).not.toContainText('*** BLINDED ***');
     // Should be something like High Dose, Low Dose, Placebo
-    await expect(firstRowTreatmentCell).not.toBeEmpty();
+    await expect(armCell).not.toBeEmpty();
   });
 });
