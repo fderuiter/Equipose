@@ -127,6 +127,9 @@ export class ConfigFormComponent implements OnInit {
       .subscribe(() => this.facade.clearResults());
 
     // When the user manually edits a computed cap, switch strategy back to Manual Matrix.
+    // The `matrixComputed()` guard ensures this only fires AFTER the user has clicked
+    // "Compute Matrix" – not during ngOnInit initialization (which uses emitEvent: false)
+    // and not before the user has computed anything.
     this.stratumCaps.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
