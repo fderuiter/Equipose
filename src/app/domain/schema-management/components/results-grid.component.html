@@ -79,7 +79,7 @@
                   type="button"
                   [cdkMenuTriggerFor]="rowMenu"
                   (click)="openRowMenu(row)"
-                  class="inline-flex items-center justify-center w-11 h-11 rounded-full text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  class="inline-flex items-center justify-center w-11 h-11 rounded-full text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus:ring-2 focus:ring-indigo-500"
                   [attr.aria-label]="'Actions for subject ' + row.subjectId"
                 >
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -131,7 +131,7 @@
               @if (viewMode() === 'flat') {
                 <!-- Flat (paginated) view -->
                 @for (row of paginatedData(); track row.subjectId) {
-                  <tr data-testid="result-row" class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                  <tr data-testid="result-row" class="group hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                     <td class="sticky left-0 z-10 bg-white dark:bg-slate-800 group-hover:bg-gray-50 dark:group-hover:bg-slate-700/50 px-6 py-5 whitespace-nowrap text-sm font-medium font-mono tabular-nums">
                       @for (chunk of splitSubjectId(row.subjectId); track $index) {
                         @if ($index > 0) {
@@ -165,7 +165,7 @@
                         type="button"
                         [cdkMenuTriggerFor]="rowMenu"
                         (click)="openRowMenu(row)"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        class="inline-flex items-center justify-center w-11 h-11 rounded-full text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus:ring-2 focus:ring-indigo-500"
                         [attr.aria-label]="'Actions for subject ' + row.subjectId"
                       >
                         <!-- Vertical three-dot (kebab) icon -->
@@ -231,7 +231,7 @@
                             type="button"
                             [cdkMenuTriggerFor]="rowMenu"
                             (click)="openRowMenu($any(item).data)"
-                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            class="inline-flex items-center justify-center w-11 h-11 rounded-full text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus:ring-2 focus:ring-indigo-500"
                             [attr.aria-label]="'Actions for subject ' + $any(item).data.subjectId"
                           >
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
