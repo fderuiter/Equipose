@@ -49,7 +49,7 @@ export class ConfigFormComponent implements OnInit {
    * Reactive signal tracking per-factor per-level marginal caps for the
    * Marginal Only strategy. Shape: { [factorId]: { [levelName]: number } }
    */
-  readonly marginalCaps = signal<Record<string, Record<string, number>>>({});
+  readonly marginalCaps = signal<Record<string, Record<string, number | undefined>>>({});
 
   /** Whether the computed proportional matrix has been generated and is ready to display. */
   readonly matrixComputed = signal(false);
@@ -278,7 +278,7 @@ export class ConfigFormComponent implements OnInit {
     for (const combo of combinations) {
       const existing = currentCaps.find(c => c.levels.join('|') === combo.join('|'));
       this.stratumCaps.push(
-        this.fb.group({ levels: [combo], cap: [existing?.cap ?? 20, [Validators.required, Validators.min(1)]] }),
+        this.fb.group({ levels: [combo], cap: [existing?.cap ?? 20, [Validators.required, Validators.min(0)]] }),
         { emitEvent: false }
       );
     }
@@ -302,12 +302,15 @@ export class ConfigFormComponent implements OnInit {
     });
 
     this.marginalCaps.update(prev => {
-      const next: Record<string, Record<string, number>> = {};
+      const next: Record<string, Record<string, number | undefined>> = {};
       for (const s of strataVals) {
         const levels = s.levelsStr.split(',').map(l => l.trim()).filter(l => l);
         next[s.id] = {};
         for (const level of levels) {
-          next[s.id][level] = prev[s.id]?.[level] ?? 0;
+          const existingCap = prev[s.id]?.[level];
+          if (existingCap !== undefined) {
+            next[s.id][level] = existingCap;
+          }
         }
       }
       return next;

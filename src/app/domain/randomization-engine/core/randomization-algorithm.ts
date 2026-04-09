@@ -120,11 +120,14 @@ function generateMarginalOnly(
     }
     marginalCapMap.set(factor.id, levelMap);
 
-    // A fully-capped factor has a finite cap on every one of its levels.
+    // A fully-capped factor has a finite, non-negative cap on every one of its levels.
     // This guarantees every stratum combination containing this factor is eventually pruned.
     const allLevelsCapped =
       factor.levels.length > 0 &&
-      factor.levels.every(lvl => levelMap.get(lvl) !== undefined);
+      factor.levels.every(lvl => {
+        const cap = levelMap.get(lvl);
+        return Number.isFinite(cap) && (cap as number) >= 0;
+      });
     if (allLevelsCapped) {
       hasFullyCappedFactor = true;
     }
