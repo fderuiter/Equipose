@@ -6,11 +6,8 @@ import { RandomizationConfig } from '../core/models/randomization.model';
 import { vi } from 'vitest';
 import type { MonteCarloProgressPayload, MonteCarloSuccessPayload } from './worker/worker-protocol';
 
-vi.mock('./core/crypto-hash', () => ({
-  computeAuditHash: vi.fn().mockResolvedValue(
-    'aabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233'
-  )
-}));
+/** Flush all pending microtasks so async signals settle. */
+const flushMicrotasks = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared fixtures
@@ -65,6 +62,8 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
 
   beforeEach(() => {
     fakeWorker = new FakeWorker();
+    // Mock crypto.subtle.digest to avoid relative-import vi.mock restrictions in Angular's test system
+    vi.spyOn(crypto.subtle, 'digest').mockResolvedValue(new Uint8Array(32).buffer);
 
     TestBed.configureTestingModule({
       providers: [
@@ -81,6 +80,7 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('should initialise Monte Carlo signals to their default state', () => {
@@ -161,7 +161,7 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
       schema: []
     };
     fakeWorker.simulateMessage({ id: genId, type: 'GENERATION_SUCCESS', payload: mockResult });
-    await Promise.resolve(); // flush async hash computation
+    await flushMicrotasks();
     expect(facade.results()).toMatchObject({ metadata: expect.objectContaining({ protocolId: 'TEST-123' }) });
   });
 });

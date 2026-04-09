@@ -223,7 +223,7 @@ describe('ResultsGridComponent (domain)', () => {
       mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
-      const spy = vi.spyOn(component, 'exportPdf');
+      const spy = vi.spyOn(component, 'exportPdf').mockImplementation(() => {});
       const buttons = fixture.debugElement.queryAll(By.css('button'));
       const pdfButton = buttons.find(b => b.nativeElement.textContent.trim().includes('PDF'));
       expect(pdfButton).toBeTruthy();
