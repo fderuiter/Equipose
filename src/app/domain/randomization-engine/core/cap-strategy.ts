@@ -75,7 +75,9 @@ export function computeProportionalCaps(
   // Step 2: Distribute remaining seats to the intersections with the largest remainders.
   const totalFloored = entries.reduce((s, e) => s + e.floored, 0);
   // globalCap should be a positive integer; Math.floor guards against any floating-point drift.
-  // Clamp to [0, intersections) to guard against invalid percentage inputs that don't sum to 100.
+  // Clamp to [0, entries.length]: the for-loop below accesses sortedIndices[0..remainingSeats-1]
+  // and sortedIndices.length === entries.length, so entries.length is the safe upper bound.
+  // This also guards against invalid percentage inputs that don't sum to 100%.
   const rawRemaining = Math.floor(globalCap - totalFloored);
   const remainingSeats = Math.max(0, Math.min(rawRemaining, entries.length));
 

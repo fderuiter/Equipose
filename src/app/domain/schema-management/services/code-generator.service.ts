@@ -708,7 +708,7 @@ ${charArrayDecls || '  /* No strata factors */'}
 
       /* Pick a random block size */
 ${blockSizePick}
-      _block_num + 1;
+      _block_num = _block_num + 1;
 
       /* Assign stratum output variables from the chosen combination */
 ${strataAssign || '      /* No strata factors */'}
