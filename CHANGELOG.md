@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.15.0...v1.16.0) (2026-04-09)
+
+
+### Features
+
+* add SchemaVerificationComponent for reproducibility QA ([a1cce52](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/a1cce52854656c0bc4cdd992b5b8ec3687f02ddd))
+
 # [1.15.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.14.0...v1.15.0) (2026-04-09)
 
 
