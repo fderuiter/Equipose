@@ -7,6 +7,7 @@ import { MonteCarloModalComponent } from '../../randomization-engine/components/
 import { SchemaAnalyticsDashboardComponent } from '../../schema-management/components/schema-analytics-dashboard.component';
 import { BalanceVerificationComponent } from '../../schema-management/components/balance-verification.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
+import { ViewportService } from '../../../core/services/viewport.service';
 
 type ResultsTab = 'grid' | 'balance';
 
@@ -72,8 +73,26 @@ type ResultsTab = 'grid' | 'balance';
           <!-- ── Schema Grid tab ─────────────────────────────────────── -->
           @if (activeTab() === 'grid') {
             <div class="space-y-6">
-              <!-- Schema Analytics Dashboard (charts + active-filter HUD) -->
-              <app-schema-analytics-dashboard></app-schema-analytics-dashboard>
+              <!-- Schema Analytics Dashboard (heavy ECharts):
+                   Fully unmounted on mobile to save CPU/memory.
+                   A lightweight text summary is rendered instead. -->
+              @if (!viewport.isMobile()) {
+                <app-schema-analytics-dashboard></app-schema-analytics-dashboard>
+              } @else {
+                <!-- Mobile: text-based analytics summary -->
+                @if (state.results(); as data) {
+                  <div data-testid="mobile-analytics-summary" class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-4 space-y-2">
+                    <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Schema Summary</h3>
+                    <ul class="text-sm text-gray-700 dark:text-slate-300 space-y-1">
+                      <li><span class="font-medium">Protocol:</span> {{data.metadata.protocolId}}</li>
+                      <li><span class="font-medium">Total subjects:</span> {{data.schema.length}}</li>
+                      <li><span class="font-medium">Sites:</span> {{data.metadata.strata?.length ?? 0}} strata factor(s)</li>
+                      <li><span class="font-medium">Seed:</span> <code class="font-mono text-xs bg-gray-100 dark:bg-slate-700 px-1 rounded">{{data.metadata.seed}}</code></li>
+                    </ul>
+                    <p class="text-xs text-gray-400 dark:text-slate-500">Switch to a larger screen to view interactive charts.</p>
+                  </div>
+                }
+              }
 
               <!-- Results Grid -->
               <app-results-grid></app-results-grid>
@@ -102,6 +121,7 @@ type ResultsTab = 'grid' | 'balance';
 })
 export class GeneratorComponent {
   public state = inject(RandomizationEngineFacade);
+  public readonly viewport = inject(ViewportService);
   private readonly document = inject(DOCUMENT);
 
   /** Active results tab – 'grid' (default) or 'balance'. */

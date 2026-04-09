@@ -3,6 +3,7 @@ import { CdkMenuModule } from '@angular/cdk/menu';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { GeneratedSchema } from '../../core/models/randomization.model';
+import { ViewportService } from '../../../core/services/viewport.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
@@ -49,6 +50,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
 export class ResultsGridComponent {
   public state = inject(RandomizationEngineFacade);
   public viewState = inject(SchemaViewStateService);
+  public readonly viewport = inject(ViewportService);
 
   /**
    * Tracks the row whose kebab menu is currently open so the shared menu

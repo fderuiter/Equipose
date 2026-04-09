@@ -1,3 +1,16 @@
+# [1.13.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.12.0...v1.13.0) (2026-04-09)
+
+
+### Bug Fixes
+
+* add group class and hover styles to grouped-view sticky column ([add648e](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/add648e7d6452618d96207703580e608f07c7fa0))
+* address code review issues - add group class, fix touch targets, use focus-visible ([61b07b0](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/61b07b0911a15be8e338b61eeec9d43c29969a6f))
+
+
+### Features
+
+* implement responsive architecture with CDK viewport service and mobile adaptations ([2e3faef](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/2e3faefc6a695458a5fb80d00221fc12b306ae66))
+
 # [1.12.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.11.0...v1.12.0) (2026-04-09)
 
 
