@@ -59,7 +59,7 @@ export async function sha256Hex(data: string): Promise<string> {
  * Convenience function: compute the audit hash for a freshly generated
  * {@link RandomizationResult} (before `auditHash` has been written into it).
  */
-export async function computeAuditHash(result: Omit<RandomizationResult, never>): Promise<string> {
+export async function computeAuditHash(result: RandomizationResult): Promise<string> {
   const payload = buildHashPayload(
     result.metadata.config,
     result.schema,

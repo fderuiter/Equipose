@@ -244,6 +244,8 @@ export class ResultsGridComponent {
     navigator.clipboard.writeText(hash).then(() => {
       this.hashCopied.set(true);
       setTimeout(() => this.hashCopied.set(false), 2000);
+    }).catch(() => {
+      // Clipboard write failed (e.g. permissions denied) – nothing to do visually
     });
   }
 
@@ -300,7 +302,7 @@ export class ResultsGridComponent {
     const pageWidth = doc.internal.pageSize.getWidth();
     const timestamp = new Date(data.metadata.generatedAt).toISOString();
     const auditHash = data.metadata.auditHash;
-    const truncatedHash = auditHash ? `${auditHash.substring(0, 16)}…${auditHash.substring(48)}` : 'N/A';
+    const truncatedHash = auditHash ? `${auditHash.substring(0, 16)}…${auditHash.substring(48, 64)}` : 'N/A';
 
     // ── Certificate Header ──────────────────────────────────────────────────
     doc.setFontSize(14);
