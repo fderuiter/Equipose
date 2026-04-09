@@ -23,10 +23,6 @@
 *.eot    binary
 *.webp   binary
 
-# Diff drivers for improved readability
-*.ts   diff=typescript
-*.json diff=json
-
 # Linguist — language statistics overrides
 package-lock.json   linguist-generated=true
 CHANGELOG.md        linguist-generated=true
