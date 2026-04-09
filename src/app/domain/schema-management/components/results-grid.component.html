@@ -197,8 +197,8 @@
 
                     @case ('data') {
                       <!-- Standard data row -->
-                      <tr data-testid="result-row" class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <td class="sticky left-0 z-10 bg-white dark:bg-slate-800 px-6 py-5 whitespace-nowrap text-sm font-medium font-mono tabular-nums">
+                      <tr data-testid="result-row" class="group hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <td class="sticky left-0 z-10 bg-white dark:bg-slate-800 group-hover:bg-gray-50 dark:group-hover:bg-slate-700/50 px-6 py-5 whitespace-nowrap text-sm font-medium font-mono tabular-nums">
                           @for (chunk of splitSubjectId($any(item).data.subjectId); track $index) {
                             @if ($index > 0) {
                               <span class="text-gray-400 dark:text-slate-500">-</span>
