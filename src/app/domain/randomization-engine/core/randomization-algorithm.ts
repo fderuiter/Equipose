@@ -158,6 +158,8 @@ function generateMarginalOnly(
       const blockSize = resolvedConfig.blockSizes[blockSizeIndex];
       const block = buildBlock(resolvedConfig.arms, blockSize, totalRatio, rng);
       const stratumCode = computeStratumCode(resolvedConfig.strata, stratum);
+      // Increment per generated block so downstream grouping/sorting (which uses
+      // site|stratumCode|blockNumber) remains meaningful in MARGINAL_ONLY mode.
       blockNumber++;
 
       for (const arm of block) {
