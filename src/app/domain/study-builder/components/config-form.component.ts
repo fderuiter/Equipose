@@ -143,6 +143,24 @@ export class ConfigFormComponent implements OnInit {
     this.form.get('globalCap')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.matrixComputed.set(false));
+
+    // Enable/disable globalCap validators based on the active cap strategy.
+    // When not in PROPORTIONAL mode the field is hidden and irrelevant, so we
+    // disable the control to prevent it from invalidating the form.
+    this.form.get('capStrategy')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((strategy: string) => {
+        const globalCapCtrl = this.form.get('globalCap');
+        if (strategy === 'PROPORTIONAL') {
+          globalCapCtrl?.enable();
+        } else {
+          globalCapCtrl?.disable();
+        }
+      });
+    // Initialise: disable when not starting in PROPORTIONAL mode.
+    if (this.capStrategy !== 'PROPORTIONAL') {
+      this.form.get('globalCap')?.disable();
+    }
   }
 
   @HostListener('document:click', ['$event'])
@@ -407,7 +425,8 @@ export class ConfigFormComponent implements OnInit {
 
   /** Build the full form value including levelDetails from signals. */
   private buildFormValue() {
-    const base = this.form.value;
+    // getRawValue() includes disabled controls (e.g., globalCap when strategy ≠ PROPORTIONAL).
+    const base = this.form.getRawValue();
     const levelDetails: Record<string, { name: string; targetPercentage: number; marginalCap?: number }[]> = {};
     const percentages = this.proportionalPercentages();
     const caps = this.marginalCaps();

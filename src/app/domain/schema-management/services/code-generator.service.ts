@@ -88,8 +88,12 @@ export class CodeGeneratorService {
    */
   private validateMarginalOnlyConfig(config: RandomizationConfig): void {
     const hasFullyCappedFactor = (config.strata || []).some(s => {
-      const levelDetails = s.levelDetails || [];
-      return levelDetails.length > 0 && levelDetails.every(d => Number.isFinite(d.marginalCap));
+      if (!s.levels || s.levels.length === 0) return false;
+      const detailByName = new Map((s.levelDetails ?? []).map(d => [d.name, d]));
+      return s.levels.every(lvl => {
+        const detail = detailByName.get(lvl);
+        return detail !== undefined && Number.isFinite(detail.marginalCap);
+      });
     });
     if (!hasFullyCappedFactor) {
       throw new ConfigurationValidationError(
@@ -115,8 +119,9 @@ export class CodeGeneratorService {
         lines.push(`${prefix} Global Enrollment Cap (per site): ${config.globalCap}`);
       }
       for (const s of (config.strata || [])) {
-        const lvlPcts = s.levels.map((lvl, i) => {
-          const pct = s.levelDetails?.[i]?.targetPercentage;
+        const detailByName = new Map((s.levelDetails ?? []).map(d => [d.name, d]));
+        const lvlPcts = s.levels.map(lvl => {
+          const pct = detailByName.get(lvl)?.targetPercentage;
           return pct !== undefined ? `${lvl}=${pct}%` : null;
         }).filter(Boolean);
         if (lvlPcts.length) {

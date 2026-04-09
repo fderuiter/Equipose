@@ -850,6 +850,61 @@ describe('CodeGeneratorService', () => {
       const noBlocksConfig = { ...minimalConfig, blockSizes: [] };
       expect(() => service.generate('R', noBlocksConfig)).toThrow(ConfigurationValidationError);
     });
+
+    describe('MARGINAL_ONLY termination guard', () => {
+      const baseMarginalConfig: RandomizationConfig = {
+        protocolId: 'GUARD-001',
+        studyName: 'Guard Study',
+        phase: 'I',
+        arms: [{ id: 'A', name: 'Active', ratio: 1 }, { id: 'B', name: 'Placebo', ratio: 1 }],
+        sites: ['S1'],
+        strata: [],
+        blockSizes: [2],
+        stratumCaps: [],
+        seed: '42',
+        subjectIdMask: '[SiteID]-[001]',
+        capStrategy: 'MARGINAL_ONLY'
+      };
+
+      it('should throw ConfigurationValidationError when no factor has finite caps for every level (no strata)', () => {
+        expect(() => service.generate('R', baseMarginalConfig)).toThrow(ConfigurationValidationError);
+        expect(() => service.generate('Python', baseMarginalConfig)).toThrow(ConfigurationValidationError);
+        expect(() => service.generate('SAS', baseMarginalConfig)).toThrow(ConfigurationValidationError);
+      });
+
+      it('should throw when a factor has only some levels capped (partial caps)', () => {
+        const partialConfig: RandomizationConfig = {
+          ...baseMarginalConfig,
+          strata: [{
+            id: 'sex', name: 'Sex', levels: ['Male', 'Female'],
+            levelDetails: [{ name: 'Male', marginalCap: 30 }] // Female uncapped
+          }]
+        };
+        expect(() => service.generate('R', partialConfig)).toThrow(ConfigurationValidationError);
+      });
+
+      it('should NOT throw when at least one factor has finite caps on every level', () => {
+        const validConfig: RandomizationConfig = {
+          ...baseMarginalConfig,
+          strata: [
+            {
+              id: 'sex', name: 'Sex', levels: ['Male', 'Female'],
+              levelDetails: [
+                { name: 'Male', marginalCap: 30 },
+                { name: 'Female', marginalCap: 30 }
+              ]
+            },
+            {
+              id: 'age', name: 'Age', levels: ['Young', 'Old']
+              // no levelDetails — all uncapped, but sex is fully capped so guard passes
+            }
+          ]
+        };
+        expect(() => service.generate('R', validConfig)).not.toThrow();
+        expect(() => service.generate('Python', validConfig)).not.toThrow();
+        expect(() => service.generate('SAS', validConfig)).not.toThrow();
+      });
+    });
   });
 
   describe('empty seed', () => {

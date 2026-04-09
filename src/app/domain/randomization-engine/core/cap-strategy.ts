@@ -11,8 +11,13 @@ export function validateProportionalPercentages(
   const invalid: Record<string, boolean> = {};
   for (const factor of strata) {
     const factorPercentages = percentages[factor.id] ?? {};
-    const total = factor.levels.reduce((sum, level) => sum + (factorPercentages[level] ?? 0), 0);
-    if (Math.abs(total - 100) > 0.001) {
+    let hasNonFinite = false;
+    const total = factor.levels.reduce((sum, level) => {
+      const value = Number(factorPercentages[level] ?? 0);
+      if (!Number.isFinite(value)) { hasNonFinite = true; return sum; }
+      return sum + value;
+    }, 0);
+    if (hasNonFinite || Math.abs(total - 100) > 0.001) {
       invalid[factor.id] = true;
     }
   }
