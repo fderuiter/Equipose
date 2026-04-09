@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
@@ -8,11 +8,12 @@ import { RandomizationEngineFacade } from '../../randomization-engine/randomizat
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
 import { previewSubjectIdMask, validateSubjectIdMask } from '../../randomization-engine/core/subject-id-engine';
+import { BlockPreviewComponent, ArmInput } from './block-preview.component';
 
 @Component({
   selector: 'app-config-form',
   standalone: true,
-  imports: [ReactiveFormsModule, CdkDropList, CdkDrag, CdkDragHandle, TagInputComponent, MatTooltipModule],
+  imports: [ReactiveFormsModule, CdkDropList, CdkDrag, CdkDragHandle, TagInputComponent, MatTooltipModule, BlockPreviewComponent],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -30,6 +31,11 @@ export class ConfigFormComponent implements OnInit {
   readonly subjectIdPreview: Signal<string>;
   /** True when the current mask has a syntax error. */
   readonly subjectIdMaskInvalid: Signal<boolean>;
+
+  /** Live signal of the arms FormArray values for BlockPreviewComponent. */
+  readonly armsSignal: Signal<ArmInput[]>;
+  /** Live signal of the parsed block sizes for BlockPreviewComponent. */
+  readonly blockSizesSignal: Signal<number[]>;
 
   form: FormGroup = this.fb.group(
     {
@@ -65,6 +71,23 @@ export class ConfigFormComponent implements OnInit {
     this.subjectIdMaskInvalid = toSignal(
       mask$.pipe(map(mask => !validateSubjectIdMask(mask).valid)),
       { initialValue: !validateSubjectIdMask(maskCtrl.value as string).valid }
+    );
+
+    const armsCtrl = this.form.get('arms')!;
+    this.armsSignal = toSignal(
+      armsCtrl.valueChanges.pipe(startWith(armsCtrl.value as ArmInput[])),
+      { initialValue: armsCtrl.value as ArmInput[] }
+    );
+
+    const blockSizesCtrl = this.form.get('blockSizesStr')!;
+    const parseBlockSizes = (v: string | null | undefined): number[] =>
+      (v ?? '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+    this.blockSizesSignal = toSignal(
+      blockSizesCtrl.valueChanges.pipe(
+        startWith(blockSizesCtrl.value as string),
+        map((v: string) => parseBlockSizes(v))
+      ),
+      { initialValue: parseBlockSizes(blockSizesCtrl.value as string) }
     );
   }
 
