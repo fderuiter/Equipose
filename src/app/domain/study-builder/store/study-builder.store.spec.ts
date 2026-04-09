@@ -132,7 +132,10 @@ describe('StudyBuilderStore', () => {
       blockSizesStr: '4, 6',
       stratumCaps: [{ levels: ['<65'], cap: 10 }, { levels: ['>=65'], cap: 10 }],
       seed: 'abc',
-      subjectIdMask: '[SiteID]-[001]'
+      subjectIdMask: '[SiteID]-[001]',
+      capStrategy: 'MANUAL_MATRIX',
+      globalCap: 100,
+      levelDetails: {}
     });
 
     expect(config.protocolId).toBe('X-001');
@@ -153,7 +156,10 @@ describe('StudyBuilderStore', () => {
       blockSizesStr: '4',
       stratumCaps: [],
       seed: '',
-      subjectIdMask: '[SiteID]-[001]'
+      subjectIdMask: '[SiteID]-[001]',
+      capStrategy: 'MANUAL_MATRIX',
+      globalCap: 100,
+      levelDetails: {}
     });
     expect(config.strata[0].levels).toEqual(['A', 'B', 'C']);
   });
@@ -169,7 +175,10 @@ describe('StudyBuilderStore', () => {
       blockSizesStr: '  4  ,  6  ',
       stratumCaps: [],
       seed: '',
-      subjectIdMask: '[SiteID]-[001]'
+      subjectIdMask: '[SiteID]-[001]',
+      capStrategy: 'MANUAL_MATRIX',
+      globalCap: 100,
+      levelDetails: {}
     });
     expect(config.sites).toEqual(['Site A', 'Site B']);
     expect(config.blockSizes).toEqual([4, 6]);
@@ -186,7 +195,10 @@ describe('StudyBuilderStore', () => {
       blockSizesStr: '4',
       stratumCaps: [],
       seed: '',
-      subjectIdMask: '[SiteID]-[001]'
+      subjectIdMask: '[SiteID]-[001]',
+      capStrategy: 'MANUAL_MATRIX',
+      globalCap: 100,
+      levelDetails: {}
     });
     expect(config.sites).toEqual(['S1', 'S2']);
   });
