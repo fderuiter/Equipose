@@ -105,27 +105,30 @@ function generateMarginalOnly(
   schema: GeneratedSchema[],
   usedSubjectIds: Set<string>
 ): void {
-  // Build lookup: factorId → levelName → marginalCap (undefined = uncapped)
-  const marginalCapMap: Record<string, Record<string, number | undefined>> = {};
+  // Use Map to avoid prototype-pollution risks when level names are user-controlled.
+  // Lookup: factorId → (levelName → marginalCap); undefined = uncapped.
+  const marginalCapMap = new Map<string, Map<string, number | undefined>>();
   for (const factor of resolvedConfig.strata) {
-    marginalCapMap[factor.id] = {};
+    const levelMap = new Map<string, number | undefined>();
     if (factor.levelDetails) {
       for (const detail of factor.levelDetails) {
-        marginalCapMap[factor.id][detail.name] = detail.marginalCap;
+        levelMap.set(detail.name, detail.marginalCap);
       }
     }
+    marginalCapMap.set(factor.id, levelMap);
   }
 
   for (const site of resolvedConfig.sites) {
     let siteSubjectCount = 0;
 
     // Marginal enrollment counts are tracked per-site (each site is independent).
-    const marginalCounts: Record<string, Record<string, number>> = {};
+    const marginalCounts = new Map<string, Map<string, number>>();
     for (const factor of resolvedConfig.strata) {
-      marginalCounts[factor.id] = {};
+      const countMap = new Map<string, number>();
       for (const level of factor.levels) {
-        marginalCounts[factor.id][level] = 0;
+        countMap.set(level, 0);
       }
+      marginalCounts.set(factor.id, countMap);
     }
 
     // Active pool of valid stratum combinations (those that haven't hit any marginal cap).
@@ -148,8 +151,9 @@ function generateMarginalOnly(
         for (const factor of resolvedConfig.strata) {
           const levelValue = stratum[factor.id] || '';
           if (!levelValue) continue;
-          const cap = marginalCapMap[factor.id]?.[levelValue];
-          if (cap !== undefined && (marginalCounts[factor.id][levelValue] ?? 0) >= cap) {
+          const cap = marginalCapMap.get(factor.id)?.get(levelValue);
+          const currentCount = marginalCounts.get(factor.id)?.get(levelValue) ?? 0;
+          if (cap !== undefined && currentCount >= cap) {
             canAdd = false;
             break;
           }
@@ -176,7 +180,10 @@ function generateMarginalOnly(
         for (const factor of resolvedConfig.strata) {
           const levelValue = stratum[factor.id] || '';
           if (levelValue) {
-            marginalCounts[factor.id][levelValue] = (marginalCounts[factor.id][levelValue] ?? 0) + 1;
+            const countMap = marginalCounts.get(factor.id);
+            if (countMap) {
+              countMap.set(levelValue, (countMap.get(levelValue) ?? 0) + 1);
+            }
           }
         }
       }
@@ -186,9 +193,9 @@ function generateMarginalOnly(
         resolvedConfig.strata.every(factor => {
           const levelValue = combo[factor.id] || '';
           if (!levelValue) return true;
-          const cap = marginalCapMap[factor.id]?.[levelValue];
+          const cap = marginalCapMap.get(factor.id)?.get(levelValue);
           if (cap === undefined) return true; // uncapped
-          return (marginalCounts[factor.id][levelValue] ?? 0) < cap;
+          return (marginalCounts.get(factor.id)?.get(levelValue) ?? 0) < cap;
         })
       );
     }

@@ -125,6 +125,16 @@ export class ConfigFormComponent implements OnInit {
     this.form.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.facade.clearResults());
+
+    // When the user manually edits a computed cap, switch strategy back to Manual Matrix.
+    this.stratumCaps.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.matrixComputed()) {
+          this.form.get('capStrategy')?.setValue('MANUAL_MATRIX', { emitEvent: false });
+          this.matrixComputed.set(false);
+        }
+      });
   }
 
   @HostListener('document:click', ['$event'])
