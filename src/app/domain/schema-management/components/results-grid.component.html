@@ -257,7 +257,7 @@
       type="button"
       role="menuitem"
       class="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus:bg-gray-50 dark:focus:bg-slate-700 focus:outline-none transition-colors"
-      (click)="viewStratumDetails(activeMenuRow()!)"
+      (click)="viewStratumDetails(activeMenuRow())"
     >
       <svg class="h-4 w-4 text-gray-400 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
         <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
@@ -271,7 +271,7 @@
       type="button"
       role="menuitem"
       class="w-full flex items-center gap-2 px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 focus:bg-rose-50 dark:focus:bg-rose-900/20 focus:outline-none transition-colors"
-      (click)="markAsDropped(activeMenuRow()!)"
+      (click)="markAsDropped(activeMenuRow())"
     >
       <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />

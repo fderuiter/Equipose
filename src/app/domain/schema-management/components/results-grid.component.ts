@@ -190,12 +190,14 @@ export class ResultsGridComponent {
   }
 
   /** Placeholder: marks a subject as dropped from the trial. */
-  markAsDropped(row: GeneratedSchema): void {
+  markAsDropped(row: GeneratedSchema | null): void {
+    if (!row) return;
     console.info('[ResultsGrid] Mark as Dropped – Subject:', row.subjectId);
   }
 
   /** Placeholder: displays stratum detail for a subject. */
-  viewStratumDetails(row: GeneratedSchema): void {
+  viewStratumDetails(row: GeneratedSchema | null): void {
+    if (!row) return;
     console.info('[ResultsGrid] View Stratum Details – Subject:', row.subjectId, 'Stratum:', row.stratum);
   }
 
