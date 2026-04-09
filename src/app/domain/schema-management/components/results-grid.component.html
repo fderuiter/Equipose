@@ -79,7 +79,7 @@
             @if (viewMode() === 'flat') {
               <!-- Flat (paginated) view -->
               @for (row of paginatedData(); track row.subjectId) {
-                <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                <tr data-testid="result-row" class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                   <td class="px-6 py-5 whitespace-nowrap text-sm font-medium font-mono tabular-nums">
                     @for (chunk of splitSubjectId(row.subjectId); track $index) {
                       @if ($index > 0) {
@@ -96,7 +96,7 @@
                     <span class="font-semibold text-slate-900 dark:text-slate-100">{{row.blockNumber}}</span>
                     <span class="text-gray-400 dark:text-slate-500"> (Size: {{row.blockSize}})</span>
                   </td>
-                  <td class="px-6 py-5 whitespace-nowrap text-sm">
+                  <td data-testid="result-arm-cell" class="px-6 py-5 whitespace-nowrap text-sm">
                     @if (isUnblinded()) {
                       <span class="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
                         {{row.treatmentArm}}
@@ -145,7 +145,7 @@
 
                   @case ('data') {
                     <!-- Standard data row -->
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <tr data-testid="result-row" class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                       <td class="px-6 py-5 whitespace-nowrap text-sm font-medium font-mono tabular-nums">
                         @for (chunk of splitSubjectId($any(item).data.subjectId); track $index) {
                           @if ($index > 0) {
@@ -162,7 +162,7 @@
                         <span class="font-semibold text-slate-900 dark:text-slate-100">{{$any(item).data.blockNumber}}</span>
                         <span class="text-gray-400 dark:text-slate-500"> (Size: {{$any(item).data.blockSize}})</span>
                       </td>
-                      <td class="px-6 py-5 whitespace-nowrap text-sm">
+                      <td data-testid="result-arm-cell" class="px-6 py-5 whitespace-nowrap text-sm">
                         @if (isUnblinded()) {
                           <span class="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
                             {{$any(item).data.treatmentArm}}
