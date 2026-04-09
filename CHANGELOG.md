@@ -1,3 +1,16 @@
+# [1.14.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.13.0...v1.14.0) (2026-04-09)
+
+
+### Bug Fixes
+
+* align Advanced Settings accordion with mobile/responsive patterns ([059739d](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/059739da8dbd9575a761398fddd3cd451cece9d9)), closes [#97](https://github.com/fderuiter/Clinical-Randomization-Generator/issues/97)
+* **e2e:** expand Advanced Settings accordion before filling seed in code-generator test ([56dd010](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/56dd010de77c12109aeae5213196ec0654f73429)), closes [#seed](https://github.com/fderuiter/Clinical-Randomization-Generator/issues/seed)
+
+
+### Features
+
+* progressive disclosure accordion with CDK tooltips for advanced settings ([25b0297](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/25b0297a306b73ad6093c2b4480bf473167a3892)), closes [hi#contrast](https://github.com/hi/issues/contrast)
+
 # [1.13.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.12.0...v1.13.0) (2026-04-09)
 
 
