@@ -315,6 +315,7 @@ export class ResultsGridComponent {
   hasActiveFilter(column: string): boolean {
     return !!(this.filterState()[column]);
   }
+  /** Copies the audit hash to the clipboard and briefly shows a ✓ icon. */
   copyAuditHash(): void {
     const hash = this.state.results()?.metadata.auditHash;
     if (!hash) return;
