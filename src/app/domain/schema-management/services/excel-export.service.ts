@@ -18,6 +18,12 @@ import { APP_VERSION } from '../../../../environments/version';
 export class ExcelExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
 
+  // ExcelJS ValueType.String = 2; defined here as a named constant so that the
+  // forced cell-type assignments below are self-documenting and not bare magic
+  // numbers.  We cannot use the ExcelJS enum directly because the module is
+  // lazy-loaded inside an async method.
+  private static readonly EXCEL_CELL_TYPE_STRING = 2;
+
   /**
    * Builds an xlsx Blob from the provided result and unblinded flag, then
    * triggers a browser download.
@@ -142,9 +148,9 @@ export class ExcelExportService {
         const cell = excelRow.getCell(colIdx + 1);
         const val = rowValues[key];
         cell.value = val?.text ?? '';
-        // Prefix formula escaping isn't needed; setting `type` to 'string'
+        // Prefix formula escaping isn't needed; setting `type` to String
         // achieves the same protection against auto-formatting.
-        (cell as any).type = 2; // ExcelJS cell type 2 = String
+        (cell as any).type = ExcelExportService.EXCEL_CELL_TYPE_STRING;
         cell.numFmt = '@'; // "@" format = "Text" in Excel
 
         // Track max width for auto-sizing.
@@ -188,7 +194,7 @@ export class ExcelExportService {
       labelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDE9FE' } };
       const valueCell = row.getCell(2);
       valueCell.value = value;
-      (valueCell as any).type = 2;
+      (valueCell as any).type = ExcelExportService.EXCEL_CELL_TYPE_STRING;
       valueCell.numFmt = '@';
       valueCell.alignment = { wrapText: true };
     };
