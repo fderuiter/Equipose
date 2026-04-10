@@ -255,7 +255,11 @@ export class BalanceVerificationComponent {
     this.state.results()?.metadata.config?.randomizationMethod === 'MINIMIZATION'
   );
 
-  /** Maximum block size from the config — used to classify deviations. */
+  /** Maximum block size from the config — used to classify deviations.
+   * Returns Infinity for minimization so any non-zero variance is classified
+   * as 'expected deviation' (status 1) rather than 'critical error' (status 2),
+   * since minimization does not guarantee perfect block-level balance.
+   */
   private readonly maxBlockSize = computed<number>(() => {
     const config = this.state.results()?.metadata.config;
     if (this.isMinimization()) return Infinity;
