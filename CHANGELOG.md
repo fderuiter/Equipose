@@ -1,3 +1,16 @@
+# [1.22.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.21.0...v1.22.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* align all Angular packages to consistent patch versions to resolve npm ci ERESOLVE failure ([e6a2c11](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/e6a2c11408ca01f57bccd9692ef4088ce66a5e61))
+* use takeUntilDestroyed for SW subscription cleanup and align service-worker package version ([d57cf2a](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/d57cf2a0ac2cc90a56d8f70c1502b4d6225123b9))
+
+
+### Features
+
+* implement PWA architecture with service worker, manifest, and update notification ([ee6be4c](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/ee6be4cd86c76108a290d08cefc85181ea5d6f19))
+
 # [1.21.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.20.0...v1.21.0) (2026-04-10)
 
 
