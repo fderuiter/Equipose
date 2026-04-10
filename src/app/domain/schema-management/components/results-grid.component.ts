@@ -376,33 +376,23 @@ export class ResultsGridComponent {
     const data = this.state.results();
     if (!data) return;
 
+    if (!this.isUnblinded()) {
+      window.alert(
+        'JSON export is only available in unblinded mode. Blinded exports redact treatment assignments and cannot be used for reproducibility verification. Please unblind the schema before exporting JSON.'
+      );
+      return;
+    }
+
     const sanitize = (s: string) => s.replace(/[^A-Za-z0-9._-]/g, '_').trim();
     const safeProtocol = sanitize(data.metadata.protocolId);
     const safeSeed = sanitize(data.metadata.seed);
-    const blindLabel = this.isUnblinded() ? 'unblinded' : 'blinded';
 
-    const exportData = this.isUnblinded()
-      ? data
-      : {
-          ...data,
-          metadata: {
-            ...data.metadata,
-            exportMode: 'blinded',
-            exportNotice: 'Treatment assignments are redacted in blinded mode. Unblind to export the full JSON payload.'
-          },
-          schema: data.schema.map(r => ({
-            ...r,
-            treatmentArmId: '*** BLINDED ***',
-            treatmentArm: '*** BLINDED ***'
-          }))
-        };
-
-    const json = JSON.stringify(exportData, null, 2);
+    const json = JSON.stringify(data, null, 2);
     const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `randomization_${safeProtocol}_${safeSeed}_${blindLabel}.json`);
+    link.setAttribute('download', `randomization_${safeProtocol}_${safeSeed}.json`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

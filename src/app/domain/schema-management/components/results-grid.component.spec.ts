@@ -58,7 +58,8 @@ describe('ResultsGridComponent (domain)', () => {
   });
 
   beforeEach(async () => {
-    globalThis.URL.createObjectURL = vi.fn() as any;
+    globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-url');
+    globalThis.URL.revokeObjectURL = vi.fn();
 
     mockFacade = {
       config: signal(null),
@@ -358,6 +359,8 @@ describe('ResultsGridComponent (domain)', () => {
       mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
+      component.isUnblinded.set(true);
+
       const appendSpy = vi.spyOn(document.body, 'appendChild');
       const removeSpy = vi.spyOn(document.body, 'removeChild');
 
@@ -370,26 +373,29 @@ describe('ResultsGridComponent (domain)', () => {
       // The link that was appended should have the correct download filename
       const anchor = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchor.getAttribute('download')).toBe(
-        `randomization_${mockResult.metadata.protocolId}_${mockResult.metadata.seed}_blinded.json`
+        `randomization_${mockResult.metadata.protocolId}_${mockResult.metadata.seed}.json`
       );
 
       appendSpy.mockRestore();
       removeSpy.mockRestore();
     });
 
-    it('should redact treatment assignments in JSON export when blinded', () => {
+    it('should show an alert and not download when exportJson is called while blinded', () => {
       const mockResult = generateMockData(3);
       mockFacade.results.set(mockResult);
       fixture.detectChanges();
 
       component.isUnblinded.set(false);
 
+      const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
       const appendSpy = vi.spyOn(document.body, 'appendChild');
+
       component.exportJson();
 
-      const anchor = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
-      expect(anchor.getAttribute('download')).toContain('_blinded.json');
+      expect(alertSpy).toHaveBeenCalled();
+      expect(appendSpy).not.toHaveBeenCalled();
 
+      alertSpy.mockRestore();
       appendSpy.mockRestore();
     });
 

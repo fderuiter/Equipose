@@ -43,7 +43,10 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
           Upload a previously exported Randomization Result JSON file. Use the
           <strong class="text-gray-800 dark:text-slate-200">JSON</strong> export button on the
           <a routerLink="/generator" class="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-800 dark:hover:text-indigo-300">Generator</a>
-          page to obtain this file. The system will silently re-run
+          page to obtain this file, and make sure the results are
+          <strong class="text-gray-800 dark:text-slate-200">unblinded before exporting</strong> —
+          blinded exports redact <code class="text-xs bg-gray-100 dark:bg-slate-700 rounded px-1">treatmentArmId</code>
+          and will cause verification to fail. The system will silently re-run
           the core algorithm using the embedded seed and configuration, then perform a strict row-by-row
           comparison to produce a formal Pass/Fail verification report.
         </p>
