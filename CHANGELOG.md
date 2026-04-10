@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.19.0...v1.20.0) (2026-04-10)
+
+
+### Features
+
+* implement hierarchical block strategy engine with UI and code gen support ([f3f278e](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/f3f278e0a196eaeccfe845865eba589a373afa66))
+
 # [1.19.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.18.0...v1.19.0) (2026-04-10)
 
 
