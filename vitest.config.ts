@@ -26,37 +26,30 @@ function angularTemplateInliner(): Plugin {
         return null;
       }
 
-      const templateUrlPattern = /templateUrl:\s*['"]([^'"]+)['"]/g;
-      let match: RegExpExecArray | null;
-      let result = code;
-      let offset = 0;
+      let changed = false;
+      const result = code.replace(
+        /templateUrl:\s*['"]([^'"]+)['"]/g,
+        (fullMatch, relPath: string) => {
+          const htmlPath = resolve(dirname(id), relPath);
+          let htmlContent: string;
+          try {
+            htmlContent = readFileSync(htmlPath, 'utf-8');
+          } catch {
+            // HTML file not found — leave this occurrence unchanged.
+            return fullMatch;
+          }
 
-      while ((match = templateUrlPattern.exec(code)) !== null) {
-        const [fullMatch, relPath] = match;
-        const htmlPath = resolve(dirname(id), relPath);
+          changed = true;
+          // Escape characters that would break a template literal.
+          const escaped = htmlContent
+            .replace(/\\/g, '\\\\')
+            .replace(/`/g, '\\`')
+            .replace(/\$\{/g, '\\${');
+          return `template: \`${escaped}\``;
+        },
+      );
 
-        let htmlContent: string;
-        try {
-          htmlContent = readFileSync(htmlPath, 'utf-8');
-        } catch {
-          // HTML file not found — leave this occurrence unchanged.
-          continue;
-        }
-
-        // Escape characters that would break a template literal.
-        const escaped = htmlContent
-          .replace(/\\/g, '\\\\')
-          .replace(/`/g, '\\`')
-          .replace(/\$\{/g, '\\${');
-
-        const replacement = `template: \`${escaped}\``;
-        const start = match.index + offset;
-        const end = start + fullMatch.length;
-        result = result.slice(0, start) + replacement + result.slice(end);
-        offset += replacement.length - fullMatch.length;
-      }
-
-      return result === code ? null : { code: result };
+      return changed ? { code: result } : null;
     },
   };
 }
