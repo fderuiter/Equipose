@@ -184,9 +184,87 @@
                   placeholder="e.g., <65  then press Enter"
                 />
               </div>
+
+              <!-- Covariate Distribution for Minimization -->
+              @if (randomizationMethod === 'MINIMIZATION') {
+                <div class="pl-8 mt-2">
+                  <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Expected Arrival Probabilities</label>
+                  <div class="space-y-1">
+                    @for (level of getStrataLevels($index); track level) {
+                      <div class="flex items-center gap-2">
+                        <label class="flex-1 text-xs text-gray-600 dark:text-slate-400 truncate" [title]="level">{{ level }}</label>
+                        <input
+                          type="number" inputmode="decimal" min="0" max="100"
+                          [value]="getMinimizationProbability(getStrataId($index), level)"
+                          (input)="setMinimizationProbability(getStrataId($index), level, +$any($event.target).value)"
+                          class="w-20 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
+                          placeholder="%">
+                        <span class="text-xs text-gray-500 dark:text-slate-400">%</span>
+                      </div>
+                    }
+                    <p class="text-xs mt-0.5"
+                       [class.text-red-600]="isMinimizationProbabilityInvalid(getStrataId($index))"
+                       [class.text-gray-400]="!isMinimizationProbabilityInvalid(getStrataId($index))">
+                      Total: {{ getMinimizationProbabilityTotal(getStrataId($index), getStrataLevels($index)) }}% (must sum to 100%)
+                    </p>
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>
+      </section>
+
+      <!-- Algorithm Selector -->
+      <section>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4 border-b border-gray-200 dark:border-slate-700 pb-2">Randomization Algorithm</h2>
+        <div class="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden" role="radiogroup" aria-label="Randomization algorithm">
+          <button type="button" (click)="form.get('randomizationMethod')?.setValue('BLOCK')"
+            role="radio" [attr.aria-checked]="randomizationMethod === 'BLOCK'"
+            [class.bg-indigo-600]="randomizationMethod === 'BLOCK'"
+            [class.text-white]="randomizationMethod === 'BLOCK'"
+            [class.bg-white]="randomizationMethod !== 'BLOCK'"
+            [class.dark:bg-slate-700]="randomizationMethod !== 'BLOCK'"
+            [class.text-gray-700]="randomizationMethod !== 'BLOCK'"
+            [class.dark:text-slate-300]="randomizationMethod !== 'BLOCK'"
+            class="flex-1 px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            Stratified Block (Permuted)
+          </button>
+          <button type="button" (click)="form.get('randomizationMethod')?.setValue('MINIMIZATION')"
+            role="radio" [attr.aria-checked]="randomizationMethod === 'MINIMIZATION'"
+            [class.bg-indigo-600]="randomizationMethod === 'MINIMIZATION'"
+            [class.text-white]="randomizationMethod === 'MINIMIZATION'"
+            [class.bg-white]="randomizationMethod !== 'MINIMIZATION'"
+            [class.dark:bg-slate-700]="randomizationMethod !== 'MINIMIZATION'"
+            [class.text-gray-700]="randomizationMethod !== 'MINIMIZATION'"
+            [class.dark:text-slate-300]="randomizationMethod !== 'MINIMIZATION'"
+            class="flex-1 px-3 py-2 text-sm font-medium border-l border-gray-300 dark:border-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            Minimization (Pocock-Simon)
+          </button>
+        </div>
+
+        <!-- Minimization parameters -->
+        @if (randomizationMethod === 'MINIMIZATION') {
+          <div class="mt-4 space-y-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <p class="text-xs text-purple-700 dark:text-purple-300">
+              Minimization dynamically assigns treatments by evaluating the current covariate imbalance across all factors (Pocock-Simon method). Assign expected population distributions to stratification factor levels below.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Base Probability (p)</label>
+                <input type="number" inputmode="decimal" formControlName="minimizationP" min="0.5" max="1.0" step="0.05"
+                  class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border tabular-nums">
+                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Probability the arm with lowest imbalance is selected (0.5–1.0).</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Total Sample Size (N)</label>
+                <input type="number" inputmode="numeric" formControlName="totalSampleSize" min="1"
+                  class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border tabular-nums">
+                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Total number of subjects across all sites.</p>
+              </div>
+            </div>
+          </div>
+        }
       </section>
 
       <!-- Sites & Blocks -->
@@ -204,6 +282,7 @@
               />
             </div>
 
+            @if (randomizationMethod !== 'MINIMIZATION') {
             <div class="space-y-4">
               <div>
                 <label for="blockSizesStr" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Block Sizes (comma-separated)</label>
@@ -564,15 +643,18 @@
                 }
               </div>
             </div>
+            } <!-- end @if randomizationMethod !== 'MINIMIZATION' -->
           </div>
 
           <!-- Right column: Block Preview widget -->
+          @if (randomizationMethod !== 'MINIMIZATION') {
           <div class="rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700/50 p-4 shadow-sm">
             <app-block-preview
               [arms]="armsSignal()"
               [blockSizes]="blockSizesSignal()"
             />
           </div>
+          }
         </div>
       </section>
 

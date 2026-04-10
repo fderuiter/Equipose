@@ -10,8 +10,7 @@ import { TagInputComponent } from './tag-input.component';
 import { previewSubjectIdMask, validateSubjectIdMask } from '../../randomization-engine/core/subject-id-engine';
 import { BlockPreviewComponent, ArmInput } from './block-preview.component';
 import { computeProportionalCaps, validateProportionalPercentages } from '../../randomization-engine/core/cap-strategy';
-import { CapStrategy } from '../../core/models/randomization.model';
-@Component({
+import { CapStrategy } from '../../core/models/randomization.model';@Component({
   selector: 'app-config-form',
   standalone: true,
   imports: [ReactiveFormsModule, CdkDropList, CdkDrag, CdkDragHandle, TagInputComponent, MatTooltipModule, BlockPreviewComponent],
@@ -50,6 +49,12 @@ export class ConfigFormComponent implements OnInit {
    */
   readonly marginalCaps = signal<Record<string, Record<string, number | undefined>>>({});
 
+  /**
+   * Reactive signal tracking per-factor per-level probabilities for minimization.
+   * Shape: { [factorId]: { [levelName]: number } }
+   */
+  readonly minimizationProbabilities = signal<Record<string, Record<string, number>>>({});
+
   /** Whether the computed proportional matrix has been generated and is ready to display. */
   readonly matrixComputed = signal(false);
 
@@ -73,7 +78,10 @@ export class ConfigFormComponent implements OnInit {
       seed: [''],
       subjectIdMask: ['{SITE}-{STRATUM}-{SEQ:3}', Validators.required],
       capStrategy: ['MANUAL_MATRIX'],
-      globalCap: [100, [Validators.required, Validators.min(1)]]
+      globalCap: [100, [Validators.required, Validators.min(1)]],
+      randomizationMethod: ['BLOCK'],
+      minimizationP: [0.8, [Validators.required, Validators.min(0.5), Validators.max(1.0)]],
+      totalSampleSize: [120, [Validators.required, Validators.min(1)]]
     },
     { validators: this.blockSizesValidator.bind(this) }
   );
@@ -162,6 +170,27 @@ export class ConfigFormComponent implements OnInit {
     if (this.capStrategy !== 'PROPORTIONAL') {
       this.form.get('globalCap')?.disable();
     }
+
+    // Enable/disable minimization controls based on the randomization method.
+    this.form.get('randomizationMethod')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((method: string) => {
+        const minimizationP = this.form.get('minimizationP');
+        const totalSampleSize = this.form.get('totalSampleSize');
+        if (method === 'MINIMIZATION') {
+          minimizationP?.enable();
+          totalSampleSize?.enable();
+        } else {
+          minimizationP?.disable();
+          totalSampleSize?.disable();
+        }
+        this.form.updateValueAndValidity();
+      });
+    // Initialise: disable minimization controls when starting in BLOCK mode.
+    if (this.randomizationMethod !== 'MINIMIZATION') {
+      this.form.get('minimizationP')?.disable();
+      this.form.get('totalSampleSize')?.disable();
+    }
   }
 
   @HostListener('document:click', ['$event'])
@@ -179,6 +208,11 @@ export class ConfigFormComponent implements OnInit {
   /** Current block selection type for the global strategy. */
   get blockSelectionType(): 'RANDOM_POOL' | 'FIXED_SEQUENCE' {
     return (this.form.get('blockSelectionType')?.value as 'RANDOM_POOL' | 'FIXED_SEQUENCE') ?? 'RANDOM_POOL';
+  }
+
+  /** Current randomization method. */
+  get randomizationMethod(): 'BLOCK' | 'MINIMIZATION' {
+    return (this.form.get('randomizationMethod')?.value as 'BLOCK' | 'MINIMIZATION') ?? 'BLOCK';
   }
 
   /** Current cap strategy value. */
@@ -311,8 +345,9 @@ export class ConfigFormComponent implements OnInit {
   }
 
   /**
-   * Synchronise the proportional percentages and marginal caps signals whenever
-   * strata levels change, preserving existing values where level names match.
+   * Synchronise the proportional percentages, marginal caps, and minimization
+   * probabilities signals whenever strata levels change, preserving existing
+   * values where level names match.
    */
   private syncLevelDetails(strataVals: StratumFormValue[]): void {
     this.proportionalPercentages.update(prev => {
@@ -337,6 +372,18 @@ export class ConfigFormComponent implements OnInit {
           if (existingCap !== undefined) {
             next[s.id][level] = existingCap;
           }
+        }
+      }
+      return next;
+    });
+
+    this.minimizationProbabilities.update(prev => {
+      const next: Record<string, Record<string, number>> = {};
+      for (const s of strataVals) {
+        const levels = s.levelsStr.split(',').map(l => l.trim()).filter(l => l);
+        next[s.id] = {};
+        for (const level of levels) {
+          next[s.id][level] = prev[s.id]?.[level] ?? 0;
         }
       }
       return next;
@@ -486,17 +533,20 @@ export class ConfigFormComponent implements OnInit {
   private buildFormValue() {
     // getRawValue() includes disabled controls (e.g., globalCap when strategy ≠ PROPORTIONAL).
     const base = this.form.getRawValue();
-    const levelDetails: Record<string, { name: string; targetPercentage: number; marginalCap?: number }[]> = {};
+    const levelDetails: Record<string, { name: string; targetPercentage: number; marginalCap?: number; expectedProbability?: number }[]> = {};
     const percentages = this.proportionalPercentages();
     const caps = this.marginalCaps();
+    const minimizationProbs = this.minimizationProbabilities();
     for (const s of (this.strata.value as StratumFormValue[])) {
       const levels = s.levelsStr.split(',').map((l: string) => l.trim()).filter((l: string) => l);
       levelDetails[s.id] = levels.map(level => {
         const marginalCap = caps[s.id]?.[level];
+        const minimizationExpectedProbability = minimizationProbs[s.id]?.[level];
         return {
           name: level,
           targetPercentage: percentages[s.id]?.[level] ?? 0,
-          ...(marginalCap !== undefined ? { marginalCap } : {})
+          ...(marginalCap !== undefined ? { marginalCap } : {}),
+          ...(minimizationExpectedProbability !== undefined ? { expectedProbability: minimizationExpectedProbability / 100 } : {})
         };
       });
     }
@@ -513,6 +563,8 @@ export class ConfigFormComponent implements OnInit {
   }
 
   private blockSizesValidator(group: FormGroup): { invalidBlockSize: true } | null {
+    const method = group.get('randomizationMethod')?.value as string;
+    if (method === 'MINIMIZATION') return null;
     const arms = group.get('arms') as FormArray;
     const blockSizesStr = group.get('blockSizesStr')?.value as string;
     if (!arms || !blockSizesStr) return null;
@@ -520,5 +572,39 @@ export class ConfigFormComponent implements OnInit {
     const sizes = blockSizesStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     for (const size of sizes) { if (size % total !== 0) return { invalidBlockSize: true }; }
     return null;
+  }
+
+  // ── Minimization helpers ──────────────────────────────────────────────────
+
+  getStrataId(index: number): string {
+    return (this.strata.at(index).get('id')?.value as string) ?? '';
+  }
+
+  getStrataLevels(index: number): string[] {
+    const levelsStr = this.strata.at(index).get('levelsStr')?.value as string ?? '';
+    return levelsStr.split(',').map(l => l.trim()).filter(l => l);
+  }
+
+  getMinimizationProbability(factorId: string, level: string): number {
+    return this.minimizationProbabilities()[factorId]?.[level] ?? 0;
+  }
+
+  getMinimizationProbabilityTotal(factorId: string, levels: string[]): number {
+    const probs = this.minimizationProbabilities();
+    return levels.reduce((sum, l) => sum + (probs[factorId]?.[l] ?? 0), 0);
+  }
+
+  isMinimizationProbabilityInvalid(factorId: string): boolean {
+    const levels = this.strataWithLevels.find(s => s.id === factorId)?.levels ?? [];
+    if (levels.length === 0) return false;
+    const total = this.getMinimizationProbabilityTotal(factorId, levels);
+    return Math.abs(total - 100) > 0.01;
+  }
+
+  setMinimizationProbability(factorId: string, level: string, value: number): void {
+    this.minimizationProbabilities.update(prev => ({
+      ...prev,
+      [factorId]: { ...(prev[factorId] ?? {}), [level]: value }
+    }));
   }
 }
