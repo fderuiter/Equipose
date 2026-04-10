@@ -43,7 +43,7 @@ export class MethodologySpecificationService {
     paragraphs.push(this.buildBlockNarrative(config));
 
     // 3. Stratification factors
-    paragraphs.push(this.buildStrataticationNarrative(config));
+    paragraphs.push(this.buildStratificationNarrative(config));
 
     // 4. Cap strategy
     paragraphs.push(this.buildCapStrategyNarrative(config));
@@ -147,7 +147,7 @@ export class MethodologySpecificationService {
     return text;
   }
 
-  private buildStrataticationNarrative(config: RandomizationConfig): string {
+  private buildStratificationNarrative(config: RandomizationConfig): string {
     const strata = config.strata || [];
     if (strata.length === 0) {
       return (
