@@ -612,6 +612,9 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
         ],
         seed: 'strat_override',
         subjectIdMask: '[SiteID]-[001]',
+        // computeStratumCode() uses the first 3 characters uppercased:
+        //  '<65'  → substring(0,3).toUpperCase() = '<65'
+        //  '>=65' → substring(0,3).toUpperCase() = '>=6'
         stratumBlockOverrides: {
           '<65': { selectionType: 'FIXED_SEQUENCE', sizes: [4] },
           '>=6': { selectionType: 'FIXED_SEQUENCE', sizes: [4] }
