@@ -370,8 +370,27 @@ describe('ResultsGridComponent (domain)', () => {
       // The link that was appended should have the correct download filename
       const anchor = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchor.getAttribute('download')).toBe(
-        `randomization_${mockResult.metadata.protocolId}_${mockResult.metadata.seed}.json`
+        `randomization_${mockResult.metadata.protocolId}_${mockResult.metadata.seed}_unblinded.json`
       );
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
+    });
+
+    it('should redact treatment assignments in JSON export when blinded', () => {
+      const mockResult = generateMockData(3);
+      mockFacade.results.set(mockResult);
+      fixture.detectChanges();
+
+      component.isUnblinded.set(false);
+
+      const appendSpy = vi.spyOn(document.body, 'appendChild');
+      component.exportJson();
+
+      const anchor = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
+      expect(anchor.getAttribute('download')).toContain('_blinded.json');
+
+      appendSpy.mockRestore();
     });
 
     it('should not throw when exportJson is called with no results', () => {
