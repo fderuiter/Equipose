@@ -3,11 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # Triggers the workflow automatically on pushes to the main branch
-  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: write # Needed for semantic-release to create tags/releases
+  contents: write
   pages: write
   id-token: write
   issues: write
@@ -21,7 +21,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://equipose.org # Hardcoded to your new custom domain
     runs-on: ubuntu-latest
 
     steps:
@@ -43,14 +43,16 @@ jobs:
         run: npx semantic-release
 
       - name: Build Angular Project
-        # The --base-href flag is CRITICAL. It tells Angular to look for assets
-        # in the repository subdirectory, not the root domain.
-        run: npm run build -- --base-href /Clinical-Randomization-Generator/
+        # CRITICAL UPDATE: Base href is now the root directory for the custom domain
+        run: npm run build -- --base-href /
 
       - name: Fix Angular Routing (Create 404.html)
-        # GitHub Pages doesn't understand SPA routing. This copies the index file
-        # so any direct URL hits are routed back through Angular's router.
         run: cp dist/app/browser/index.html dist/app/browser/404.html
+
+      - name: Inject CNAME File
+        # This is the exact fix for your InvalidDNSError.
+        # It forces the domain configuration into the final deployment package.
+        run: echo "equipose.org" > dist/app/browser/CNAME
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v6
