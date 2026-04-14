@@ -1231,7 +1231,7 @@ describe('CodeGeneratorService', () => {
             },
             {
               id: 'age', name: 'Age', levels: ['Young', 'Old']
-              // no levelDetails — all uncapped, but sex is fully capped so guard passes
+              // no levelDetails - all uncapped, but sex is fully capped so guard passes
             }
           ]
         };
