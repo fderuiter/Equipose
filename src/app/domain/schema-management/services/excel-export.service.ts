@@ -66,7 +66,7 @@ export class ExcelExportService {
     isUnblinded: boolean,
   ): void {
     const sheet = workbook.addWorksheet('Schema');
-    const strataFactors = result.metadata.strata ?? [];
+    const strataFactors = result.metadata.strata;
 
     // ── Column definitions ──────────────────────────────────────────────────
     const columnKeys: string[] = [

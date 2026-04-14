@@ -212,11 +212,13 @@ describe('ExcelExportService', () => {
   // ── Schema sheet – cell formatting ───────────────────────────────────────
 
   it('should set numFmt "@" on every schema data cell to enforce Text type', async () => {
-    await service.exportXlsx(buildMockResult(), true);
+    const result = buildMockResult();
+    await service.exportXlsx(result, true);
     const schemaSheet = mockState.workbooks[0]._sheets[0];
-    // Two data rows, each with 6 columns (subjectId, site, sex, age, blockNum, blockSize, treatmentArm → 7 cols total)
+    // Base columns: subjectId, site, blockNumber, blockSize, treatmentArm (5) + one per stratum factor.
+    const colCount = 5 + result.metadata.strata.length;
     for (const dataRow of schemaSheet._dataRows) {
-      for (let colIdx = 1; colIdx <= 7; colIdx++) {
+      for (let colIdx = 1; colIdx <= colCount; colIdx++) {
         const cell = dataRow.getCell(colIdx);
         expect(cell.numFmt).toBe('@');
       }
@@ -234,18 +236,22 @@ describe('ExcelExportService', () => {
   // ── Blinding behaviour ───────────────────────────────────────────────────
 
   it('should show real treatment arm when isUnblinded is true', async () => {
-    await service.exportXlsx(buildMockResult(), true);
+    const result = buildMockResult();
+    await service.exportXlsx(result, true);
     const schemaSheet = mockState.workbooks[0]._sheets[0];
     const firstRow = schemaSheet._dataRows[0];
-    // treatmentArm is the last column (index 7 for 2 strata factors)
-    expect(firstRow.getCell(7).value).toBe('Active');
+    // treatmentArm is always the last column: 5 base cols + strata count
+    const treatmentArmColIdx = 5 + result.metadata.strata.length;
+    expect(firstRow.getCell(treatmentArmColIdx).value).toBe('Active');
   });
 
   it('should mask treatment arm with "*** BLINDED ***" when isUnblinded is false', async () => {
-    await service.exportXlsx(buildMockResult(), false);
+    const result = buildMockResult();
+    await service.exportXlsx(result, false);
     const schemaSheet = mockState.workbooks[0]._sheets[0];
+    const treatmentArmColIdx = 5 + result.metadata.strata.length;
     for (const dataRow of schemaSheet._dataRows) {
-      expect(dataRow.getCell(7).value).toBe('*** BLINDED ***');
+      expect(dataRow.getCell(treatmentArmColIdx).value).toBe('*** BLINDED ***');
     }
   });
 
