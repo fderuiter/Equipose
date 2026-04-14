@@ -71,7 +71,7 @@ test.describe('Code Generator Modal UI', () => {
     // Use evaluate instead of click to bypass pointer-events
     await downloadBtn.evaluate(node => node.click());
     const downloadR = await downloadPromiseR;
-    expect(downloadR.suggestedFilename()).toBe('randomization_code.R');
+    expect(downloadR.suggestedFilename()).toBe('randomization_schema.R');
 
     // Verify Python Code
     const pythonTab = modal.getByRole('button', { name: /Python/i });
@@ -82,7 +82,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.evaluate(node => node.click());
     const downloadPy = await downloadPromisePy;
-    expect(downloadPy.suggestedFilename()).toBe('randomization_code.py');
+    expect(downloadPy.suggestedFilename()).toBe('randomization_schema.py');
 
     // Verify SAS Code
     const sasTab = modal.getByRole('button', { name: /SAS/i });
@@ -93,7 +93,18 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPromiseSas = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.evaluate(node => node.click());
     const downloadSas = await downloadPromiseSas;
-    expect(downloadSas.suggestedFilename()).toBe('randomization_code.sas');
+    expect(downloadSas.suggestedFilename()).toBe('randomization_schema.sas');
+
+    // Verify Stata Code
+    const stataTab = modal.getByRole('button', { name: /Stata/i });
+    await stataTab.evaluate(node => node.click());
+    await expect(stataTab).toHaveClass(/border-indigo-500/);
+    await expect(generatedCode).toContainText(/Randomization Schema Generation in Stata/i, { timeout: 10000 });
+
+    const downloadPromiseStata = page.waitForEvent('download', { timeout: 10000 });
+    await downloadBtn.evaluate(node => node.click());
+    const downloadStata = await downloadPromiseStata;
+    expect(downloadStata.suggestedFilename()).toBe('randomization_schema.do');
 
     // Close modal
     await modal.getByRole('button', { name: /Close/i }).evaluate(node => node.click());
