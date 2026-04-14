@@ -4,6 +4,15 @@ export interface TreatmentArm {
   ratio: number;
 }
 
+export type RandomizationMethod = 'BLOCK' | 'MINIMIZATION';
+
+export interface MinimizationConfig {
+  /** Base probability (0.5–1.0) that the preferred arm (lowest imbalance) is selected. Default: 0.8 */
+  p: number;
+  /** Total number of virtual subjects to simulate for the cohort. */
+  totalSampleSize: number;
+}
+
 /** Optional per-level metadata used by the proportional and marginal cap strategies. */
 export interface StratificationLevel {
   name: string;
@@ -11,6 +20,8 @@ export interface StratificationLevel {
   targetPercentage?: number;
   /** Hard limit on the number of subjects with this level value when capStrategy is 'MARGINAL_ONLY'. */
   marginalCap?: number;
+  /** Expected proportion of subjects with this level (0–1). Used by minimization simulation. */
+  expectedProbability?: number;
 }
 
 export interface StratificationFactor {
@@ -81,6 +92,10 @@ export interface RandomizationConfig {
    * Key = Stratum Code computed by `computeStratumCode()` (e.g. `"MAL-U65-USA"`).
    */
   stratumBlockOverrides?: Record<string, BlockRule>;
+  /** Randomization method. Defaults to 'BLOCK' when absent. */
+  randomizationMethod?: RandomizationMethod;
+  /** Minimization algorithm configuration (used when randomizationMethod === 'MINIMIZATION'). */
+  minimizationConfig?: MinimizationConfig;
 }
 
 export interface GeneratedSchema {

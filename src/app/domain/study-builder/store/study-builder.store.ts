@@ -1,6 +1,6 @@
 import { computed } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { BlockRule, CapStrategy, RandomizationConfig } from '../../core/models/randomization.model';
+import { BlockRule, CapStrategy, RandomizationConfig, RandomizationMethod } from '../../core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Types used internally by the store
@@ -22,6 +22,7 @@ export interface LevelDetailFormValue {
   name: string;
   targetPercentage?: number;
   marginalCap?: number;
+  expectedProbability?: number;
 }
 
 export interface StudyBuilderFormValue {
@@ -46,6 +47,12 @@ export interface StudyBuilderFormValue {
    * Each entry has a target type ('site' | 'stratum'), a target ID, and a BlockRule.
    */
   blockOverrides?: BlockOverrideFormValue[];
+  /** Randomization method. Defaults to 'BLOCK' when absent. */
+  randomizationMethod?: RandomizationMethod;
+  /** Minimization base probability. */
+  minimizationP?: number;
+  /** Minimization total sample size. */
+  totalSampleSize?: number;
 }
 
 export interface BlockOverrideFormValue {
@@ -244,7 +251,8 @@ export const StudyBuilderStore = signalStore(
               ? details.map(d => ({
                   name: d.name,
                   targetPercentage: d.targetPercentage,
-                  marginalCap: d.marginalCap
+                  marginalCap: d.marginalCap,
+                  expectedProbability: d.expectedProbability
                 }))
               : undefined
           };
@@ -257,7 +265,14 @@ export const StudyBuilderStore = signalStore(
         globalCap: formValue.globalCap ?? 100,
         globalBlockStrategy: { selectionType: globalSelectionType, sizes: globalSizes },
         ...(Object.keys(siteBlockOverrides).length ? { siteBlockOverrides } : {}),
-        ...(Object.keys(stratumBlockOverrides).length ? { stratumBlockOverrides } : {})
+        ...(Object.keys(stratumBlockOverrides).length ? { stratumBlockOverrides } : {}),
+        randomizationMethod: formValue.randomizationMethod ?? 'BLOCK',
+        ...(formValue.randomizationMethod === 'MINIMIZATION' ? {
+          minimizationConfig: {
+            p: formValue.minimizationP ?? 0.8,
+            totalSampleSize: formValue.totalSampleSize ?? 100
+          }
+        } : {})
       };
     }
   }))
