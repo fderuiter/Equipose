@@ -1609,7 +1609,6 @@ title;
 
     const combos = this.computeCombinations(strata);
     const nCombos = combos.length;
-    const nFactors = strata.length;
 
     // Sanitised variable names for strata factors
     const varNames = strata.map(s => this.sanitizeStataVarName(s.id));
@@ -1684,9 +1683,6 @@ title;
     // Combo factor assignments for pool dataset (Cartesian product rows)
     const comboFactorAssigns = strata.map((s, si) => {
       const safeVarName = varNames[si];
-      // For combo i (1-based): value = the level index of this factor in that combo
-      const vals = combos.map(c => levelIdx.get(s.id)?.get(c[s.id] ?? '') ?? 1);
-      // Generate using mod-based formulas where possible, or explicit if-list
       return `    * ${safeVarName}: ${s.levels.map((l, j) => `${j+1}=${l}`).join(', ')}\n` +
              `    gen int ${safeVarName} = .`;
     }).join('\n');
@@ -1714,7 +1710,7 @@ title;
 
     // Factor-value extraction from chosen combo row
     const factorValueExtraction = varNames.map(v =>
-      `        local chosen_${v} = ${v}[_chosen_row]`
+      `        local chosen_${v} = ${v}[\`_chosen_row']`
     ).join('\n');
 
     // Block size pick code
@@ -1740,12 +1736,12 @@ title;
     try {
       // Site macro declarations
       const siteMacros = sites.map((s, i) =>
-        `local site_${i + 1} \`"${s}"'`
+        `local site_${i + 1} "${s}"`
       ).join('\n');
 
       // Arm macro declarations
       const armMacros = arms.map((a, i) =>
-        `local arm_name_${i + 1} \`"${a.name}"'\nlocal arm_ratio_${i + 1} = ${a.ratio}`
+        `local arm_name_${i + 1} "${a.name}"\nlocal arm_ratio_${i + 1} = ${a.ratio}`
       ).join('\n');
 
       let code = `* Randomization Schema Generation in Stata
@@ -1823,7 +1819,7 @@ postfile \`_schema_fh' str50 SubjectID str50 Site int BlockNumber int BlockSize 
     using \`_schema_data', replace
 
 forvalues s = 1/\`n_sites' {
-    local site \`"\`site_\`s'"\''
+    local site \`site_\`s''
     local site_count = 0
     local block_num = 0
 
@@ -1866,12 +1862,12 @@ ${blockSizePick}
         * Build treatment block using indexed local macros
         local blk_idx = 0
         forvalues a = 1/\`n_arms' {
-            local arm_name \`"\`arm_name_\`a'"\''
+            local arm_name \`arm_name_\`a''
             local arm_ratio = \`arm_ratio_\`a''
             local arm_reps = round(\`arm_ratio' * \`multiplier')
             forvalues r = 1/\`arm_reps' {
                 local blk_idx = \`blk_idx' + 1
-                local blk_\`blk_idx' \`"\`arm_name'"\''
+                local blk_\`blk_idx' \`arm_name'
             }
         }
         local n_block = \`blk_idx'
@@ -1879,9 +1875,9 @@ ${blockSizePick}
         * Fisher-Yates shuffle
         forvalues _i = \`n_block'(-1)2 {
             local _j = ceil(runiform() * \`_i')
-            local _tmp \`"\`blk_\`_i'"\''
-            local blk_\`_i' \`"\`blk_\`_j'"\''
-            local blk_\`_j' \`"\`_tmp'"\''
+            local _tmp \`blk_\`_i''
+            local blk_\`_i' \`blk_\`_j''
+            local blk_\`_j' \`_tmp'
         }
 
         * Process each subject in the block (checking marginal caps)
@@ -2073,12 +2069,12 @@ list in 1/20, clean noobs
     try {
       // Site macro declarations (indexed, handles spaces in names)
       const siteMacros = sites.map((s, i) =>
-        `local site_${i + 1} \`"${s}"'`
+        `local site_${i + 1} "${s}"`
       ).join('\n');
 
       // Arm macro declarations (indexed)
       const armMacros = arms.map((a, i) =>
-        `local arm_name_${i + 1} \`"${a.name}"'\nlocal arm_ratio_${i + 1} = ${a.ratio}`
+        `local arm_name_${i + 1} "${a.name}"\nlocal arm_ratio_${i + 1} = ${a.ratio}`
       ).join('\n');
 
       // Block size pick code
@@ -2094,9 +2090,6 @@ list in 1/20, clean noobs
         });
         blockSizePick = `                local _rand_bs = runiform()\n${parts.join('\n')}`;
       }
-
-      // Inner indentation: strata.length levels of nesting (+ 1 for site loop)
-      const innerInd = '    '.repeat(strata.length + 2);
 
       // Cap annotation comments for header
       const capAnnotations = strata.length > 0
@@ -2163,7 +2156,7 @@ postfile \`_schema_fh' str50 SubjectID str50 Site int BlockNumber int BlockSize 
     using \`_schema_data', replace
 
 forvalues s = 1/\`n_sites' {
-    local site \`"\`site_\`s'"\''
+    local site \`site_\`s''
     local site_count = 0
 ${forvaluesOpen ? '\n' + forvaluesOpen : ''}
 ${capConditions}
@@ -2178,12 +2171,12 @@ ${blockSizePick}
                 * Build treatment block using indexed local macros
                 local blk_idx = 0
                 forvalues a = 1/\`n_arms' {
-                    local arm_name \`"\`arm_name_\`a'"\''
+                    local arm_name \`arm_name_\`a''
                     local arm_ratio = \`arm_ratio_\`a''
                     local arm_reps = round(\`arm_ratio' * \`multiplier')
                     forvalues r = 1/\`arm_reps' {
                         local blk_idx = \`blk_idx' + 1
-                        local blk_\`blk_idx' \`"\`arm_name'"\''
+                        local blk_\`blk_idx' \`arm_name'
                     }
                 }
                 local n_block = \`blk_idx'
@@ -2191,9 +2184,9 @@ ${blockSizePick}
                 * Fisher-Yates shuffle (in-place via indexed local macros)
                 forvalues _i = \`n_block'(-1)2 {
                     local _j = ceil(runiform() * \`_i')
-                    local _tmp \`"\`blk_\`_i'"\''
-                    local blk_\`_i' \`"\`blk_\`_j'"\''
-                    local blk_\`_j' \`"\`_tmp'"\''
+                    local _tmp \`blk_\`_i''
+                    local blk_\`_i' \`blk_\`_j''
+                    local blk_\`_j' \`_tmp'
                 }
 
                 * Output subjects (truncate to remaining cap)
