@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.24.0...v1.25.0) (2026-04-14)
+
+
+### Features
+
+* add native Excel (.xlsx) export with two-sheet workbook and strict text typing ([1d283ca](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/1d283cabc6648da516df72e1b4942b5cea4f531f))
+
 # [1.24.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.23.0...v1.24.0) (2026-04-14)
 
 
