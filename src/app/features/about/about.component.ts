@@ -158,6 +158,7 @@ import {SeoService} from '../../core/services/seo.service';
 export class AboutComponent {
   readonly appVersion = APP_VERSION;
   readonly citationYear = new Date().getFullYear();
+  readonly bibtex: string;
 
   constructor() {
     inject(SeoService).setPage({
@@ -165,6 +166,16 @@ export class AboutComponent {
       description: 'Learn about Equipose, the free open-source stratified block randomization tool for clinical trials. Built for biostatisticians, CROs, and academic researchers.',
       canonicalPath: '/about',
     });
+
+    this.bibtex =
+`@software{deruiter_equipose_${this.citationYear},
+  author    = {de Ruiter, Frederick},
+  title     = {Equipose: Free Stratified Block Randomization Tool for Clinical Trials},
+  year      = {${this.citationYear}},
+  version   = {${APP_VERSION}},
+  url       = {https://equipose.org},
+  note      = {Open-source web application}
+}`;
   }
 
   readonly features = [
@@ -210,13 +221,4 @@ export class AboutComponent {
     { name: 'ECharts', role: 'Interactive schema analytics charts' },
     { name: 'ExcelJS', role: 'Multi-sheet Excel schema export' },
   ];
-
-  readonly bibtex = `@software{deruiter_equipose_${new Date().getFullYear()},
-  author    = {de Ruiter, Frederick},
-  title     = {Equipose: Free Stratified Block Randomization Tool for Clinical Trials},
-  year      = {${new Date().getFullYear()}},
-  version   = {${APP_VERSION}},
-  url       = {https://equipose.org},
-  note      = {Open-source web application}
-}`;
 }

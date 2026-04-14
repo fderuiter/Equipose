@@ -1,5 +1,7 @@
-import {ChangeDetectionStrategy, Component, HostListener, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostListener, inject, signal, PLATFORM_ID} from '@angular/core';
 import {RouterOutlet, RouterLink, RouterLinkActive} from '@angular/router';
+import {isPlatformBrowser} from '@angular/common';
+import {DOCUMENT} from '@angular/common';
 import {ThemeService, ThemeMode} from './core/services/theme.service';
 import {UpdateNotificationService} from './core/services/update-notification.service';
 import {UpdateBannerComponent} from './core/components/update-banner.component';
@@ -290,6 +292,24 @@ export class App {
 
   readonly themeMenuOpen = signal(false);
   readonly mobileMenuOpen = signal(false);
+
+  constructor() {
+    // Patch the JSON-LD softwareVersion dynamically so it stays in sync with APP_VERSION
+    const doc = inject(DOCUMENT);
+    const platformId = inject(PLATFORM_ID);
+    if (isPlatformBrowser(platformId)) {
+      const scriptEl = doc.getElementById('app-jsonld') as HTMLScriptElement | null;
+      if (scriptEl) {
+        try {
+          const data = JSON.parse(scriptEl.textContent ?? '{}');
+          data['softwareVersion'] = APP_VERSION.replace(/^v/, '');
+          scriptEl.textContent = JSON.stringify(data);
+        } catch {
+          // non-critical — leave JSON-LD as-is
+        }
+      }
+    }
+  }
 
   setTheme(mode: ThemeMode): void {
     this.theme.setMode(mode);
