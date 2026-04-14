@@ -8,8 +8,9 @@ import { APP_VERSION } from '../../../../environments/version';
  * {@link RandomizationResult}.
  *
  * Sheet 1 – "Schema": the clean, tabular randomization grid with frozen header,
- *   auto-filters, auto-sized columns, and all cells typed as text to prevent
- *   spreadsheet software from mangling leading zeros or numeric identifiers.
+ *   auto-filters, auto-sized columns, and all cells formatted as Text
+ *   (`numFmt: '@'`) to prevent spreadsheet software from mangling leading zeros
+ *   or numeric identifiers.
  *
  * Sheet 2 – "Audit & Configuration": trial metadata, PRNG seed, protocol ID,
  *   generation timestamp, and the full randomization methodology narrative.
@@ -17,12 +18,6 @@ import { APP_VERSION } from '../../../../environments/version';
 @Injectable({ providedIn: 'root' })
 export class ExcelExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
-
-  // ExcelJS ValueType.String = 2; defined here as a named constant so that the
-  // forced cell-type assignments below are self-documenting and not bare magic
-  // numbers.  We cannot use the ExcelJS enum directly because the module is
-  // lazy-loaded inside an async method.
-  private static readonly EXCEL_CELL_TYPE_STRING = 2;
 
   /**
    * Builds an xlsx Blob from the provided result and unblinded flag, then
@@ -125,38 +120,34 @@ export class ExcelExportService {
     for (const schema of result.schema) {
       const treatmentArmValue = isUnblinded ? schema.treatmentArm : '*** BLINDED ***';
 
-      const rowValues: Record<string, { text: string; type: 'string' }> = {
-        subjectId: { text: schema.subjectId, type: 'string' },
-        site: { text: schema.site, type: 'string' },
-        blockNumber: { text: String(schema.blockNumber), type: 'string' },
-        blockSize: { text: String(schema.blockSize), type: 'string' },
-        treatmentArm: { text: treatmentArmValue, type: 'string' },
+      const rowValues: Record<string, string> = {
+        subjectId: schema.subjectId,
+        site: schema.site,
+        blockNumber: String(schema.blockNumber),
+        blockSize: String(schema.blockSize),
+        treatmentArm: treatmentArmValue,
       };
 
       for (const factor of strataFactors) {
-        rowValues[`stratum_${factor.id}`] = {
-          text: schema.stratum[factor.id] ?? '',
-          type: 'string',
-        };
+        rowValues[`stratum_${factor.id}`] = schema.stratum[factor.id] ?? '';
       }
 
       const excelRow = sheet.addRow({});
 
-      // Assign each cell individually so we can force the cell type to string,
-      // preventing Excel from re-interpreting numeric-looking identifiers.
+      // Assign each cell individually with an explicit string value and the
+      // Excel "Text" number format ('@').  Using String() values together with
+      // numFmt '@' is the supported API to prevent spreadsheet software from
+      // re-interpreting numeric-looking identifiers (e.g. stripping leading
+      // zeros from Subject IDs).
       columnKeys.forEach((key, colIdx) => {
         const cell = excelRow.getCell(colIdx + 1);
-        const val = rowValues[key];
-        cell.value = val?.text ?? '';
-        // Prefix formula escaping isn't needed; setting `type` to String
-        // achieves the same protection against auto-formatting.
-        (cell as any).type = ExcelExportService.EXCEL_CELL_TYPE_STRING;
+        const val = rowValues[key] ?? '';
+        cell.value = val;
         cell.numFmt = '@'; // "@" format = "Text" in Excel
 
         // Track max width for auto-sizing.
-        const len = (val?.text ?? '').length;
-        if (len > maxWidths[colIdx]) {
-          maxWidths[colIdx] = len;
+        if (val.length > maxWidths[colIdx]) {
+          maxWidths[colIdx] = val.length;
         }
       });
     }
@@ -194,7 +185,6 @@ export class ExcelExportService {
       labelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEDE9FE' } };
       const valueCell = row.getCell(2);
       valueCell.value = value;
-      (valueCell as any).type = ExcelExportService.EXCEL_CELL_TYPE_STRING;
       valueCell.numFmt = '@';
       valueCell.alignment = { wrapText: true };
     };

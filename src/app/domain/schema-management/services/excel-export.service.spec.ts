@@ -4,24 +4,40 @@ import { RandomizationResult } from '../../core/models/randomization.model';
 import { vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
-// Minimal ExcelJS mock – avoids pulling in the real library during unit tests
+// Shared mock state – vi.hoisted ensures initialisation runs before vi.mock
+// factories are evaluated (vi.mock calls are hoisted to the top of the file).
 // ---------------------------------------------------------------------------
 
-const mockCell = () => ({
-  value: undefined as unknown,
-  dataValidation: undefined as unknown,
-  type: undefined as unknown,
-  numFmt: undefined as string | undefined,
-  font: undefined as unknown,
-  fill: undefined as unknown,
-  alignment: undefined as unknown,
-});
+const mockState = vi.hoisted(() => ({
+  workbooks: [] as Array<{
+    creator: string;
+    created: Date;
+    _sheets: ReturnType<typeof createMockSheet>[];
+    addWorksheet: ReturnType<typeof vi.fn>;
+    xlsx: { writeBuffer: ReturnType<typeof vi.fn> };
+  }>,
+}));
 
-const mockRow = () => {
-  const cells: Record<number, ReturnType<typeof mockCell>> = {};
-  const row = {
+// ---------------------------------------------------------------------------
+// Mock cell / row / sheet factories (defined at module scope so both the
+// vi.mock factory AND the test assertions can reference them).
+// ---------------------------------------------------------------------------
+
+function createMockCell() {
+  return {
+    value: undefined as unknown,
+    numFmt: undefined as string | undefined,
+    font: undefined as unknown,
+    fill: undefined as unknown,
+    alignment: undefined as unknown,
+  };
+}
+
+function createMockRow() {
+  const cells: Record<number, ReturnType<typeof createMockCell>> = {};
+  return {
     getCell: (idx: number) => {
-      if (!cells[idx]) cells[idx] = mockCell();
+      if (!cells[idx]) cells[idx] = createMockCell();
       return cells[idx];
     },
     font: undefined as unknown,
@@ -30,38 +46,40 @@ const mockRow = () => {
     height: undefined as unknown,
     _cells: cells,
   };
-  return row;
-};
+}
 
-const mockSheet = () => {
-  const rows: Record<number, ReturnType<typeof mockRow>> = {};
-  const sheet = {
+function createMockSheet(name: string) {
+  const namedRows: Record<number, ReturnType<typeof createMockRow>> = {};
+  const dataRows: ReturnType<typeof createMockRow>[] = [];
+  return {
+    name,
     columns: [] as unknown[],
     views: [] as unknown[],
     autoFilter: undefined as unknown,
+    _namedRows: namedRows,
+    _dataRows: dataRows,
     addRow: vi.fn(() => {
-      const r = mockRow();
-      // Give addRow a getCell method too
+      const r = createMockRow();
+      dataRows.push(r);
       return r;
     }),
     getRow: (idx: number) => {
-      if (!rows[idx]) rows[idx] = mockRow();
-      return rows[idx];
+      if (!namedRows[idx]) namedRows[idx] = createMockRow();
+      return namedRows[idx];
     },
     getColumn: vi.fn(() => ({ width: undefined as unknown })),
     mergeCells: vi.fn(),
   };
-  return sheet;
-};
+}
 
 vi.mock('exceljs', () => {
   const WorkbookMock = class {
-    creator: string = '';
-    created: Date = new Date();
-    _sheets: ReturnType<typeof mockSheet>[] = [];
+    creator = '';
+    created = new Date();
+    _sheets: ReturnType<typeof createMockSheet>[] = [];
 
-    addWorksheet = vi.fn(() => {
-      const s = mockSheet();
+    addWorksheet = vi.fn((name: string) => {
+      const s = createMockSheet(name);
       this._sheets.push(s);
       return s;
     });
@@ -69,6 +87,10 @@ vi.mock('exceljs', () => {
     xlsx = {
       writeBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
     };
+
+    constructor() {
+      mockState.workbooks.push(this as any);
+    }
   };
   return { default: { Workbook: WorkbookMock } };
 });
@@ -143,6 +165,7 @@ describe('ExcelExportService', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    mockState.workbooks = [];
 
     TestBed.configureTestingModule({});
     service = TestBed.inject(ExcelExportService);
@@ -166,9 +189,70 @@ describe('ExcelExportService', () => {
     expect(service).toBeTruthy();
   });
 
+  // ── Workbook structure ───────────────────────────────────────────────────
+
+  it('should create exactly two worksheets per export', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const workbook = mockState.workbooks[0];
+    expect(workbook.addWorksheet).toHaveBeenCalledTimes(2);
+  });
+
+  it('should create the "Schema" sheet as the first worksheet', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const workbook = mockState.workbooks[0];
+    expect(workbook.addWorksheet).toHaveBeenNthCalledWith(1, 'Schema');
+  });
+
+  it('should create the "Audit & Configuration" sheet as the second worksheet', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const workbook = mockState.workbooks[0];
+    expect(workbook.addWorksheet).toHaveBeenNthCalledWith(2, 'Audit & Configuration');
+  });
+
+  // ── Schema sheet – cell formatting ───────────────────────────────────────
+
+  it('should set numFmt "@" on every schema data cell to enforce Text type', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const schemaSheet = mockState.workbooks[0]._sheets[0];
+    // Two data rows, each with 6 columns (subjectId, site, sex, age, blockNum, blockSize, treatmentArm → 7 cols total)
+    for (const dataRow of schemaSheet._dataRows) {
+      for (let colIdx = 1; colIdx <= 7; colIdx++) {
+        const cell = dataRow.getCell(colIdx);
+        expect(cell.numFmt).toBe('@');
+      }
+    }
+  });
+
+  it('should write the Subject ID as a plain string value', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const schemaSheet = mockState.workbooks[0]._sheets[0];
+    const firstRow = schemaSheet._dataRows[0];
+    // Column 1 is Subject ID
+    expect(firstRow.getCell(1).value).toBe('Site A-001');
+  });
+
+  // ── Blinding behaviour ───────────────────────────────────────────────────
+
+  it('should show real treatment arm when isUnblinded is true', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const schemaSheet = mockState.workbooks[0]._sheets[0];
+    const firstRow = schemaSheet._dataRows[0];
+    // treatmentArm is the last column (index 7 for 2 strata factors)
+    expect(firstRow.getCell(7).value).toBe('Active');
+  });
+
+  it('should mask treatment arm with "*** BLINDED ***" when isUnblinded is false', async () => {
+    await service.exportXlsx(buildMockResult(), false);
+    const schemaSheet = mockState.workbooks[0]._sheets[0];
+    for (const dataRow of schemaSheet._dataRows) {
+      expect(dataRow.getCell(7).value).toBe('*** BLINDED ***');
+    }
+  });
+
+  // ── Download mechanics ───────────────────────────────────────────────────
+
   it('should trigger a download with an .xlsx filename', async () => {
-    const result = buildMockResult();
-    await service.exportXlsx(result, true);
+    await service.exportXlsx(buildMockResult(), true);
 
     expect(appendChildSpy).toHaveBeenCalled();
     const anchor = appendChildSpy.mock.calls[0][0] as HTMLAnchorElement;
@@ -176,25 +260,19 @@ describe('ExcelExportService', () => {
   });
 
   it('should include "unblinded" in filename when isUnblinded is true', async () => {
-    const result = buildMockResult();
-    await service.exportXlsx(result, true);
-
+    await service.exportXlsx(buildMockResult(), true);
     const anchor = appendChildSpy.mock.calls[0][0] as HTMLAnchorElement;
     expect(anchor.getAttribute('download')).toContain('unblinded');
   });
 
   it('should include "blinded" in filename when isUnblinded is false', async () => {
-    const result = buildMockResult();
-    await service.exportXlsx(result, false);
-
+    await service.exportXlsx(buildMockResult(), false);
     const anchor = appendChildSpy.mock.calls[0][0] as HTMLAnchorElement;
     expect(anchor.getAttribute('download')).toContain('blinded');
   });
 
   it('should include the protocol ID in the filename', async () => {
-    const result = buildMockResult();
-    await service.exportXlsx(result, true);
-
+    await service.exportXlsx(buildMockResult(), true);
     const anchor = appendChildSpy.mock.calls[0][0] as HTMLAnchorElement;
     expect(anchor.getAttribute('download')).toContain('PROTO-001');
   });
@@ -210,8 +288,7 @@ describe('ExcelExportService', () => {
   });
 
   it('should defer DOM cleanup by 100ms', async () => {
-    const result = buildMockResult();
-    await service.exportXlsx(result, true);
+    await service.exportXlsx(buildMockResult(), true);
 
     expect(removeChildSpy).not.toHaveBeenCalled();
     vi.advanceTimersByTime(100);
@@ -219,11 +296,11 @@ describe('ExcelExportService', () => {
   });
 
   it('should revoke the object URL after 100ms', async () => {
-    const result = buildMockResult();
-    await service.exportXlsx(result, true);
+    await service.exportXlsx(buildMockResult(), true);
 
     expect(revokeObjectURLSpy).not.toHaveBeenCalled();
     vi.advanceTimersByTime(100);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
   });
 });
+
