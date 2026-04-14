@@ -308,5 +308,62 @@ describe('ExcelExportService', () => {
     vi.advanceTimersByTime(100);
     expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:mock-url');
   });
+
+  // ── Audit sheet – key cell values ────────────────────────────────────────
+  //
+  // Row layout (derived from buildAuditSheet implementation):
+  //   Row  1 : watermark
+  //   Row  3 : "Trial Metadata" section header
+  //   Rows 4-8 : metadata rows (Protocol ID=4, Study Name=5, Phase=6,
+  //              App Version=7, Generated At=8)
+  //   Row 11 : "PRNG & Audit" section header  (= 4 + 5 meta rows + 2)
+  //   Row 12 : PRNG Algorithm
+  //   Row 13 : PRNG Seed
+  //   Row 14 : SHA-256 Audit Hash
+  //   Row 17 : "Randomization Methodology" header  (= 11 + 1 + 3 audit rows + 2)
+  //   Row 18+: narrative paragraphs
+
+  it('should write the DRAFT watermark text to row 1 of the audit sheet', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const auditSheet = mockState.workbooks[0]._sheets[1];
+    const cell = auditSheet._namedRows[1].getCell(1);
+    expect(cell.value as string).toContain('DRAFT SCHEMA');
+    expect(cell.value as string).toContain('DO NOT USE FOR ENROLLMENT');
+  });
+
+  it('should write the protocol ID into the audit sheet metadata', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const auditSheet = mockState.workbooks[0]._sheets[1];
+    // Protocol ID is the first metadata row (index 0) → row 4, value in column 2
+    const valueCell = auditSheet._namedRows[4].getCell(2);
+    expect(valueCell.value).toBe('PROTO-001');
+  });
+
+  it('should write the PRNG seed into the audit sheet', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const auditSheet = mockState.workbooks[0]._sheets[1];
+    // PRNG Seed is the second audit row (index 1) → auditStartRow(11) + 1 + 1 = 13
+    const seedCell = auditSheet._namedRows[13].getCell(2);
+    expect(seedCell.value).toBe('seed-abc');
+  });
+
+  it('should write the SHA-256 audit hash into the audit sheet', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const auditSheet = mockState.workbooks[0]._sheets[1];
+    // SHA-256 is the third audit row (index 2) → auditStartRow(11) + 1 + 2 = 14
+    const hashCell = auditSheet._namedRows[14].getCell(2);
+    expect(hashCell.value).toBe(
+      'aabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233',
+    );
+  });
+
+  it('should write at least one methodology narrative paragraph to the audit sheet', async () => {
+    await service.exportXlsx(buildMockResult(), true);
+    const auditSheet = mockState.workbooks[0]._sheets[1];
+    // First narrative paragraph: methodStartRow(17) + 1 = 18
+    const paraCell = auditSheet._namedRows[18].getCell(1);
+    expect(typeof paraCell.value).toBe('string');
+    expect((paraCell.value as string).length).toBeGreaterThan(0);
+  });
 });
 

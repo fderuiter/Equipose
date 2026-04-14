@@ -28,7 +28,10 @@ export class ExcelExportService {
    */
   async exportXlsx(result: RandomizationResult, isUnblinded: boolean): Promise<void> {
     // Lazy-load ExcelJS to keep the initial bundle lean.
-    const ExcelJS = (await import('exceljs')).default;
+    // Guard against CJS/ESM interop variation: Angular's esbuild-based builder
+    // may surface the namespace at the top level rather than under `.default`.
+    const mod = await import('exceljs');
+    const ExcelJS = (mod.default ?? mod) as typeof import('exceljs');
     const workbook = new ExcelJS.Workbook();
     workbook.creator = `Clinical Randomization Generator ${APP_VERSION}`;
     workbook.created = new Date(result.metadata.generatedAt);
