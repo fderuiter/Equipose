@@ -265,6 +265,11 @@
             </div>
           </div>
         }
+        @if (form.errors?.['minimizationProbabilitiesInvalid']) {
+          <p class="text-xs text-red-600 dark:text-rose-400 mt-2">
+            Each stratification factor's level probabilities must sum to 100% before generating a minimization schema.
+          </p>
+        }
       </section>
 
       <!-- Sites & Blocks -->

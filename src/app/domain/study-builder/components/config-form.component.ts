@@ -85,7 +85,7 @@ export class ConfigFormComponent implements OnInit {
       minimizationP: [0.8, [Validators.required, Validators.min(0.5), Validators.max(1.0)]],
       totalSampleSize: [120, [Validators.required, Validators.min(1)]]
     },
-    { validators: this.blockSizesValidator.bind(this) }
+    { validators: [this.blockSizesValidator.bind(this), this.minimizationProbabilitiesValidator.bind(this)] }
   );
 
   constructor() {
@@ -576,6 +576,24 @@ export class ConfigFormComponent implements OnInit {
     return null;
   }
 
+  /**
+   * Form-level validator that checks per-factor probability totals when
+   * Minimization is the active method. Each factor's levels must sum to 100%.
+   */
+  private minimizationProbabilitiesValidator(group: FormGroup): { minimizationProbabilitiesInvalid: true } | null {
+    const method = group.get('randomizationMethod')?.value as string;
+    if (method !== 'MINIMIZATION') return null;
+    const strata = (group.get('strata') as FormArray).value as StratumFormValue[];
+    const probs = this.minimizationProbabilities();
+    for (const s of strata) {
+      const levels = s.levelsStr.split(',').map(l => l.trim()).filter(l => l);
+      if (levels.length === 0) continue;
+      const total = levels.reduce((sum, l) => sum + (probs[s.id]?.[l] ?? 0), 0);
+      if (Math.abs(total - 100) > 0.01) return { minimizationProbabilitiesInvalid: true };
+    }
+    return null;
+  }
+
   // ── Minimization helpers ──────────────────────────────────────────────────
 
   getStrataId(index: number): string {
@@ -608,5 +626,7 @@ export class ConfigFormComponent implements OnInit {
       ...prev,
       [factorId]: { ...(prev[factorId] ?? {}), [level]: value }
     }));
+    // Re-run form-level validator since probability data lives outside the FormGroup.
+    this.form.updateValueAndValidity();
   }
 }

@@ -11,6 +11,9 @@ function sampleLevel(
   expectedProbabilities: (number | undefined)[],
   rng: seedrandom.PRNG
 ): string {
+  if (levels.length === 0) {
+    throw new Error('Cannot sample a level from an empty levels array.');
+  }
   const raw = expectedProbabilities.map(p => (p !== undefined && p > 0 ? p : 0));
   const total = raw.reduce((s, v) => s + v, 0);
   const probs = total > 0 ? raw.map(v => v / total) : levels.map(() => 1 / levels.length);
@@ -105,11 +108,14 @@ export function generateMinimization(
       const subjectProfile: Record<string, string> = {};
       const stratum: Record<string, string> = {};
       for (const factor of strata) {
-      // Collect expected probabilities for each level; fall back to uniform when
-      // levelDetails are absent or all probabilities are zero/undefined.
-      const rawProbs: (number | undefined)[] = factor.levelDetails
-        ? factor.levelDetails.map(d => d.expectedProbability)
-        : factor.levels.map(() => undefined);
+      // Collect expected probabilities in the same order as factor.levels so
+      // sampleLevel() indexes a probability vector aligned to the levels array.
+      const levelDetailsByName = new Map(
+        (factor.levelDetails ?? []).map(d => [d.name, d.expectedProbability] as const)
+      );
+      const rawProbs: (number | undefined)[] = factor.levels.map(levelName =>
+        levelDetailsByName.get(levelName)
+      );
       const level = sampleLevel(factor.levels, rawProbs, rng);
         subjectProfile[factor.id] = level;
         stratum[factor.id] = level;

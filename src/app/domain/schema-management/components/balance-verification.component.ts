@@ -376,14 +376,36 @@ export class BalanceVerificationComponent {
     const arms = result.metadata.config?.arms ?? [];
     const totalRatio = arms.reduce((s, a) => s + a.ratio, 0);
 
+    // Single-pass aggregation: nested Maps keyed by factorId → levelValue → armName.
+    const countsByFactor = new Map<string, Map<string, { total: number; armCounts: Map<string, number> }>>();
+
+    for (const row of schema) {
+      for (const factor of strata) {
+        const level = row.stratum[factor.id];
+        if (level == null) continue;
+
+        let levelsForFactor = countsByFactor.get(factor.id);
+        if (!levelsForFactor) {
+          levelsForFactor = new Map<string, { total: number; armCounts: Map<string, number> }>();
+          countsByFactor.set(factor.id, levelsForFactor);
+        }
+
+        let aggregate = levelsForFactor.get(level);
+        if (!aggregate) {
+          aggregate = { total: 0, armCounts: new Map<string, number>() };
+          levelsForFactor.set(level, aggregate);
+        }
+
+        aggregate.total += 1;
+        aggregate.armCounts.set(row.treatmentArm, (aggregate.armCounts.get(row.treatmentArm) ?? 0) + 1);
+      }
+    }
+
     return strata.flatMap(factor =>
       factor.levels.map(level => {
-        const levelRows = schema.filter(row => row.stratum[factor.id] === level);
-        const armCounts = new Map<string, number>();
-        for (const row of levelRows) {
-          armCounts.set(row.treatmentArm, (armCounts.get(row.treatmentArm) ?? 0) + 1);
-        }
-        const total = levelRows.length;
+        const aggregate = countsByFactor.get(factor.id)?.get(level);
+        const total = aggregate?.total ?? 0;
+        const armCounts = aggregate?.armCounts ?? new Map<string, number>();
         return {
           factor: factor.name || factor.id,
           level,
@@ -409,13 +431,17 @@ export class BalanceVerificationComponent {
   }
 
   tooltipText(ab: ArmBalance): string {
+    const isMinimization = this.isMinimization();
     switch (ab.status) {
       case 0:
         return `${ab.arm.name}: Perfect balance. Actual = Target = ${ab.actual}.`;
       case 1:
-        return `${ab.arm.name}: Expected deviation (Δ = ${ab.variance > 0 ? '+' : ''}${ab.variance.toFixed(1)}). ` +
-          `The total enrollment for this stratum is not a perfect multiple of the block size, ` +
-          `resulting in an incomplete final block.`;
+        return isMinimization
+          ? `${ab.arm.name}: Expected marginal deviation (Δ = ${ab.variance > 0 ? '+' : ''}${ab.variance.toFixed(1)}). ` +
+            `Minimization achieves marginal rather than exact balance; small deviations are normal.`
+          : `${ab.arm.name}: Expected deviation (Δ = ${ab.variance > 0 ? '+' : ''}${ab.variance.toFixed(1)}). ` +
+            `The total enrollment for this stratum is not a perfect multiple of the block size, ` +
+            `resulting in an incomplete final block.`;
       case 2:
         return `${ab.arm.name}: Critical error! Deviation Δ = ${ab.variance > 0 ? '+' : ''}${ab.variance.toFixed(1)} ` +
           `exceeds the maximum expected for a single incomplete block. Investigate the randomization algorithm.`;

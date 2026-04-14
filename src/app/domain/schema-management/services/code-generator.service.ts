@@ -104,12 +104,29 @@ export class CodeGeneratorService {
     if (!config.arms || config.arms.length === 0) {
       throw new ConfigurationValidationError('Arms array is empty. At least one treatment arm is required.', config);
     }
-    // Block sizes are not used by minimization
-    if (config.randomizationMethod !== 'MINIMIZATION') {
-      const effectiveSizes = config.globalBlockStrategy?.sizes ?? config.blockSizes;
-      if (!effectiveSizes || effectiveSizes.length === 0) {
-        throw new ConfigurationValidationError('Block sizes array is empty. At least one block size is required.', config);
+
+    if (config.randomizationMethod === 'MINIMIZATION') {
+      const n = config.minimizationConfig?.totalSampleSize;
+      if (!Number.isFinite(n) || (n as number) <= 0) {
+        throw new ConfigurationValidationError(
+          'Total sample size must be a positive number for minimization.',
+          config
+        );
       }
+      const pVal = config.minimizationConfig?.p;
+      if (!Number.isFinite(pVal) || (pVal as number) < 0.5 || (pVal as number) > 1.0) {
+        throw new ConfigurationValidationError(
+          'Minimization probability `p` must be a number between 0.5 and 1.0.',
+          config
+        );
+      }
+      return;
+    }
+
+    // Block sizes are not used by minimization
+    const effectiveSizes = config.globalBlockStrategy?.sizes ?? config.blockSizes;
+    if (!effectiveSizes || effectiveSizes.length === 0) {
+      throw new ConfigurationValidationError('Block sizes array is empty. At least one block size is required.', config);
     }
   }
 
