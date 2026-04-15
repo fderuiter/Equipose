@@ -91,7 +91,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
             <!-- Results state -->
             @if (facade.monteCarloResults(); as results) {
               <!-- Summary stats -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div [class]="summaryGridClass(results.attritionRate)">
                 <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center">
                   <p class="text-2xl font-bold text-gray-900 dark:text-slate-100" data-testid="simulations-run-value">{{ results.totalIterations | number }}</p>
                   <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Simulations Run</p>
@@ -106,7 +106,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
                     <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">Retained Subjects ({{ results.attritionRate }}% dropout)</p>
                   </div>
                 }
-                <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center" [class.col-span-2]="results.attritionRate === 0" [class.sm:col-span-1]="results.attritionRate === 0">
+                <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center">
                   <p class="text-2xl font-bold" [class]="maxDeviationClass()">{{ maxDeviation() | number:'1.4-4' }}%</p>
                   <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Max Arm Deviation</p>
                 </div>
@@ -128,7 +128,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
                         <div class="flex-1 bg-gray-100 dark:bg-slate-700 rounded-full h-4 overflow-hidden">
                           <div
                             class="bg-indigo-300 dark:bg-indigo-600/60 h-4 rounded-full transition-all duration-500"
-                            [style.width.%]="barWidth(arm.expectedCount, baseTotal(results))"
+                            [style.width.%]="barWidth(arm.expectedCount, results.totalSubjectsSimulated)"
                           ></div>
                         </div>
                         <span class="text-xs w-20 text-gray-500 dark:text-slate-400 tabular-nums">{{ arm.expectedCount | number }}</span>
@@ -233,7 +233,7 @@ import type { MonteCarloArmResult } from '../worker/worker-protocol';
                 </svg>
                 <p class="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed" data-testid="mc-confidence-statement">
                   <strong>Algorithm mathematically verified.</strong>
-                  After {{ results.totalIterations | number }} independent trial simulations, actual treatment assignment deviates from target theoretical ratios by less than <strong>{{ maxDeviation() | number:'1.4-4' }}%</strong>, confirming true uniform distribution and absence of block bias.
+                  After {{ results.totalIterations | number }} independent trial simulations, actual treatment assignment deviates from target theoretical ratios by less than <strong>{{ preAttritionMaxDeviation() | number:'1.4-4' }}%</strong>, confirming true uniform distribution and absence of block bias.
                   @if (results.attritionRate > 0) {
                     Post-attrition balance ({{ results.attritionRate }}% dropout) shows a maximum retained-arm deviation of <strong>{{ maxRetainedDeviation() | number:'1.4-4' }}%</strong>.
                   }
@@ -272,25 +272,36 @@ export class MonteCarloModalComponent {
     Math.round((this.facade.monteCarloProgress() / 100) * 10_000)
   );
 
+  /** Returns the Tailwind grid class for the summary card row based on active card count. */
+  summaryGridClass(attritionRate: number): string {
+    // 4 cards when attrition > 0 (adds "Retained Subjects" card); 3 cards otherwise.
+    return attritionRate > 0
+      ? 'grid grid-cols-2 sm:grid-cols-4 gap-4'
+      : 'grid grid-cols-2 sm:grid-cols-3 gap-4';
+  }
+
   barWidth(count: number, total: number): number {
     if (total === 0) return 0;
     return (count / total) * 100;
   }
 
-  /** Returns the base total (retained subjects if attrition > 0, else all simulated). */
-  baseTotal(results: { attritionRate: number; totalRetainedSubjects: number; totalSubjectsSimulated: number }): number {
-    return results.attritionRate > 0 ? results.totalRetainedSubjects : results.totalSubjectsSimulated;
-  }
-
+  /**
+   * Pre-attrition deviation: compares `actualCount` against `expectedCount`
+   * (both always on the pre-attrition, total-simulated basis).
+   * This reflects the algorithm's inherent fairness independent of dropout.
+   */
   deviation(arm: MonteCarloArmResult): number {
     if (arm.expectedCount === 0) return 0;
     return Math.abs((arm.actualCount - arm.expectedCount) / arm.expectedCount) * 100;
   }
 
-  /** Deviation of retained subjects vs expected count (used when attrition > 0). */
+  /**
+   * Post-attrition deviation: compares `retainedCount` against `expectedRetainedCount`
+   * (both on the retained-subjects basis). Reflects balance after applying dropout.
+   */
   retainedDeviation(arm: MonteCarloArmResult): number {
-    if (arm.expectedCount === 0) return 0;
-    return Math.abs((arm.retainedCount - arm.expectedCount) / arm.expectedCount) * 100;
+    if (arm.expectedRetainedCount === 0) return 0;
+    return Math.abs((arm.retainedCount - arm.expectedRetainedCount) / arm.expectedRetainedCount) * 100;
   }
 
   deviationClass(arm: MonteCarloArmResult): string {
@@ -300,12 +311,28 @@ export class MonteCarloModalComponent {
     return 'text-red-600 dark:text-rose-400';
   }
 
-  maxDeviation(): number {
+  /** Max pre-attrition deviation across all arms — always reflects algorithm fairness. */
+  preAttritionMaxDeviation(): number {
     const results = this.facade.monteCarloResults();
     if (!results) return 0;
     return results.arms.reduce((max, arm) => Math.max(max, this.deviation(arm)), 0);
   }
 
+  /**
+   * Max deviation for the "Max Arm Deviation" summary card.
+   * Shows the retained deviation when attrition is active so the card always reflects
+   * the most impactful metric (post-dropout balance under attrition, or algorithm
+   * fairness otherwise).
+   */
+  maxDeviation(): number {
+    const results = this.facade.monteCarloResults();
+    if (!results) return 0;
+    return results.attritionRate > 0
+      ? results.arms.reduce((max, arm) => Math.max(max, this.retainedDeviation(arm)), 0)
+      : this.preAttritionMaxDeviation();
+  }
+
+  /** Max post-attrition deviation — used for the warning banner. */
   maxRetainedDeviation(): number {
     const results = this.facade.monteCarloResults();
     if (!results) return 0;

@@ -3,7 +3,6 @@
 import { generateRandomizationSchema, generateCryptoSeed } from '../core/randomization-algorithm';
 import { mulberry32 } from './attrition-prng';
 import type {
-  GenerationCommand,
   MonteCarloPayload,
   MonteCarloProgressPayload,
   MonteCarloSuccessPayload,
@@ -11,14 +10,20 @@ import type {
 } from './worker-protocol';
 import type { RandomizationConfig } from '../../core/models/randomization.model';
 
-type IncomingCommand = GenerationCommand | { id: string; command: 'START_MONTE_CARLO'; payload: MonteCarloPayload };
+/**
+ * Truly-discriminated command union: TypeScript narrows `payload` by `command` value,
+ * eliminating the need for unsafe `as` casts in the message handler.
+ */
+type IncomingCommand =
+  | { id: string; command: 'START_GENERATION'; payload: RandomizationConfig }
+  | { id: string; command: 'START_MONTE_CARLO'; payload: MonteCarloPayload };
 
 addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
   const { id, command, payload } = event.data;
 
   if (command === 'START_GENERATION') {
     try {
-      const result = generateRandomizationSchema(payload as RandomizationConfig);
+      const result = generateRandomizationSchema(payload);
       const response: WorkerResponse = {
         id,
         type: 'GENERATION_SUCCESS',
@@ -36,7 +41,7 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
       postMessage(response);
     }
   } else if (command === 'START_MONTE_CARLO') {
-    runMonteCarlo(id, payload as MonteCarloPayload);
+    runMonteCarlo(id, payload);
   }
 });
 
@@ -45,7 +50,10 @@ function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload)
   const PROGRESS_INTERVAL = 500;
   // Defensive clamp: even though the UI constrains input to [0, 50], the worker
   // validates the value itself to prevent incorrect results if called directly.
-  const dropoutProbability = Math.max(0, Math.min(50, attritionRate)) / 100;
+  // NaN is normalised to 0 so non-finite input never propagates to the simulation.
+  const safeRate = Number.isFinite(attritionRate) ? attritionRate : 0;
+  const clampedAttritionRate = Math.max(0, Math.min(50, safeRate));
+  const dropoutProbability = clampedAttritionRate / 100;
 
   // Initialise per-arm accumulators (before and after attrition)
   const armCounts: Record<string, number> = {};
@@ -101,15 +109,17 @@ function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload)
     }
   }
 
-  // Calculate expected counts based on pure ratio math (against total retained subjects)
+  // expectedCount is always based on total simulated (pre-attrition basis) so that
+  // the algorithm's inherent fairness can be assessed independently of attrition.
+  // expectedRetainedCount is based on total retained subjects for post-attrition analysis.
   const totalRatio = config.arms.reduce((sum, arm) => sum + arm.ratio, 0);
-  const baseTotal = dropoutProbability > 0 ? totalRetained : totalSubjects;
   const arms = config.arms.map(arm => ({
     armId: arm.id,
     armName: arm.name,
     ratio: arm.ratio,
-    expectedCount: Math.round((arm.ratio / totalRatio) * baseTotal),
+    expectedCount: Math.round((arm.ratio / totalRatio) * totalSubjects),
     actualCount: armCounts[arm.id] ?? 0,
+    expectedRetainedCount: Math.round((arm.ratio / totalRatio) * totalRetained),
     retainedCount: retainedArmCounts[arm.id] ?? 0
   }));
 
@@ -117,7 +127,8 @@ function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload)
     totalIterations: TOTAL_ITERATIONS,
     totalSubjectsSimulated: totalSubjects,
     totalRetainedSubjects: totalRetained,
-    attritionRate,
+    // Return the clamped rate so the UI always reflects the value actually used.
+    attritionRate: clampedAttritionRate,
     arms
   };
 

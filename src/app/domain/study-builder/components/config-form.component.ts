@@ -541,7 +541,8 @@ export class ConfigFormComponent implements OnInit {
   }
 
   clampAttritionRate(value: number): number {
-    return Math.min(50, Math.max(0, value));
+    const normalizedValue = Number.isFinite(value) ? value : 0;
+    return Math.min(50, Math.max(0, normalizedValue));
   }
 
   onSubmit(): void {

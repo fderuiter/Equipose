@@ -35,8 +35,8 @@ const mockMonteCarloSuccess: MonteCarloSuccessPayload = {
   totalRetainedSubjects: 100_000,
   attritionRate: 0,
   arms: [
-    { armId: 'A', armName: 'Active', ratio: 1, expectedCount: 50_000, actualCount: 50_012, retainedCount: 50_012 },
-    { armId: 'B', armName: 'Placebo', ratio: 1, expectedCount: 50_000, actualCount: 49_988, retainedCount: 49_988 }
+    { armId: 'A', armName: 'Active', ratio: 1, expectedCount: 50_000, actualCount: 50_012, expectedRetainedCount: 50_000, retainedCount: 50_012 },
+    { armId: 'B', armName: 'Placebo', ratio: 1, expectedCount: 50_000, actualCount: 49_988, expectedRetainedCount: 50_000, retainedCount: 49_988 }
   ]
 };
 
@@ -46,8 +46,8 @@ const mockMonteCarloSuccessWithAttrition: MonteCarloSuccessPayload = {
   totalRetainedSubjects: 80_000,
   attritionRate: 20,
   arms: [
-    { armId: 'A', armName: 'Active', ratio: 1, expectedCount: 40_000, actualCount: 50_012, retainedCount: 40_015 },
-    { armId: 'B', armName: 'Placebo', ratio: 1, expectedCount: 40_000, actualCount: 49_988, retainedCount: 39_985 }
+    { armId: 'A', armName: 'Active', ratio: 1, expectedCount: 50_000, actualCount: 50_012, expectedRetainedCount: 40_000, retainedCount: 40_015 },
+    { armId: 'B', armName: 'Placebo', ratio: 1, expectedCount: 50_000, actualCount: 49_988, expectedRetainedCount: 40_000, retainedCount: 39_985 }
   ]
 };
 
