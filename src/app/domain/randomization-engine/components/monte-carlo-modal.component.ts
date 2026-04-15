@@ -232,8 +232,8 @@ export class MonteCarloModalComponent {
 
   deviationClass(arm: MonteCarloArmResult): string {
     const d = this.deviation(arm);
-    if (d < 0.1) return 'text-emerald-600 dark:text-emerald-400';
-    if (d < 1) return 'text-amber-600 dark:text-amber-400';
+    if (d < 0.1) return 'text-emerald-700 dark:text-emerald-400';
+    if (d < 1) return 'text-amber-700 dark:text-amber-400';
     return 'text-red-600 dark:text-rose-400';
   }
 
@@ -245,8 +245,8 @@ export class MonteCarloModalComponent {
 
   maxDeviationClass(): string {
     const d = this.maxDeviation();
-    if (d < 0.1) return 'text-emerald-600 dark:text-emerald-400 text-2xl font-bold';
-    if (d < 1) return 'text-amber-600 dark:text-amber-400 text-2xl font-bold';
+    if (d < 0.1) return 'text-emerald-700 dark:text-emerald-400 text-2xl font-bold';
+    if (d < 1) return 'text-amber-700 dark:text-amber-400 text-2xl font-bold';
     return 'text-red-600 dark:text-rose-400 text-2xl font-bold';
   }
 }

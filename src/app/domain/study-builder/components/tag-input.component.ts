@@ -36,6 +36,7 @@ import { Subscription } from 'rxjs';
         (keydown)="onKeydown($event)"
         (blur)="onBlur()"
         [placeholder]="tags.length === 0 ? placeholder : ''"
+        [attr.aria-label]="placeholder"
         class="flex-1 min-w-[80px] outline-none text-sm bg-transparent py-0.5 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500"
       />
     </div>

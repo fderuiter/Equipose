@@ -164,7 +164,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
             <div class="flex items-center gap-2">
               <span class="text-xs font-medium text-gray-600 dark:text-slate-300">Block size {{ preview.blockSize }}</span>
               @if (preview.isValid) {
-                <span class="inline-flex items-center gap-0.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                <span class="inline-flex items-center gap-0.5 text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                   </svg>
