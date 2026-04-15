@@ -34,8 +34,18 @@ export type GenerationSuccessResponse = WorkerResponse<RandomizationResult>;
 /** Strongly-typed error response containing the error payload. */
 export type GenerationErrorResponse = WorkerResponse<{ error: { error: string } }>;
 
+/**
+ * Payload for starting a Monte Carlo simulation.
+ * Wraps the randomization config together with the required attrition rate.
+ */
+export interface MonteCarloPayload {
+  config: RandomizationConfig;
+  /** Required attrition/dropout rate as a percentage (0–50). Pass 0 for no attrition. */
+  attritionRate: number;
+}
+
 /** Strongly-typed command for starting a Monte Carlo simulation. */
-export type MonteCarloCommand = WorkerCommand<RandomizationConfig>;
+export type MonteCarloCommand = WorkerCommand<MonteCarloPayload>;
 
 /** Progress update payload streamed from the worker during Monte Carlo simulation. */
 export interface MonteCarloProgressPayload {
@@ -48,14 +58,24 @@ export interface MonteCarloArmResult {
   armId: string;
   armName: string;
   ratio: number;
+  /** Expected subjects in this arm based on total simulated (pre-attrition). */
   expectedCount: number;
+  /** Subjects assigned to this arm across all iterations (before attrition). */
   actualCount: number;
+  /** Expected subjects in this arm based on total retained (post-attrition). */
+  expectedRetainedCount: number;
+  /** Subjects retained in this arm after applying the attrition filter. */
+  retainedCount: number;
 }
 
 /** Final payload sent from the worker when Monte Carlo simulation completes. */
 export interface MonteCarloSuccessPayload {
   totalIterations: number;
   totalSubjectsSimulated: number;
+  /** Total subjects remaining after applying the attrition filter. */
+  totalRetainedSubjects: number;
+  /** The configured attrition rate percentage (0–50) used in this simulation. */
+  attritionRate: number;
   arms: MonteCarloArmResult[];
 }
 
