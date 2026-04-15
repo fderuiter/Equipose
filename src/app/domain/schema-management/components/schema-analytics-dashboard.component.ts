@@ -66,7 +66,7 @@ const BLINDED_COLOUR = '#94a3b8'; // slate-400
             <p class="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">
               Treatment Balance
               @if (!viewState.isUnblinded()) {
-                <span class="ml-1 text-amber-600 dark:text-amber-400">(blinded)</span>
+                <span class="ml-1 text-amber-700 dark:text-amber-400">(blinded)</span>
               }
             </p>
             <div #donutContainer class="h-56 w-full"></div>
@@ -81,7 +81,7 @@ const BLINDED_COLOUR = '#94a3b8'; // slate-400
           </div>
         </div>
 
-        <p class="text-xs text-gray-400 dark:text-slate-500">
+        <p class="text-xs text-gray-600 dark:text-slate-400">
           Click a chart segment or bar to cross-filter the results grid below.
         </p>
       </div>

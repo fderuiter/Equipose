@@ -41,7 +41,7 @@ export interface MarginalBalanceRow {
       <div class="space-y-6">
 
         <!-- ── Legend ─────────────────────────────────────────────────── -->
-        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-slate-400">
+        <div class="flex flex-wrap items-center gap-4 text-xs text-gray-600 dark:text-slate-400">
           <span class="font-semibold text-gray-700 dark:text-slate-300">Legend:</span>
           <span class="inline-flex items-center gap-1.5">
             <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
@@ -55,7 +55,7 @@ export interface MarginalBalanceRow {
             <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
             Critical error - investigate
           </span>
-          <span class="ml-auto text-gray-400 dark:text-slate-500 italic">
+          <span class="ml-auto text-gray-600 dark:text-slate-400 italic">
             Cells show: Actual&nbsp;/&nbsp;Target
           </span>
         </div>
@@ -64,7 +64,7 @@ export interface MarginalBalanceRow {
         <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
           <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Global Balance</h3>
-            <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+            <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
               Aggregate distribution across the entire trial (N&nbsp;=&nbsp;{{ globalRow().total }})
             </p>
           </div>
@@ -104,7 +104,7 @@ export interface MarginalBalanceRow {
           <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Balance by Site</h3>
-              <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+              <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
                 Marginal distribution per clinical site
               </p>
             </div>
@@ -147,7 +147,7 @@ export interface MarginalBalanceRow {
           <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-purple-100 dark:border-purple-800 overflow-hidden">
             <div class="px-6 py-4 border-b border-purple-100 dark:border-purple-800">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Marginal Balance by Factor Level</h3>
-              <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+              <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
                 Arm distribution per stratification factor level (Pocock-Simon minimization target: equal marginal totals)
               </p>
             </div>
@@ -189,7 +189,7 @@ export interface MarginalBalanceRow {
           <section class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 dark:border-slate-700">
               <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Balance by Stratum</h3>
-              <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+              <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
                 Marginal distribution per unique stratification-factor combination
               </p>
             </div>
@@ -228,7 +228,7 @@ export interface MarginalBalanceRow {
         }
 
         <!-- Footnote -->
-        <p class="text-xs text-gray-400 dark:text-slate-500 pb-2">
+        <p class="text-xs text-gray-600 dark:text-slate-400 pb-2">
           @if (isMinimization()) {
             ⚠&nbsp;Minimization (Pocock-Simon) achieves marginal balance across factor levels rather than perfect block-level balance.
             Small deviations from exact equal allocation are expected due to stochastic assignment and covariate sampling.
@@ -240,7 +240,7 @@ export interface MarginalBalanceRow {
 
       </div>
     } @else {
-      <div class="text-center py-12 text-gray-400 dark:text-slate-500 text-sm">
+      <div class="text-center py-12 text-gray-600 dark:text-slate-400 text-sm">
         Generate a schema first to view the balance verification report.
       </div>
     }

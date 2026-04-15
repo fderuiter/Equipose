@@ -88,7 +88,7 @@ type ResultsTab = 'grid' | 'balance';
               class="px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors"
               [class]="activeTab() === 'grid'
                 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800'
-                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500'"
+                : 'border-transparent text-gray-600 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500'"
               aria-label="Schema Grid tab"
             >
               Schema Grid
@@ -98,7 +98,7 @@ type ResultsTab = 'grid' | 'balance';
               class="px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors"
               [class]="activeTab() === 'balance'
                 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800'
-                : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500'"
+                : 'border-transparent text-gray-600 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500'"
               aria-label="Balance Verification tab"
             >
               Balance Verification
@@ -124,7 +124,7 @@ type ResultsTab = 'grid' | 'balance';
                       <li><span class="font-medium">Strata factors:</span> {{data.metadata.strata.length ?? 0}}</li>
                       <li><span class="font-medium">Seed:</span> <code class="font-mono text-xs bg-gray-100 dark:bg-slate-700 px-1 rounded">{{data.metadata.seed}}</code></li>
                     </ul>
-                    <p class="text-xs text-gray-400 dark:text-slate-500">Switch to a larger screen to view interactive charts.</p>
+                    <p class="text-xs text-gray-600 dark:text-slate-400">Switch to a larger screen to view interactive charts.</p>
                   </div>
                 }
               }
