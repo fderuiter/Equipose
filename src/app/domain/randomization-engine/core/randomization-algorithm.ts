@@ -7,6 +7,7 @@ import {
   BlockRule
 } from '../../core/models/randomization.model';
 import { generateSubjectId } from './subject-id-engine';
+import { generateMinimization } from './minimization-algorithm';
 
 // ---------------------------------------------------------------------------
 // Shared block-generation helpers
@@ -363,10 +364,12 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
   // Calculate total ratio sum
   const totalRatio = resolvedConfig.arms.reduce((sum, arm) => sum + arm.ratio, 0);
 
-  // Validate block sizes from all rules (flat array + hierarchical overrides).
-  for (const size of collectAllBlockSizes(resolvedConfig)) {
-    if (size % totalRatio !== 0) {
-      throw new Error(`Block size ${size} is not a multiple of total ratio ${totalRatio}`);
+  // Validate block sizes from all rules (skip for minimization - block sizes don't apply).
+  if (resolvedConfig.randomizationMethod !== 'MINIMIZATION') {
+    for (const size of collectAllBlockSizes(resolvedConfig)) {
+      if (size % totalRatio !== 0) {
+        throw new Error(`Block size ${size} is not a multiple of total ratio ${totalRatio}`);
+      }
     }
   }
 
@@ -374,7 +377,9 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
   /** Tracks all assigned subject IDs to prevent duplicates (relevant for {RND:n} tokens). */
   const usedSubjectIds = new Set<string>();
 
-  if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
+  if (resolvedConfig.randomizationMethod === 'MINIMIZATION') {
+    schema.push(...generateMinimization(resolvedConfig, rng));
+  } else if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
     generateMarginalOnly(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds);
   } else {
     // Both 'MANUAL_MATRIX' (default) and 'PROPORTIONAL' use intersection caps.

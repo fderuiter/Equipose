@@ -1,6 +1,6 @@
 {
   "name": "equipose",
-  "version": "1.22.0",
+  "version": "1.26.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -30,6 +30,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@ngrx/signals": "^21.1.0",
     "echarts": "^6.0.0",
+    "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",

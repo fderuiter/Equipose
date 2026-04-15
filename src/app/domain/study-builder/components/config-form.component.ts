@@ -11,6 +11,7 @@ import { previewSubjectIdMask, validateSubjectIdMask } from '../../randomization
 import { BlockPreviewComponent, ArmInput } from './block-preview.component';
 import { computeProportionalCaps, validateProportionalPercentages } from '../../randomization-engine/core/cap-strategy';
 import { CapStrategy } from '../../core/models/randomization.model';
+
 @Component({
   selector: 'app-config-form',
   standalone: true,
@@ -50,6 +51,12 @@ export class ConfigFormComponent implements OnInit {
    */
   readonly marginalCaps = signal<Record<string, Record<string, number | undefined>>>({});
 
+  /**
+   * Reactive signal tracking per-factor per-level probabilities for minimization.
+   * Shape: { [factorId]: { [levelName]: number } }
+   */
+  readonly minimizationProbabilities = signal<Record<string, Record<string, number>>>({});
+
   /** Whether the computed proportional matrix has been generated and is ready to display. */
   readonly matrixComputed = signal(false);
 
@@ -73,9 +80,12 @@ export class ConfigFormComponent implements OnInit {
       seed: [''],
       subjectIdMask: ['{SITE}-{STRATUM}-{SEQ:3}', Validators.required],
       capStrategy: ['MANUAL_MATRIX'],
-      globalCap: [100, [Validators.required, Validators.min(1)]]
+      globalCap: [100, [Validators.required, Validators.min(1)]],
+      randomizationMethod: ['BLOCK'],
+      minimizationP: [0.8, [Validators.required, Validators.min(0.5), Validators.max(1.0)]],
+      totalSampleSize: [120, [Validators.required, Validators.min(1)]]
     },
-    { validators: this.blockSizesValidator.bind(this) }
+    { validators: [this.blockSizesValidator.bind(this), this.minimizationProbabilitiesValidator.bind(this)] }
   );
 
   constructor() {
@@ -140,7 +150,7 @@ export class ConfigFormComponent implements OnInit {
         }
       });
 
-    // When the global cap changes, the computed matrix is stale — reset it.
+    // When the global cap changes, the computed matrix is stale - reset it.
     this.form.get('globalCap')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.matrixComputed.set(false));
@@ -162,6 +172,40 @@ export class ConfigFormComponent implements OnInit {
     if (this.capStrategy !== 'PROPORTIONAL') {
       this.form.get('globalCap')?.disable();
     }
+
+    // Enable/disable mode-specific controls based on the randomization method.
+    this.form.get('randomizationMethod')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((method: string) => {
+        const minimizationP = this.form.get('minimizationP');
+        const totalSampleSize = this.form.get('totalSampleSize');
+        const blockSizesStr = this.form.get('blockSizesStr');
+        const blockSelectionType = this.form.get('blockSelectionType');
+        const blockOverrides = this.form.get('blockOverrides');
+        if (method === 'MINIMIZATION') {
+          minimizationP?.enable();
+          totalSampleSize?.enable();
+          blockSizesStr?.disable();
+          blockSelectionType?.disable();
+          blockOverrides?.disable();
+        } else {
+          minimizationP?.disable();
+          totalSampleSize?.disable();
+          blockSizesStr?.enable();
+          blockSelectionType?.enable();
+          blockOverrides?.enable();
+        }
+        this.form.updateValueAndValidity();
+      });
+    // Initialise: disable controls that are irrelevant for the starting method.
+    if (this.randomizationMethod === 'MINIMIZATION') {
+      this.form.get('blockSizesStr')?.disable();
+      this.form.get('blockSelectionType')?.disable();
+      this.form.get('blockOverrides')?.disable();
+    } else {
+      this.form.get('minimizationP')?.disable();
+      this.form.get('totalSampleSize')?.disable();
+    }
   }
 
   @HostListener('document:click', ['$event'])
@@ -179,6 +223,11 @@ export class ConfigFormComponent implements OnInit {
   /** Current block selection type for the global strategy. */
   get blockSelectionType(): 'RANDOM_POOL' | 'FIXED_SEQUENCE' {
     return (this.form.get('blockSelectionType')?.value as 'RANDOM_POOL' | 'FIXED_SEQUENCE') ?? 'RANDOM_POOL';
+  }
+
+  /** Current randomization method. */
+  get randomizationMethod(): 'BLOCK' | 'MINIMIZATION' {
+    return (this.form.get('randomizationMethod')?.value as 'BLOCK' | 'MINIMIZATION') ?? 'BLOCK';
   }
 
   /** Current cap strategy value. */
@@ -311,8 +360,9 @@ export class ConfigFormComponent implements OnInit {
   }
 
   /**
-   * Synchronise the proportional percentages and marginal caps signals whenever
-   * strata levels change, preserving existing values where level names match.
+   * Synchronise the proportional percentages, marginal caps, and minimization
+   * probabilities signals whenever strata levels change, preserving existing
+   * values where level names match.
    */
   private syncLevelDetails(strataVals: StratumFormValue[]): void {
     this.proportionalPercentages.update(prev => {
@@ -337,6 +387,18 @@ export class ConfigFormComponent implements OnInit {
           if (existingCap !== undefined) {
             next[s.id][level] = existingCap;
           }
+        }
+      }
+      return next;
+    });
+
+    this.minimizationProbabilities.update(prev => {
+      const next: Record<string, Record<string, number>> = {};
+      for (const s of strataVals) {
+        const levels = s.levelsStr.split(',').map(l => l.trim()).filter(l => l);
+        next[s.id] = {};
+        for (const level of levels) {
+          next[s.id][level] = prev[s.id]?.[level] ?? 0;
         }
       }
       return next;
@@ -486,17 +548,20 @@ export class ConfigFormComponent implements OnInit {
   private buildFormValue() {
     // getRawValue() includes disabled controls (e.g., globalCap when strategy ≠ PROPORTIONAL).
     const base = this.form.getRawValue();
-    const levelDetails: Record<string, { name: string; targetPercentage: number; marginalCap?: number }[]> = {};
+    const levelDetails: Record<string, { name: string; targetPercentage: number; marginalCap?: number; expectedProbability?: number }[]> = {};
     const percentages = this.proportionalPercentages();
     const caps = this.marginalCaps();
+    const minimizationProbs = this.minimizationProbabilities();
     for (const s of (this.strata.value as StratumFormValue[])) {
       const levels = s.levelsStr.split(',').map((l: string) => l.trim()).filter((l: string) => l);
       levelDetails[s.id] = levels.map(level => {
         const marginalCap = caps[s.id]?.[level];
+        const minimizationExpectedProbability = minimizationProbs[s.id]?.[level];
         return {
           name: level,
           targetPercentage: percentages[s.id]?.[level] ?? 0,
-          ...(marginalCap !== undefined ? { marginalCap } : {})
+          ...(marginalCap !== undefined ? { marginalCap } : {}),
+          ...(minimizationExpectedProbability !== undefined ? { expectedProbability: minimizationExpectedProbability / 100 } : {})
         };
       });
     }
@@ -513,6 +578,8 @@ export class ConfigFormComponent implements OnInit {
   }
 
   private blockSizesValidator(group: FormGroup): { invalidBlockSize: true } | null {
+    const method = group.get('randomizationMethod')?.value as string;
+    if (method === 'MINIMIZATION') return null;
     const arms = group.get('arms') as FormArray;
     const blockSizesStr = group.get('blockSizesStr')?.value as string;
     if (!arms || !blockSizesStr) return null;
@@ -520,5 +587,67 @@ export class ConfigFormComponent implements OnInit {
     const sizes = blockSizesStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     for (const size of sizes) { if (size % total !== 0) return { invalidBlockSize: true }; }
     return null;
+  }
+
+  /**
+   * Form-level validator that checks per-factor probability totals when
+   * Minimization is the active method. Each factor's levels must sum to 100%,
+   * and every individual probability must be finite and within [0, 100].
+   */
+  private minimizationProbabilitiesValidator(group: FormGroup): { minimizationProbabilitiesInvalid: true } | null {
+    const method = group.get('randomizationMethod')?.value as string;
+    if (method !== 'MINIMIZATION') return null;
+    const strata = (group.get('strata') as FormArray).value as StratumFormValue[];
+    const probs = this.minimizationProbabilities();
+    for (const s of strata) {
+      const levels = s.levelsStr.split(',').map(l => l.trim()).filter(l => l);
+      if (levels.length === 0) continue;
+      let total = 0;
+      for (const l of levels) {
+        const v = probs[s.id]?.[l] ?? 0;
+        if (!Number.isFinite(v) || v < 0 || v > 100) return { minimizationProbabilitiesInvalid: true };
+        total += v;
+      }
+      if (Math.abs(total - 100) > 0.01) return { minimizationProbabilitiesInvalid: true };
+    }
+    return null;
+  }
+
+  // ── Minimization helpers ──────────────────────────────────────────────────
+
+  getStrataId(index: number): string {
+    return (this.strata.at(index).get('id')?.value as string) ?? '';
+  }
+
+  getStrataLevels(index: number): string[] {
+    const levelsStr = this.strata.at(index).get('levelsStr')?.value as string ?? '';
+    return levelsStr.split(',').map(l => l.trim()).filter(l => l);
+  }
+
+  getMinimizationProbability(factorId: string, level: string): number {
+    return this.minimizationProbabilities()[factorId]?.[level] ?? 0;
+  }
+
+  getMinimizationProbabilityTotal(factorId: string, levels: string[]): number {
+    const probs = this.minimizationProbabilities();
+    return levels.reduce((sum, l) => sum + (probs[factorId]?.[l] ?? 0), 0);
+  }
+
+  isMinimizationProbabilityInvalid(factorId: string): boolean {
+    const levels = this.strataWithLevels.find(s => s.id === factorId)?.levels ?? [];
+    if (levels.length === 0) return false;
+    const total = this.getMinimizationProbabilityTotal(factorId, levels);
+    return Math.abs(total - 100) > 0.01;
+  }
+
+  setMinimizationProbability(factorId: string, level: string, value: number): void {
+    // Clamp to [0, 100] and treat non-finite inputs as 0.
+    const sanitized = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+    this.minimizationProbabilities.update(prev => ({
+      ...prev,
+      [factorId]: { ...(prev[factorId] ?? {}), [level]: sanitized }
+    }));
+    // Re-run form-level validator since probability data lives outside the FormGroup.
+    this.form.updateValueAndValidity();
   }
 }

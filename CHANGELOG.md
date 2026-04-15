@@ -1,3 +1,52 @@
+# [1.26.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.25.0...v1.26.0) (2026-04-14)
+
+
+### Bug Fixes
+
+* address second round of STATA review comments ([766b526](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/766b5262969135e3bbd406c7f7ba98b8a5578b51))
+* address STATA code generation review comments ([7c745f1](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/7c745f13e5490cfced9474852fd5dd13ca5dbc8b))
+* update E2E test filenames from randomization_code.* to randomization_schema.* ([68decc2](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/68decc22a6164cfd5c59e078882005a7296c6afe))
+* update excel export watermark to mention STATA as supported language ([c93e681](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/c93e681f38d635548978afd4768cc3d3335098d0))
+
+
+### Features
+
+* add STATA code generation support ([b61b05e](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/b61b05e0bd5c0d2cbc96ea2022a033ca9fde686e))
+
+# [1.25.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.24.0...v1.25.0) (2026-04-14)
+
+
+### Features
+
+* add native Excel (.xlsx) export with two-sheet workbook and strict text typing ([1d283ca](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/1d283cabc6648da516df72e1b4942b5cea4f531f))
+
+# [1.24.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.23.0...v1.24.0) (2026-04-14)
+
+
+### Bug Fixes
+
+* address code review issues - newline, label rename, probability clarity ([8127bee](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/8127bee844fcff8eccea7bf605b5d7673f4addc5))
+* apply all PR review feedback for minimization algorithm ([80d61b9](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/80d61b9030d719790b247bd7ec63febf65ac6c93))
+* apply second round of PR review feedback for minimization ([1a82a9d](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/1a82a9d831f0c828d5626b4dd1515e5d85c48845))
+* correct indentation in minimization-algorithm.ts ([bbe83bf](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/bbe83bf92bae7aa1b91d6bc67b7f0a15d9fae5c4))
+
+
+### Features
+
+* implement Pocock-Simon minimization (covariate-adaptive randomization) ([6ff8ebf](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/6ff8ebfe75278bb275cb77ab1d3396baca823aab))
+
+# [1.23.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.22.0...v1.23.0) (2026-04-10)
+
+
+### Bug Fixes
+
+* correct typo in buildStratificationNarrative method name ([6653de3](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/6653de3593076337b63c5fdb140001ba0c4cce3b))
+
+
+### Features
+
+* add MethodologySpecificationService and integrate into exports and code generators ([42a950c](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/42a950cc1b64c5e82545069f643c9a283f5b4681))
+
 # [1.22.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.21.0...v1.22.0) (2026-04-10)
 
 
@@ -46,11 +95,11 @@
 * add missing capStrategy/globalCap/levelDetails to store spec, fix NG8107 optional chain in generator template ([6fee554](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/6fee554186b99db79f8cb0fa37d127c527a65212))
 * address code review - use .get() consistently in Python pruning, add null safety for empty levels in SAS ([846941a](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/846941afd620856807e0d060b4cb5e5ac332b950))
 * address code review - use Map for marginal caps (prevents prototype pollution), implement MANUAL_MATRIX switch on computed cap edit ([ac0f4c3](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/ac0f4c332b8f78f158d18da4516ba5f5ae3d9238))
-* apply all review feedback — canComputeMatrix guard, matrixComputed on globalCap, undefined marginalCap, blockNumber tracking, non-termination guards, test data fix, optional FormValue fields ([1012dab](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/1012dab3ea0db04ff50d8bc6e0596ebac85e1d0a))
-* apply second round of review feedback — stronger MARGINAL_ONLY guard, undefined marginalCap in form, min=0 for caps, BlockNumber in generated code ([4ebf58e](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/4ebf58eb5bd91309ea8d195eae89bceb3a15f815))
+* apply all review feedback - canComputeMatrix guard, matrixComputed on globalCap, undefined marginalCap, blockNumber tracking, non-termination guards, test data fix, optional FormValue fields ([1012dab](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/1012dab3ea0db04ff50d8bc6e0596ebac85e1d0a))
+* apply second round of review feedback - stronger MARGINAL_ONLY guard, undefined marginalCap in form, min=0 for caps, BlockNumber in generated code ([4ebf58e](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/4ebf58eb5bd91309ea8d195eae89bceb3a15f815))
 * clarify computeProportionalCaps JSDoc preconditions, fix Sites→Strata factors label, enforce integer>=0 in parseMarginalCapInput ([8d56fc8](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/8d56fc8366722d43ee5c0311ecbb6d7888d5bdfb))
 * preserve undefined marginalCaps in syncLevelDetails, use Number.isFinite in termination guard, align Validators.min(0) with HTML min="0" ([60647a6](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/60647a64f6685a54c40954bb436bd62bb77ad642))
-* review 4084891193 — ARIA radiogroup, label for/id, globalCap validators, validateMarginalOnly guard, NaN validation, name-based levelDetails lookup + ARCHITECTURE.md update ([ebcd4a4](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/ebcd4a4c99d57906ec2973aa3fcd463a34bddc93))
+* review 4084891193 - ARIA radiogroup, label for/id, globalCap validators, validateMarginalOnly guard, NaN validation, name-based levelDetails lookup + ARCHITECTURE.md update ([ebcd4a4](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/ebcd4a4c99d57906ec2973aa3fcd463a34bddc93))
 * use explicit SAS assignment for block_num increment; improve cap-strategy bounds comment ([2a6ae99](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/2a6ae99cc98c637a003de638340eb83e3993df82))
 * use Math.floor for integer seat distribution and add comment explaining matrixComputed guard ([6d58848](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/6d588484403b7a8dea897664a5c3850ab1e38ab4))
 
@@ -256,7 +305,7 @@
 ### Features
 
 * Architectural refactor - DDD structure, Facade, SignalStore, Web Worker, ESLint boundaries ([00387a0](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/00387a0edbc168f1817d84559d76adbde530dac7))
-* phases 5-7 — parity tests, legacy decommission, build verification ([7c76626](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/7c7662622754707206547af6b1fc5a478e202093)), closes [hi#volume](https://github.com/hi/issues/volume)
+* phases 5-7 - parity tests, legacy decommission, build verification ([7c76626](https://github.com/fderuiter/Clinical-Randomization-Generator/commit/7c7662622754707206547af6b1fc5a478e202093)), closes [hi#volume](https://github.com/hi/issues/volume)
 
 # [1.1.0](https://github.com/fderuiter/Clinical-Randomization-Generator/compare/v1.0.0...v1.1.0) (2026-04-02)
 
