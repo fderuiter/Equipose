@@ -30,11 +30,11 @@ type ResultsTab = 'grid' | 'balance';
     BalanceVerificationComponent,
   ],
   template: `
-    <div class="space-y-8">
+    <div class="space-y-8" data-testid="generator-page">
       <!-- Intro -->
       <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 p-6">
         <div class="flex items-start justify-between gap-4 mb-3">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Build Your Randomization Schema</h2>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100" data-testid="generator-heading">Build Your Randomization Schema</h2>
           <a routerLink="/about"
              class="shrink-0 text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
              aria-label="Learn more about Equipose">
