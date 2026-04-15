@@ -48,7 +48,7 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
 function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload): void {
   const TOTAL_ITERATIONS = 10_000;
   const PROGRESS_INTERVAL = 500;
-  // NaN guard: non-finite values (e.g. NaN from empty input) are normalised to 0.
+  // NaN guard: non-finite values (e.g. NaN from empty input) are normalized to 0.
   const normalizedAttritionRate = Number.isFinite(attritionRate) ? attritionRate : 0;
   const clampedAttritionRate = Math.max(0, Math.min(50, normalizedAttritionRate));
   const dropoutProbability = clampedAttritionRate / 100;
