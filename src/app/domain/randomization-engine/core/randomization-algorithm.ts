@@ -10,6 +10,16 @@ import { generateSubjectId } from './subject-id-engine';
 import { generateMinimization } from './minimization-algorithm';
 
 // ---------------------------------------------------------------------------
+// Crypto seed helper (shared with the Web Worker)
+// ---------------------------------------------------------------------------
+
+export function generateCryptoSeed(): string {
+  const array = new Uint32Array(4);
+  crypto.getRandomValues(array);
+  return Array.from(array, n => n.toString(16).padStart(8, '0')).join('');
+}
+
+// ---------------------------------------------------------------------------
 // Shared block-generation helpers
 // ---------------------------------------------------------------------------
 
@@ -345,7 +355,7 @@ function generateMarginalOnly(
 export function generateRandomizationSchema(config: RandomizationConfig): RandomizationResult {
   const resolvedConfig = config.seed
     ? config
-    : { ...config, seed: Math.random().toString(36).substring(2, 15) };
+    : { ...config, seed: generateCryptoSeed() };
 
   const rng = seedrandom(resolvedConfig.seed);
 

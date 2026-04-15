@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { generateRandomizationSchema } from '../core/randomization-algorithm';
+import { generateRandomizationSchema, generateCryptoSeed } from '../core/randomization-algorithm';
 import type {
   GenerationCommand,
   MonteCarloProgressPayload,
@@ -37,12 +37,6 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
     runMonteCarlo(id, payload);
   }
 });
-
-function generateCryptoSeed(): string {
-  const array = new Uint32Array(4);
-  crypto.getRandomValues(array);
-  return Array.from(array, n => n.toString(16).padStart(8, '0')).join('');
-}
 
 function runMonteCarlo(id: string, config: RandomizationConfig): void {
   const TOTAL_ITERATIONS = 10_000;
