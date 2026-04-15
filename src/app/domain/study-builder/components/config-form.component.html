@@ -70,7 +70,7 @@
                 type="button"
                 (click)="removeArm($index)"
                 [disabled]="arms.length <= 2"
-                class="absolute top-3 right-3 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                class="absolute top-3 right-3 text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Remove arm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -80,7 +80,7 @@
 
               <!-- Arm Name -->
               <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Arm Name</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Arm Name</label>
                 <input
                   type="text"
                   formControlName="name"
@@ -92,7 +92,7 @@
 
               <!-- Ratio Stepper -->
               <div>
-                <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Allocation Ratio</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-2 uppercase tracking-wide">Allocation Ratio</label>
                 <div class="flex items-center gap-2">
                   <button
                     type="button"
@@ -108,7 +108,7 @@
                     class="w-11 h-11 flex items-center justify-center rounded-full border-2 border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-bold text-lg leading-none transition-colors"
                     aria-label="Increase ratio"
                   >+</button>
-                  <span class="ml-2 text-xs text-gray-400 dark:text-slate-500">of {{ totalRatio }} total</span>
+                  <span class="ml-2 text-xs text-gray-600 dark:text-slate-500">of {{ totalRatio }} total</span>
                 </div>
               </div>
             </div>
@@ -121,7 +121,7 @@
         <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-slate-700 pb-2">
           <div>
             <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100">Stratification Factors</h2>
-            <p class="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Drag cards to reorder - the Cartesian product depends on factor order.</p>
+            <p class="text-xs text-gray-600 dark:text-slate-400 mt-0.5">Drag cards to reorder - the Cartesian product depends on factor order.</p>
           </div>
           <button type="button" (click)="addStratum()" class="text-sm bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-3 py-1 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 font-medium transition-colors">
             + Add Factor
@@ -134,7 +134,7 @@
           class="space-y-4"
         >
           @if (strata.length === 0) {
-            <p class="text-sm text-gray-500 dark:text-slate-400 italic">No stratification factors defined. Randomization will be unstratified.</p>
+            <p class="text-sm text-gray-600 dark:text-slate-400 italic">No stratification factors defined. Randomization will be unstratified.</p>
           }
           @for (stratum of strata.controls; track stratum) {
             <div
@@ -148,7 +148,7 @@
                 <button
                   type="button"
                   cdkDragHandle
-                  class="mt-2 text-gray-300 dark:text-slate-500 hover:text-gray-500 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing flex-shrink-0 focus:outline-none"
+                  class="mt-2 text-gray-500 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing flex-shrink-0 focus:outline-none"
                   aria-label="Drag to reorder"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -158,7 +158,7 @@
 
                 <!-- Factor Name -->
                 <div class="flex-1">
-                  <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Factor Name</label>
+                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Factor Name</label>
                   <input
                     type="text"
                     formControlName="name"
@@ -168,7 +168,7 @@
                 </div>
 
                 <!-- Remove button -->
-                <button type="button" (click)="removeStratum($index)" class="mt-6 text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors flex-shrink-0" aria-label="Remove factor">
+                <button type="button" (click)="removeStratum($index)" class="mt-6 text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors flex-shrink-0" aria-label="Remove factor">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                   </svg>
@@ -177,7 +177,7 @@
 
               <!-- Levels Tag Input -->
               <div class="pl-8">
-                <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Levels</label>
+                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Levels</label>
                 <app-tag-input
                   data-testid="stratum-levels-input"
                   [control]="stratum.get('levelsStr')!"
@@ -188,7 +188,7 @@
               <!-- Covariate Distribution for Minimization -->
               @if (randomizationMethod === 'MINIMIZATION') {
                 <div class="pl-8 mt-2">
-                  <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Expected Covariate Distribution</label>
+                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Expected Covariate Distribution</label>
                   <div class="space-y-1">
                     @for (level of getStrataLevels($index); track level) {
                       <div class="flex items-center gap-2">
@@ -199,12 +199,12 @@
                           (input)="setMinimizationProbability(getStrataId($index), level, +$any($event.target).value)"
                           class="w-20 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
                           placeholder="%">
-                        <span class="text-xs text-gray-500 dark:text-slate-400">%</span>
+                        <span class="text-xs text-gray-600 dark:text-slate-400">%</span>
                       </div>
                     }
                     <p class="text-xs mt-0.5"
                        [class.text-red-600]="isMinimizationProbabilityInvalid(getStrataId($index))"
-                       [class.text-gray-400]="!isMinimizationProbabilityInvalid(getStrataId($index))">
+                       [class.text-gray-600]="!isMinimizationProbabilityInvalid(getStrataId($index))">
                       Total: {{ getMinimizationProbabilityTotal(getStrataId($index), getStrataLevels($index)) }}% (must sum to 100%)
                     </p>
                   </div>
@@ -254,13 +254,13 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Base Probability (p)</label>
                 <input type="number" inputmode="decimal" formControlName="minimizationP" min="0.5" max="1.0" step="0.05"
                   class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border tabular-nums">
-                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Probability the arm with lowest imbalance is selected (0.5–1.0).</p>
+                <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Probability the arm with lowest imbalance is selected (0.5–1.0).</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Total Sample Size (N)</label>
                 <input type="number" inputmode="numeric" formControlName="totalSampleSize" min="1"
                   class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border tabular-nums">
-                <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Total number of subjects across all sites.</p>
+                <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Total number of subjects across all sites.</p>
               </div>
             </div>
           </div>
@@ -338,7 +338,7 @@
                   </button>
                 </div>
                 @if (blockSelectionType === 'FIXED_SEQUENCE') {
-                  <p class="mt-1.5 text-xs text-gray-500 dark:text-slate-400">Sizes are applied in order and cycle when exhausted. PRNG is bypassed for size selection.</p>
+                  <p class="mt-1.5 text-xs text-gray-600 dark:text-slate-400">Sizes are applied in order and cycle when exhausted. PRNG is bypassed for size selection.</p>
                 }
               </div>
 
@@ -356,7 +356,7 @@
                 </div>
 
                 @if (blockOverrides.length === 0) {
-                  <p class="text-xs text-gray-400 dark:text-slate-500 italic">No overrides defined. All sites and strata use the global block sizes above.</p>
+                  <p class="text-xs text-gray-600 dark:text-slate-500 italic">No overrides defined. All sites and strata use the global block sizes above.</p>
                 }
 
                 <div formArrayName="blockOverrides" class="space-y-3">
@@ -368,7 +368,7 @@
                         <button
                           type="button"
                           (click)="removeBlockOverride(i)"
-                          class="text-gray-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors"
+                          class="text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors"
                           aria-label="Remove override"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -380,7 +380,7 @@
                       <!-- Target Type + Target ID -->
                       <div class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Target Type</label>
+                          <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Target Type</label>
                           <select
                             formControlName="targetType"
                             class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-3 py-2 border"
@@ -390,7 +390,7 @@
                           </select>
                         </div>
                         <div>
-                          <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Target ID</label>
+                          <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Target ID</label>
                           <select
                             formControlName="targetId"
                             class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-3 py-2 border"
@@ -405,7 +405,7 @@
 
                       <!-- Override Block Sizes + Selection Mode -->
                       <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Block Sizes (comma-separated)</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Block Sizes (comma-separated)</label>
                         <input
                           type="text"
                           inputmode="numeric"
@@ -415,7 +415,7 @@
                         >
                       </div>
                       <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Selection Mode</label>
+                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Selection Mode</label>
                         <div class="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden" role="radiogroup">
                           <button
                             type="button"
@@ -569,7 +569,7 @@
                               class="w-20 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
                               placeholder="%"
                             >
-                            <span class="text-xs text-gray-500 dark:text-slate-400">%</span>
+                            <span class="text-xs text-gray-600 dark:text-slate-400">%</span>
                           </div>
                         }
                         @if (isFactorPercentageInvalid(factor.id)) {
@@ -620,7 +620,7 @@
                 <!-- MARGINAL_ONLY: per-factor per-level marginal cap inputs -->
                 @if (capStrategy === 'MARGINAL_ONLY') {
                   <div class="space-y-3">
-                    <p class="text-xs text-gray-500 dark:text-slate-400">
+                    <p class="text-xs text-gray-600 dark:text-slate-400">
                       Set hard limits per factor level. The engine randomly allocates subjects across intersections until each level's cap is reached.
                     </p>
                     @for (factor of strataWithLevels; track factor.id) {
@@ -639,7 +639,7 @@
                               class="w-24 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
                               placeholder="Max"
                             >
-                            <span class="text-xs text-gray-500 dark:text-slate-400">subjects</span>
+                            <span class="text-xs text-gray-600 dark:text-slate-400">subjects</span>
                           </div>
                         }
                       </div>
@@ -695,7 +695,7 @@
                 <label for="seed" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Random Seed (Optional)</label>
                 <button
                   type="button"
-                  class="p-1.5 -m-1.5 rounded-full text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  class="p-1.5 -m-1.5 rounded-full text-gray-600 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   aria-label="About the seed field"
                   matTooltip="Sets the initial state of the random number generator. Save this string to guarantee you can exactly reproduce this specific schema in the future."
                   matTooltipPosition="above"
@@ -715,7 +715,7 @@
                 <label for="subjectIdMask" class="block text-sm font-medium text-gray-700 dark:text-slate-300">Subject ID Mask</label>
                 <button
                   type="button"
-                  class="p-1.5 -m-1.5 rounded-full text-gray-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  class="p-1.5 -m-1.5 rounded-full text-gray-600 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   aria-label="About the subject ID mask field"
                   matTooltip="Defines the format for generated patient IDs. Use {SITE} for the site code and {SEQ:3} for a zero-padded sequential number."
                   matTooltipPosition="above"
@@ -727,7 +727,7 @@
                 </button>
               </div>
               <input id="subjectIdMask" type="text" formControlName="subjectIdMask" class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border font-mono dark:placeholder-slate-500">
-              <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">
+              <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">
                 Tokens: <code class="font-mono">&#123;SITE&#125;</code>, <code class="font-mono">&#123;STRATUM&#125;</code>, <code class="font-mono">&#123;SEQ:n&#125;</code> (padded sequence), <code class="font-mono">&#123;RND:n&#125;</code> (random hash), <code class="font-mono">&#123;CHECKSUM&#125;</code>. Legacy: <code class="font-mono">[SiteID]</code>, <code class="font-mono">[StratumCode]</code>, <code class="font-mono">[001]</code>.
               </p>
               <!-- Live Preview -->
@@ -739,7 +739,7 @@
                   {{ subjectIdPreview() }}
                 </p>
               } @else {
-                <p class="mt-1.5 text-xs text-gray-500 dark:text-slate-400" data-testid="mask-preview">
+                <p class="mt-1.5 text-xs text-gray-600 dark:text-slate-400" data-testid="mask-preview">
                   <span class="font-medium text-gray-600 dark:text-slate-300">Preview:</span>
                   <code class="ml-1 font-mono">{{ subjectIdPreview() }}</code>
                 </p>

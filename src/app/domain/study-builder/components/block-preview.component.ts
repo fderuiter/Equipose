@@ -140,7 +140,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
               {{ arm.name || arm.id }}
             </span>
           }
-          <span class="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-slate-500">
+          <span class="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-slate-400">
             <span class="inline-block h-3 w-3 rounded-sm border-2 border-dashed border-red-400 bg-red-50 dark:bg-red-900/20"></span>
             Unallocatable
           </span>
@@ -156,7 +156,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
               <div class="rounded-md h-8 w-8 bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600"></div>
             }
           </div>
-          <p class="text-xs text-gray-400 dark:text-slate-500 italic">Enter block sizes above to see a preview.</p>
+          <p class="text-xs text-gray-600 dark:text-slate-400 italic">Enter block sizes above to see a preview.</p>
         </div>
       } @else {
         @for (preview of previews(); track preview.blockSize) {

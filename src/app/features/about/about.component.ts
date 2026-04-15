@@ -118,7 +118,7 @@ import {SeoService} from '../../core/services/seo.service';
                 <span class="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-indigo-500"></span>
                 <div>
                   <span class="font-medium text-gray-900 dark:text-slate-100 text-sm">{{ tech.name }}</span>
-                  <span class="text-gray-500 dark:text-slate-400 text-sm"> — {{ tech.role }}</span>
+                  <span class="text-gray-600 dark:text-slate-400 text-sm"> — {{ tech.role }}</span>
                 </div>
               </div>
             }

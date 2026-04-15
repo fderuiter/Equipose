@@ -81,7 +81,7 @@ const BLINDED_COLOUR = '#94a3b8'; // slate-400
           </div>
         </div>
 
-        <p class="text-xs text-gray-400 dark:text-slate-500">
+        <p class="text-xs text-gray-600 dark:text-slate-400">
           Click a chart segment or bar to cross-filter the results grid below.
         </p>
       </div>

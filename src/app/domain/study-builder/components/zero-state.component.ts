@@ -46,7 +46,7 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
         <h3 class="text-lg font-semibold text-gray-700 dark:text-slate-200">
           No schema generated yet
         </h3>
-        <p class="text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
+        <p class="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
           Configure your trial parameters in the form above, then click
           <span class="font-medium text-gray-700 dark:text-slate-200">Generate Schema</span>
           to produce a statistically balanced randomization schema.

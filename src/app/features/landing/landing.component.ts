@@ -72,7 +72,7 @@ import {SeoService} from '../../core/services/seo.service';
       <!-- ── How it works ───────────────────────────────────────────────── -->
       <div class="bg-indigo-50 dark:bg-slate-800/50 border-y border-indigo-100 dark:border-slate-700">
         <div class="mx-auto max-w-4xl px-6 py-12 lg:px-8">
-          <p class="text-center text-xs font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-8">How it works</p>
+          <p class="text-center text-xs font-semibold uppercase tracking-widest text-indigo-700 dark:text-indigo-400 mb-8">How it works</p>
           <ol class="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
             @for (step of steps; track step.n) {
               <li class="flex flex-col items-center text-center gap-3">
