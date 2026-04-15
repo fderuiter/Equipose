@@ -114,12 +114,9 @@ import {SeoService} from '../../core/services/seo.service';
           </p>
           <dl class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
             @for (tech of techStack; track tech.name) {
-              <div class="flex items-start gap-3 rounded-lg bg-gray-50 dark:bg-slate-800 px-4 py-3">
-                <span class="mt-0.5 h-2 w-2 flex-shrink-0 rounded-full bg-indigo-500"></span>
-                <div>
-                  <span class="font-medium text-gray-900 dark:text-slate-100 text-sm">{{ tech.name }}</span>
-                  <span class="text-gray-600 dark:text-slate-400 text-sm"> — {{ tech.role }}</span>
-                </div>
+              <div class="rounded-lg bg-gray-50 dark:bg-slate-800 px-4 py-3">
+                <dt class="font-medium text-gray-900 dark:text-slate-100 text-sm">{{ tech.name }}</dt>
+                <dd class="mt-0.5 text-gray-600 dark:text-slate-400 text-sm">{{ tech.role }}</dd>
               </div>
             }
           </dl>
