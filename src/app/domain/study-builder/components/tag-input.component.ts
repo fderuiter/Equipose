@@ -32,7 +32,7 @@ import { Subscription } from 'rxjs';
         #tagInput
         type="text"
         [value]="inputValue"
-        (input)="inputValue = $any($event.target).value"
+        (input)="inputValue = tagInput.value"
         (keydown)="onKeydown($event)"
         (blur)="onBlur()"
         [placeholder]="tags.length === 0 ? placeholder : ''"
