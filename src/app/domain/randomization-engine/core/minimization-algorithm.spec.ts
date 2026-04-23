@@ -57,6 +57,7 @@ describe('generateMinimization', () => {
     const config = { ...baseConfig, minimizationConfig: { p: 1.0, totalSampleSize: 200 } };
     const schema = generateMinimization(config, seedrandom('balance'));
     const countA = schema.filter(r => r.treatmentArmId === 'A').length;
+    const countB = schema.filter(r => r.treatmentArmId === 'B').length;
     expect(Math.abs(countA - countB)).toBeLessThanOrEqual(5);
   });
 
