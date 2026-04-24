@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
@@ -16,7 +16,8 @@ import { CapStrategy } from '../../core/models/randomization.model';
   selector: 'app-config-form',
   standalone: true,
   imports: [ReactiveFormsModule, CdkDropList, CdkDrag, CdkDragHandle, TagInputComponent, MatTooltipModule, BlockPreviewComponent],
-  templateUrl: './config-form.component.html'
+  templateUrl: './config-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ConfigFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);

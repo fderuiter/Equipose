@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 /** One arm's data passed from the parent. */
@@ -114,6 +114,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
   selector: 'app-block-preview',
   standalone: true,
   imports: [MatTooltipModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .invalid-slot {
       background: repeating-linear-gradient(45deg, #fee2e2, #fee2e2 4px, #ffffff 4px, #ffffff 10px);

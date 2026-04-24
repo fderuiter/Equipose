@@ -1399,7 +1399,7 @@ else:
       `  /* ${s.id}: ${s.levels.map(lvl => `${lvl}->${levelIndices.get(s.id)?.get(lvl) ?? '?'}`).join(', ')} */`
     ).join('\n');
 
-    let code = `${header}
+    const code = `${header}
 /* Note: SAS's PRNG algorithm will not generate the exact same sequence as the
 typescript web application, but the statistical properties and parameters are identical. */
 
@@ -2822,7 +2822,7 @@ title;
         `local arm_id_${i + 1} "${a.id}"\nlocal arm_name_${i + 1} "${a.name}"\nlocal arm_ratio_${i + 1} = ${a.ratio}`
       ).join('\n');
 
-      let code = `${header}
+      const code = `${header}
 * Note: Stata's PRNG algorithm will not generate the exact same sequence as the
 * typescript web application, but the statistical properties and parameters are identical.
 
