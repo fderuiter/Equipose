@@ -1,3 +1,14 @@
+## [1.29.2](https://github.com/fderuiter/Equipose/compare/v1.29.1...v1.29.2) (2026-04-24)
+
+
+### Bug Fixes
+
+* **code-generator:** Implement native statistical scripts for Pocock-Simon minimization ([#186](https://github.com/fderuiter/Equipose/issues/186)) ([32464d7](https://github.com/fderuiter/Equipose/commit/32464d7520452662fa9cbf8c077bec750218b7e5))
+* implement uniform site allocation and robust cap enforcement for minimization algorithm ([654d29f](https://github.com/fderuiter/Equipose/commit/654d29fd7709a906a6d97814f6f108ec93e74150))
+* **minimization:** add missing countB reference in specs ([0e4ef21](https://github.com/fderuiter/Equipose/commit/0e4ef215a1e90bb3ccedbd71d77ed163a1ff45a4))
+* **minimization:** correct imbalance score, tie-breaking, and probability normalization math ([ea77476](https://github.com/fderuiter/Equipose/commit/ea77476ac9c9989bfc26c32f7524c0f7633e3808))
+* **template:** resolve template type safety violations and update minimization architecture ([#187](https://github.com/fderuiter/Equipose/issues/187)) ([c9c270e](https://github.com/fderuiter/Equipose/commit/c9c270e6d85a39f9c67c5a1c371cee0f4b61d4cb))
+
 ## [1.29.1](https://github.com/fderuiter/Equipose/compare/v1.29.0...v1.29.1) (2026-04-23)
 
 
