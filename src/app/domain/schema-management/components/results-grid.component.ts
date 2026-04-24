@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, effect, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal, inject } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { CdkMenuModule } from '@angular/cdk/menu';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -58,7 +58,8 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   templateUrl: './results-grid.component.html',
   styles: [`
     .dot { transition: transform 0.2s ease-in-out; }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResultsGridComponent {
   public state = inject(RandomizationEngineFacade);

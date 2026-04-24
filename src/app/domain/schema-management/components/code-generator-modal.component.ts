@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, inject, OnInit } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
@@ -8,7 +8,8 @@ import { CodeGenerationError } from '../errors/code-generation-errors';
   selector: 'app-code-generator-modal',
   standalone: true,
   imports: [JsonPipe],
-  templateUrl: './code-generator-modal.component.html'
+  templateUrl: './code-generator-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CodeGeneratorModalComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);

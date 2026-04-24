@@ -1,0 +1,3 @@
+## 2025-05-24 - Missing ChangeDetectionStrategy.OnPush in Angular components
+**Learning:** Found several components (like config-form, results-grid, tag-input, block-preview, code-generator-modal) missing `ChangeDetectionStrategy.OnPush`. In an Angular app using Signals and RxJS extensively (which this app does), the default change detection checks the entire component tree on every event. Adding `OnPush` restricts change detection to run only when inputs change, events originate from the component, or Signals are updated.
+**Action:** Add `ChangeDetectionStrategy.OnPush` to components to minimize unnecessary re-renders, especially complex ones like `results-grid.component.ts` and `config-form.component.ts`.
