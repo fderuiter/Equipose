@@ -1,0 +1,4 @@
+## 2026-04-25 - Secure Random Identifier Generation
+**Vulnerability:** Weak random number generation using `Math.random()` for generating unique identifiers.
+**Learning:** While `Math.random()` is fast, it is not cryptographically secure. Static Application Security Testing (SAST) tools correctly flag it as a vulnerability, even when used outside highly sensitive contexts, because its predictable nature can expose the application to guessing attacks or state-leakage vulnerabilities.
+**Prevention:** Always use the Web Crypto API, specifically `globalThis.crypto.randomUUID()` for generating universally unique identifiers, or `globalThis.crypto.getRandomValues()` for arbitrary byte sequences. These are standard, supported across modern environments, and provide cryptographic security guarantees.
