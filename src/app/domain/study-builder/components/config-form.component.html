@@ -72,6 +72,7 @@
                 [disabled]="arms.length <= 2"
                 class="absolute top-3 right-3 text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Remove arm"
+                title="Remove arm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -80,8 +81,8 @@
 
               <!-- Arm Name -->
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Arm Name</label>
-                <input
+                <label [for]="'armName' + $index" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Arm Name</label>
+                <input [id]="'armName' + $index"
                   type="text"
                   formControlName="name"
                   placeholder="e.g., Placebo"
@@ -92,14 +93,15 @@
 
               <!-- Ratio Stepper -->
               <div>
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-2 uppercase tracking-wide">Allocation Ratio</label>
-                <div class="flex items-center gap-2">
+                <span id="allocationRatioLabel" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-2 uppercase tracking-wide">Allocation Ratio</span>
+                <div class="flex items-center gap-2" aria-labelledby="allocationRatioLabel">
                   <button
                     type="button"
                     (click)="decrementRatio($index)"
                     [disabled]="arm.get('ratio')?.value <= 1"
                     class="w-11 h-11 flex items-center justify-center rounded-full border-2 border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-lg leading-none transition-colors"
                     aria-label="Decrease ratio"
+                    title="Decrease ratio"
                   >&#x2212;</button>
                   <span class="w-8 text-center text-xl font-bold text-gray-800 dark:text-slate-100 tabular-nums">{{ arm.get('ratio')?.value }}</span>
                   <button
@@ -107,6 +109,7 @@
                     (click)="incrementRatio($index)"
                     class="w-11 h-11 flex items-center justify-center rounded-full border-2 border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 font-bold text-lg leading-none transition-colors"
                     aria-label="Increase ratio"
+                    title="Increase ratio"
                   >+</button>
                   <span class="ml-2 text-xs text-gray-600 dark:text-slate-500">of {{ totalRatio }} total</span>
                 </div>
@@ -136,7 +139,7 @@
           @if (strata.length === 0) {
             <p class="text-sm text-gray-600 dark:text-slate-400 italic">No stratification factors defined. Randomization will be unstratified.</p>
           }
-          @for (stratum of strata.controls; track stratum) {
+          @for (stratum of strata.controls; track stratum; let stratumIndex = $index) {
             <div
               [formGroupName]="$index"
               cdkDrag
@@ -150,6 +153,7 @@
                   cdkDragHandle
                   class="mt-2 text-gray-500 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 cursor-grab active:cursor-grabbing flex-shrink-0 focus:outline-none"
                   aria-label="Drag to reorder"
+                  title="Drag to reorder"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M7 4a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2zM7 8a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2zM7 12a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2zM7 16a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z"/>
@@ -158,8 +162,8 @@
 
                 <!-- Factor Name -->
                 <div class="flex-1">
-                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Factor Name</label>
-                  <input
+                  <label [for]="'factorName' + $index" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Factor Name</label>
+                  <input [id]="'factorName' + $index"
                     type="text"
                     formControlName="name"
                     placeholder="e.g., Age Group"
@@ -168,7 +172,7 @@
                 </div>
 
                 <!-- Remove button -->
-                <button type="button" (click)="removeStratum($index)" class="mt-6 text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors flex-shrink-0" aria-label="Remove factor">
+                <button type="button" (click)="removeStratum($index)" class="mt-6 text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors flex-shrink-0" aria-label="Remove factor" title="Remove factor">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                   </svg>
@@ -177,8 +181,8 @@
 
               <!-- Levels Tag Input -->
               <div class="pl-8">
-                <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Levels</label>
-                <app-tag-input
+                <span class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide" [id]="'levelsLabel' + $index">Levels</span>
+                <app-tag-input [attr.aria-labelledby]="'levelsLabel' + $index"
                   data-testid="stratum-levels-input"
                   [control]="stratum.get('levelsStr')!"
                   placeholder="e.g., <65  then press Enter"
@@ -188,24 +192,24 @@
               <!-- Covariate Distribution for Minimization -->
               @if (randomizationMethod === 'MINIMIZATION') {
                 <div class="pl-8 mt-2">
-                  <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Expected Covariate Distribution</label>
+                  <span class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Expected Covariate Distribution</span>
                   <div class="space-y-1">
-                    @for (level of getStrataLevels($index); track level) {
+                    @for (level of getStrataLevels(stratumIndex); track level) {
                       <div class="flex items-center gap-2">
-                        <label class="flex-1 text-xs text-gray-600 dark:text-slate-400 truncate" [title]="level">{{ level }}</label>
-                        <input
+                        <label [for]="'levelDist' + getStrataId(stratumIndex) + '_' + level" class="flex-1 text-xs text-gray-600 dark:text-slate-400 truncate" [title]="level">{{ level }}</label>
+                        <input #probInput [id]="'levelDist' + getStrataId(stratumIndex) + '_' + level"
                           type="number" inputmode="decimal" min="0" max="100"
-                          [value]="getMinimizationProbability(getStrataId($index), level)"
-                          (input)="setMinimizationProbability(getStrataId($index), level, +$any($event.target).value)"
+                          [value]="getMinimizationProbability(getStrataId(stratumIndex), level)"
+                          (input)="setMinimizationProbability(getStrataId(stratumIndex), level, +probInput.value)"
                           class="w-20 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
                           placeholder="%">
                         <span class="text-xs text-gray-600 dark:text-slate-400">%</span>
                       </div>
                     }
                     <p class="text-xs mt-0.5"
-                       [class.text-red-600]="isMinimizationProbabilityInvalid(getStrataId($index))"
-                       [class.text-gray-600]="!isMinimizationProbabilityInvalid(getStrataId($index))">
-                      Total: {{ getMinimizationProbabilityTotal(getStrataId($index), getStrataLevels($index)) }}% (must sum to 100%)
+                       [class.text-red-600]="isMinimizationProbabilityInvalid(getStrataId(stratumIndex))"
+                       [class.text-gray-600]="!isMinimizationProbabilityInvalid(getStrataId(stratumIndex))">
+                      Total: {{ getMinimizationProbabilityTotal(getStrataId(stratumIndex), getStrataLevels(stratumIndex)) }}% (must sum to 100%)
                     </p>
                   </div>
                 </div>
@@ -251,14 +255,14 @@
             </p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Base Probability (p)</label>
-                <input type="number" inputmode="decimal" formControlName="minimizationP" min="0.5" max="1.0" step="0.05"
+                <label for="baseProbability" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Base Probability (p)</label>
+                <input id="baseProbability" type="number" inputmode="decimal" formControlName="minimizationP" min="0.5" max="1.0" step="0.05"
                   class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border tabular-nums">
                 <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Probability the arm with lowest imbalance is selected (0.5–1.0).</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Total Sample Size (N)</label>
-                <input type="number" inputmode="numeric" formControlName="totalSampleSize" min="1"
+                <label for="totalSampleSize" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Total Sample Size (N)</label>
+                <input id="totalSampleSize" type="number" inputmode="numeric" formControlName="totalSampleSize" min="1"
                   class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-base px-4 py-2.5 border tabular-nums">
                 <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">Total number of subjects across all sites.</p>
               </div>
@@ -280,8 +284,8 @@
           <div class="space-y-6">
             <!-- Sites Tag Input -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Sites</label>
-              <app-tag-input
+              <span id="sitesLabel" class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Sites</span>
+              <app-tag-input aria-labelledby="sitesLabel"
                 [control]="form.get('sitesStr')!"
                 placeholder="Type a site ID and press Enter…"
               />
@@ -304,7 +308,7 @@
 
               <!-- Block Selection Mode -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Block Selection Mode</label>
+                <span class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Block Selection Mode</span>
                 <div class="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden" role="radiogroup" aria-label="Block selection mode">
                   <button
                     type="button"
@@ -345,7 +349,7 @@
               <!-- Block Override Manager -->
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Block Size Overrides</label>
+                  <span class="block text-sm font-medium text-gray-700 dark:text-slate-300">Block Size Overrides</span>
                   <button
                     type="button"
                     (click)="addBlockOverride()"
@@ -370,6 +374,7 @@
                           (click)="removeBlockOverride(i)"
                           class="text-gray-600 dark:text-slate-500 hover:text-red-500 dark:hover:text-rose-400 transition-colors"
                           aria-label="Remove override"
+                          title="Remove override"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
@@ -380,8 +385,8 @@
                       <!-- Target Type + Target ID -->
                       <div class="grid grid-cols-2 gap-3">
                         <div>
-                          <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Target Type</label>
-                          <select
+                          <label [for]="'targetType' + $index" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Target Type</label>
+                          <select [id]="'targetType' + $index"
                             formControlName="targetType"
                             class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-3 py-2 border"
                           >
@@ -390,8 +395,8 @@
                           </select>
                         </div>
                         <div>
-                          <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Target ID</label>
-                          <select
+                          <label [for]="'targetId' + $index" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Target ID</label>
+                          <select [id]="'targetId' + $index"
                             formControlName="targetId"
                             class="w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-3 py-2 border"
                           >
@@ -405,8 +410,8 @@
 
                       <!-- Override Block Sizes + Selection Mode -->
                       <div>
-                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Block Sizes (comma-separated)</label>
-                        <input
+                        <label [for]="'overrideBlockSizes' + $index" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Block Sizes (comma-separated)</label>
+                        <input [id]="'overrideBlockSizes' + $index"
                           type="text"
                           inputmode="numeric"
                           formControlName="sizesStr"
@@ -415,8 +420,8 @@
                         >
                       </div>
                       <div>
-                        <label class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Selection Mode</label>
-                        <div class="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden" role="radiogroup">
+                        <span id="selectionModeLabel" class="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1 uppercase tracking-wide">Selection Mode</span>
+                        <div class="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden" role="radiogroup" aria-labelledby="selectionModeLabel">
                           <button
                             type="button"
                             (click)="override.get('selectionType')?.setValue('RANDOM_POOL')"
@@ -449,7 +454,7 @@
               <!-- Cap Strategy Section -->
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Enrollment Cap Strategy</label>
+                  <span class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Enrollment Cap Strategy</span>
                   <!-- Strategy Selector: Segmented Control -->
                   <div class="flex rounded-lg border border-gray-300 dark:border-slate-600 overflow-hidden" role="radiogroup" aria-label="Cap strategy">
                     <button
@@ -503,7 +508,7 @@
                 <!-- MANUAL_MATRIX: existing caps grid -->
                 @if (capStrategy === 'MANUAL_MATRIX') {
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Max Subjects per Stratum Intersection</label>
+                    <span class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Max Subjects per Stratum Intersection</span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" formArrayName="stratumCaps">
                       @for (capControl of stratumCaps.controls; track capControl; let i = $index) {
                         <div [formGroupName]="i" class="flex flex-col p-3 border border-gray-200 dark:border-slate-600 rounded-lg bg-gray-50 dark:bg-slate-700">
@@ -559,13 +564,13 @@
                           <div class="flex items-center gap-2 mb-1">
                             <label [for]="factor.id + '-pct-' + level" class="flex-1 text-xs text-gray-600 dark:text-slate-400 truncate" [title]="level">{{ level }}</label>
                             <input
-                              [id]="factor.id + '-pct-' + level"
+                              #pctInput [id]="factor.id + '-pct-' + level"
                               type="number"
                               inputmode="numeric"
                               min="0"
                               max="100"
                               [value]="getPercentage(factor.id, level)"
-                              (input)="setPercentage(factor.id, level, +$any($event.target).value)"
+                              (input)="setPercentage(factor.id, level, +pctInput.value)"
                               class="w-20 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
                               placeholder="%"
                             >
@@ -592,7 +597,7 @@
                     @if (matrixComputed()) {
                       <div>
                         <div class="flex items-center gap-2 mb-2">
-                          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Computed Intersection Caps</label>
+                          <span class="block text-sm font-medium text-gray-700 dark:text-slate-300">Computed Intersection Caps</span>
                           <span class="text-xs text-indigo-600 dark:text-indigo-400">(editable - manual changes shift strategy to Manual Matrix)</span>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" formArrayName="stratumCaps">
@@ -630,12 +635,12 @@
                           <div class="flex items-center gap-2 mb-1">
                             <label [for]="factor.id + '-margcap-' + level" class="flex-1 text-xs text-gray-600 dark:text-slate-400 truncate" [title]="level">{{ level }}</label>
                             <input
-                              [id]="factor.id + '-margcap-' + level"
+                              #margCapInput [id]="factor.id + '-margcap-' + level"
                               type="number"
                               inputmode="numeric"
                               min="0"
                               [value]="getMarginalCap(factor.id, level) ?? ''"
-                              (input)="setMarginalCap(factor.id, level, parseMarginalCapInput($any($event.target).value))"
+                              (input)="setMarginalCap(factor.id, level, parseMarginalCapInput(margCapInput.value))"
                               class="w-24 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-600 dark:text-slate-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm px-2 py-1 border tabular-nums"
                               placeholder="Max"
                             >
@@ -770,25 +775,25 @@
         </div>
         <div class="flex items-center gap-3">
           <input
-            id="attritionRateSlider"
+            #attritionSlider id="attritionRateSlider"
             type="range"
             min="0"
             max="50"
             step="1"
             [value]="attritionRate()"
-            (input)="attritionRate.set(+$any($event.target).value)"
+            (input)="attritionRate.set(+attritionSlider.value)"
             class="flex-1 h-2 accent-purple-600 cursor-pointer"
             data-testid="attrition-rate-slider"
             aria-label="Attrition rate slider"
           />
           <input
-            id="attritionRateInput"
+            #attritionInput id="attritionRateInput"
             type="number"
             min="0"
             max="50"
             step="1"
             [value]="attritionRate()"
-            (change)="attritionRate.set(clampAttritionRate(+$any($event.target).value))"
+            (change)="attritionRate.set(clampAttritionRate(+attritionInput.value))"
             class="w-16 text-center rounded-md border border-purple-200 dark:border-purple-700 bg-white dark:bg-slate-700 text-sm text-gray-800 dark:text-slate-100 py-1 px-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
             data-testid="attrition-rate-input"
             aria-label="Attrition rate percentage"
@@ -814,12 +819,12 @@
           Run Statistical QA (Monte Carlo)
         </button>
         <div class="relative inline-block text-left" #dropdownContainer>
-          <button type="button" (click)="dropdownOpen = !dropdownOpen" [disabled]="!form.valid" class="min-h-[44px] bg-white dark:bg-slate-700 border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 px-6 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-slate-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button type="button" (click)="dropdownOpen = !dropdownOpen" [disabled]="!form.valid" aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen" class="min-h-[44px] bg-white dark:bg-slate-700 border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 px-6 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-slate-600 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
             Generate Code
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transition-transform" [class.rotate-180]="dropdownOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
