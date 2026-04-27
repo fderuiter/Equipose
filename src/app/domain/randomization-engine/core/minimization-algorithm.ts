@@ -223,7 +223,7 @@ export function generateMinimization(
     const subjectProfile: Record<string, string> = {};
     const stratum: Record<string, string> = {};
 
-    let currentCombinationPrefix: Record<string, string> = {};
+    const currentCombinationPrefix: Record<string, string> = {};
 
     let validSubject = true;
 

@@ -259,12 +259,12 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
       const restrictedConfig = {
         ...baseConfig,
         minimizationConfig: { p: 0.8, totalSampleSize: 100 },
-        capStrategy: 'MANUAL_MATRIX' as any,
+        capStrategy: 'MANUAL_MATRIX' as unknown as 'MATRIX',
         stratumCaps: [
           { levels: ['Male'], cap: 20 },
           { levels: ['Female'], cap: 20 }
         ]
-      };
+      } as unknown as RandomizationConfig;
 
       const rng = seedrandom('truncationTest');
       const schema = generateMinimization(restrictedConfig, rng);
@@ -275,7 +275,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
       const marginalConfig = {
         ...baseConfig,
         minimizationConfig: { p: 0.8, totalSampleSize: 50 },
-        capStrategy: 'MARGINAL_ONLY' as any,
+        capStrategy: 'MARGINAL_ONLY' as unknown as 'MATRIX',
         strata: [
           {
             id: 'sex',
@@ -287,7 +287,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
             ]
           }
         ]
-      };
+      } as unknown as RandomizationConfig;
 
       const rng = seedrandom('marginalTest');
       const start = performance.now();
@@ -296,8 +296,8 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
 
       expect(end - start).toBeLessThan(100);
 
-      const maleCount = schema.filter((r: any) => r.stratum['sex'] === 'Male').length;
-      const femaleCount = schema.filter((r: any) => r.stratum['sex'] === 'Female').length;
+      const maleCount = schema.filter((r) => r.stratum['sex'] === 'Male').length;
+      const femaleCount = schema.filter((r) => r.stratum['sex'] === 'Female').length;
 
       expect(maleCount).toBe(5);
       expect(femaleCount).toBe(45);
