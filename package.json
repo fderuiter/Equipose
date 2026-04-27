@@ -1,6 +1,6 @@
 {
   "name": "equipose",
-  "version": "1.29.3",
+  "version": "1.30.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

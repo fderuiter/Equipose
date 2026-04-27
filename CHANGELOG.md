@@ -1,3 +1,10 @@
+# [1.30.0](https://github.com/fderuiter/Equipose/compare/v1.29.3...v1.30.0) (2026-04-27)
+
+
+### Features
+
+* **ux:** add native tooltips to icon-only buttons ([7b610a6](https://github.com/fderuiter/Equipose/commit/7b610a62a85a0da87d5294f6b892cf6c6ac40d78))
+
 ## [1.29.3](https://github.com/fderuiter/Equipose/compare/v1.29.2...v1.29.3) (2026-04-24)
 
 
