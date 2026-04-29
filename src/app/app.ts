@@ -260,7 +260,7 @@ import {APP_VERSION} from '../environments/version';
                 <a href="https://github.com/fderuiter/Clinical-Randomization-Generator/blob/main/LICENSE"
                    target="_blank" rel="noopener noreferrer"
                    class="inline-flex items-center gap-1 rounded-md bg-gray-50 dark:bg-slate-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-600 hover:ring-indigo-400 transition-colors">
-                  MIT License
+                  AGPL-3.0 License
                 </a>
               </div>
               <p class="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
