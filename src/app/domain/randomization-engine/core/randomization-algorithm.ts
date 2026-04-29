@@ -206,7 +206,6 @@ function generateStandard(
 function generateMarginalOnly(
   resolvedConfig: RandomizationConfig,
   rng: seedrandom.PRNG,
-  strataCombinations: Record<string, string>[],
   totalRatio: number,
   schema: GeneratedSchema[],
   usedSubjectIds: Set<string>
@@ -265,13 +264,49 @@ function generateMarginalOnly(
       marginalCounts.set(factor.id, countMap);
     }
 
-    // Active pool of valid stratum combinations (those that haven't hit any marginal cap).
-    let activePool = [...strataCombinations];
+    while (true) {
+      // Determine available levels for each factor
+      const availableLevelsPerFactor = new Map<string, string[]>();
+      let hasExhaustedFactor = false;
 
-    while (activePool.length > 0) {
-      // Randomly select a combination from the active pool.
-      const poolIdx = Math.floor(rng() * activePool.length);
-      const stratum = activePool[poolIdx];
+      for (const factor of resolvedConfig.strata) {
+        const available = factor.levels.filter(level => {
+          const cap = marginalCapMap.get(factor.id)?.get(level);
+          if (cap === undefined) return true;
+          return (marginalCounts.get(factor.id)?.get(level) ?? 0) < cap;
+        });
+
+        if (available.length === 0) {
+          hasExhaustedFactor = true;
+          break;
+        }
+        availableLevelsPerFactor.set(factor.id, available);
+      }
+
+      if (hasExhaustedFactor) {
+        break; // Stop when any factor has no available levels
+      }
+
+      // Build a random combination (stratum)
+      // Calculate total available combinations
+      let totalCombinations = 1;
+      for (const factor of resolvedConfig.strata) {
+        totalCombinations *= availableLevelsPerFactor.get(factor.id)!.length;
+      }
+
+      // Consume one PRNG value to maintain sequence parity with precomputed array logic
+      const poolIdx = Math.floor(rng() * totalCombinations);
+      const stratum: Record<string, string> = {};
+
+      // Map poolIdx lexicographically across available factors (mimics nested loop array generation)
+      let remainder = poolIdx;
+      for (let i = resolvedConfig.strata.length - 1; i >= 0; i--) {
+        const factor = resolvedConfig.strata[i];
+        const available = availableLevelsPerFactor.get(factor.id)!;
+        const levelIdx = remainder % available.length;
+        stratum[factor.id] = available[levelIdx];
+        remainder = Math.floor(remainder / available.length);
+      }
 
       // Resolve block rule and pick a block size using the hierarchical strategy.
       const stratumCode = computeStratumCode(resolvedConfig.strata, stratum);
@@ -327,17 +362,6 @@ function generateMarginalOnly(
           }
         }
       }
-
-      // Remove combinations from the pool that would now breach a marginal cap.
-      activePool = activePool.filter(combo =>
-        resolvedConfig.strata.every(factor => {
-          const levelValue = combo[factor.id] || '';
-          if (!levelValue) return true;
-          const cap = marginalCapMap.get(factor.id)?.get(levelValue);
-          if (cap === undefined) return true; // uncapped
-          return (marginalCounts.get(factor.id)?.get(levelValue) ?? 0) < cap;
-        })
-      );
     }
   }
 }
@@ -359,18 +383,6 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
 
   const rng = seedrandom(resolvedConfig.seed);
 
-  // Generate all strata combinations
-  let strataCombinations: Record<string, string>[] = [{}];
-  for (const factor of resolvedConfig.strata) {
-    const newCombinations: Record<string, string>[] = [];
-    for (const combo of strataCombinations) {
-      for (const level of factor.levels) {
-        newCombinations.push({ ...combo, [factor.id]: level });
-      }
-    }
-    strataCombinations = newCombinations;
-  }
-
   // Calculate total ratio sum
   const totalRatio = resolvedConfig.arms.reduce((sum, arm) => sum + arm.ratio, 0);
 
@@ -390,9 +402,20 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
   if (resolvedConfig.randomizationMethod === 'MINIMIZATION') {
     schema.push(...generateMinimization(resolvedConfig, rng));
   } else if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
-    generateMarginalOnly(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds);
+    generateMarginalOnly(resolvedConfig, rng, totalRatio, schema, usedSubjectIds);
   } else {
     // Both 'MANUAL_MATRIX' (default) and 'PROPORTIONAL' use intersection caps.
+    // Generate all strata combinations for matrix logic
+    let strataCombinations: Record<string, string>[] = [{}];
+    for (const factor of resolvedConfig.strata) {
+      const newCombinations: Record<string, string>[] = [];
+      for (const combo of strataCombinations) {
+        for (const level of factor.levels) {
+          newCombinations.push({ ...combo, [factor.id]: level });
+        }
+      }
+      strataCombinations = newCombinations;
+    }
     generateStandard(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds);
   }
 
