@@ -15,13 +15,26 @@
             [class.dark:border-slate-600]="wizard.selectedIndex < i"
             [class.dark:bg-slate-700]="wizard.selectedIndex < i"
             [class.dark:text-slate-300]="wizard.selectedIndex < i">
-          <span class="block text-[10px] uppercase tracking-wide">Step {{ i + 1 }}</span>
+          <span class="block text-[10px] uppercase tracking-wide">Step {{ i }}</span>
           <span>{{ label }}</span>
         </li>
       }
     </ol>
 
     <ng-container [ngTemplateOutlet]="wizard.selected?.content"></ng-container>
+
+    <cdk-step [stepControl]="regulatoryGroup">
+      <div [formGroup]="regulatoryGroup" class="space-y-4">
+        <app-regulatory-notice></app-regulatory-notice>
+        <div class="flex items-center space-x-2 mt-4 px-1">
+          <input type="checkbox" id="acknowledge" formControlName="isAcknowledged" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+          <label for="acknowledge" class="text-sm font-medium">I have read and understand the regulatory limitations of this tool.</label>
+        </div>
+      </div>
+      <div class="pt-4 border-t flex justify-end">
+        <button type="button" cdkStepperNext [disabled]="regulatoryGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+      </div>
+    </cdk-step>
 
     <cdk-step [stepControl]="metadataGroup">
       <div [formGroup]="metadataGroup" class="space-y-4">
