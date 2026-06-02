@@ -13,6 +13,7 @@ import { BlockPreviewComponent, ArmInput } from './block-preview.component';
 import { computeProportionalCaps, validateProportionalPercentages } from '../../randomization-engine/core/cap-strategy';
 import { CapStrategy } from '../../core/models/randomization.model';
 import { ToastService } from '../../../core/services/toast.service';
+import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -22,7 +23,7 @@ import { ToastService } from '../../../core/services/toast.service';
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent],
+  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -76,6 +77,7 @@ export class ConfigFormComponent implements OnInit {
   readonly attritionRate = signal(0);
 
   readonly stepLabels = [
+    'Regulatory Disclaimer',
     'Setup & Metadata',
     'Algorithm & Arms',
     'Sites & Stratification',
@@ -90,6 +92,9 @@ export class ConfigFormComponent implements OnInit {
 
   form: FormGroup = this.fb.group(
     {
+      regulatoryGroup: this.fb.group({
+        isAcknowledged: [false, Validators.requiredTrue]
+      }),
       metadataGroup: this.fb.group({
         protocolId: ['PRT-001', Validators.required],
         studyName: ['Demo Study', Validators.required],
@@ -252,6 +257,7 @@ export class ConfigFormComponent implements OnInit {
       this.dropdownOpen = false;
   }
 
+  get regulatoryGroup(): FormGroup { return this.form.get('regulatoryGroup') as FormGroup; }
   get metadataGroup(): FormGroup { return this.form.get('metadataGroup') as FormGroup; }
   get designGroup(): FormGroup { return this.form.get('designGroup') as FormGroup; }
   get strataGroup(): FormGroup { return this.form.get('strataGroup') as FormGroup; }

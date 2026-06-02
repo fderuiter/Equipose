@@ -6,6 +6,8 @@ import { RandomizationEngineFacade } from '../../randomization-engine/randomizat
 import { StudyBuilderStore } from '../store/study-builder.store';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
+import { By } from '@angular/platform-browser';
+import { CdkStepper } from '@angular/cdk/stepper';
 
 describe('ConfigFormComponent (domain)', () => {
   let component: ConfigFormComponent;
@@ -36,6 +38,9 @@ describe('ConfigFormComponent (domain)', () => {
 
     fixture = TestBed.createComponent(ConfigFormComponent);
     component = fixture.componentInstance;
+    fixture.detectChanges();
+    // Satisfy the regulatory gateway by default for testing downstream logic
+    component.regulatoryGroup.get('isAcknowledged')?.setValue(true);
     fixture.detectChanges();
   });
 
@@ -312,16 +317,16 @@ describe('ConfigFormComponent (domain)', () => {
 
       expect(component.stratumCaps.length).toBe(initialCapsLength);
 
-      component.onStepSelectionChange({ selectedIndex: 4 } as any);
+      component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
       expect(component.stratumCaps.length).toBe(3);
     });
 
     it('should show reset warning when returning to caps after strata changes', () => {
-      component.onStepSelectionChange({ selectedIndex: 4 } as any);
+      component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
       expect(component.capsResetWarning()).toBe(false);
 
       component.strata.at(0).get('levelsStr')?.setValue('<65, >=65, >=80');
-      component.onStepSelectionChange({ selectedIndex: 4 } as any);
+      component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
 
       expect(component.capsResetWarning()).toBe(true);
       expect(component.matrixComputed()).toBe(false);
@@ -629,7 +634,7 @@ describe('ConfigFormComponent (domain)', () => {
 
   describe('Allocation mechanics validation UI', () => {
     const goToAllocationStep = (): void => {
-      for (let i = 0; i < 3; i += 1) {
+      for (let i = 0; i < 4; i += 1) {
         const nextButton = fixture.nativeElement.querySelector('button[cdkStepperNext]') as HTMLButtonElement;
         nextButton.click();
         fixture.detectChanges();
