@@ -12,7 +12,7 @@ set.seed({{seedHash}})
 # --- SINGLE-SOURCE TRANSPILED LOGIC ---
 {{minimizationParam}}
 schema_list <- list()
-{{schemaRows}}
+{{algorithmicLogic}}
 schema <- do.call(rbind, schema_list)
 if (is.null(schema)) schema <- data.frame()
 print(head(schema))
@@ -38,7 +38,7 @@ export const SAS_TEMPLATE = `
 
 data RandomizationSchema;
   length SubjectID $20 Site $20 Treatment $50 StratumCode $50 {{strataLength}};
-{{schemaRows}}
+{{algorithmicLogic}}
 run;
 `;
 
@@ -57,9 +57,7 @@ rng = np.random.default_rng({{seedHash}})
 
 # --- SINGLE-SOURCE TRANSPILED LOGIC ---
 {{minimizationParam}}
-schema = [
-{{schemaRows}}
-]
+{{algorithmicLogic}}
 df = pd.DataFrame(schema)
 print(df.head())
 `;
@@ -90,5 +88,5 @@ gen BlockSize = .
 gen str50 StratumCode = ""
 {{strataLength}}
 
-{{schemaRows}}
+{{algorithmicLogic}}
 `;
