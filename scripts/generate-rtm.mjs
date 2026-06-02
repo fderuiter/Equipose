@@ -25,6 +25,7 @@
 
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join, relative, resolve, isAbsolute, dirname } from 'path';
+import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import ts from 'typescript';
 
@@ -38,6 +39,7 @@ const getArg = (flag) => {
 
 const vitestResultsPath  = getArg('--vitest-results')     ?? null;
 const playwrightResultsPath = getArg('--playwright-results') ?? null;
+const ciResultsPath         = getArg('--ci-results')          ?? null;
 const outputPath         = getArg('--out')                 ?? 'Validation_Traceability_Matrix.md';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -84,6 +86,26 @@ function findSpecFiles(dir) {
 const unitSpecFiles = findSpecFiles(join(repoRoot, 'src'));
 const e2eSpecFiles  = findSpecFiles(join(repoRoot, 'tests_e2e'));
 const allSpecFiles  = [...unitSpecFiles, ...e2eSpecFiles];
+
+function findPolyglotFiles(dir) {
+  const results = [];
+  if (!existsSync(dir)) return results;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    const st = statSync(full);
+    if (st.isDirectory()) {
+      if (!['node_modules', '.git', 'dist', 'artifacts', 'pw-browsers'].includes(entry)) {
+        results.push(...findPolyglotFiles(full));
+      }
+    } else if (entry.endsWith('.py') || entry.endsWith('.sh') || entry.endsWith('.yml') || entry.endsWith('.yaml')) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+const polyglotFiles = findPolyglotFiles(repoRoot);
+
 
 // ── AST Block Mapping ──────────────────────────────────────────────────────────
 
@@ -188,6 +210,89 @@ function extractStaticTestsFallback(file) {
 
 const executedTests = [];
 let vitestLoaded = false;
+
+let ciResults = null;
+if (ciResultsPath && existsSync(ciResultsPath)) {
+  try {
+    ciResults = JSON.parse(readFileSync(ciResultsPath, 'utf-8'));
+  } catch (e) {
+    console.warn('[generate-rtm] Could not parse CI results:', e.message);
+  }
+}
+
+for (const file of polyglotFiles) {
+  const sourceText = readFileSync(file, 'utf-8');
+  const lines = sourceText.split('\n');
+  
+  const tags = [];
+  const FOUR_SEG = '[A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+';
+  const THREE_SEG = '[A-Z0-9]+-[A-Z0-9]+-[A-Z0-9]+';
+  const TAG_RE = new RegExp(`\\[(${FOUR_SEG}|${THREE_SEG})\\]`, 'g');
+  
+  for (let i = 0; i < lines.length; i++) {
+    let match;
+    while ((match = TAG_RE.exec(lines[i])) !== null) {
+      if (match[1].startsWith('REQ-')) {
+        tags.push({ reqId: match[1], line: i + 1 });
+      }
+    }
+  }
+  
+  if (tags.length === 0) continue;
+  
+  const relFile = relative(repoRoot, file).replace(/\\/g, '/');
+  if (!fileReqBlocks.has(relFile)) fileReqBlocks.set(relFile, []);
+  
+  if (file.endsWith('.py') || file.endsWith('.sh')) {
+    let status = 'UNKNOWN';
+    if (ciResults !== null || vitestResultsPath || playwrightResultsPath) {
+      let cmd = file.endsWith('.py') ? `python3 "${file}"` : `bash "${file}"`;
+      try {
+        const res = spawnSync(cmd, { shell: true, stdio: 'ignore' });
+        status = res.status === 0 ? 'PASS' : 'FAIL';
+      } catch (e) {
+        status = 'FAIL';
+      }
+    }
+    
+    for (const tag of tags) {
+      executedTests.push({
+        file: relFile,
+        line: tag.line,
+        suiteName: 'Standalone Script',
+        testName: `Execute ${relFile}`,
+        status
+      });
+      fileReqBlocks.get(relFile).push({ reqId: tag.reqId, startLine: tag.line, endLine: tag.line });
+    }
+  } else if (file.endsWith('.yml') || file.endsWith('.yaml')) {
+    let currentJob = null;
+    for (const tag of tags) {
+      for (let i = tag.line - 1; i >= 0; i--) {
+        const jobMatch = lines[i].match(/^  ([a-zA-Z0-9_-]+):\s*$/);
+        if (jobMatch) {
+          currentJob = jobMatch[1];
+          break;
+        }
+      }
+      
+      let status = 'UNKNOWN';
+      if (currentJob && ciResults && ciResults[currentJob]) {
+        status = ciResults[currentJob] === 'success' ? 'PASS' : ciResults[currentJob] === 'skipped' ? 'SKIP' : 'FAIL';
+      }
+      
+      executedTests.push({
+        file: relFile,
+        line: tag.line,
+        suiteName: 'CI Workflow',
+        testName: currentJob ? `Job: ${currentJob}` : `YAML configuration`,
+        status
+      });
+      fileReqBlocks.get(relFile).push({ reqId: tag.reqId, startLine: tag.line, endLine: tag.line });
+    }
+  }
+}
+
 let playwrightLoaded = false;
 
 if (vitestResultsPath && existsSync(vitestResultsPath)) {
@@ -269,7 +374,7 @@ const sortedReqIds = [...byReq.keys()].sort();
 const totalReqs = sortedReqIds.length;
 const coveredReqs = sortedReqIds.filter(id => (byReq.get(id) ?? []).length > 0).length;
 const totalTests = executedTests.filter(t => t.line && getReqId(t.file, t.line)).length;
-const hasResults = vitestLoaded || playwrightLoaded;
+const hasResults = vitestLoaded || playwrightLoaded || ciResults !== null;
 
 // ── Generate Outputs ───────────────────────────────────────────────────────────
 

@@ -390,7 +390,7 @@ jobs:
 
   traceability_matrix:
     runs-on: ubuntu-latest
-    needs: [setup, merge_reports]
+    needs: [setup, merge_reports, python_script_execution_check, sas_static_validation, stata_static_validation, cross_env_equivalence, sbom, security_scan, lint_actions]
     if: always()
     permissions:
       contents: read
@@ -407,6 +407,8 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          pypi.org:443
+          files.pythonhosted.org:443
     - name: Checkout repository
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
@@ -414,6 +416,14 @@ jobs:
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
       with:
         node-version: '22'
+
+    - name: Set up Python
+      uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+      with:
+        python-version: '3.11'
+
+    - name: Install Python dependencies
+      run: pip install numpy pandas --quiet
 
     - name: Download shared environment
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
@@ -441,6 +451,17 @@ jobs:
 
     - name: Generate Validation Traceability Matrix
       run: |
+        cat << 'EOF' > job-statuses.json
+        {
+          "python_script_execution_check": "${{ needs.python_script_execution_check.result }}",
+          "sas_static_validation": "${{ needs.sas_static_validation.result }}",
+          "stata_static_validation": "${{ needs.stata_static_validation.result }}",
+          "cross_env_equivalence": "${{ needs.cross_env_equivalence.result }}",
+          "sbom": "${{ needs.sbom.result }}",
+          "security_scan": "${{ needs.security_scan.result }}",
+          "lint_actions": "${{ needs.lint_actions.result }}"
+        }
+        EOF
         VITEST_ARG=""
         PW_ARG=""
         if [ -f vitest-results.json ]; then
@@ -450,6 +471,7 @@ jobs:
           PW_ARG="--playwright-results playwright-report/report.json"
         fi
         node scripts/generate-rtm.mjs $VITEST_ARG $PW_ARG \
+          --ci-results job-statuses.json \
           --out Validation_Traceability_Matrix.md
         echo "=== Traceability Matrix (first 50 lines) ==="
         head -50 Validation_Traceability_Matrix.md
@@ -613,6 +635,7 @@ jobs:
       run: tar -xf shared-env.tar
 
     - name: Generate Software Bill of Materials (SBOM)
+      # [REQ-SBOM-001]
       run: |
         echo "Generating CycloneDX SBOM for supply chain audit..."
         npx --yes @cyclonedx/cdxgen \
