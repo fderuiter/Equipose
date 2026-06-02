@@ -43,12 +43,16 @@ import {SeoService} from '../../core/services/seo.service';
             </p>
 
             <!-- CTAs -->
-            <div class="mt-10 flex items-center justify-center gap-x-6">
+            <div class="mt-10 flex items-center justify-center gap-x-4">
               <a routerLink="/generator"
                  class="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors">
-                Get started
+                New Study
               </a>
-              <a routerLink="/about" class="text-sm font-semibold leading-6 text-gray-900 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              <a routerLink="/generator" [queryParams]="{ mode: 'simulation' }"
+                 class="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-indigo-600 shadow-sm ring-1 ring-inset ring-indigo-200 hover:bg-indigo-50 transition-colors">
+                Quick Simulation
+              </a>
+              <a routerLink="/about" class="text-sm font-semibold leading-6 text-gray-900 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors ml-2">
                 Learn more <span aria-hidden="true">→</span>
               </a>
             </div>

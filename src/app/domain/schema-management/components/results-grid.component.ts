@@ -399,9 +399,18 @@ export class ResultsGridComponent {
     });
   }
 
+  private isSimulationMode(protocolId: string): boolean {
+    return protocolId === 'Simulation' || protocolId === 'Draft';
+  }
+
   exportCsv() {
     const data = this.state.results();
     if (!data) return;
+
+    if (this.isSimulationMode(data.metadata.protocolId)) {
+      this.toast.showError('Exports are disabled in Simulation mode. Please promote to a formal study first.');
+      return;
+    }
 
     const strataHeaders = data.metadata.strata?.map(s => s.name || s.id) || [];
     const headers = ['Subject ID', 'Site', ...strataHeaders, 'Block Number', 'Block Size', 'Treatment Arm']
@@ -457,6 +466,12 @@ export class ResultsGridComponent {
   async exportXlsx(): Promise<void> {
     const data = this.state.results();
     if (!data) return;
+
+    if (this.isSimulationMode(data.metadata.protocolId)) {
+      this.toast.showError('Exports are disabled in Simulation mode. Please promote to a formal study first.');
+      return;
+    }
+
     try {
       await this.excelExport.exportXlsx(data, this.isUnblinded());
     } catch {
@@ -467,6 +482,11 @@ export class ResultsGridComponent {
   exportJson() {
     const data = this.state.results();
     if (!data) return;
+
+    if (this.isSimulationMode(data.metadata.protocolId)) {
+      this.toast.showError('Exports are disabled in Simulation mode. Please promote to a formal study first.');
+      return;
+    }
 
     if (!this.isUnblinded()) {
       this.toast.showInfo(
@@ -504,6 +524,11 @@ export class ResultsGridComponent {
   exportPdf() {
     const data = this.state.results();
     if (!data) return;
+
+    if (this.isSimulationMode(data.metadata.protocolId)) {
+      this.toast.showError('Exports are disabled in Simulation mode. Please promote to a formal study first.');
+      return;
+    }
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();

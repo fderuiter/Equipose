@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, effect, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, effect, signal, viewChild, OnInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { ConfigFormComponent } from './config-form.component';
 import { ZeroStateComponent } from './zero-state.component';
 import { SkeletonGridComponent } from './skeleton-grid.component';
@@ -57,7 +57,9 @@ type ResultsTab = 'grid' | 'balance';
       </div>
 
       <!-- Configuration Form -->
-      <app-config-form #configForm></app-config-form>
+      <div id="wizard-start">
+        <app-config-form #configForm [isSimulationMode]="isSimulationMode()" (promoteToStudy)="handlePromoteToStudy()"></app-config-form>
+      </div>
 
       <!-- ── Deterministic Results State Machine ───────────────────── -->
       <!--
@@ -153,20 +155,32 @@ type ResultsTab = 'grid' | 'balance';
     </div>
   `
 })
-export class GeneratorComponent {
+export class GeneratorComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   public readonly viewport = inject(ViewportService);
   private readonly document = inject(DOCUMENT);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   readonly introBadges = ['Stratified', 'Reproducible', 'Seeded', 'Deterministic', 'Multi-site'];
 
   /** Active results tab – 'grid' (default) or 'balance'. */
   readonly activeTab = signal<ResultsTab>('grid');
 
+  readonly isSimulationMode = signal(false);
+
   /** Reference to the embedded config form so we can drive preset loading. */
   private readonly configForm = viewChild<ConfigFormComponent>('configForm');
 
   private static readonly SCROLL_DELAY_MS = 100;
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['mode'] === 'simulation') {
+        this.isSimulationMode.set(true);
+      }
+    });
+  }
 
   constructor() {
     inject(SeoService).setPage({
@@ -174,6 +188,27 @@ export class GeneratorComponent {
       description: 'Generate a statistically sound, reproducible RTSM stratified block randomization schema for your clinical trial. Export to R, Python, SAS, or Stata.',
       canonicalPath: '/generator',
     });
+
+    let simulationInitialized = false;
+    effect(() => {
+      const form = this.configForm();
+      const isSim = this.isSimulationMode();
+      
+      if (isSim && form && !simulationInitialized) {
+        simulationInitialized = true;
+        // Schedule it slightly after current change detection
+        setTimeout(() => {
+          form.loadPreset('standard');
+          form.metadataGroup.patchValue({
+            protocolId: 'Simulation',
+            subjectIdMask: 'SIM-{SITE}-{STRATUM}-{SEQ:3}'
+          });
+          form.regulatoryGroup.patchValue({ isAcknowledged: true });
+          form.onSubmit();
+        }, 0);
+      }
+    });
+
     // Scroll to the skeleton as soon as generation starts, giving the user
     // immediate tactile feedback that work has begun.
     effect(() => {
@@ -192,6 +227,23 @@ export class GeneratorComponent {
         }, GeneratorComponent.SCROLL_DELAY_MS);
       }
     });
+  }
+
+  handlePromoteToStudy(): void {
+    this.isSimulationMode.set(false);
+    this.router.navigate([], { queryParams: { mode: null }, queryParamsHandling: 'merge' });
+    const form = this.configForm();
+    if (form) {
+      // Clear the "Simulation" placeholders to force the user to enter real administrative data
+      form.metadataGroup.patchValue({
+        protocolId: '',
+        subjectIdMask: '{SITE}-{STRATUM}-{SEQ:3}'
+      });
+      form.regulatoryGroup.patchValue({ isAcknowledged: false });
+      
+      // Scroll back up to the form
+      this.document.getElementById('wizard-start')?.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   /**

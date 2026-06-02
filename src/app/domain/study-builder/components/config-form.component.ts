@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
@@ -27,6 +27,9 @@ import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-n
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
+  @Input() isSimulationMode = false;
+  @Output() promoteToStudy = new EventEmitter<void>();
+
   private readonly fb = inject(FormBuilder);
   readonly facade = inject(RandomizationEngineFacade);
   readonly store = inject(StudyBuilderStore);
@@ -464,6 +467,10 @@ export class ConfigFormComponent implements OnInit {
 
     // Re-run form validators after signal-backed level details are synchronized.
     this.form.updateValueAndValidity({ emitEvent: false });
+  }
+
+  onPromoteToStudy(): void {
+    this.promoteToStudy.emit();
   }
 
   onStepSelectionChange(event: StepperSelectionEvent): void {
