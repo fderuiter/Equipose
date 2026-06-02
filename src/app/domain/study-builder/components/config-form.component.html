@@ -1,25 +1,33 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6 bg-surface p-6 rounded-xl shadow-sm border border-border-subtle">
-  <div cdkStepper #wizard="cdkStepper" [linear]="true" (selectionChange)="onStepSelectionChange($event)" class="space-y-6">
-    <ol class="grid grid-cols-2 lg:grid-cols-6 gap-2">
-      @for (label of stepLabels; track label; let i = $index) {
-        <li class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors"
-            [class.border-indigo-500]="wizard.selectedIndex === i"
-            [class.bg-indigo-50]="wizard.selectedIndex === i"
-            [class.text-indigo-700]="wizard.selectedIndex === i"
-            [class.border-emerald-500]="wizard.selectedIndex > i"
-            [class.bg-emerald-50]="wizard.selectedIndex > i"
-            [class.text-emerald-700]="wizard.selectedIndex > i"
-            [class.border-gray-200]="wizard.selectedIndex < i"
-            [class.bg-white]="wizard.selectedIndex < i"
-            [class.text-gray-500]="wizard.selectedIndex < i"
-            [class.dark:border-slate-600]="wizard.selectedIndex < i"
-            [class.dark:bg-slate-700]="wizard.selectedIndex < i"
-            [class.dark:text-slate-300]="wizard.selectedIndex < i">
-          <span class="block text-[10px] uppercase tracking-wide">Step {{ i }}</span>
-          <span>{{ label }}</span>
-        </li>
+  <div cdkStepper #wizard="cdkStepper" [linear]="!isSimulationMode" (selectionChange)="onStepSelectionChange($event)" class="space-y-6">
+    <div class="flex justify-between items-center">
+      <ol class="grid grid-cols-2 lg:grid-cols-6 gap-2 flex-grow">
+        @for (label of stepLabels; track label; let i = $index) {
+          <li class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors"
+              [class.border-indigo-500]="wizard.selectedIndex === i"
+              [class.bg-indigo-50]="wizard.selectedIndex === i"
+              [class.text-indigo-700]="wizard.selectedIndex === i"
+              [class.border-emerald-500]="wizard.selectedIndex > i"
+              [class.bg-emerald-50]="wizard.selectedIndex > i"
+              [class.text-emerald-700]="wizard.selectedIndex > i"
+              [class.border-gray-200]="wizard.selectedIndex < i"
+              [class.bg-white]="wizard.selectedIndex < i"
+              [class.text-gray-500]="wizard.selectedIndex < i"
+              [class.dark:border-slate-600]="wizard.selectedIndex < i"
+              [class.dark:bg-slate-700]="wizard.selectedIndex < i"
+              [class.dark:text-slate-300]="wizard.selectedIndex < i">
+            <span class="block text-[10px] uppercase tracking-wide">Step {{ i }}</span>
+            <span>{{ label }}</span>
+          </li>
+        }
+      </ol>
+      @if (isSimulationMode) {
+        <div class="ml-4 flex items-center gap-2">
+          <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Simulation Mode</span>
+          <button type="button" (click)="onPromoteToStudy()" class="rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Promote to Study</button>
+        </div>
       }
-    </ol>
+    </div>
 
     <ng-container [ngTemplateOutlet]="wizard.selected?.content"></ng-container>
 
