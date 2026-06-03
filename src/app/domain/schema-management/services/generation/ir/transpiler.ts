@@ -99,7 +99,7 @@ export class CodeTranspiler {
       });
     } else if (lang === 'Python') {
       for (const row of schema) {
-         schemaRows += `  {"SubjectID": "${row.subjectId}", "Site": "${row.site}", "Treatment": "${row.treatmentArm}", "BlockNumber": ${row.blockNumber}, "BlockSize": ${row.blockSize}, "StratumCode": "${row.stratumCode}"`;
+         schemaRows += `  {"SubjectID": "${FormattingUtil.escapePythonString(row.subjectId)}", "Site": "${FormattingUtil.escapePythonString(row.site)}", "Treatment": "${FormattingUtil.escapePythonString(row.treatmentArm)}", "BlockNumber": ${row.blockNumber}, "BlockSize": ${row.blockSize}, "StratumCode": "${FormattingUtil.escapePythonString(row.stratumCode)}"`;
          for (const s of config.strata || []) {
              schemaRows += `, "${s.id}": "${FormattingUtil.escapePythonString(row.stratum[s.id])}"`;
          }
@@ -107,7 +107,7 @@ export class CodeTranspiler {
       }
     } else if (lang === 'R') {
       schema.forEach((row, i) => {
-         schemaRows += `schema_list[[${i+1}]] <- data.frame(SubjectID="${row.subjectId}", Site="${row.site}", Treatment="${row.treatmentArm}", BlockNumber=${row.blockNumber}, BlockSize=${row.blockSize}, StratumCode="${row.stratumCode}"`;
+         schemaRows += `schema_list[[${i+1}]] <- data.frame(SubjectID="${FormattingUtil.escapeRString(row.subjectId)}", Site="${FormattingUtil.escapeRString(row.site)}", Treatment="${FormattingUtil.escapeRString(row.treatmentArm)}", BlockNumber=${row.blockNumber}, BlockSize=${row.blockSize}, StratumCode="${FormattingUtil.escapeRString(row.stratumCode)}"`;
          for (const s of config.strata || []) {
              schemaRows += `, ${s.id}="${FormattingUtil.escapeRString(row.stratum[s.id])}"`;
          }
@@ -125,8 +125,10 @@ export class CodeTranspiler {
                       (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
                       (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0);
     
-    const schema = generateRandomizationSchema(config).schema;
-    const ir = this.buildIR(config, method);
+    const result = generateRandomizationSchema(config);
+    const schema = result.schema;
+    const resolvedConfig = { ...config, seed: result.metadata.seed };
+    const ir = this.buildIR(resolvedConfig, method);
 
     const dateStr = new Date().toISOString().substring(0, 19);
     const algorithm = method === 'MINIMIZATION' ? 'Pocock-Simon Minimization' : 'PRNG Algorithm: MT19937';
@@ -145,7 +147,7 @@ export class CodeTranspiler {
         algorithmicLogic = `schema = [\n${this.formatStaticSchema(lang, config, schema)}\n]\n`;
       } else {
         // Python logical block generation
-        algorithmicLogic = `schema = []\nseq_count = 0\n`;
+        algorithmicLogic = `import re\nschema = []\nseq_count = 0\n`;
         algorithmicLogic += `block_sizes = [${ir.blockSizes.join(', ')}]\n`;
         algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
         algorithmicLogic += `arms = [${ir.arms.map(a => `{"name": "${FormattingUtil.escapePythonString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
@@ -171,8 +173,9 @@ export class CodeTranspiler {
           algorithmicLogic += `    block = build_block(size)\n`;
           algorithmicLogic += `    for trt in block:\n`;
           algorithmicLogic += `        seq_count += 1\n`;
-          algorithmicLogic += `        subj_id = "${config.subjectIdMask}".replace("{SITE}", "${task.site}").replace("{STRATUM}", "${task.stratumCode}").replace("{SEQ:3}", str(seq_count).zfill(3))\n`;
-          algorithmicLogic += `        schema.append({"SubjectID": subj_id, "Site": "${task.site}", "Treatment": trt, "BlockNumber": block_num, "BlockSize": size, "StratumCode": "${task.stratumCode}"${extraStrata}})\n`;
+          algorithmicLogic += `        subj_id = "${FormattingUtil.escapePythonString(config.subjectIdMask)}".replace("{SITE}", "${FormattingUtil.escapePythonString(task.site)}").replace("{STRATUM}", "${FormattingUtil.escapePythonString(task.stratumCode)}")\n`;
+          algorithmicLogic += `        subj_id = re.sub(r'\\{SEQ:(\\d+)\\}', lambda m: str(seq_count).zfill(int(m.group(1))), subj_id)\n`;
+          algorithmicLogic += `        schema.append({"SubjectID": subj_id, "Site": "${FormattingUtil.escapePythonString(task.site)}", "Treatment": trt, "BlockNumber": block_num, "BlockSize": size, "StratumCode": "${FormattingUtil.escapePythonString(task.stratumCode)}"${extraStrata}})\n`;
           algorithmicLogic += `        count += 1\n`;
           algorithmicLogic += `        if count >= ${task.cap}: break\n`;
           algorithmicLogic += `    block_num += 1\n`;
@@ -217,8 +220,8 @@ export class CodeTranspiler {
         algorithmicLogic += `  array blk[1000] $50 _temporary_;\n`;
         algorithmicLogic += `  seq_count = 0;\n`;
         for (const task of ir.tasks) {
-          algorithmicLogic += `  /* Task: ${task.site} ${task.stratumCode} */\n`;
-          algorithmicLogic += `  Site = "${task.site}"; StratumCode = "${task.stratumCode}";\n`;
+          algorithmicLogic += `  /* Task: ${FormattingUtil.escapeSasString(task.site)} ${FormattingUtil.escapeSasString(task.stratumCode)} */\n`;
+          algorithmicLogic += `  Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}";\n`;
           for (const s of config.strata || []) {
              algorithmicLogic += `  ${FormattingUtil.escapeSasString(s.id)}="${FormattingUtil.escapeSasString(task.stratumDetails[s.id])}";\n`;
           }
@@ -242,7 +245,7 @@ export class CodeTranspiler {
           algorithmicLogic += `        Treatment = blk[i]; BlockNumber = block_num; BlockSize = size;\n`;
           algorithmicLogic += `        seq_count = seq_count + 1;\n`;
           // basic subject id emulation for test parity
-          algorithmicLogic += `        SubjectID = "${task.site}-${task.stratumCode}-" || put(seq_count, z3.);\n`;
+          algorithmicLogic += `        SubjectID = "${FormattingUtil.escapeSasString(task.site)}-${FormattingUtil.escapeSasString(task.stratumCode)}-" || put(seq_count, z3.);\n`;
           algorithmicLogic += `        output;\n`;
           algorithmicLogic += `        count = count + 1;\n`;
           algorithmicLogic += `        if count >= cap then leave;\n`;
