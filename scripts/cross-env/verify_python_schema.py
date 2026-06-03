@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# [REQ-ICH-E9-001]
+# [REQ-ICH-E9-003]
 """
 Cross-Environment Equivalence Fixture – Python
 
