@@ -1,20 +1,20 @@
 import subprocess
 import json
 import os
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 def run_cuj(page):
     page.goto("http://localhost:4200/generator?mode=simulation")
     # Wait for the results grid to appear
     page.wait_for_selector("text=Generated Schema", timeout=10000)
 
-    # We are in simulation mode, but the wizard is still on step 0. 
+    # We are in simulation mode, but the wizard is still on step 0.
     # Click Next until we reach the end
     for _ in range(6):
         try:
             page.get_by_role("button", name="Next").click(timeout=1000)
             page.wait_for_timeout(200)
-        except:
+        except PlaywrightTimeoutError:
             break
 
     # Click the "Generate Code" dropdown
