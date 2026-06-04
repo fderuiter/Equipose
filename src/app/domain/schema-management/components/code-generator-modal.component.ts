@@ -1,8 +1,10 @@
 import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { JsonPipe } from '@angular/common';
+import { Dialog } from '@angular/cdk/dialog';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
+import { ManualVerificationWizardComponent } from './manual-verification-wizard.component';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -18,6 +20,7 @@ import { CodeGenerationError } from '../errors/code-generation-errors';
 export class CodeGeneratorModalComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   private codeGenService = inject(CodeGeneratorService);
+  private dialog = inject(Dialog);
 
   activeTab = signal<'R' | 'SAS' | 'Python' | 'STATA'>('R');
   copied = signal(false);
@@ -88,6 +91,20 @@ export class CodeGeneratorModalComponent implements OnInit {
     const code = this.currentCode;
     const tab = this.activeTab();
     const extension = tab === 'R' ? 'R' : tab === 'SAS' ? 'sas' : tab === 'STATA' ? 'do' : 'py';
+    
+    // Open the manual verification wizard for SAS and Stata
+    if (tab === 'SAS' || tab === 'STATA') {
+      this.dialog.open(ManualVerificationWizardComponent, {
+        data: {
+          language: tab,
+          code: code
+        },
+        disableClose: true, // Force acknowledging or skipping
+        panelClass: 'verification-dialog-panel'
+      });
+      return; // The wizard component will handle the actual file download
+    }
+    
     const blob = new Blob([code], { type: 'text/plain;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);

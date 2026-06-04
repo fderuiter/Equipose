@@ -8,11 +8,14 @@ import { CodeGenerationError } from '../errors/code-generation-errors';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { Dialog } from '@angular/cdk/dialog';
+import { ManualVerificationWizardComponent } from './manual-verification-wizard.component';
 
 describe('CodeGeneratorModalComponent (domain)', () => {
   let component: CodeGeneratorModalComponent;
   let mockFacade: unknown;
   let mockCodeGeneratorService: unknown;
+  let mockDialog: unknown;
 
   beforeEach(() => {
     mockFacade = {
@@ -34,11 +37,16 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       generatePython: vi.fn().mockReturnValue('Mock Python Code'),
       generateSas: vi.fn().mockReturnValue('Mock SAS Code')
     };
+    
+    mockDialog = {
+      open: vi.fn()
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: RandomizationEngineFacade, useValue: mockFacade },
-        { provide: CodeGeneratorService, useValue: mockCodeGeneratorService }
+        { provide: CodeGeneratorService, useValue: mockCodeGeneratorService },
+        { provide: Dialog, useValue: mockDialog }
       ]
     });
 
@@ -159,16 +167,30 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       verifyDownloadFilename('R', 'randomization_schema.R');
     });
 
-    it('should use randomization_schema.sas as the filename for SAS code', () => {
-      verifyDownloadFilename('SAS', 'randomization_schema.sas');
+    it('should open the ManualVerificationWizardComponent for SAS code', () => {
+      component.setActiveTab('SAS');
+      component.downloadCode();
+      expect((mockDialog as any).open).toHaveBeenCalledWith(
+        ManualVerificationWizardComponent,
+        expect.objectContaining({
+          data: expect.objectContaining({ language: 'SAS' })
+        })
+      );
     });
 
     it('should use randomization_schema.py as the filename for Python code', () => {
       verifyDownloadFilename('Python', 'randomization_schema.py');
     });
 
-    it('should use randomization_schema.do as the filename for STATA code', () => {
-      verifyDownloadFilename('STATA', 'randomization_schema.do');
+    it('should open the ManualVerificationWizardComponent for STATA code', () => {
+      component.setActiveTab('STATA');
+      component.downloadCode();
+      expect((mockDialog as any).open).toHaveBeenCalledWith(
+        ManualVerificationWizardComponent,
+        expect.objectContaining({
+          data: expect.objectContaining({ language: 'STATA' })
+        })
+      );
     });
 
     it('should call URL.createObjectURL with a Blob', () => {

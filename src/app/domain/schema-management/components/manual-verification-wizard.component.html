@@ -1,0 +1,122 @@
+<div class="flex flex-col bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-2xl max-w-2xl w-full mx-auto my-8 border border-border-subtle max-h-[90vh]">
+  <!-- Header -->
+  <div class="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-gray-50/80 dark:bg-slate-900/50">
+    <h2 class="text-xl font-semibold text-main">Manual Verification Wizard</h2>
+    <div class="text-sm font-medium text-gray-500 dark:text-slate-400">
+      Step {{ currentStep() + 1 }} of 3
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="p-6 overflow-y-auto flex-1">
+    <!-- Step 1: Instructions -->
+    @if (currentStep() === 0) {
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-main">1. Run the Generated Script</h3>
+        <p class="text-sm text-gray-600 dark:text-slate-300">
+          Because automated execution of {{ data.language }} scripts is restricted, you must manually run the generated code in your local environment.
+        </p>
+        <div class="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-4 rounded-md">
+          <p class="text-sm text-blue-700 dark:text-blue-300">
+            <strong>Action Required:</strong> The script has been downloaded. Please open it in your local {{ data.language }} environment, execute it, and prepare to compare the output dataset.
+          </p>
+        </div>
+      </div>
+    }
+
+    <!-- Step 2: Sample Verification -->
+    @if (currentStep() === 1) {
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-main">2. Verify Data Samples</h3>
+        <p class="text-sm text-gray-600 dark:text-slate-300">
+          Compare these strategically selected rows from the generated schema with the dataset produced by your local {{ data.language }} execution. Check off each row once you have verified the values match exactly.
+        </p>
+        
+        <div class="mt-4 border border-border-subtle rounded-lg overflow-hidden">
+          <table class="min-w-full divide-y divide-border-subtle">
+            <thead class="bg-gray-50 dark:bg-slate-900/50">
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verify</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Row</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject ID</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Treatment</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Strata</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-slate-800 divide-y divide-border-subtle">
+              @for (sample of samples(); track sample.rowIndex; let i = $index) {
+                <tr [class.bg-green-50]="sample.verified" [class.dark:bg-green-900/20]="sample.verified" class="transition-colors">
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="checkbox" [checked]="sample.verified" (change)="toggleVerification(i)"
+                           class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-main font-medium">{{ sample.rowIndex }}</td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-slate-300">{{ sample.subjectId }}</td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-slate-300">{{ sample.treatmentArm }}</td>
+                  <td class="px-4 py-3 text-sm text-gray-600 dark:text-slate-300 max-w-xs truncate" [title]="sample.strataValues">{{ sample.strataValues }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- Step 3: Audit Log -->
+    @if (currentStep() === 2) {
+      <div class="space-y-4">
+        <h3 class="text-lg font-medium text-main">3. Audit Trail Documentation</h3>
+        <p class="text-sm text-gray-600 dark:text-slate-300">
+          Record this unique SHA-256 Audit Hash in your study logs. It mathematically proves the integrity of the verified randomization dataset.
+        </p>
+        
+        <div class="bg-slate-900 dark:bg-slate-950 p-4 rounded-lg flex items-center justify-between">
+          <code class="text-sm text-green-400 break-all font-mono">{{ auditHash() }}</code>
+          <button (click)="copyHash()" class="ml-4 flex-shrink-0 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            {{ copied() ? 'Copied!' : 'Copy' }}
+          </button>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 p-4 rounded-md mt-4">
+          <p class="text-sm text-green-700 dark:text-green-300">
+            <strong>Verification Complete!</strong> You have successfully verified the data and obtained the audit hash. You may now close this wizard.
+          </p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Footer Actions -->
+  <div class="px-6 py-4 border-t border-border-subtle bg-gray-50/80 dark:bg-slate-900/50 flex justify-between items-center">
+    <div>
+      <button (click)="close(true)" class="text-sm text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 underline focus:outline-none">
+        Skip at own risk
+      </button>
+    </div>
+    <div class="flex space-x-3">
+      @if (currentStep() > 0) {
+        <button (click)="prevStep()" class="inline-flex justify-center rounded-lg border border-border-strong shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none transition-colors">
+          Back
+        </button>
+      }
+      
+      @if (currentStep() < 2) {
+        <button (click)="nextStep()" [disabled]="currentStep() === 1 && !allVerified()"
+                [class.opacity-50]="currentStep() === 1 && !allVerified()"
+                [class.cursor-not-allowed]="currentStep() === 1 && !allVerified()"
+                class="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+          Next
+        </button>
+      }
+      
+      @if (currentStep() === 2) {
+        <button (click)="close(false)" class="inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-green-600 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+          Finish
+        </button>
+      }
+    </div>
+  </div>
+</div>
