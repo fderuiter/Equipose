@@ -9,7 +9,14 @@ export type WorkerResponseType =
   | 'GENERATION_ERROR'
   | 'PROGRESS_UPDATE'
   | 'MONTE_CARLO_PROGRESS'
-  | 'MONTE_CARLO_SUCCESS';
+  | 'MONTE_CARLO_SUCCESS'
+  | 'MONTE_CARLO_ERROR';
+
+export interface StructuredErrorPayload {
+  message: string;
+  stack?: string;
+  context?: Record<string, unknown>;
+}
 
 export interface WorkerCommand<T = unknown> {
   /** Unique correlation identifier so callers can match responses to requests. */
@@ -32,7 +39,10 @@ export type GenerationCommand = WorkerCommand<RandomizationConfig>;
 export type GenerationSuccessResponse = WorkerResponse<RandomizationResult>;
 
 /** Strongly-typed error response containing the error payload. */
-export type GenerationErrorResponse = WorkerResponse<{ error: { error: string } }>;
+export type GenerationErrorResponse = WorkerResponse<StructuredErrorPayload>;
+
+/** Strongly-typed error response for Monte Carlo simulation. */
+export type MonteCarloErrorResponse = WorkerResponse<StructuredErrorPayload>;
 
 /**
  * Payload for starting a Monte Carlo simulation.

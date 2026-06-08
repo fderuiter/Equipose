@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal, ErrorHandler } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Dialog } from '@angular/cdk/dialog';
 import {
@@ -7,6 +7,7 @@ import {
 } from '../core/models/randomization.model';
 import { RandomizationService } from './randomization.service';
 import { ToastService } from '../../core/services/toast.service';
+import { LoggingService } from '../../core/services/logging.service';
 import { computeAuditHash } from './core/crypto-hash';
 import { generateCryptoSeed } from './core/randomization-algorithm';
 import { MonteCarloModalComponent } from './components/monte-carlo-modal.component';
@@ -15,7 +16,8 @@ import type {
   MonteCarloCommand,
   MonteCarloProgressPayload,
   MonteCarloSuccessPayload,
-  WorkerResponse
+  WorkerResponse,
+  StructuredErrorPayload
 } from './worker/worker-protocol';
 
 /**
@@ -34,6 +36,8 @@ export class RandomizationEngineFacade {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly randomizationService = inject(RandomizationService);
   private readonly toastService = inject(ToastService);
+  private readonly loggingService = inject(LoggingService);
+  private readonly errorHandler = inject(ErrorHandler);
   private readonly dialog = inject(Dialog);
 
   private worker: Worker | null = null;
@@ -69,7 +73,7 @@ export class RandomizationEngineFacade {
   readonly monteCarloProgress = signal(0);
   readonly monteCarloResults = signal<MonteCarloSuccessPayload | null>(null);
   
-  private monteCarloDialogRef: any = null;
+  private monteCarloDialogRef: ReturnType<Dialog['open']> | null = null;
 
   constructor() {
     if (this.isBrowser) {
@@ -106,7 +110,7 @@ export class RandomizationEngineFacade {
           const message = err.error?.error ?? 'An error occurred during schema generation.';
           this.error.set(message);
           this.isGenerating.set(false);
-          this.toastService.showError(message);
+          this.errorHandler.handleError(new Error(message));
         }
       });
     }
@@ -174,9 +178,14 @@ export class RandomizationEngineFacade {
         this.isMonteCarloRunning.set(false);
         this.monteCarloProgress.set(100);
       },
-      onError: () => {
+      onError: (err: unknown) => {
         this.isMonteCarloRunning.set(false);
         this.closeMonteCarloModal();
+        if (err instanceof Error) {
+          this.errorHandler.handleError(err);
+        } else {
+          this.errorHandler.handleError(new Error(String(err)));
+        }
       }
     });
 
@@ -222,6 +231,20 @@ export class RandomizationEngineFacade {
           }
           return;
         }
+        if (type === 'MONTE_CARLO_ERROR') {
+          const mc = this.pendingMonteCarloCallbacks.get(id);
+          if (mc) {
+            this.pendingMonteCarloCallbacks.delete(id);
+            const errPayload = payload as StructuredErrorPayload;
+            const e = new Error(errPayload.message || 'Worker Error');
+            e.stack = errPayload.stack;
+            if (errPayload.context) {
+               Object.assign(e, { context: errPayload.context });
+            }
+            mc.onError(e);
+          }
+          return;
+        }
 
         // Route standard generation messages
         const callbacks = this.pendingCallbacks.get(id);
@@ -231,20 +254,27 @@ export class RandomizationEngineFacade {
         if (type === 'GENERATION_SUCCESS') {
           callbacks.resolve(payload as RandomizationResult);
         } else {
-          callbacks.reject(payload);
+          const errPayload = payload as StructuredErrorPayload;
+          const e = new Error(errPayload.message || 'Worker Error');
+          e.stack = errPayload.stack;
+          if (errPayload.context) {
+             Object.assign(e, { context: errPayload.context });
+          }
+          callbacks.reject(e);
         }
       };
 
       this.worker.onerror = (err: ErrorEvent) => {
-        console.error('Randomization worker error:', err);
+        this.loggingService.error('Randomization worker error:', err);
+        const globalErr = new Error(err.message || 'Worker encountered an unexpected error.');
         // Reject all pending callbacks
         this.pendingCallbacks.forEach(cb =>
-          cb.reject({ error: { error: 'Worker encountered an unexpected error.' } })
+          cb.reject(globalErr)
         );
         this.pendingCallbacks.clear();
 
         this.pendingMonteCarloCallbacks.forEach(mc =>
-          mc.onError({ error: { error: 'Worker encountered an unexpected error.' } })
+          mc.onError(globalErr)
         );
         this.pendingMonteCarloCallbacks.clear();
       };
@@ -269,12 +299,14 @@ export class RandomizationEngineFacade {
         this.toastService.showSuccess('Schema successfully generated!');
       },
       reject: err => {
-        const errPayload = err as { error?: { error?: string } };
-        const message =
-          errPayload?.error?.error ?? 'An error occurred during schema generation.';
+        const message = err instanceof Error ? err.message : 'An error occurred during schema generation.';
         this.error.set(message);
         this.isGenerating.set(false);
-        this.toastService.showError(message);
+        if (err instanceof Error) {
+          this.errorHandler.handleError(err);
+        } else {
+          this.errorHandler.handleError(new Error(message));
+        }
       }
     });
 

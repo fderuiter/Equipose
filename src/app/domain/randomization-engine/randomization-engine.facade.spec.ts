@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { PLATFORM_ID } from '@angular/core';
+import { PLATFORM_ID, ErrorHandler } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
 import { RandomizationService } from './randomization.service';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
@@ -47,16 +47,19 @@ const mockResult: RandomizationResult = {
 describe('RandomizationEngineFacade – SSR (synchronous) path', () => {
   let facade: RandomizationEngineFacade;
   let mockRandomizationService: { generateSchema: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handleError: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
     mockRandomizationService = { generateSchema: vi.fn() };
+    mockErrorHandler = { handleError: vi.fn() };
     // Mock crypto.subtle.digest to avoid relative-import vi.mock restrictions in Angular's test system
     vi.spyOn(crypto.subtle, 'digest').mockResolvedValue(new Uint8Array(32).buffer);
 
     TestBed.configureTestingModule({
       providers: [
         { provide: PLATFORM_ID, useValue: 'server' },
-        { provide: RandomizationService, useValue: mockRandomizationService }
+        { provide: RandomizationService, useValue: mockRandomizationService },
+        { provide: ErrorHandler, useValue: mockErrorHandler }
       ]
     });
 
@@ -191,6 +194,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
   let facade: RandomizationEngineFacade;
   let fakeWorker: FakeWorker;
   let mockRandomizationService: { generateSchema: ReturnType<typeof vi.fn> };
+  let mockErrorHandler: { handleError: ReturnType<typeof vi.fn> };
 
   /** Access the facade's private pendingCallbacks map for introspection. */
   const pendingCallbacks = () =>
@@ -199,6 +203,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
   beforeEach(() => {
     fakeWorker = new FakeWorker();
     mockRandomizationService = { generateSchema: vi.fn() };
+    mockErrorHandler = { handleError: vi.fn() };
     // Mock crypto.subtle.digest to avoid relative-import vi.mock restrictions in Angular's test system
     vi.spyOn(crypto.subtle, 'digest').mockResolvedValue(new Uint8Array(32).buffer);
 
@@ -206,7 +211,8 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: PLATFORM_ID, useValue: 'server' },
-        { provide: RandomizationService, useValue: mockRandomizationService }
+        { provide: RandomizationService, useValue: mockRandomizationService },
+        { provide: ErrorHandler, useValue: mockErrorHandler }
       ]
     });
 
@@ -263,7 +269,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     fakeWorker.simulateMessage({
       id,
       type: 'GENERATION_ERROR',
-      payload: { error: { error: 'Worker error' } }
+      payload: { message: 'Worker error' }
     });
 
     expect(facade.error()).toBe('Worker error');
@@ -277,7 +283,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
 
     fakeWorker.simulateMessage({ id, type: 'GENERATION_ERROR', payload: {} });
 
-    expect(facade.error()).toBe('An error occurred during schema generation.');
+    expect(facade.error()).toBe('Worker Error');
   });
 
   it('should ignore worker messages whose id does not match a pending callback', () => {
@@ -308,7 +314,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
 
     fakeWorker.simulateError('fatal worker crash');
 
-    expect(facade.error()).toBe('Worker encountered an unexpected error.');
+    expect(facade.error()).toBe('fatal worker crash');
     expect(facade.isGenerating()).toBe(false);
     expect(pendingCallbacks().size).toBe(0);
   });

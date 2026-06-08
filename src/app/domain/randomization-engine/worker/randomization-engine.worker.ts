@@ -33,10 +33,11 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
     } catch (error) {
       const msg =
         error instanceof Error ? error.message : 'Internal error during randomization';
+      const stack = error instanceof Error ? error.stack : undefined;
       const response: WorkerResponse = {
         id,
         type: 'GENERATION_ERROR',
-        payload: { error: { error: msg } }
+        payload: { message: msg, stack }
       };
       postMessage(response);
     }
@@ -95,8 +96,20 @@ function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload)
           }
         }
       }
-    } catch {
-      // Skip invalid iterations (e.g., edge-case config errors) without crashing the simulation
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Internal error during Monte Carlo simulation';
+      const stack = error instanceof Error ? error.stack : undefined;
+      const response: WorkerResponse = {
+        id,
+        type: 'MONTE_CARLO_ERROR',
+        payload: {
+          message: msg,
+          stack,
+          context: { iterationIndex: i }
+        }
+      };
+      postMessage(response);
+      return;
     }
 
     // Emit progress every PROGRESS_INTERVAL iterations
