@@ -46,6 +46,14 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
   }
 });
 
+/**
+ * Runs a Monte Carlo simulation of randomization schemas and posts progress, success, or error responses.
+ *
+ * Simulates 10,000 iterations using a fresh cryptographic seed each iteration, accumulates per-arm counts before and after applying attrition, posts progress updates every 500 iterations, and on completion posts a `MONTE_CARLO_SUCCESS` payload containing aggregated totals and per-arm statistics. If schema generation fails during any iteration, posts a `MONTE_CARLO_ERROR` with `context.iterationIndex` and returns early.
+ *
+ * @param id - Worker message identifier included in all posted responses
+ * @param payload - The Monte Carlo input containing `config` (the randomization configuration; the function replaces its seed each iteration) and `attritionRate` (percentage; non-finite values are treated as 0 and the value is clamped to the range 0–50) 
+ */
 function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload): void {
   const TOTAL_ITERATIONS = 10_000;
   const PROGRESS_INTERVAL = 500;
