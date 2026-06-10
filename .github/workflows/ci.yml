@@ -22,7 +22,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Install pnpm
       uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2
@@ -86,7 +86,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -137,7 +137,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -201,7 +201,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Python
       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
@@ -271,7 +271,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -315,7 +315,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -352,7 +352,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -410,7 +410,7 @@ jobs:
           pypi.org:443
           files.pythonhosted.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -504,7 +504,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -566,7 +566,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Python
       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
@@ -618,7 +618,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -670,7 +670,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@v8
@@ -723,7 +723,7 @@ jobs:
           registry.yarnpkg.com:443
           nodejs.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
     - name: Set up Node.js
       uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
@@ -792,7 +792,7 @@ jobs:
           objects.githubusercontent.com:443
           raw.githubusercontent.com:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
     - name: Run actionlint
       run: |
         bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
@@ -835,7 +835,7 @@ jobs:
           token.actions.githubusercontent.com:443
 
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
       with:
         fetch-depth: 0
 
