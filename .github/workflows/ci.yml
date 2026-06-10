@@ -868,7 +868,7 @@ jobs:
       run: cp ${{ steps.provenance.outputs.bundle-path }} ./build-provenance.intoto.jsonl
 
     - name: Generate SBOM Attestation
-      uses: actions/attest-sbom@5026d3663739160db546203eeaffa6aa1c51a4d6
+      uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e
       id: sbom_attest
       with:
         subject-path: 'sbom.json'
