@@ -147,4 +147,35 @@ describe('computeAuditHash', () => {
     const h2 = await computeAuditHash(withDifferentHash);
     expect(h1).toBe(h2);
   });
+
+  it('changes when the schema changes', async () => {
+    const modified: RandomizationResult = {
+      ...mockResult,
+      schema: [
+        {
+          subjectId: 'S-001',
+          site: 'Site1',
+          stratum: {},
+          stratumCode: '',
+          blockNumber: 1,
+          blockSize: 2,
+          treatmentArm: 'Active',
+          treatmentArmId: 'A'
+        }
+      ]
+    };
+    const h1 = await computeAuditHash(mockResult);
+    const h2 = await computeAuditHash(modified);
+    expect(h1).not.toBe(h2);
+  });
+
+  it('changes when the generatedAt timestamp changes', async () => {
+    const modified: RandomizationResult = {
+      ...mockResult,
+      metadata: { ...mockResult.metadata, generatedAt: '2024-06-01T12:00:01.000Z' }
+    };
+    const h1 = await computeAuditHash(mockResult);
+    const h2 = await computeAuditHash(modified);
+    expect(h1).not.toBe(h2);
+  });
 });

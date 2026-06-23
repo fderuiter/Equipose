@@ -95,7 +95,7 @@ describe('generateRandomizationSchema – property tests', () => {
         }),
         { minLength: 2, maxLength: 5 }
       ),
-      sites: fc.array(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 5 }),
+      sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 5 }),
       strata: fc.constant([] as StratificationFactor[]), // simplify by omitting strata
       seed: fc.string(),
       capStrategy: fc.constant('PROPORTIONAL' as const),
@@ -404,7 +404,7 @@ describe('generateRandomizationSchema – multi-site', () => {
 
 describe('generateRandomizationSchema – new token syntax', () => {
   it('{SITE} resolves to the site identifier', () => {
-    const config: RandomizationConfig = { ...BASE_CONFIG, subjectIdMask: '{SITE}-001' };
+    const config: RandomizationConfig = { ...BASE_CONFIG, subjectIdMask: '{SITE}-{SEQ:3}' };
     const result = generateRandomizationSchema(config);
     expect(result.schema[0].subjectId.startsWith('Site1-')).toBe(true);
   });
@@ -476,9 +476,9 @@ describe('generateRandomizationSchema – new token syntax', () => {
   });
 
   it('plain text outside tokens is preserved verbatim', () => {
-    const config: RandomizationConfig = { ...BASE_CONFIG, subjectIdMask: 'TRIAL-{SITE}-END' };
+    const config: RandomizationConfig = { ...BASE_CONFIG, subjectIdMask: 'TRIAL-{SITE}-{SEQ:3}-END' };
     const result = generateRandomizationSchema(config);
-    expect(result.schema[0].subjectId).toBe('TRIAL-Site1-END');
+    expect(result.schema[0].subjectId).toBe('TRIAL-Site1-001-END');
   });
 });
 

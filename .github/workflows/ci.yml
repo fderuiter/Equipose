@@ -26,6 +26,9 @@ jobs:
           playwright.azureedge.net:443
           archive.ubuntu.com:80
           security.ubuntu.com:80
+          cdn.playwright.dev:443
+          playwright.download.prss.microsoft.com:443
+          storage.googleapis.com:443
     - name: Checkout repository
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
@@ -814,7 +817,7 @@ jobs:
         echo "$OUTPUT"
         URL=$(echo "$OUTPUT" | grep -o 'https://[^ ]*\.workers\.dev' | head -1)
         if [ -z "$URL" ]; then URL="Deployment URL not found in output"; fi
-        echo "url=$URL" >> $GITHUB_OUTPUT
+        echo "url=$URL" >> "$GITHUB_OUTPUT"
 
     - name: Comment on PR
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
