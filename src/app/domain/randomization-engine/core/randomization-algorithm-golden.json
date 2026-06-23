@@ -227,9 +227,7 @@
           ]
         }
       ],
-      "blockSizes": [
-        4
-      ],
+      "blockSizes": [],
       "stratumCaps": [],
       "seed": "GOLDEN_SEED_2",
       "subjectIdMask": "{SITE}-{SEQ:3}",
