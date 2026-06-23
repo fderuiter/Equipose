@@ -98,10 +98,14 @@ export function generateSubjectId(
     if (!hasRnd) break;
   }
 
-  // Fallback: return deterministic ID even if it already exists (shouldn't happen)
-  const id = applyTokens(mask, context, rndString);
-  usedIds.add(id);
-  return id;
+  const detail = hasRnd
+    ? `exhausted ${maxRetries} retries`
+    : `mask "${mask}" does not guarantee uniqueness (no {RND} token)`;
+
+  throw new Error(
+    `Failed to generate a unique Subject ID after collision: ${detail}. ` +
+    `Context: site=${context.site}, stratum=${context.stratumCode}, seq=${context.sequence}`
+  );
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────────
