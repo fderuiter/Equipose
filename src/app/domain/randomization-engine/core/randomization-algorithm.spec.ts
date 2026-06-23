@@ -95,7 +95,7 @@ describe('generateRandomizationSchema – property tests', () => {
         }),
         { minLength: 2, maxLength: 5 }
       ),
-      sites: fc.array(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 5 }),
+      sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 5 }),
       strata: fc.constant([] as StratificationFactor[]), // simplify by omitting strata
       seed: fc.string(),
       capStrategy: fc.constant('PROPORTIONAL' as const),

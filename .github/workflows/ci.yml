@@ -21,6 +21,9 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          cdn.playwright.dev:443
+          playwright.download.prss.microsoft.com:443
+          storage.googleapis.com:443
     - name: Checkout repository
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
@@ -673,13 +676,13 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
     - name: Download code-generation fixture scripts
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
       with:
         name: code-generation-fixtures
         path: artifacts/code-generation-fixtures/
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
       with:
         python-version: '3.11'
 
@@ -697,7 +700,7 @@ jobs:
                      src/ artifacts/
 
     - name: Upload SARIF report
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@df409f7ccf38ca9ec07e26907277817b783d8e9d
       if: always()
       with:
         sarif_file: semgrep.sarif
@@ -749,7 +752,7 @@ jobs:
         echo "$OUTPUT"
         URL=$(echo "$OUTPUT" | grep -o 'https://[^ ]*\.workers\.dev' | head -1)
         if [ -z "$URL" ]; then URL="Deployment URL not found in output"; fi
-        echo "url=$URL" >> $GITHUB_OUTPUT
+        echo "url=$URL" >> "$GITHUB_OUTPUT"
 
     - name: Comment on PR
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
