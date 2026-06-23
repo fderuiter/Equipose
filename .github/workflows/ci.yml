@@ -804,6 +804,11 @@ jobs:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       run: |
+        if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+          echo "Cloudflare API token not found. Skipping deployment."
+          echo "url=skipped" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
         set +e
         OUTPUT=$(npx wrangler deploy --name "equipose-pr-${{ github.event.pull_request.number }}" 2>&1)
         EXIT_CODE=$?
@@ -819,6 +824,7 @@ jobs:
         echo "url=$URL" >> "$GITHUB_OUTPUT"
 
     - name: Comment on PR
+      if: steps.deploy.outputs.url != 'skipped' && steps.deploy.outputs.url != ''
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         script: |
