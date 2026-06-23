@@ -4,13 +4,14 @@ import { openGenerator, loadPreset } from './generator-helpers';
 test.describe('Determinism Test Suite', () => {
   test('generates identical Audit Hash for the same seed across Chromium, WebKit, and Firefox', async ({ page }) => {
     test.setTimeout(60000);
+    page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
 
     await openGenerator(page);
     await loadPreset(page, 'Complex');
 
     await page.fill('input#protocolId', 'DET-100');
     await page.locator('input#subjectIdMask').clear();
-    await page.fill('input#subjectIdMask', 'DET-{SEQ:3}');
+    await page.fill('input#subjectIdMask', 'DET-{SITE}-{SEQ:3}');
     
     await page.fill('input#seed', 'deterministic-seed-2026');
     await page.keyboard.press('Tab');
@@ -50,6 +51,13 @@ test.describe('Determinism Test Suite', () => {
 
     await page.getByRole('button', { name: /Generate Schema/i }).click();
 
+    const toast = page.locator('.toast-error, .p-toast-message, [role="alert"]');
+    try {
+      if (await toast.first().isVisible({ timeout: 2000 })) {
+        console.error("Toast error:", await toast.first().innerText());
+      }
+    } catch(e) {}
+
     const resultsSection = page.locator('#results-section');
     await expect(resultsSection).toBeVisible({ timeout: 15000 });
 
@@ -59,6 +67,6 @@ test.describe('Determinism Test Suite', () => {
     const hash = await auditHashElement.innerText();
     console.log(`Generated Hash: ${hash}`);
     
-    expect(hash).toBe('9989a854990a...58d99df25c68');
+    expect(hash).toBe('f388de0b30cd...185fe80e07a9');
   });
 });

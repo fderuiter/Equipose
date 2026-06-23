@@ -8,13 +8,13 @@ test.describe('Application Navigation', () => {
   test('should display the landing page at the root URL', async ({ page }) => {
     await page.goto('http://localhost:4200');
     await expect(page.getByRole('heading', { name: /Equipose/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Get started/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /New Study/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Learn more/i })).toBeVisible();
   });
 
-  test('should navigate to the generator page via the "Get started" link', async ({ page }) => {
+  test('should navigate to the generator page via the "New Study" link', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    await page.getByRole('link', { name: /Get started/i }).click();
+    await page.getByRole('link', { name: /New Study/i }).click();
     await expect(page).toHaveURL(/\/generator/);
     await expect(page.getByTestId('generator-page')).toBeVisible();
   });
@@ -39,13 +39,13 @@ test.describe('Application Navigation', () => {
     await page.goto('http://localhost:4200/generator');
     await page.getByRole('link', { name: /Equipose/ }).first().click();
     await expect(page).toHaveURL('http://localhost:4200/');
-    await expect(page.getByRole('link', { name: /Get started/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /New Study/i })).toBeVisible();
   });
 
   test('should redirect any unknown route back to the landing page', async ({ page }) => {
     await page.goto('http://localhost:4200/this-route-does-not-exist');
     await expect(page).toHaveURL('http://localhost:4200/');
-    await expect(page.getByRole('link', { name: /Get started/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /New Study/i })).toBeVisible();
   });
 
   test('About page should display the 21 CFR Part 11 compliance warning', async ({ page }) => {

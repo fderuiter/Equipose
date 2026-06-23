@@ -1,7 +1,7 @@
 export const R_TEMPLATE = `
 # Randomization Schema Configuration
 # Protocol: {{protocolId}}
-# App Version: 1.0
+# App Version: {{appVersion}}
 # Generated At: {{dateStr}}
 # Algorithm: {{algorithm}}
 set.seed({{seedHash}})
@@ -21,7 +21,7 @@ print(head(schema))
 export const SAS_TEMPLATE = `
 /* Randomization Schema Generation in SAS */
 /* Protocol: {{protocolId}} */
-/* App Version: 1.0 */
+/* App Version: {{appVersion}} */
 /* Generated At: {{dateStr}} */
 /* Algorithm: {{algorithm}} */
 %let seed = {{seedHash}};
@@ -45,7 +45,7 @@ run;
 export const PYTHON_TEMPLATE = `
 # Randomization Schema Configuration
 # Protocol: {{protocolId}}
-# App Version: 1.0
+# App Version: {{appVersion}}
 # Generated At: {{dateStr}}
 # Algorithm: {{algorithm}}
 import numpy as np
@@ -65,7 +65,7 @@ print(df.head())
 export const STATA_TEMPLATE = `
 * Randomization Schema Configuration
 * Protocol: {{protocolId}}
-* App Version: 1.0
+* App Version: {{appVersion}}
 * Generated At: {{dateStr}}
 * Algorithm: {{algorithm}}
 set seed {{seedHash}}

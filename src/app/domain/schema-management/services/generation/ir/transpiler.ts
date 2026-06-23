@@ -4,6 +4,7 @@ import { FormattingUtil } from '../formatting.util';
 import { ReproducibilityUtil } from '../reproducibility.util';
 import { R_TEMPLATE, SAS_TEMPLATE, PYTHON_TEMPLATE, STATA_TEMPLATE } from './templates';
 import { LogicIR, LogicIRTask } from './ir.model';
+import { APP_VERSION } from '../../../../../../environments/version';
 
 export class CodeTranspiler {
   
@@ -130,11 +131,12 @@ export class CodeTranspiler {
     const resolvedConfig = { ...config, seed: result.metadata.seed };
     const ir = this.buildIR(resolvedConfig, method);
 
-    const dateStr = new Date().toISOString().substring(0, 19);
+    const dateStr = new Date().toISOString();
     const algorithm = method === 'MINIMIZATION' ? 'Pocock-Simon Minimization' : 'PRNG Algorithm: MT19937';
 
     const data: Record<string, string | number> = {
       protocolId: config.protocolId,
+      appVersion: APP_VERSION,
       dateStr,
       algorithm,
       seedHash: ir.seedHash
