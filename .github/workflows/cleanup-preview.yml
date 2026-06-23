@@ -18,6 +18,7 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          api.cloudflare.com:443
           *.blob.core.windows.net:443
           *.actions.githubusercontent.com:443
           playwright.azureedge.net:443
@@ -45,6 +46,10 @@ jobs:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       run: |
+        if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+          echo "Cloudflare secrets are not available. Skipping cleanup."
+          exit 0
+        fi
         npx wrangler delete equipose-pr-${{ github.event.pull_request.number }}
     permissions:
       contents: read
