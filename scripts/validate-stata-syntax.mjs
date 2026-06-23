@@ -10,10 +10,32 @@ import { join, resolve } from 'path';
 
 const FIXTURE_ROOT = resolve(process.cwd(), 'artifacts', 'code-generation-fixtures');
 
+const REQUIRED_HEADER_PATTERNS = [
+  { label: 'title comment',        re: /^\*\s*(Randomization Schema Configuration)\s*/i },
+  { label: 'Protocol field',       re: /^\*\s*Protocol:/i },
+  { label: 'App Version field',    re: /^\*\s*App Version:/i },
+  { label: 'Generated At field',   re: /^\*\s*Generated At:/i },
+  { label: 'PRNG\/Algorithm field', re: /^\*\s*(PRNG Algorithm|Algorithm):/i },
+];
+
+const ISO_TIMESTAMP_RE = /Generated At:\s*(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/i;
+
 async function validateFile(filePath) {
   const src = await readFile(filePath, 'utf-8');
   const errors = [];
   const lines = src.split('\n');
+
+  // Header validation
+  for (const { label, re } of REQUIRED_HEADER_PATTERNS) {
+    if (!lines.some(line => re.test(line))) {
+      errors.push(`Missing required header field: ${label}`);
+    }
+  }
+
+  const tsMatch = src.match(ISO_TIMESTAMP_RE);
+  if (!tsMatch) {
+    errors.push(`Missing or malformed "Generated At" ISO 8601 timestamp`);
+  }
 
   lines.forEach((line, idx) => {
     // Check for common Stata macro dereferencing errors

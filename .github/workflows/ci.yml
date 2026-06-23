@@ -365,6 +365,46 @@ jobs:
     - name: Run Stata static syntax validator
       run: node scripts/validate-stata-syntax.mjs
 
+  metadata_validation:
+    runs-on: ubuntu-latest
+    needs: code_generation_fixtures
+    permissions:
+      contents: read
+
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+      with:
+        egress-policy: audit
+        allowed-endpoints: |-
+          github.com:443
+          api.github.com:443
+          objects.githubusercontent.com:443
+          registry.npmjs.org:443
+          registry.yarnpkg.com:443
+          nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
+    - name: Checkout repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+    - name: Set up Node.js
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+      with:
+        node-version: '22'
+
+    - name: Download code-generation fixture scripts
+      uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
+      with:
+        name: code-generation-fixtures
+        path: artifacts/code-generation-fixtures/
+
+    - name: Run metadata validation
+      run: node scripts/validate-metadata.mjs
+
   merge_reports:
     runs-on: ubuntu-latest
     needs: e2e
@@ -428,7 +468,7 @@ jobs:
 
   traceability_matrix:
     runs-on: ubuntu-latest
-    needs: [setup, merge_reports, python_script_execution_check, sas_static_validation, stata_static_validation, cross_env_equivalence, sbom, security_scan, lint_actions]
+    needs: [setup, merge_reports, python_script_execution_check, sas_static_validation, stata_static_validation, metadata_validation, cross_env_equivalence, sbom, security_scan, lint_actions]
     if: !cancelled() && needs.setup.result == 'success'
     permissions:
       contents: read
@@ -881,7 +921,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [setup, e2e, code_generation_fixtures, python_script_execution_check, sas_static_validation, stata_static_validation, merge_reports, traceability_matrix, script_validation_report, cross_env_equivalence, sbom, security_scan, lint_actions]
+    needs: [setup, e2e, code_generation_fixtures, python_script_execution_check, sas_static_validation, stata_static_validation, metadata_validation, merge_reports, traceability_matrix, script_validation_report, cross_env_equivalence, sbom, security_scan, lint_actions]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
