@@ -368,7 +368,7 @@ jobs:
   merge_reports:
     runs-on: ubuntu-latest
     needs: e2e
-    if: always()
+    if: ${{ !cancelled() && needs.e2e.result != 'skipped' }}
     permissions:
       contents: read
 
@@ -429,7 +429,7 @@ jobs:
   traceability_matrix:
     runs-on: ubuntu-latest
     needs: [setup, merge_reports, python_script_execution_check, sas_static_validation, stata_static_validation, cross_env_equivalence, sbom, security_scan, lint_actions]
-    if: always()
+    if: ${{ !cancelled() && needs.setup.result == 'success' }}
     permissions:
       contents: read
 
@@ -528,9 +528,9 @@ jobs:
 
   script_validation_report:
     runs-on: ubuntu-latest
-    needs: [python_script_execution_check, sas_static_validation, 
+    needs: [setup, python_script_execution_check, sas_static_validation, 
         stata_static_validation, cross_env_equivalence]
-    if: always()
+    if: ${{ !cancelled() && needs.setup.result == 'success' }}
     permissions:
       contents: read
 
