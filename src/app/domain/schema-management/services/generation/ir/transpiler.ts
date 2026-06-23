@@ -265,7 +265,7 @@ export class CodeTranspiler {
 
       let strataComments = '';
       (config.strata || []).forEach((s, i) => {
-         strataComments += `local strata_${i+1} "\`"${FormattingUtil.sanitizeStataVarName(s.id)}"'"\n`;
+         strataComments += `local strata_${i+1} ${FormattingUtil.stataLabelQuote(FormattingUtil.sanitizeStataVarName(s.id))}\n`;
          s.levels.forEach(l => {
              strataComments += `* Level: ${FormattingUtil.stataLabelQuote(l)}\n`;
          });
