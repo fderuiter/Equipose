@@ -368,7 +368,7 @@ export function generateMinimization(
 
       if (availableLevels.length === 0) {
         validSubject = false;
-      break;
+        break;
       }
 
       const expectedProbs = availableLevels.map(lvl => baseProbabilities.get(factor.id)?.get(lvl));
