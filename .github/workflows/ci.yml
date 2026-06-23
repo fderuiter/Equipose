@@ -804,9 +804,17 @@ jobs:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       run: |
-        OUTPUT=$(npx wrangler deploy --name "equipose-pr-${{ github.event.pull_request.number }}")
+        set +e
+        OUTPUT=$(npx wrangler deploy --name "equipose-pr-${{ github.event.pull_request.number }}" 2>&1)
+        EXIT_CODE=$?
+        set -e
         echo "$OUTPUT"
-        URL=$(echo "$OUTPUT" | grep -o 'https://[^ ]*\.workers\.dev' | head -1)
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "Wrangler deploy failed with exit code $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
+        OUTPUT_CLEAN=$(echo "$OUTPUT" | sed -r 's/\x1b\[[0-9;]*[mK]//g')
+        URL=$(echo "$OUTPUT_CLEAN" | grep -o 'https://[^ ]*\.workers\.dev' | head -1 || true)
         if [ -z "$URL" ]; then URL="Deployment URL not found in output"; fi
         echo "url=$URL" >> "$GITHUB_OUTPUT"
 
