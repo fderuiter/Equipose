@@ -528,9 +528,9 @@ jobs:
 
   script_validation_report:
     runs-on: ubuntu-latest
-    needs: [setup, python_script_execution_check, sas_static_validation, 
+    needs: [python_script_execution_check, sas_static_validation, 
         stata_static_validation, cross_env_equivalence]
-    if: ${{ !cancelled() && needs.setup.result == 'success' }}
+    if: ${{ !cancelled() }}
     permissions:
       contents: read
 
@@ -558,15 +558,6 @@ jobs:
       uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
-
-    - name: Download shared environment
-      uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
-      with:
-        name: shared-env
-        path: .
-
-    - name: Extract shared environment
-      run: tar -xf shared-env.tar
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
