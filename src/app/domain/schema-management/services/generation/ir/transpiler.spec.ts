@@ -11,10 +11,10 @@ describe('CodeTranspiler Metadata Validation', () => {
     sites: ['Site 1'],
     strata: [],
     blockSizes: [2],
-    stratumCaps: [{ levels: [], cap: 4 }],
+    stratumCaps: [{ levelIds: {}, cap: 4 }],
     seed: 'test-seed',
     subjectIdMask: '{SITE}-{SEQ:3}',
-    randomizationMethod: 'PERMUTED_BLOCK'
+    randomizationMethod: 'BLOCK'
   };
 
   const languages = ['R', 'Python', 'SAS', 'STATA'] as const;

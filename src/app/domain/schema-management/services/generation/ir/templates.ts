@@ -37,6 +37,7 @@ export const SAS_TEMPLATE = `
 {{blockSizesParam}}
 
 data RandomizationSchema;
+  call streaminit(&seed);
   length SubjectID $20 Site $20 Treatment $50 StratumCode $50 {{strataLength}};
 {{algorithmicLogic}}
 run;
@@ -50,7 +51,8 @@ export const PYTHON_TEMPLATE = `
 # Algorithm: {{algorithm}}
 import numpy as np
 import pandas as pd
-rng = np.random.default_rng({{seedHash}})
+mt19937 = np.random.MT19937({{seedHash}})
+rng = np.random.Generator(mt19937)
 # Arms: {{arms}}
 # Ratios: {{ratios}}
 {{strataComments}}
