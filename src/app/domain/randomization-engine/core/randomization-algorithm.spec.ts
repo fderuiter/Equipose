@@ -731,6 +731,55 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
       };
       expect(() => generateRandomizationSchema(config)).toThrow(/not a multiple/);
     });
+
+    it('throws when an arm ratio is negative', () => {
+      const config: RandomizationConfig = {
+        ...BASE_CONFIG,
+        arms: [
+          { id: 'A', name: 'Arm A', ratio: -1 },
+          { id: 'B', name: 'Arm B', ratio: 1 }
+        ]
+      };
+      expect(() => generateRandomizationSchema(config)).toThrow(/ratio/i);
+    });
+
+    it('throws when block size is zero or negative', () => {
+      expect(() =>
+        generateRandomizationSchema({ ...BASE_CONFIG, blockSizes: [0] })
+      ).toThrow(/positive integer/i);
+      expect(() =>
+        generateRandomizationSchema({ ...BASE_CONFIG, blockSizes: [-4] })
+      ).toThrow(/positive integer/i);
+    });
+
+    it('throws when block sizes are provided for Minimization', () => {
+      const config: RandomizationConfig = {
+        ...BASE_CONFIG,
+        randomizationMethod: 'MINIMIZATION',
+        minimizationConfig: { p: 0.8, totalSampleSize: 10 },
+        blockSizes: [4]
+      };
+      expect(() => generateRandomizationSchema(config)).toThrow(/minimization/i);
+    });
+
+    it('throws when Minimization is used with Proportional caps', () => {
+      const config: RandomizationConfig = {
+        ...BASE_CONFIG,
+        randomizationMethod: 'MINIMIZATION',
+        capStrategy: 'PROPORTIONAL',
+        blockSizes: []
+      };
+      expect(() => generateRandomizationSchema(config)).toThrow(/proportional/i);
+    });
+
+    it('throws when MARGINAL_ONLY is used without any fully capped factor', () => {
+      const config: RandomizationConfig = {
+        ...BASE_CONFIG,
+        capStrategy: 'MARGINAL_ONLY',
+        strata: [{ id: 'S1', name: 'S1', levels: ['L1', 'L2'] }]
+      };
+      expect(() => generateRandomizationSchema(config)).toThrow(/marginalCap/i);
+    });
   });
 });
 

@@ -241,16 +241,6 @@ function generateMarginalOnly(
     }
   }
 
-  // Guard: MARGINAL_ONLY terminates only if every possible stratum combination contains
-  // at least one capped level. Requiring one factor where ALL levels have a finite cap
-  // guarantees this: every combination that includes that factor is eventually pruned.
-  if (!hasFullyCappedFactor) {
-    throw new Error(
-      'MARGINAL_ONLY randomization requires at least one stratification factor with a finite ' +
-      'marginalCap on every one of its levels to guarantee termination. ' +
-      'Set a marginalCap for all levels of at least one stratum factor.'
-    );
-  }
 
   for (const site of resolvedConfig.sites) {
     let siteSubjectCount = 0;
@@ -402,23 +392,69 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
     strataCombinations = newCombinations;
   }
 
-  // Calculate total ratio sum
+  // 1. Arm ratios must be non-negative
+  for (const arm of resolvedConfig.arms) {
+    if (arm.ratio < 0) {
+      throw new Error(`Arm ratio must be non-negative. Arm "${arm.name}" has ratio ${arm.ratio}`);
+    }
+  }
+
+  // 2. Calculate total ratio sum
   const totalRatio = resolvedConfig.arms.reduce((sum, arm) => sum + arm.ratio, 0);
 
   if (totalRatio === 0) {
     throw new Error('Total arm ratio must be greater than zero');
   }
 
-  // Validate block sizes from all rules (skip for minimization - block sizes don't apply).
+  // 3. Contradictory configs for Minimization
+  if (resolvedConfig.randomizationMethod === 'MINIMIZATION') {
+    if (resolvedConfig.blockSizes.length > 0 ||
+        resolvedConfig.globalBlockStrategy ||
+        resolvedConfig.siteBlockOverrides ||
+        resolvedConfig.stratumBlockOverrides) {
+      throw new Error('Block sizes and strategies are not compatible with Minimization method');
+    }
+    if (resolvedConfig.capStrategy === 'PROPORTIONAL') {
+      throw new Error('Proportional cap strategy is not currently supported with Minimization method');
+    }
+  }
+
+  // 4. Validate block sizes from all rules (skip for minimization - block sizes don't apply).
   if (resolvedConfig.randomizationMethod !== 'MINIMIZATION') {
     const allSizes = collectAllBlockSizes(resolvedConfig);
     if (allSizes.length === 0) {
       throw new Error('At least one block size must be configured');
     }
     for (const size of allSizes) {
+      if (size <= 0) {
+        throw new Error(`Block size must be a positive integer. Got ${size}`);
+      }
       if (size % totalRatio !== 0) {
         throw new Error(`Block size ${size} is not a multiple of total ratio ${totalRatio}`);
       }
+    }
+  }
+
+  // 5. Early validation for MARGINAL_ONLY cap strategy
+  if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
+    const hasFullyCappedFactor = resolvedConfig.strata.some(factor => {
+      const levelMap = new Map<string, number | undefined>();
+      if (factor.levelDetails) {
+        for (const detail of factor.levelDetails) {
+          levelMap.set(detail.name, detail.marginalCap);
+        }
+      }
+      return factor.levels.length > 0 && factor.levels.every(lvl => {
+        const cap = levelMap.get(lvl);
+        return Number.isFinite(cap) && (cap as number) >= 0;
+      });
+    });
+
+    if (!hasFullyCappedFactor) {
+      throw new Error(
+        'MARGINAL_ONLY randomization requires at least one stratification factor with a finite ' +
+        'marginalCap on every one of its levels to guarantee termination.'
+      );
     }
   }
 
