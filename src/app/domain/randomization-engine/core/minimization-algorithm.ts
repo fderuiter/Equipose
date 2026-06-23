@@ -144,6 +144,12 @@ export function generateMinimization(
 
   if (arms.length === 0 || sites.length === 0) return [];
 
+  for (const arm of arms) {
+    if (arm.ratio < 0) {
+      throw new Error(`Arm ratio must be non-negative. Arm "${arm.name}" has ratio ${arm.ratio}`);
+    }
+  }
+
   let armRatioLcm = 1;
   for (const arm of arms) {
     if (arm.ratio > 0) {
@@ -362,7 +368,7 @@ export function generateMinimization(
 
       if (availableLevels.length === 0) {
         validSubject = false;
-        break; // Should not happen given exhaustion check > 0
+      break;
       }
 
       const expectedProbs = availableLevels.map(lvl => baseProbabilities.get(factor.id)?.get(lvl));
