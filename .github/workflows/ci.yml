@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -75,7 +75,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -126,7 +126,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -190,7 +190,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -260,7 +260,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -304,7 +304,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -341,7 +341,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -397,7 +397,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -493,7 +493,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -555,7 +555,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -607,7 +607,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -659,7 +659,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -712,7 +712,7 @@ jobs:
       deployments: write
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -783,7 +783,7 @@ jobs:
       contents: read
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
@@ -817,7 +817,7 @@ jobs:
       attestations: write
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7c394e58
+      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
       with:
         egress-policy: block
         allowed-endpoints: |-
