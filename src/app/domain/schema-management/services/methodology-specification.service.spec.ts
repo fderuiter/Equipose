@@ -105,6 +105,16 @@ describe('MethodologySpecificationService', () => {
     globalBlockStrategy: { selectionType: 'FIXED_SEQUENCE', sizes: [4, 8, 12] },
   };
 
+  /** Config for MINIMIZATION */
+  const minimizationConfig: RandomizationConfig = {
+    ...stratifiedConfig,
+    randomizationMethod: 'MINIMIZATION',
+    minimizationConfig: {
+      p: 0.85,
+      totalSampleSize: 200,
+    },
+  };
+
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(MethodologySpecificationService);
@@ -136,6 +146,35 @@ describe('MethodologySpecificationService', () => {
 
     it('should mention PRNG', () => {
       expect(service.generateNarrative(stratifiedConfig)).toContain('PRNG');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // generateNarrative() – minimization strategy
+  // ---------------------------------------------------------------------------
+  describe('generateNarrative() – minimization strategy', () => {
+    it('should explicitly state Pocock-Simon Minimization', () => {
+      const text = service.generateNarrative(minimizationConfig);
+      expect(text).toContain('Pocock-Simon Minimization');
+    });
+
+    it('should include the biased-coin probability', () => {
+      const text = service.generateNarrative(minimizationConfig);
+      expect(text).toContain('biased-coin probability (p) of 0.85');
+    });
+
+    it('should describe the imbalance scoring as sum-of-ranges calculation', () => {
+      const text = service.generateNarrative(minimizationConfig);
+      expect(text).toContain('sum-of-ranges calculation');
+    });
+
+    it('should use a default probability of 0.8 if p is not provided', () => {
+      const configWithoutP: RandomizationConfig = {
+        ...minimizationConfig,
+        minimizationConfig: { totalSampleSize: 200 } as any,
+      };
+      const text = service.generateNarrative(configWithoutP);
+      expect(text).toContain('biased-coin probability (p) of 0.8');
     });
   });
 
