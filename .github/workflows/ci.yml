@@ -243,7 +243,7 @@ jobs:
         if [ "$FAIL" -gt 0 ]; then
           echo ""
           echo "FAILED scripts:"
-          printf "$ERRORS\n"
+          printf '%b\n' "$ERRORS"
           exit 1
         fi
         if [ "$PASS" -eq 0 ]; then
@@ -470,7 +470,7 @@ jobs:
         if [ -f playwright-report/report.json ]; then
           PW_ARG="--playwright-results playwright-report/report.json"
         fi
-        node scripts/generate-rtm.mjs $VITEST_ARG $PW_ARG \
+        node scripts/generate-rtm.mjs "$VITEST_ARG" "$PW_ARG" \
           --ci-results job-statuses.json \
           --out Validation_Traceability_Matrix.md
         echo "=== Traceability Matrix (first 50 lines) ==="
@@ -641,7 +641,7 @@ jobs:
         npx --yes @cyclonedx/cdxgen \
                     -o sbom.json
         echo "SBOM generated successfully."
-        echo "Total components: $(cat sbom.json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get(\"components\", [])))')"
+        echo "Total components: $(python3 -c 'import json,sys; d=json.load(open("sbom.json")); print(len(d.get(\"components\", [])))')"
 
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
@@ -745,7 +745,7 @@ jobs:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       run: |
-        OUTPUT=$(npx wrangler deploy --name equipose-pr-${{ github.event.pull_request.number }})
+        OUTPUT=$(npx wrangler deploy --name "equipose-pr-${{ github.event.pull_request.number }}")
         echo "$OUTPUT"
         URL=$(echo "$OUTPUT" | grep -o 'https://[^ ]*\.workers\.dev' | head -1)
         if [ -z "$URL" ]; then URL="Deployment URL not found in output"; fi
