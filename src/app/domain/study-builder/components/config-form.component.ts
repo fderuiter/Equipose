@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
@@ -36,6 +37,7 @@ export class ConfigFormComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
 
   dropdownOpen = false;
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
@@ -490,6 +492,14 @@ export class ConfigFormComponent implements OnInit {
       }
     }
     this.cdr.markForCheck();
+    
+    // Manage focus for wizard transition
+    setTimeout(() => {
+      const stepHeader = document.getElementById(`step-header-${event.selectedIndex}`);
+      if (stepHeader) {
+        stepHeader.focus();
+      }
+    }, 50);
   }
 
   private markCapsStale(): void {
@@ -660,6 +670,36 @@ export class ConfigFormComponent implements OnInit {
     this.store.setStrata(reorderedStrata);
     this.syncLevelDetails(reorderedStrata);
     this.markCapsStale();
+  }
+
+  onStratumKeyDown(event: KeyboardEvent, index: number): void {
+    // Arrow up/down to reorder
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      const newIndex = event.key === 'ArrowUp' ? index - 1 : index + 1;
+      
+      if (newIndex >= 0 && newIndex < this.strata.length) {
+        const control = this.strata.at(index);
+        this.strata.removeAt(index, { emitEvent: false });
+        this.strata.insert(newIndex, control, { emitEvent: false });
+        
+        const reorderedStrata = this.strata.value as StratumFormValue[];
+        this.store.setStrata(reorderedStrata);
+        this.syncLevelDetails(reorderedStrata);
+        this.markCapsStale();
+        
+        const stratumName = control.get('name')?.value || 'Unnamed Factor';
+        this.liveAnnouncer.announce(`Moved ${stratumName} to position ${newIndex + 1}`);
+
+        // Set focus back to the moved element
+        setTimeout(() => {
+          const handles = document.querySelectorAll('.stratum-drag-handle');
+          if (handles[newIndex]) {
+            (handles[newIndex] as HTMLElement).focus();
+          }
+        }, 50);
+      }
+    }
   }
 
   onGenerateCode(language: 'R' | 'SAS' | 'Python' | 'STATA'): void {

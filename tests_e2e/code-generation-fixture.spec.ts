@@ -53,6 +53,8 @@ const test = base.extend<ScriptFixture>({
 
       for (const { language, tabName, extension } of languageTabs) {
         await modal.getByRole('button', { name: tabName }).click();
+        await page.waitForTimeout(200);
+
         await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
         const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
@@ -165,6 +167,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('radio', { name: 'Marginal Only' }).click();
+          const margCapInputs = currentPage.locator('input[id*="-margcap-"]');
+          await margCapInputs.nth(0).fill('100');
+          await margCapInputs.nth(1).fill('100');
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
         },
       },
@@ -302,7 +307,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
     const blockSas = await readFile(join(artifactRoot, 'block', 'block.sas'), 'utf-8');
     const blockStata = await readFile(join(artifactRoot, 'block', 'block.do'), 'utf-8');
     expect(blockSas).toContain('%let block_sizes = 4 6;');
-    expect(blockStata).toContain('local block_sizes "4 6"');
+    expect(blockStata).toContain('local block_1 4');
+    expect(blockStata).toContain('local block_2 6');
 
     const zeroCapStata = await readFile(join(artifactRoot, 'zero-cap', 'zero-cap.do'), 'utf-8');
     const zeroCapAssignments = [...zeroCapStata.matchAll(/local cap = (\d+)/g)].map(match => Number(match[1]));

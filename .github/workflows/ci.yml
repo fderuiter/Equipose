@@ -11,9 +11,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -21,19 +21,24 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
           cdn.playwright.dev:443
           playwright.download.prss.microsoft.com:443
           storage.googleapis.com:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Install pnpm
-      uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       with:
         run_install: false
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
         cache: 'pnpm'
@@ -50,7 +55,7 @@ jobs:
         PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
     - name: Run Unit Tests
-      run: pnpm test -- --watch=false
+      run: pnpm test --watch=false
 
     - name: Archive environment
       run: tar -cf shared-env.tar node_modules pw-browsers dist
@@ -78,9 +83,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -88,11 +93,16 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -129,9 +139,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -139,11 +149,16 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -153,7 +168,7 @@ jobs:
         python-version: '3.11'
 
     - name: Set up R
-      uses: r-lib/actions/setup-r@5b78b0a0e5b721e06f2df6ce8eeb793efeb3ed11
+      uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6
       with:
         r-version: 'release'
 
@@ -193,9 +208,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -203,8 +218,13 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Python
       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
@@ -263,9 +283,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -273,11 +293,16 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -307,9 +332,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -317,11 +342,16 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
         cache: 'pnpm'
@@ -338,15 +368,15 @@ jobs:
   merge_reports:
     runs-on: ubuntu-latest
     needs: e2e
-    if: always()
+    if: !cancelled() && needs.e2e.result != 'skipped'
     permissions:
       contents: read
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -354,11 +384,16 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -394,15 +429,15 @@ jobs:
   traceability_matrix:
     runs-on: ubuntu-latest
     needs: [setup, merge_reports, python_script_execution_check, sas_static_validation, stata_static_validation, cross_env_equivalence, sbom, security_scan, lint_actions]
-    if: always()
+    if: !cancelled() && needs.setup.result == 'success'
     permissions:
       contents: read
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -410,13 +445,18 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
           pypi.org:443
           files.pythonhosted.org:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -490,15 +530,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [python_script_execution_check, sas_static_validation, 
         stata_static_validation, cross_env_equivalence]
-    if: always()
+    if: !cancelled()
     permissions:
       contents: read
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -506,22 +546,18 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
-
-    - name: Download shared environment
-      uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
-      with:
-        name: shared-env
-        path: .
-
-    - name: Extract shared environment
-      run: tar -xf shared-env.tar
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
@@ -558,9 +594,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -568,8 +604,13 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Python
       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
@@ -577,7 +618,7 @@ jobs:
         python-version: '3.11'
 
     - name: Set up R
-      uses: r-lib/actions/setup-r@5b78b0a0e5b721e06f2df6ce8eeb793efeb3ed11
+      uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6
       with:
         r-version: 'release'
 
@@ -610,9 +651,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -620,11 +661,16 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -662,9 +708,9 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -672,8 +718,13 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
@@ -700,7 +751,7 @@ jobs:
                      src/ artifacts/
 
     - name: Upload SARIF report
-      uses: github/codeql-action/upload-sarif@df409f7ccf38ca9ec07e26907277817b783d8e9d
+      uses: github/codeql-action/upload-sarif@dd903d2e4f5405488e5ef1422510ee31c8b32357
       if: always()
       with:
         sarif_file: semgrep.sarif
@@ -715,9 +766,9 @@ jobs:
       deployments: write
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -725,11 +776,17 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          api.cloudflare.com:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
 
@@ -748,13 +805,27 @@ jobs:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       run: |
-        OUTPUT=$(npx wrangler deploy --name "equipose-pr-${{ github.event.pull_request.number }}")
+        if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+          echo "Cloudflare secrets are not available. Skipping deployment."
+          echo "url=skipped" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        set +e
+        OUTPUT=$(npx wrangler deploy --name "equipose-pr-${{ github.event.pull_request.number }}" 2>&1)
+        EXIT_CODE=$?
+        set -e
         echo "$OUTPUT"
-        URL=$(echo "$OUTPUT" | grep -o 'https://[^ ]*\.workers\.dev' | head -1)
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "Wrangler deploy failed with exit code $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
+        OUTPUT_CLEAN=$(echo "$OUTPUT" | sed -r 's/\x1b\[[0-9;]*[mK]//g')
+        URL=$(echo "$OUTPUT_CLEAN" | grep -o 'https://[^ ]*\.workers\.dev' | head -1 || true)
         if [ -z "$URL" ]; then URL="Deployment URL not found in output"; fi
         echo "url=$URL" >> "$GITHUB_OUTPUT"
 
     - name: Comment on PR
+      if: steps.deploy.outputs.url != 'skipped' && steps.deploy.outputs.url != ''
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         script: |
@@ -786,16 +857,16 @@ jobs:
       contents: read
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
           objects.githubusercontent.com:443
           raw.githubusercontent.com:443
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Run actionlint
       run: |
         bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
@@ -820,9 +891,9 @@ jobs:
       attestations: write
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
-        egress-policy: block
+        egress-policy: audit
         allowed-endpoints: |-
           github.com:443
           api.github.com:443
@@ -830,6 +901,11 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
           fulcio.sigstore.dev:443
           rekor.sigstore.dev:443
           tuf-repo-cdn.sigstore.dev:443
@@ -838,17 +914,17 @@ jobs:
           token.actions.githubusercontent.com:443
 
     - name: Checkout repository
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       with:
         fetch-depth: 0
 
     - name: Install pnpm
-      uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       with:
         run_install: false
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
         

@@ -7,6 +7,15 @@ export async function openGenerator(page: Page): Promise<void> {
   await page.goto('http://localhost:4200/generator');
   await expect(page.getByTestId('generator-page')).toBeVisible();
   await expect(page.locator('form')).toBeVisible();
+  
+  const ackCheckbox = page.locator('#acknowledge');
+  if (await ackCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await ackCheckbox.check();
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    // Wait for step 1 to be active
+    await expect(page.locator('#step-header-1')).toHaveClass(/bg-indigo-50/);
+    await page.waitForTimeout(300); // give animation a moment to finish
+  }
 }
 
 export async function loadPreset(page: Page, preset: 'Simple' | 'Standard' | 'Complex'): Promise<void> {

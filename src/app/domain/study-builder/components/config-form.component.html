@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center">
       <ol class="grid grid-cols-2 lg:grid-cols-6 gap-2 flex-grow">
         @for (label of stepLabels; track label; let i = $index) {
-          <li class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors"
+          <li [id]="'step-header-' + i" tabindex="-1" class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors outline-none focus:ring-2 focus:ring-indigo-500"
               [class.border-indigo-500]="wizard.selectedIndex === i"
               [class.bg-indigo-50]="wizard.selectedIndex === i"
               [class.text-indigo-700]="wizard.selectedIndex === i"
@@ -175,7 +175,7 @@
             @for (stratum of strata.controls; track stratum; let stratumIndex = $index) {
               <div [formGroupName]="$index" cdkDrag class="rounded-xl border p-4 space-y-3">
                 <div class="flex items-start gap-2">
-                  <button type="button" cdkDragHandle aria-label="Drag to reorder factor" title="Drag to reorder" class="mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors">
+                  <button type="button" cdkDragHandle aria-label="Drag to reorder factor" title="Drag to reorder" class="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 9h8M8 15h8" />
                       </svg>

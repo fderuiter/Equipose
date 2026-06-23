@@ -11,7 +11,7 @@ async function applyDarkMode(page: Page): Promise<void> {
 
 async function assertLandingVisible(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: /Equipose/i })).toBeVisible();
-  await expect(page.getByRole('link', { name: /Get started/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /New Study/i })).toBeVisible();
   await expect(page.getByRole('link', { name: /Learn more/i })).toBeVisible();
 }
 

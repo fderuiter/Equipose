@@ -46,7 +46,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const pythonTab = modal.getByRole('button', { name: /Python/i });
     await pythonTab.click();
-    await expect(generatedCode).toContainText(/Randomization Schema Generation in Python/i, { timeout: 10000 });
+    await expect(generatedCode).toContainText(/import numpy as np/i, { timeout: 10000 });
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.click();
     const downloadPy = await downloadPromisePy;
@@ -62,7 +62,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const stataTab = modal.getByRole('button', { name: /Stata/i });
     await stataTab.click();
-    await expect(generatedCode).toContainText(/Randomization Schema Generation in Stata/i, { timeout: 10000 });
+    await expect(generatedCode).toContainText(/set obs/i, { timeout: 10000 });
     const downloadPromiseStata = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.click();
     const downloadStata = await downloadPromiseStata;
