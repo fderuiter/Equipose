@@ -93,7 +93,7 @@ export class StaticMappingGuard {
         }
       }
 
-      const strataDefs = [...output.matchAll(/local strata_\d+\s+\`?"([^"]+)"?'?/g)].map(m => m[1]);
+      const strataDefs = [...output.matchAll(/local strata_\d+\s+"\`"([^"]+)"'"/g)].map(m => m[1]);
       const schemaStrata = (config.strata || []).map(s => s.id);
       for (const ds of strataDefs) {
         // Stata ID may be sanitized in the generated output, so we need to sanitize schemaStrata to compare
