@@ -55,7 +55,7 @@ jobs:
         PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
     - name: Run Unit Tests
-      run: exit 1
+      run: pnpm test --watch=false
 
     - name: Archive environment
       run: tar -cf shared-env.tar node_modules pw-browsers dist
