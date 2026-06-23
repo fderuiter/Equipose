@@ -313,6 +313,31 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     expect(pendingCallbacks().size).toBe(0);
   });
 
+  it('should fall back to synchronous service if Worker constructor throws', async () => {
+    // 1. Reset facade and stub Worker to throw
+    vi.stubGlobal('Worker', vi.fn().mockImplementation(() => {
+      throw new Error('Worker blocked');
+    }));
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: RandomizationService, useValue: mockRandomizationService }
+      ]
+    });
+    const newFacade = TestBed.inject(RandomizationEngineFacade);
+
+    // 2. Call generateSchema
+    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
+    newFacade.generateSchema(mockConfig);
+    await flushMicrotasks();
+
+    // 3. Verify it used the service despite being on 'browser' platform
+    expect(mockRandomizationService.generateSchema).toHaveBeenCalled();
+    expect(newFacade.results()).toBeTruthy();
+  });
+
   it('should NOT call randomizationService.generateSchema when a Worker is active', () => {
     facade.generateSchema(mockConfig);
     expect(mockRandomizationService.generateSchema).not.toHaveBeenCalled();
