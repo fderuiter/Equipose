@@ -221,4 +221,32 @@ describe('generateSubjectId – {RND:n} and collision detection', () => {
     const id = generateSubjectId('{SITE}-{RND:4}', { site: 'X', stratumCode: '', sequence: 1 }, usedIds, () => 0.5);
     expect(usedIds.has(id)).toBe(true);
   });
+
+  it('throws error for deterministic masks on collision', () => {
+    const usedIds = new Set<string>();
+    const context = { site: '101', stratumCode: 'A', sequence: 1 };
+
+    generateSubjectId('CONSTANT', context, usedIds, () => 0.5);
+    expect(usedIds.size).toBe(1);
+
+    expect(() => {
+      generateSubjectId('CONSTANT', context, usedIds, () => 0.5);
+    }).toThrow(/does not guarantee uniqueness/);
+  });
+
+  it('throws error when random retries are exhausted', () => {
+    const usedIds = new Set<string>();
+    const context = { site: '101', stratumCode: 'A', sequence: 1 };
+
+    // Fill the usedIds to force a collision
+    // For {RND:1}, there are only ALPHANUMERIC.length possibilities
+    const ALPHANUMERIC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    for (const char of ALPHANUMERIC) {
+      usedIds.add(char);
+    }
+
+    expect(() => {
+      generateSubjectId('{RND:1}', context, usedIds, () => 0.1, 10);
+    }).toThrow(/exhausted 10 retries/);
+  });
 });
