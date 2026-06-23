@@ -18,6 +18,11 @@ jobs:
           registry.npmjs.org:443
           registry.yarnpkg.com:443
           nodejs.org:443
+          *.blob.core.windows.net:443
+          *.actions.githubusercontent.com:443
+          playwright.azureedge.net:443
+          archive.ubuntu.com:80
+          security.ubuntu.com:80
     - name: Checkout repository
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
 
