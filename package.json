@@ -19,7 +19,9 @@
     "prebuild": "node generate-version.js",
     "pretest": "node generate-version.js",
     "deploy": "pnpm run build && wrangler deploy",
-    "preview": "pnpm run build && wrangler dev"
+    "preview": "pnpm run build && wrangler dev",
+    "verify:logic": "python3 verification.py",
+    "fixtures:generate": "tsx scripts/generate-golden-fixtures.ts"
   },
   "private": true,
   "dependencies": {
@@ -77,6 +79,7 @@
     "postcss": "^8.5.12",
     "semantic-release": "^25.0.3",
     "tailwindcss": "^4.2.4",
+    "tsx": "^4.22.4",
     "typescript": "~5.9.2",
     "typescript-eslint": "8.59.3",
     "vitest": "^4.1.7",
