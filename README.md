@@ -51,7 +51,7 @@ Built entirely as a client-side Angular application, it ensures that sensitive t
 | **E2E testing** | Playwright 1.58 (Chromium, Firefox, WebKit) |
 | **Linting** | ESLint 9 + `angular-eslint` + strict domain boundary rules |
 | **Versioning** | `semantic-release` (Conventional Commits → GitHub Releases) |
-| **Deployment** | GitHub Pages (static SPA) at [equipose.org](https://equipose.org) + optional SSR via `@angular/ssr` |
+| **Deployment** | Cloudflare Pages (static SPA) at [equipose.org](https://equipose.org) |
 
 ---
 
@@ -59,7 +59,7 @@ Built entirely as a client-side Angular application, it ensures that sensitive t
 
 This project follows a **Domain-Driven Design** structure with three bounded contexts:
 
-1. **`randomization-engine`** - pure TypeScript algorithm, Web Worker, SSR-safe facade.
+1. **`randomization-engine`** - pure TypeScript algorithm, Web Worker, fallback-safe facade.
 2. **`study-builder`** - reactive form, NgRx SignalStore, preset definitions.
 3. **`schema-management`** - results grid, PDF/CSV export, code generation modal.
 
@@ -136,24 +136,15 @@ ng lint
 
 ## Deployment
 
-### GitHub Pages (automatic)
+### Cloudflare Pages (automatic)
 
-Pushes to `main` automatically trigger the `.github/workflows/deploy.yml` workflow,
-which builds the Angular app with the correct `--base-href` and deploys to GitHub Pages
-at [https://equipose.org](https://equipose.org).
+Pushes to `main` automatically trigger the deployment workflow,
+which builds the Angular app as a static Single Page Application (SPA) compatible with Cloudflare Pages
+and deploys it at [https://equipose.org](https://equipose.org).
 
 To enable this on a fork:
-1. Go to repository **Settings → Pages**.
-2. Under **Source**, select **GitHub Actions**.
-
-### SSR server (optional)
-
-The build also produces a Node.js SSR server:
-
-```bash
-pnpm run build
-node dist/app/server/server.mjs
-```
+1. Connect the repository to your Cloudflare account.
+2. Configure the build command as `pnpm run build` and output directory as `dist/app/browser`.
 
 ### Versioning
 

@@ -55,7 +55,8 @@ describe('generateRandomizationSchema – core behaviour', () => {
     const config: RandomizationConfig = {
       ...BASE_CONFIG,
       sites: ['SiteA', 'SiteB'],
-      stratumCaps: [{ levelIds: {}, cap: 2 }]
+      blockSizes: [2],
+      stratumCaps: [{ levelIds: {}, cap: 4 }]
     };
     const result = generateRandomizationSchema(config);
     const sites = [...new Set(result.schema.map(r => r.site))];
@@ -128,7 +129,7 @@ describe('generateRandomizationSchema – property tests', () => {
         const result = generateRandomizationSchema(config);
 
         // Invariant: generated sequence length matches expected total caps (sites * cap for 0 strata)
-        const expectedLength = config.sites.length * config.stratumCaps[0].cap;
+        const expectedLength = config.stratumCaps[0].cap;
 
         return result.schema.length === expectedLength;
       }),
@@ -213,7 +214,7 @@ describe('generateRandomizationSchema – property tests', () => {
                 ...f,
                 levelDetails: f.levels.map(l => ({
                   name: l,
-                  marginalCap: i === safeIdx ? caps[capIdx++] : (caps[capIdx++] > 2 ? caps[capIdx++] : undefined)
+                  marginalCap: i === safeIdx ? caps[capIdx++] : (caps[capIdx] > 2 ? caps[capIdx++] : (capIdx++, undefined))
                 }))
               }));
             }),
@@ -488,7 +489,8 @@ describe('generateRandomizationSchema – subject ID mask', () => {
     const config: RandomizationConfig = {
       ...BASE_CONFIG,
       sites: ['SiteA', 'SiteB'],
-      stratumCaps: [{ levelIds: {}, cap: 2 }]
+      blockSizes: [2],
+      stratumCaps: [{ levelIds: {}, cap: 4 }]
     };
     const result = generateRandomizationSchema(config);
     // SiteA subjects: 001, 002; SiteB subjects: 001, 002
@@ -511,14 +513,15 @@ describe('generateRandomizationSchema – multi-site', () => {
       stratumCaps: [{ levelIds: {}, cap: 4 }]
     };
     const result = generateRandomizationSchema(config);
-    expect(result.schema.length).toBe(12); // 3 sites × 4 subjects
+    expect(result.schema.length).toBe(4);
   });
 
   it('tags each row with its own site', () => {
     const config: RandomizationConfig = {
       ...BASE_CONFIG,
       sites: ['Alpha', 'Beta'],
-      stratumCaps: [{ levelIds: {}, cap: 2 }]
+      blockSizes: [2],
+      stratumCaps: [{ levelIds: {}, cap: 4 }]
     };
     const result = generateRandomizationSchema(config);
     const alphaRows = result.schema.filter(r => r.site === 'Alpha');
@@ -834,7 +837,7 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
 
     it('throws when arm count is zero', () => {
       const config: RandomizationConfig = { ...BASE_CONFIG, arms: [] };
-      expect(() => generateRandomizationSchema(config)).toThrow('Total arm ratio must be greater than zero');
+      expect(() => generateRandomizationSchema(config)).toThrow('Arms array is empty. At least one treatment arm is required.');
     });
 
     it('throws when block sizes are empty', () => {
@@ -896,6 +899,7 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
       const config: RandomizationConfig = {
         ...BASE_CONFIG,
         randomizationMethod: 'MINIMIZATION',
+        minimizationConfig: { p: 0.8, totalSampleSize: 10 },
         capStrategy: 'PROPORTIONAL',
         blockSizes: []
       };

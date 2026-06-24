@@ -38,7 +38,7 @@
 
 ## 1. What the Application Does
 
-The Clinical Randomization Generator is a browser-only Angular SPA that produces
+The Clinical Randomization Generator is a static Single Page Application (SPA) compatible with Cloudflare Pages that produces
 **statistically sound, reproducible, stratified-block and minimization (Pocock-Simon) randomization schemas** for
 clinical trials. A researcher fills in a configuration form (treatment arms, strata,
 sites, block sizes, subject-ID mask, enrollment cap strategy, optional seed) and the tool:
@@ -126,7 +126,7 @@ clinical-randomization-generator/
 │           │   │   ├── randomization-engine.worker.ts      Web Worker entry point
 │           │   │   ├── attrition-prng.ts                   PRNG for monte-carlo attrition
 │           │   │   └── worker-protocol.ts                  Typed message interfaces
-│           │   ├── randomization.service.ts                SSR/fallback Observable wrapper
+│           │   ├── randomization.service.ts                Worker-unavailable fallback Observable wrapper
 │           │   ├── randomization.service.spec.ts
 │           │   ├── randomization-engine.facade.ts          Single UI entry point
 │           │   ├── randomization-engine.facade.spec.ts
@@ -208,7 +208,7 @@ graph TD
     subgraph "Bounded Context 1 - Randomization Engine"
         ALGO["core/\nrandomization-algorithm.ts\nminimization-algorithm.ts\ncap-strategy.ts\nsubject-id-engine.ts\ncrypto-hash.ts\n(pure TS, zero Angular)"]
         WORKER["worker/\nrandomization-engine.worker.ts\nworker-protocol.ts\nattrition-prng.ts"]
-        SVC["randomization.service.ts\n(Observable wrapper / SSR)"]
+        SVC["randomization.service.ts\n(Observable wrapper)"]
         FACADE["randomization-engine.facade.ts\n★ sole public API ★"]
         ALGO --> WORKER
         ALGO --> SVC
@@ -271,8 +271,7 @@ flowchart LR
 ```
 
 `appConfig` uses the **standalone component API** (no `NgModule`). `HttpClient` is
-provided via `withFetch()` for compatibility with the Angular `@angular/ssr` SSR
-adapter (the app ships an SSR server in `dist/app/server/server.mjs`).
+provided via `withFetch()`.
 
 ---
 
@@ -339,7 +338,7 @@ graph LR
         WORKER2 --> ALGO2
     end
 
-    subgraph "SSR / Worker-unavailable fallback"
+    subgraph "Worker-unavailable fallback"
         SVC2 --> ALGO2
     end
 
@@ -539,8 +538,7 @@ sequenceDiagram
     FAC-->>UI: Signals update → Angular re-renders
 ```
 
-**SSR / Worker-unavailable fallback:** When `PLATFORM_ID` is not `'browser'` (SSR)
-or when `new Worker(...)` throws, the Facade calls
+**Worker-unavailable fallback:** When `new Worker(...)` throws, the Facade calls
 `RandomizationService.generateSchema(config).subscribe(...)` synchronously on the
 main thread. This keeps the app functional in environments that block worker
 construction.
@@ -1171,7 +1169,7 @@ graph LR
     ALGO_FILE -. blocked .-> ANGULAR
 
     NOTE1["Rule: study-builder sees only the\nFacade, never the engine internals"]
-    NOTE2["Rule: core algorithm is pure TS;\nno Angular = safe in Workers + SSR"]
+    NOTE2["Rule: core algorithm is pure TS;\nno Angular = safe in Workers"]
 ```
 
 ---
@@ -1205,7 +1203,7 @@ graph BT
 | `statistical-validation.spec.ts` | 17 | Validation checks |
 | `attrition-prng.spec.ts` | 6 | PRNG for Monte Carlo attrition |
 | `randomization.service.spec.ts` | 7 | Observable wrapper, error paths |
-| `randomization-engine.facade.spec.ts` | 22 | Worker dispatch, SSR fallback, signal updates |
+| `randomization-engine.facade.spec.ts` | 22 | Worker dispatch, fallback, signal updates |
 | `randomization-engine-monte-carlo.facade.spec.ts` | 9 | Monte Carlo progress/success signals |
 | `study-builder.store.spec.ts` | 25 | SignalStore: strata, Cartesian combinations, presets, buildConfig |
 | `block-preview.component.spec.ts` | 19 | Block chip allocation, computed signals |
@@ -1261,7 +1259,7 @@ flowchart LR
     PRE["prebuild / pretest / prestart\ngenerate-version.js\n→ src/environments/version.ts\nexport const APP_VERSION = 'v1.1.0'"]
     BUILD["ng build\n@angular/build (esbuild)\nAOT compilation\nStandalone component API"]
     WORKER_BUNDLE["Worker chunking\nrandomization-engine.worker.ts\n→ worker-*.js (separate chunk)\nmultithreading confirmed"]
-    DIST["dist/\nclinical-randomization-generator/\n  browser/   ← static SPA\n  server/    ← SSR Node.js server"]
+    DIST["dist/\nclinical-randomization-generator/\n  browser/   ← static SPA"]
 
     PRE --> BUILD --> WORKER_BUNDLE --> DIST
 ```
@@ -1304,7 +1302,7 @@ produced by the application.
 |---|---|
 | `pnpm start` | `ng serve` on default port 4200 |
 | `pnpm run dev` | `ng serve --port=3000` |
-| `pnpm run build` | Production build (esbuild + SSR) |
+| `pnpm run build` | Production build (esbuild) |
 | `pnpm test -- --watch=false` | Run all Vitest unit tests once |
 | `./node_modules/.bin/vitest run` | Run all unit tests (alternative, faster) |
 | `ng lint` | ESLint (TS + Angular template rules + boundary rules) |

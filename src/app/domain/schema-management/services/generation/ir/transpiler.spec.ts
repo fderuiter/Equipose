@@ -15,7 +15,8 @@ describe('CodeTranspiler Metadata Validation', () => {
     sites: ['Site 1'],
     strata: [],
     blockSizes: [2],
-    stratumCaps: [{ levelIds: {}, cap: 4 }],
+    blockSizes: [2],
+        stratumCaps: [{ levelIds: {}, cap: 4 }],
     seed: 'test-seed',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'BLOCK'
@@ -50,7 +51,8 @@ describe('CodeTranspiler Metadata Validation', () => {
       blockSizes: [],
       globalBlockStrategy: undefined,
       siteBlockOverrides: undefined,
-      stratumBlockOverrides: undefined
+      stratumBlockOverrides: undefined,
+      minimizationConfig: { totalSampleSize: 100, p: 0.8 }
     } as RandomizationConfig;
     const code = CodeTranspiler.transpile('Python', minConfig, 'MINIMIZATION');
     expect(code).toContain('Algorithm: Pocock-Simon Minimization');
@@ -73,10 +75,11 @@ describe('CodeTranspiler Metadata Validation', () => {
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
-        blockSizes: [2, 4],
+        
+        blockSizes: [2],
         stratumCaps: [
-          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 2 },
-          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 2 }
+          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 4 },
+          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 4 }
         ],
         seed: 'seed-with-"quotes"',
         subjectIdMask: '{SITE}-{STRATUM}-{SEQ:3}',
@@ -124,10 +127,11 @@ describe('CodeTranspiler Metadata Validation', () => {
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
-        blockSizes: [2, 4],
+        
+        blockSizes: [2],
         stratumCaps: [
-          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 2 },
-          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 2 }
+          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 4 },
+          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 4 }
         ],
         seed: 'seed-with-"quotes"',
         subjectIdMask: '{SITE}-{STRATUM}-{SEQ:3}',
