@@ -1,5 +1,6 @@
 import { MT19937 } from './mt19937';
 import { DeterminismProvider } from './determinism.provider';
+import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
 import {
   TreatmentArm,
   RandomizationConfig,
@@ -308,48 +309,13 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
     strataCombinations = newCombinations;
   }
 
-  // 1. Arm ratios must be non-negative
-  for (const arm of resolvedConfig.arms) {
-    if (arm.ratio < 0) {
-      throw new Error(`Arm ratio must be non-negative. Arm "${arm.name}" has ratio ${arm.ratio}`);
-    }
+  const validationErrors = UnifiedValidationAuthority.validate(resolvedConfig);
+  if (validationErrors.length > 0) {
+    throw new Error(validationErrors[0]);
   }
 
   // 2. Calculate total ratio sum
   const totalRatio = resolvedConfig.arms.reduce((sum, arm) => sum + arm.ratio, 0);
-
-  if (totalRatio === 0) {
-    throw new Error('Total arm ratio must be greater than zero');
-  }
-
-  // 3. Contradictory configs for Minimization
-  if (resolvedConfig.randomizationMethod === 'MINIMIZATION') {
-    if (resolvedConfig.blockSizes.length > 0 ||
-        resolvedConfig.globalBlockStrategy ||
-        resolvedConfig.siteBlockOverrides ||
-        resolvedConfig.stratumBlockOverrides) {
-      throw new Error('Block sizes and strategies are not compatible with Minimization method');
-    }
-    if (resolvedConfig.capStrategy === 'PROPORTIONAL') {
-      throw new Error('Proportional cap strategy is not currently supported with Minimization method');
-    }
-  }
-
-  // 4. Validate block sizes from all rules (skip for minimization - block sizes don't apply).
-  if (resolvedConfig.randomizationMethod !== 'MINIMIZATION') {
-    const allSizes = collectAllBlockSizes(resolvedConfig);
-    if (allSizes.length === 0) {
-      throw new Error('At least one block size must be configured');
-    }
-    for (const size of allSizes) {
-      if (size <= 0) {
-        throw new Error(`Block size must be a positive integer. Got ${size}`);
-      }
-      if (size % totalRatio !== 0) {
-        throw new Error(`Block size ${size} is not a multiple of total ratio ${totalRatio}`);
-      }
-    }
-  }
 
   // 5. Early validation for MARGINAL_ONLY cap strategy
   if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
