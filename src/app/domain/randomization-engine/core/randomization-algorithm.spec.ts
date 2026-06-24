@@ -156,7 +156,7 @@ describe('generateRandomizationSchema – property tests', () => {
         strata: stratificationArbitrary,
         capStrategy: fc.constantFrom('MANUAL_MATRIX', 'MARGINAL_ONLY' as const)
       })
-      .chain(base => {
+      .chain((base): fc.Arbitrary<any> => {
         const totalRatio = 2; // Fixed for simplicity in property tests
         const blockSizes = [2];
 
@@ -252,7 +252,7 @@ describe('generateRandomizationSchema – property tests', () => {
           for (const site of config.sites) {
             for (const factor of config.strata) {
               for (const level of factor.levels) {
-                const detail = factor.levelDetails?.find(d => d.name === level);
+                const detail = factor.levelDetails?.find((d: any) => d.name === level);
                 if (detail && detail.marginalCap !== undefined) {
                   const count = result.schema.filter(r => r.site === site && r.stratum[factor.id] === level).length;
                   expect(count).toBeLessThanOrEqual(detail.marginalCap);

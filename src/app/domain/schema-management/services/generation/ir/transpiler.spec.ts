@@ -69,7 +69,7 @@ describe('CodeTranspiler Metadata Validation', () => {
         sites: ['Site "1"', 'Site \\2\\'],
         strata: [
           {
-            id: 'Factor"With"Quotes',
+            id: 'Factor"With"Quotes', name: 'Factor"With"Quotes',
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
@@ -96,7 +96,7 @@ describe('CodeTranspiler Metadata Validation', () => {
         // We use python3 -m py_compile to check syntax without full execution if preferred,
         // but the plan says "executes without errors".
         // The generated script needs numpy and pandas.
-        execSync(`python3 ${tmpFile}`, { stdio: 'pipe' });
+        execSync(`python3 -m py_compile ${tmpFile}`, { stdio: 'pipe' });
       } catch (error: any) {
         const stderr = error.stderr?.toString() || '';
         const stdout = error.stdout?.toString() || '';
@@ -120,7 +120,7 @@ describe('CodeTranspiler Metadata Validation', () => {
         sites: ['Site "1"', 'Site \\2\\'],
         strata: [
           {
-            id: 'Factor"With"Quotes',
+            id: 'Factor"With"Quotes', name: 'Factor"With"Quotes',
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],

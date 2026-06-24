@@ -39,8 +39,7 @@
               "fonts": false
             },
             "allowedCommonJsDependencies": [
-              "exceljs",
-              "seedrandom"
+              "exceljs"
             ]
           },
           "configurations": {
