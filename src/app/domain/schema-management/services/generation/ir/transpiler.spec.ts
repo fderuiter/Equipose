@@ -106,4 +106,43 @@ describe('CodeTranspiler Metadata Validation', () => {
       }
     });
   });
+
+  describe('R String Escaping', () => {
+    it('should generate syntactically valid R even with special characters in metadata and strata', () => {
+      const weirdConfig: RandomizationConfig = {
+        protocolId: 'PROT"-$METACH-$(echo)',
+        studyName: 'Study with "Quotes" and \\Backslashes\\',
+        phase: 'Phase I',
+        arms: [
+          { id: 'A', name: 'Arm "A" (Alpha)', ratio: 1 },
+          { id: 'B', name: "Arm 'B' (Beta)", ratio: 1 }
+        ],
+        sites: ['Site "1"', 'Site \\2\\'],
+        strata: [
+          {
+            id: 'Factor"With"Quotes',
+            levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
+          }
+        ],
+        blockSizes: [2, 4],
+        stratumCaps: [
+          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 2 },
+          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 2 }
+        ],
+        seed: 'seed-with-"quotes"',
+        subjectIdMask: '{SITE}-{STRATUM}-{SEQ:3}',
+        randomizationMethod: 'BLOCK'
+      };
+
+      const code = CodeTranspiler.transpile('R', weirdConfig, 'BLOCK');
+
+      // Assert escaping of values
+      expect(code).toContain('Arm \\"A\\" (Alpha)');
+      expect(code).toContain('Site \\"1\\"');
+      expect(code).toContain('Site \\\\2\\\\');
+
+      // Assert escaping of column names (This is what we expect to fix)
+      expect(code).toContain('"Factor\\"With\\"Quotes"=');
+    });
+  });
 });
