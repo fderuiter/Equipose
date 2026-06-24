@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { generateRandomizationSchema } from '../src/app/domain/randomization-engine/core/randomization-algorithm';
-import { RandomizationConfig } from '../src/app/core/models/randomization.model';
+import { generateRandomizationSchema } from '../src/app/domain/randomization-engine/core/randomization-algorithm.ts';
+import { RandomizationConfig } from '../src/app/core/models/randomization.model.ts';
 
 const CONFIGS: Record<string, RandomizationConfig> = {
   standard_block: {
@@ -30,7 +30,7 @@ const CONFIGS: Record<string, RandomizationConfig> = {
     ],
     sites: ['SITE-A'],
     strata: [{ id: 'age', name: 'Age', levels: ['<65', '>=65'] }],
-    blockSizes: [4],
+    blockSizes: [],
     stratumCaps: [],
     seed: 'GOLDEN_SEED_2',
     subjectIdMask: '{SITE}-{SEQ:3}',
