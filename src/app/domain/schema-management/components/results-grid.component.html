@@ -184,7 +184,7 @@
         <!-- ── FLAT VIEW: CDK Virtual-Scroll Viewport ──────────────────────── -->
         @if (viewMode() === 'flat') {
           @if (processedData().length === 0) {
-            <div class="h-[600px] w-full flex items-center justify-center p-8 text-center text-muted">
+            <div data-testid="results-empty-state" class="h-[600px] w-full flex items-center justify-center p-8 text-center text-muted">
               <div class="space-y-2">
                 <p>No subjects match the current filters.</p>
                 <button type="button" (click)="clearAllFilters()" class="text-indigo-600 dark:text-indigo-400 underline">Clear Filters</button>
@@ -545,6 +545,7 @@
     <input
       type="text"
       cdkMenuItem
+      data-testid="column-filter-input"
       [value]="filterState()[activeFilterColumn() || ''] || ''"
       (input)="updateColumnFilter($any($event.target).value)"
       placeholder="Search…"
