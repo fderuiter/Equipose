@@ -1,59 +1,31 @@
-import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Injectable, computed } from '@angular/core';
+import { injectMediaQuery } from '../utils/media-query';
 
 export type ViewportSize = 'mobile' | 'tablet' | 'desktop';
 
 /**
- * Global viewport service that observes CDK breakpoints and exposes the
+ * Global viewport service that observes native breakpoints and exposes the
  * current viewport state as a reactive Angular Signal.
  *
  * Breakpoint mapping:
- *  - mobile  → Handset  (< 600 px, portrait or landscape)
- *  - tablet  → Tablet   (600 px – 1279 px, portrait or landscape)
- *  - desktop → everything else (Web / large screens)
+ *  - mobile  → < 600 px
+ *  - tablet  → 600 px – 1279 px
+ *  - desktop → >= 1280 px
  */
 @Injectable({ providedIn: 'root' })
 export class ViewportService {
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly breakpointObserver = inject(BreakpointObserver);
-
-  /** Raw signal updated by the BreakpointObserver subscription. */
-  private readonly _viewportSize = signal<ViewportSize>('desktop');
+  private readonly _isMobileMatch = injectMediaQuery('(max-width: 599px)');
+  private readonly _isTabletMatch = injectMediaQuery('(min-width: 600px) and (max-width: 1279px)');
 
   /** Reactive signal exposing the current viewport category. */
-  readonly viewportSize = this._viewportSize.asReadonly();
+  readonly viewportSize = computed<ViewportSize>(() => {
+    if (this._isMobileMatch()) return 'mobile';
+    if (this._isTabletMatch()) return 'tablet';
+    return 'desktop';
+  });
 
   /** Convenience computed booleans for template use. */
-  readonly isMobile = computed(() => this._viewportSize() === 'mobile');
-  readonly isTablet = computed(() => this._viewportSize() === 'tablet');
-  readonly isDesktop = computed(() => this._viewportSize() === 'desktop');
-
-  constructor() {
-    if (!isPlatformBrowser(this.platformId)) {
-      // SSR: default to desktop so heavy components render for crawlers.
-      return;
-    }
-
-    this.breakpointObserver
-      .observe([
-        Breakpoints.Handset,
-        Breakpoints.TabletPortrait,
-        Breakpoints.TabletLandscape,
-      ])
-      .pipe(takeUntilDestroyed())
-      .subscribe(state => {
-        if (state.breakpoints[Breakpoints.Handset]) {
-          this._viewportSize.set('mobile');
-        } else if (
-          state.breakpoints[Breakpoints.TabletPortrait] ||
-          state.breakpoints[Breakpoints.TabletLandscape]
-        ) {
-          this._viewportSize.set('tablet');
-        } else {
-          this._viewportSize.set('desktop');
-        }
-      });
-  }
+  readonly isMobile = computed(() => this.viewportSize() === 'mobile');
+  readonly isTablet = computed(() => this.viewportSize() === 'tablet');
+  readonly isDesktop = computed(() => this.viewportSize() === 'desktop');
 }

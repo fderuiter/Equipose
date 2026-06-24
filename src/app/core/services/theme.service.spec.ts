@@ -26,6 +26,9 @@ describe('ThemeService', () => {
       matches: false,
       addEventListener: (_event: string, handler: (e: MediaQueryListEvent) => void) => {
         mediaQueryListeners.push(handler);
+      },
+      removeEventListener: (_event: string, handler: (e: MediaQueryListEvent) => void) => {
+        mediaQueryListeners = mediaQueryListeners.filter(h => h !== handler);
       }
     });
 
