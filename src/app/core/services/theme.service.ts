@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DOCUMENT } from '@angular/common';
+import { injectMediaQuery } from '../utils/media-query';
 
 export type ThemeMode = 'Light' | 'Dark' | 'System';
 
@@ -12,7 +13,7 @@ export class ThemeService {
   private readonly STORAGE_KEY = 'theme-preference';
 
   readonly mode = signal<ThemeMode>('System');
-  private readonly systemPrefersDark = signal(false);
+  private readonly systemPrefersDark = injectMediaQuery('(prefers-color-scheme: dark)');
 
   readonly isDark = computed(() => {
     const m = this.mode();
@@ -26,12 +27,6 @@ export class ThemeService {
       const saved = localStorage.getItem(this.STORAGE_KEY) as ThemeMode | null;
       if (saved === 'Light' || saved === 'Dark' || saved === 'System') {
         this.mode.set(saved);
-      }
-
-      if (typeof window.matchMedia === 'function') {
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        this.systemPrefersDark.set(mq.matches);
-        mq.addEventListener('change', (e) => this.systemPrefersDark.set(e.matches));
       }
     }
 
