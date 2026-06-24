@@ -30,10 +30,11 @@ def run_cuj(page):
         page.locator("button:has-text('Download')").first.click()
     
     download = download_info.value
-    download.save_as("shadow.py")
+    os.makedirs("./output", exist_ok=True)
+    download.save_as("./output/shadow.py")
     
     print("Downloaded shadow.py, executing shadow script for logic verification...")
-    result = subprocess.run(["python3", "shadow.py"], capture_output=True, text=True)
+    result = subprocess.run(["python3", "./output/shadow.py"], capture_output=True, text=True)
     if result.returncode != 0:
         print("Shadow script failed!")
         print(result.stderr)
@@ -46,10 +47,11 @@ def run_cuj(page):
     assert "Treatment" in result.stdout
 
 if __name__ == "__main__":
+    os.makedirs("./output/videos", exist_ok=True)
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
-            record_video_dir="/home/jules/verification/videos"
+            record_video_dir="./output/videos"
         )
         page = context.new_page()
         try:
