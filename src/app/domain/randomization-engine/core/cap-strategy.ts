@@ -1,5 +1,7 @@
-import Decimal from 'decimal.js';
 import { StratificationFactor, StratumCap } from '../../core/models/randomization.model';
+
+const SCALE = 1000000000000n;
+const SCALE_NUM = Number(SCALE);
 
 /**
  * Validates that every stratification factor's level percentages sum to exactly 100.
@@ -16,9 +18,9 @@ export function validateProportionalPercentages(
     const total = factor.levels.reduce((sum, level) => {
       const value = Number(factorPercentages[level] ?? 0);
       if (!Number.isFinite(value)) { hasNonFinite = true; return sum; }
-      return sum.plus(new Decimal(value));
-    }, new Decimal(0));
-    if (hasNonFinite || total.minus(100).abs().greaterThan(0.001)) {
+      return sum + value;
+    }, 0);
+    if (hasNonFinite || Math.abs(total - 100) > 0.001) {
       invalid[factor.id] = true;
     }
   }
@@ -72,18 +74,34 @@ export function computeProportionalCaps(
 ): StratumCap[] {
   const combinations = generateIntersections(strata);
 
+  const capInt = Math.floor(globalCap);
+  const capFrac = globalCap - capInt;
+  const globalCapScaled = BigInt(capInt) * SCALE + BigInt(Math.round(capFrac * SCALE_NUM));
+
   // Step 1: Compute the theoretical (real-valued) target for each intersection.
   const entries = combinations.map(combo => {
-    const probability = strata.reduce((prod, factor) => {
+    let probability = SCALE;
+    
+    for (const factor of strata) {
       const levelName = combo[factor.id];
       const pct = percentages[factor.id]?.[levelName] ?? 0;
-      return prod.times(new Decimal(pct).dividedBy(100));
-    }, new Decimal(1));
+      const pctBig = BigInt(Math.round(pct * SCALE_NUM));
+      probability = (probability * pctBig) / (100n * SCALE);
+    }
 
-    const theoreticalValue = probability.times(new Decimal(globalCap));
-    const floored = theoreticalValue.floor().toNumber();
-    const remainder = theoreticalValue.minus(floored).toNumber();
-    return { levelIds: combo, theoreticalValue: theoreticalValue.toNumber(), floored, remainder, finalCap: floored };
+    const theoreticalValue = (probability * globalCapScaled) / SCALE;
+    
+    let flooredBig = theoreticalValue / SCALE;
+    let remainderBig = theoreticalValue % SCALE;
+    if (remainderBig < 0n) {
+      flooredBig -= 1n;
+      remainderBig += SCALE;
+    }
+    
+    const floored = Number(flooredBig);
+    const remainder = Number(remainderBig);
+    
+    return { levelIds: combo, theoreticalValue: Number(theoreticalValue) / SCALE_NUM, floored, remainder, finalCap: floored };
   });
 
   // Step 2: Distribute remaining seats to the intersections with the largest remainders.
@@ -106,3 +124,4 @@ export function computeProportionalCaps(
 
   return entries.map(e => ({ levelIds: e.levelIds, cap: e.finalCap }));
 }
+
