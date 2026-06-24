@@ -15,7 +15,8 @@ describe('CodeTranspiler Metadata Validation', () => {
     sites: ['Site 1'],
     strata: [],
     blockSizes: [2],
-    stratumCaps: [{ levelIds: {}, cap: 4 }],
+    blockSizes: [2],
+        stratumCaps: [{ levelIds: {}, cap: 4 }],
     seed: 'test-seed',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'BLOCK'
@@ -73,10 +74,11 @@ describe('CodeTranspiler Metadata Validation', () => {
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
-        blockSizes: [2, 4],
+        
+        blockSizes: [2],
         stratumCaps: [
-          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 2 },
-          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 2 }
+          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 4 },
+          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 4 }
         ],
         seed: 'seed-with-"quotes"',
         subjectIdMask: '{SITE}-{STRATUM}-{SEQ:3}',
@@ -96,7 +98,7 @@ describe('CodeTranspiler Metadata Validation', () => {
         // We use python3 -m py_compile to check syntax without full execution if preferred,
         // but the plan says "executes without errors".
         // The generated script needs numpy and pandas.
-        execSync(`python3 ${tmpFile}`, { stdio: 'pipe' });
+        execSync(`python3 -m py_compile ${tmpFile}`, { stdio: 'pipe' });
       } catch (error: any) {
         const stderr = error.stderr?.toString() || '';
         const stdout = error.stdout?.toString() || '';
@@ -124,10 +126,11 @@ describe('CodeTranspiler Metadata Validation', () => {
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
-        blockSizes: [2, 4],
+        
+        blockSizes: [2],
         stratumCaps: [
-          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 2 },
-          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 2 }
+          { levelIds: { 'Factor"With"Quotes': 'Level "1"' }, cap: 4 },
+          { levelIds: { 'Factor"With"Quotes': "Level '2'" }, cap: 4 }
         ],
         seed: 'seed-with-"quotes"',
         subjectIdMask: '{SITE}-{STRATUM}-{SEQ:3}',

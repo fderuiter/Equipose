@@ -1,5 +1,6 @@
 import { RandomizationConfig, GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
 import { generateSubjectId } from './subject-id-engine';
+import { SubjectRegistry } from './subject-registry';
 
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
@@ -123,13 +124,10 @@ function computeImbalanceScore(
   return totalScore;
 }
 
-function computeStratumCode(strata: RandomizationConfig['strata'], stratum: Record<string, string>): string {
-  return strata.map(s => (stratum[s.id] || '').substring(0, 3).toUpperCase()).join('-');
-}
-
 export function generateMinimization(
   config: RandomizationConfig,
-  rng: () => number
+  rng: () => number,
+  registry: SubjectRegistry
 ): GeneratedSchema[] {
   const { arms, strata, sites, minimizationConfig } = config;
   const p = minimizationConfig?.p ?? 0.8;
@@ -185,43 +183,7 @@ export function generateMinimization(
     baseProbabilities.set(factor.id, pMap);
   }
 
-  // Setup caps and state tracking
-  const isMarginal = config.capStrategy === 'MARGINAL_ONLY';
-
-  // MARGINAL tracking
-  const marginalCapMap = new Map<string, Map<string, number | undefined>>();
-  const marginalCounts = new Map<string, Map<string, number>>();
-
-  // INTERSECTION tracking (MANUAL_MATRIX or PROPORTIONAL)
-  const capsDict: Record<string, number> = {};
-  const intersectionCounts: Record<string, number> = {};
-
-  if (isMarginal) {
-    for (const factor of strata) {
-      const capMap = new Map<string, number | undefined>();
-      const countMap = new Map<string, number>();
-      const detailsMap = new Map<string, NonNullable<typeof factor.levelDetails>[number]>();
-      if (factor.levelDetails) {
-        for (const d of factor.levelDetails) {
-          detailsMap.set(d.name, d);
-        }
-      }
-      for (const level of factor.levels) {
-        const details = detailsMap.get(level);
-        capMap.set(level, details?.marginalCap);
-        countMap.set(level, 0);
-      }
-      marginalCapMap.set(factor.id, capMap);
-      marginalCounts.set(factor.id, countMap);
-    }
-  } else {
-    (config.stratumCaps || []).forEach(c => {
-      if (c.levelIds) {
-        const key = Object.keys(c.levelIds).sort().map(k => `${k}:${c.levelIds[k]}`).join('|');
-        capsDict[key] = c.cap;
-      }
-    });
-  }
+  const isMarginal = registry.isMarginal;
 
   // Precompute all strata combinations to form the initial valid pool for intersection caps.
   type PoolCombination = Record<string, string> & { _key?: string };
@@ -241,9 +203,9 @@ export function generateMinimization(
     // Precalculate invariant key for filtering and sampling arrays and filter immediately
     const validPool: PoolCombination[] = [];
     for (const combo of activePool) {
-      const key = Object.keys(combo).filter(k => k !== '_key').sort().map(k => `${k}:${combo[k]}`).join('|');
+      const key = SubjectRegistry.getIntersectionKey(combo);
       combo._key = key;
-      const cap = capsDict[key];
+      const cap = registry.getIntersectionCap(combo);
       if (cap === undefined || cap > 0) {
         validPool.push(combo);
       }
@@ -283,24 +245,14 @@ export function generateMinimization(
   for (let s = 0; s < totalSampleSize; s++) {
     // Determine active pool dynamically. If MARGINAL_ONLY, filter based on marginal counts.
     if (isMarginal) {
-      const isExhausted = strata.some(factor => {
-        return factor.levels.every(level => {
-          const cap = marginalCapMap.get(factor.id)?.get(level);
-          const count = marginalCounts.get(factor.id)?.get(level) ?? 0;
-          return cap !== undefined && count >= cap;
-        });
-      });
-      if (isExhausted) {
+      if (registry.isMarginalExhausted()) {
         break;
       }
     } else {
       if (poolNeedsFilter) {
         const newPool: PoolCombination[] = [];
         for (const combo of activePool) {
-
-          const key = combo._key || "";
-          const cap = capsDict[key];
-          if (cap === undefined || (intersectionCounts[key] ?? 0) < cap) {
+          if (registry.canAddSubject(combo)) {
             newPool.push(combo);
           }
         }
@@ -331,14 +283,8 @@ export function generateMinimization(
       let availableLevels: string[];
 
       if (isMarginal) {
-        availableLevels = factor.levels.filter(level => {
-          const cap = marginalCapMap.get(factor.id)?.get(level);
-          const count = marginalCounts.get(factor.id)?.get(level) ?? 0;
-          return cap === undefined || count < cap;
-        });
+        availableLevels = registry.getValidLevels(factor.id);
       } else {
-        // Find levels that are still present in at least one combination in the activePool
-        // that matches the already sampled prefix.
         // Find levels that are still present in at least one combination in the activePool
         // that matches the already sampled prefix.
         const prefixKeys = Object.keys(currentCombinationPrefix);
@@ -445,28 +391,15 @@ export function generateMinimization(
     }
 
     // Update state tracking
-    if (isMarginal) {
-      for (const factor of strata) {
-        const lvl = subjectProfile[factor.id];
-        if (lvl) {
-          const map = marginalCounts.get(factor.id)!;
-          map.set(lvl, (map.get(lvl) ?? 0) + 1);
-        }
-      }
-    } else {
-      const key = Object.keys(subjectProfile).sort().map(k => `${k}:${subjectProfile[k]}`).join('|');
-      const newCount = (intersectionCounts[key] ?? 0) + 1;
-      intersectionCounts[key] = newCount;
-      const cap = capsDict[key];
-      if (cap !== undefined && newCount >= cap) {
-        poolNeedsFilter = true;
-      }
+    registry.registerSubject(subjectProfile);
+    if (!isMarginal) {
+      poolNeedsFilter = true;
     }
 
     siteSubjectCounts.set(site, siteSubjectCounts.get(site)! + 1);
     const siteSeq = siteSubjectCounts.get(site)!;
 
-    const stratumCode = computeStratumCode(strata, stratum);
+    const stratumCode = registry.getStratumCode(stratum);
 
     const subjectId = generateSubjectId(
       config.subjectIdMask,

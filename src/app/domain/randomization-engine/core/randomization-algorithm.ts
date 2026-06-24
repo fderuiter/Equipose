@@ -9,6 +9,7 @@ import {
 } from '../../core/models/randomization.model';
 import { generateSubjectId } from './subject-id-engine';
 import { generateMinimization } from './minimization-algorithm';
+import { SubjectRegistry } from './subject-registry';
 
 // ---------------------------------------------------------------------------
 // Crypto seed helper (shared with the Web Worker)
@@ -38,10 +39,6 @@ function buildBlock(arms: TreatmentArm[], blockSize: number, totalRatio: number,
     [block[i], block[j]] = [block[j], block[i]];
   }
   return block;
-}
-
-function computeStratumCode(strata: RandomizationConfig['strata'], stratum: Record<string, string>): string {
-  return strata.map(s => (stratum[s.id] || '').substring(0, 3).toUpperCase()).join('-');
 }
 
 // ---------------------------------------------------------------------------
@@ -143,51 +140,55 @@ function generateStandard(
   strataCombinations: Record<string, string>[],
   totalRatio: number,
   schema: GeneratedSchema[],
-  usedSubjectIds: Set<string>
+  usedSubjectIds: Set<string>,
+  registry: SubjectRegistry
 ): void {
-  const capsDict: Record<string, number> = {};
-  if (resolvedConfig.stratumCaps) {
-    resolvedConfig.stratumCaps.forEach(c => {
-      const comboKey = Object.keys(c.levelIds || {}).sort().map(k => `${k}:${c.levelIds![k]}`).join('|');
-      capsDict[comboKey] = c.cap;
-    });
-  }
+  const stateMap = new Map<string, { blockNumber: number; blockState: any; rule: any }>();
+  const siteSubjectCounts = new Map<string, number>();
 
   for (const site of resolvedConfig.sites) {
-    let siteSubjectCount = 0;
     for (const stratum of strataCombinations) {
-      const sortedKeys = Object.keys(stratum).sort();
-      const comboKey = sortedKeys.map(k => `${k}:${stratum[k]}`).join('|');
-      const maxSubjectsPerStratum = capsDict[comboKey] || 0;
-      const stratumCode = computeStratumCode(resolvedConfig.strata, stratum);
+      const stratumCode = registry.getStratumCode(stratum);
+      stateMap.set(`${site}|${stratumCode}`, {
+        blockNumber: 1,
+        blockState: newBlockState(),
+        rule: resolveBlockRule(resolvedConfig, site, stratumCode)
+      });
+    }
+  }
 
-      let stratumSubjectCount = 0;
-      let blockNumber = 1;
+  let addedInPass = true;
+  while (addedInPass) {
+    addedInPass = false;
+    for (const stratum of strataCombinations) {
+      if (!registry.canAddSubject(stratum)) continue;
+      for (const site of resolvedConfig.sites) {
+        if (!registry.canAddSubject(stratum)) break;
 
-      // Resolve which block rule to apply and create a fresh tracking state.
-      const rule = resolveBlockRule(resolvedConfig, site, stratumCode);
-      const blockState = newBlockState();
+        const stratumCode = registry.getStratumCode(stratum);
+        const state = stateMap.get(`${site}|${stratumCode}`)!;
 
-      while (stratumSubjectCount < maxSubjectsPerStratum) {
-        const blockSize = selectBlockSize(rule, blockState, rng);
+        const blockSize = selectBlockSize(state.rule, state.blockState, rng);
         const block = buildBlock(resolvedConfig.arms, blockSize, totalRatio, rng);
 
         for (const arm of block) {
-          siteSubjectCount++;
-          stratumSubjectCount++;
+          if (!registry.canAddSubject(stratum)) break;
+
+          registry.registerSubject(stratum);
+          siteSubjectCounts.set(site, (siteSubjectCounts.get(site) ?? 0) + 1);
+          
+          addedInPass = true;
 
           const subjectId = generateSubjectId(
             resolvedConfig.subjectIdMask,
-            { site, stratumCode, sequence: siteSubjectCount },
+            { site, stratumCode, sequence: siteSubjectCounts.get(site)! },
             usedSubjectIds,
             rng
           );
 
-          schema.push({ subjectId, site, stratum, stratumCode, blockNumber, blockSize, treatmentArm: arm.name, treatmentArmId: arm.id });
-
-          if (stratumSubjectCount >= maxSubjectsPerStratum) break;
+          schema.push({ subjectId, site, stratum, stratumCode, blockNumber: state.blockNumber, blockSize, treatmentArm: arm.name, treatmentArmId: arm.id });
         }
-        blockNumber++;
+        state.blockNumber++;
       }
     }
   }
@@ -213,51 +214,15 @@ function generateMarginalOnly(
   strataCombinations: Record<string, string>[],
   totalRatio: number,
   schema: GeneratedSchema[],
-  usedSubjectIds: Set<string>
+  usedSubjectIds: Set<string>,
+  registry: SubjectRegistry
 ): void {
-  // Use Map to avoid prototype-pollution risks when level names are user-controlled.
-  // Lookup: factorId → (levelName → marginalCap); undefined = uncapped.
-  const marginalCapMap = new Map<string, Map<string, number | undefined>>();
-  let hasFullyCappedFactor = false;
-  for (const factor of resolvedConfig.strata) {
-    const levelMap = new Map<string, number | undefined>();
-    if (factor.levelDetails) {
-      for (const detail of factor.levelDetails) {
-        levelMap.set(detail.name, detail.marginalCap);
-      }
-    }
-    marginalCapMap.set(factor.id, levelMap);
-
-    // A fully-capped factor has a finite, non-negative cap on every one of its levels.
-    // This guarantees every stratum combination containing this factor is eventually pruned.
-    const allLevelsCapped =
-      factor.levels.length > 0 &&
-      factor.levels.every(lvl => {
-        const cap = levelMap.get(lvl);
-        return Number.isFinite(cap) && (cap as number) >= 0;
-      });
-    if (allLevelsCapped) {
-      hasFullyCappedFactor = true;
-    }
-  }
-
-
   for (const site of resolvedConfig.sites) {
     let siteSubjectCount = 0;
     let blockNumber = 0;
 
     // Per-stratum block-selection state (FIXED_SEQUENCE index / RANDOM_POOL usage counts).
     const siteBlockStates = new Map<string, BlockState>();
-
-    // Marginal enrollment counts are tracked per-site (each site is independent).
-    const marginalCounts = new Map<string, Map<string, number>>();
-    for (const factor of resolvedConfig.strata) {
-      const countMap = new Map<string, number>();
-      for (const level of factor.levels) {
-        countMap.set(level, 0);
-      }
-      marginalCounts.set(factor.id, countMap);
-    }
 
     // Active pool of valid stratum combinations (those that haven't hit any marginal cap).
     let activePool = [...strataCombinations];
@@ -269,7 +234,7 @@ function generateMarginalOnly(
       const stratum = activePool[poolIdx];
 
       // Resolve block rule and pick a block size using the hierarchical strategy.
-      const stratumCode = computeStratumCode(resolvedConfig.strata, stratum);
+      const stratumCode = registry.getStratumCode(stratum);
       const rule = resolveBlockRule(resolvedConfig, site, stratumCode);
       if (!siteBlockStates.has(stratumCode)) {
         siteBlockStates.set(stratumCode, newBlockState());
@@ -281,21 +246,10 @@ function generateMarginalOnly(
       blockNumber++;
 
       for (const arm of block) {
-        // Check if adding this subject would breach any marginal cap.
-        let canAdd = true;
-        for (const factor of resolvedConfig.strata) {
-          const levelValue = stratum[factor.id] || '';
-          if (!levelValue) continue;
-          const cap = marginalCapMap.get(factor.id)?.get(levelValue);
-          const currentCount = marginalCounts.get(factor.id)?.get(levelValue) ?? 0;
-          if (cap !== undefined && currentCount >= cap) {
-            canAdd = false;
-            break;
-          }
-        }
-        if (!canAdd) break; // Stop the block early when a cap is reached.
+        if (!registry.canAddSubject(stratum)) break;
 
         siteSubjectCount++;
+        registry.registerSubject(stratum);
 
         const subjectId = generateSubjectId(
           resolvedConfig.subjectIdMask,
@@ -312,50 +266,12 @@ function generateMarginalOnly(
           treatmentArmId: arm.id
         });
 
-        // Update marginal counts for every factor level in this stratum.
-        for (const factor of resolvedConfig.strata) {
-          const levelValue = stratum[factor.id] || '';
-          if (levelValue) {
-            const countMap = marginalCounts.get(factor.id);
-            if (countMap) {
-              const newCount = (countMap.get(levelValue) ?? 0) + 1;
-              countMap.set(levelValue, newCount);
-              const cap = marginalCapMap.get(factor.id)?.get(levelValue);
-              if (cap !== undefined && newCount >= cap) {
-                poolNeedsFilter = true;
-              }
-            }
-          }
-        }
+        poolNeedsFilter = true;
       }
 
       // Remove combinations from the pool that would now breach a marginal cap.
       if (poolNeedsFilter) {
-        const newPool: Record<string, string>[] = [];
-        for (const combo of activePool) {
-
-          let valid = true;
-          for (const factor of resolvedConfig.strata) {
-            const factorId = factor.id;
-            const levelValue = combo[factorId] || '';
-            if (!levelValue) continue;
-
-            const factorCaps = marginalCapMap.get(factorId);
-            const cap = factorCaps ? factorCaps.get(levelValue) : undefined;
-
-            if (cap !== undefined) {
-              const count = marginalCounts.get(factorId)?.get(levelValue) ?? 0;
-              if (count >= cap) {
-                valid = false;
-                break;
-              }
-            }
-          }
-          if (valid) {
-            newPool.push(combo);
-          }
-        }
-        activePool = newPool;
+        activePool = activePool.filter(combo => registry.canAddSubject(combo));
         poolNeedsFilter = false;
       }
     }
@@ -458,17 +374,19 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
     }
   }
 
+  const registry = new SubjectRegistry(resolvedConfig);
+
   const schema: GeneratedSchema[] = [];
   /** Tracks all assigned subject IDs to prevent duplicates (relevant for {RND:n} tokens). */
   const usedSubjectIds = new Set<string>();
 
   if (resolvedConfig.randomizationMethod === 'MINIMIZATION') {
-    schema.push(...generateMinimization(resolvedConfig, rng));
+    schema.push(...generateMinimization(resolvedConfig, rng, registry));
   } else if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
-    generateMarginalOnly(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds);
+    generateMarginalOnly(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   } else {
     // Both 'MANUAL_MATRIX' (default) and 'PROPORTIONAL' use intersection caps.
-    generateStandard(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds);
+    generateStandard(resolvedConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   }
 
   return {

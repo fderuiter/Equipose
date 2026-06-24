@@ -1,3 +1,4 @@
+import { SubjectRegistry } from './subject-registry';
 import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';
 import { MT19937 } from './mt19937';
@@ -29,7 +30,7 @@ const baseConfig: RandomizationConfig = {
     }
   ],
   blockSizes: [4],
-  stratumCaps: [],
+  stratumCaps: [{ levelIds: { sex: 'Male' }, cap: 100 }, { levelIds: { sex: 'Female' }, cap: 100 }],
   seed: 'test123',
   subjectIdMask: '{SITE}-{SEQ:3}',
   randomizationMethod: 'MINIMIZATION',
@@ -39,13 +40,13 @@ const baseConfig: RandomizationConfig = {
 describe('generateMinimization', () => {
   it('generates the correct number of subjects', () => {
     const rng = seedRng('test123');
-    const schema = generateMinimization(baseConfig, rng);
+    const schema = generateMinimization(baseConfig, rng, new SubjectRegistry(baseConfig));
     expect(schema.length).toBe(100);
   });
 
   it('assigns valid treatment arms only', () => {
     const rng = seedRng('test123');
-    const schema = generateMinimization(baseConfig, rng);
+    const schema = generateMinimization(baseConfig, rng, new SubjectRegistry(baseConfig));
     const validArms = new Set(baseConfig.arms.map(a => a.id));
     for (const row of schema) {
       expect(validArms.has(row.treatmentArmId)).toBe(true);
@@ -53,14 +54,14 @@ describe('generateMinimization', () => {
   });
 
   it('produces deterministic results with the same seed', () => {
-    const schema1 = generateMinimization(baseConfig, seedRng('abc'));
-    const schema2 = generateMinimization(baseConfig, seedRng('abc'));
+    const schema1 = generateMinimization(baseConfig, seedRng('abc'), new SubjectRegistry(baseConfig));
+    const schema2 = generateMinimization(baseConfig, seedRng('abc'), new SubjectRegistry(baseConfig));
     expect(schema1.map(r => r.treatmentArmId)).toEqual(schema2.map(r => r.treatmentArmId));
   });
 
   it('achieves reasonable balance with p=1.0', () => {
     const config = { ...baseConfig, minimizationConfig: { p: 1.0, totalSampleSize: 200 } };
-    const schema = generateMinimization(config, seedRng('balance'));
+    const schema = generateMinimization(config, seedRng('balance'), new SubjectRegistry(config));
     const countA = schema.filter(r => r.treatmentArmId === 'A').length;
     const countB = schema.filter(r => r.treatmentArmId === 'B').length;
     expect(Math.abs(countA - countB)).toBeLessThanOrEqual(5);
@@ -72,7 +73,7 @@ describe('generateMinimization', () => {
       sites: ['Site1', 'Site2'],
       minimizationConfig: { p: 0.8, totalSampleSize: 100 }
     };
-    const schema = generateMinimization(config, seedRng('sites'));
+    const schema = generateMinimization(config, seedRng('sites'), new SubjectRegistry(config));
     const site1Count = schema.filter(r => r.site === 'Site1').length;
     const site2Count = schema.filter(r => r.site === 'Site2').length;
     expect(site1Count).toBeGreaterThan(30);
@@ -81,17 +82,17 @@ describe('generateMinimization', () => {
 
   it('throws when p is outside [0.5, 1.0]', () => {
     const rng = seedRng('test');
-    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 0.3, totalSampleSize: 100 } }, rng))
+    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 0.3, totalSampleSize: 100 } }, rng, new SubjectRegistry({ ...baseConfig, minimizationConfig: { p: 0.3, totalSampleSize: 100 } })))
       .toThrow('Minimization probability p must be between 0.5 and 1.0');
-    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 1.1, totalSampleSize: 100 } }, rng))
+    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 1.1, totalSampleSize: 100 } }, rng, new SubjectRegistry({ ...baseConfig, minimizationConfig: { p: 1.1, totalSampleSize: 100 } })))
       .toThrow('Minimization probability p must be between 0.5 and 1.0');
   });
 
   it('throws when totalSampleSize is not a positive integer', () => {
     const rng = seedRng('test');
-    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: 0 } }, rng))
+    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: 0 } }, rng, new SubjectRegistry({ ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: 0 } })))
       .toThrow('Total sample size must be a positive integer');
-    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: -10 } }, rng))
+    expect(() => generateMinimization({ ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: -10 } }, rng, new SubjectRegistry({ ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: -10 } })))
       .toThrow('Total sample size must be a positive integer');
   });
 
@@ -118,7 +119,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
       }
     ],
     blockSizes: [4],
-    stratumCaps: [],
+    stratumCaps: [{ levelIds: { sex: 'Male' }, cap: 100 }, { levelIds: { sex: 'Female' }, cap: 100 }],
     seed: 'test1234',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'MINIMIZATION',
@@ -132,7 +133,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
     // and observe the generated balance.
     // Actually, with p=1.0 and 2:1 ratio, the final result should be exactly 100 A and 50 B.
     const rng = seedRng('test1234');
-    const schema = generateMinimization(customConfig, rng);
+    const schema = generateMinimization(customConfig, rng, new SubjectRegistry(customConfig));
 
     const countA = schema.filter(r => r.treatmentArmId === 'A').length;
 
@@ -147,6 +148,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
      // If explicit sum < 1.0, remaining should be divided equally among undefined.
      const configWithUndefinedLevels: RandomizationConfig = {
         ...customConfig,
+        stratumCaps: [{ levelIds: { bloodType: 'A' }, cap: 150 }, { levelIds: { bloodType: 'B' }, cap: 150 }, { levelIds: { bloodType: 'O' }, cap: 150 }, { levelIds: { bloodType: 'AB' }, cap: 150 }],
         strata: [
           {
             id: 'bloodType',
@@ -163,7 +165,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
      };
      // Remaining 0.6 should be split 3 ways -> 0.2 each.
      const rng = seedRng('probtest');
-     const schema = generateMinimization(configWithUndefinedLevels, rng);
+     const schema = generateMinimization(configWithUndefinedLevels, rng, new SubjectRegistry(configWithUndefinedLevels));
 
      const countA = schema.filter(r => r.stratum['bloodType'] === 'A').length;
      const countB = schema.filter(r => r.stratum['bloodType'] === 'B').length;
@@ -182,6 +184,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
        // If explicit sum > 1.0, normalize proportionally and assign 0 to undefined.
        const configOverAllocated: RandomizationConfig = {
           ...customConfig,
+          stratumCaps: [{ levelIds: { bloodType: 'A' }, cap: 150 }, { levelIds: { bloodType: 'B' }, cap: 150 }, { levelIds: { bloodType: 'O' }, cap: 150 }, { levelIds: { bloodType: 'AB' }, cap: 150 }],
           strata: [
             {
               id: 'bloodType',
@@ -198,7 +201,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
        };
        // Sum = 1.2. A gets 0.8/1.2 = 0.666, B gets 0.4/1.2 = 0.333. O and AB get 0.
        const rng = seedRng('probtest_over');
-       const schema = generateMinimization(configOverAllocated, rng);
+       const schema = generateMinimization(configOverAllocated, rng, new SubjectRegistry(configOverAllocated));
 
        const countA = schema.filter(r => r.stratum['bloodType'] === 'A').length;
        const countB = schema.filter(r => r.stratum['bloodType'] === 'B').length;
@@ -216,6 +219,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
        // If explicit sum == 1.0, undefined get 0.
        const configExactSum: RandomizationConfig = {
           ...customConfig,
+          stratumCaps: [{ levelIds: { bloodType: 'A' }, cap: 150 }, { levelIds: { bloodType: 'B' }, cap: 150 }, { levelIds: { bloodType: 'O' }, cap: 150 }, { levelIds: { bloodType: 'AB' }, cap: 150 }],
           strata: [
             {
               id: 'bloodType',
@@ -232,7 +236,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
        };
        // A gets 0.7, B gets 0.3. O and AB get 0.
        const rng = seedRng('probtest_exact');
-       const schema = generateMinimization(configExactSum, rng);
+       const schema = generateMinimization(configExactSum, rng, new SubjectRegistry(configExactSum));
 
        const countA = schema.filter(r => r.stratum['bloodType'] === 'A').length;
        const countB = schema.filter(r => r.stratum['bloodType'] === 'B').length;
@@ -255,7 +259,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
         ]
      };
      const rng = seedRng('probtest_zero_ratio');
-     expect(() => generateMinimization(configZeroRatio, rng)).toThrow();
+     expect(() => generateMinimization(configZeroRatio, rng, new SubjectRegistry(configZeroRatio))).toThrow();
   });
 });
 
@@ -272,7 +276,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
       };
 
       const rng = seedRng('truncationTest');
-      const schema = generateMinimization(restrictedConfig, rng);
+      const schema = generateMinimization(restrictedConfig, rng, new SubjectRegistry(restrictedConfig));
       expect(schema.length).toBe(40);
     });
 
@@ -296,7 +300,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
 
       const rng = seedRng('marginalTest');
       const start = performance.now();
-      const schema = generateMinimization(marginalConfig, rng);
+      const schema = generateMinimization(marginalConfig, rng, new SubjectRegistry(marginalConfig));
       const end = performance.now();
 
       expect(end - start).toBeLessThan(100);
