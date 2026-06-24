@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import * as fc from 'fast-check';
 import { computeProportionalCaps, validateProportionalPercentages } from './cap-strategy';
-import { StratificationFactor } from '../../core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -187,5 +187,71 @@ describe('computeProportionalCaps – Largest Remainder Method', () => {
     );
     const total = caps.reduce((s, c) => s + c.cap, 0);
     expect(total).toBe(10000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Property Tests
+// ---------------------------------------------------------------------------
+
+describe('computeProportionalCaps – property tests', () => {
+  const strataArbitrary = fc.array(
+    fc.record({
+      id: fc.uuid(),
+      name: fc.string(),
+      levels: fc.uniqueArray(fc.string({ minLength: 1 }), { minLength: 1, maxLength: 5 })
+    }),
+    { minLength: 0, maxLength: 3 }
+  );
+
+  it('maintains invariants across configurations', () => {
+    fc.assert(
+      fc.property(
+        strataArbitrary,
+        fc.oneof(fc.integer({ min: 0, max: 10000 }), fc.constant(1.5)),
+        // Generate an array of "random" weight arrays, one per possible factor
+        fc.array(fc.array(fc.integer({ min: 0, max: 100 }), { minLength: 5, maxLength: 5 }), { minLength: 3, maxLength: 3 }),
+        (strata, globalCap, weightsPool) => {
+          // Generate valid percentages that sum to 100 for each factor using weightsPool
+          const percentages: Record<string, Record<string, number>> = Object.create(null);
+          strata.forEach((factor, fIdx) => {
+            const factorPercentages: Record<string, number> = Object.create(null);
+            const weights = weightsPool[fIdx];
+            const sum = factor.levels.reduce((s, _, lIdx) => s + weights[lIdx], 0);
+
+            let currentSum = 0;
+            factor.levels.forEach((level, lIdx) => {
+              if (lIdx === factor.levels.length - 1) {
+                factorPercentages[level] = 100 - currentSum;
+              } else {
+                const pct = sum === 0 ? Math.floor(100 / factor.levels.length) : Math.floor((weights[lIdx] / sum) * 100);
+                factorPercentages[level] = pct;
+                currentSum += pct;
+              }
+            });
+            percentages[factor.id] = factorPercentages;
+          });
+
+          const caps = computeProportionalCaps(strata, globalCap, percentages);
+
+          // Invariant 1: Sum of caps equals globalCap (precondition: globalCap is integer, percentages sum to 100)
+          const total = caps.reduce((s, c) => s + c.cap, 0);
+          expect(total).toBe(Math.floor(globalCap));
+
+          // Invariant 2: All caps are non-negative
+          caps.forEach(c => expect(c.cap).toBeGreaterThanOrEqual(0));
+
+          // Invariant 3: Exhaustive coverage (Cartesian product size)
+          const expectedCount = strata.reduce((prod, f) => prod * f.levels.length, 1);
+          expect(caps.length).toBe(expectedCount);
+
+          // Invariant 4: If globalCap is 0, all caps must be 0
+          if (globalCap === 0) {
+            caps.forEach(c => expect(c.cap).toBe(0));
+          }
+        }
+      ),
+      { numRuns: 100 }
+    );
   });
 });

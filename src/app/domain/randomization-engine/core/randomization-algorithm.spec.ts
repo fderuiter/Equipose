@@ -135,6 +135,136 @@ describe('generateRandomizationSchema – property tests', () => {
       { numRuns: 100 }
     );
   });
+
+  describe('Property Tests – Stratified Caps', () => {
+    const stratificationArbitrary = fc.array(
+      fc.record({
+        id: fc.string({ minLength: 1, maxLength: 5 }),
+        name: fc.string({ minLength: 1, maxLength: 5 }),
+        levels: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 3 })
+      }),
+      { minLength: 1, maxLength: 2 }
+    );
+
+    const stratifiedConfigArbitrary = fc
+      .record({
+        arms: fc.constant([
+          { id: 'A', name: 'Arm A', ratio: 1 },
+          { id: 'B', name: 'Arm B', ratio: 1 }
+        ]),
+        sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 2 }),
+        strata: stratificationArbitrary,
+        capStrategy: fc.constantFrom('MANUAL_MATRIX', 'MARGINAL_ONLY' as const)
+      })
+      .chain(base => {
+        const totalRatio = 2; // Fixed for simplicity in property tests
+        const blockSizes = [2];
+
+        if (base.capStrategy === 'MANUAL_MATRIX') {
+          // Generate Cartesian product to create stratumCaps
+          let combinations: Record<string, string>[] = [{}];
+          for (const factor of base.strata) {
+            const next: Record<string, string>[] = [];
+            for (const combo of combinations) {
+              for (const level of factor.levels) {
+                next.push({ ...combo, [factor.id]: level });
+              }
+            }
+            combinations = next;
+          }
+
+          return fc.record({
+            protocolId: fc.constant('PROP-STRAT'),
+            studyName: fc.constant('Prop Strat Test'),
+            phase: fc.constant('Phase I'),
+            arms: fc.constant(base.arms),
+            sites: fc.constant(base.sites),
+            strata: fc.constant(base.strata),
+            seed: fc.string(),
+            capStrategy: fc.constant(base.capStrategy),
+            randomizationMethod: fc.constant('BLOCK' as const),
+            blockSizes: fc.constant(blockSizes),
+            stratumCaps: fc.array(fc.integer({ min: 0, max: 10 }), { minLength: combinations.length, maxLength: combinations.length }).map(caps =>
+              combinations.map((combo, i) => ({ levelIds: combo, cap: caps[i] }))
+            ),
+            subjectIdMask: fc.constant('{SITE}-{SEQ:3}')
+          });
+        } else {
+          // MARGINAL_ONLY: Ensure at least one factor is fully capped
+          return fc.record({
+            protocolId: fc.constant('PROP-MARGINAL'),
+            studyName: fc.constant('Prop Marginal Test'),
+            phase: fc.constant('Phase I'),
+            arms: fc.constant(base.arms),
+            sites: fc.constant(base.sites),
+            seed: fc.string(),
+            capStrategy: fc.constant(base.capStrategy),
+            randomizationMethod: fc.constant('BLOCK' as const),
+            blockSizes: fc.constant(blockSizes),
+            subjectIdMask: fc.constant('{SITE}-{SEQ:3}'),
+            strata: fc.record({
+              strata: fc.constant(base.strata),
+              cappedFactorIdx: fc.integer({ min: 0, max: 1 }), // base.strata.length is 1 or 2
+              caps: fc.array(fc.integer({ min: 0, max: 5 }), { minLength: 6, maxLength: 6 }) // enough for 2 factors * 3 levels
+            }).map(({ strata, cappedFactorIdx, caps }) => {
+              let capIdx = 0;
+              const safeIdx = cappedFactorIdx % strata.length;
+              return strata.map((f, i) => ({
+                ...f,
+                levelDetails: f.levels.map(l => ({
+                  name: l,
+                  marginalCap: i === safeIdx ? caps[capIdx++] : (caps[capIdx++] > 2 ? caps[capIdx++] : undefined)
+                }))
+              }));
+            }),
+            stratumCaps: fc.constant([])
+          });
+        }
+      });
+
+    it('never exceeds declared intersection caps (MANUAL_MATRIX)', () => {
+      const manualMatrixArb = stratifiedConfigArbitrary.filter(c => c.capStrategy === 'MANUAL_MATRIX');
+      fc.assert(
+        fc.property(manualMatrixArb, config => {
+          const result = generateRandomizationSchema(config);
+
+          for (const site of config.sites) {
+            for (const stratumCap of config.stratumCaps) {
+              const count = result.schema.filter(r => {
+                if (r.site !== site) return false;
+                return Object.entries(stratumCap.levelIds).every(([fid, lvl]) => r.stratum[fid] === lvl);
+              }).length;
+
+              expect(count).toBeLessThanOrEqual(stratumCap.cap);
+            }
+          }
+        }),
+        { numRuns: 50 }
+      );
+    });
+
+    it('never exceeds declared marginal caps (MARGINAL_ONLY)', () => {
+      const marginalOnlyArb = stratifiedConfigArbitrary.filter(c => c.capStrategy === 'MARGINAL_ONLY');
+      fc.assert(
+        fc.property(marginalOnlyArb, config => {
+          const result = generateRandomizationSchema(config);
+
+          for (const site of config.sites) {
+            for (const factor of config.strata) {
+              for (const level of factor.levels) {
+                const detail = factor.levelDetails?.find(d => d.name === level);
+                if (detail && detail.marginalCap !== undefined) {
+                  const count = result.schema.filter(r => r.site === site && r.stratum[factor.id] === level).length;
+                  expect(count).toBeLessThanOrEqual(detail.marginalCap);
+                }
+              }
+            }
+          }
+        }),
+        { numRuns: 50 }
+      );
+    });
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
