@@ -15,6 +15,7 @@ import { computeProportionalCaps, validateProportionalPercentages } from '../../
 import { CapStrategy } from '../../core/models/randomization.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
+import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -790,12 +791,39 @@ export class ConfigFormComponent implements OnInit {
     if (!(group instanceof FormGroup)) return null;
     const method = group.get('designGroup.randomizationMethod')?.value as string;
     if (method === 'MINIMIZATION') return null;
-    const arms = group.get('designGroup.arms') as FormArray;
-    const blockSizesStr = group.get('allocationGroup.blockSizesStr')?.value as string;
-    if (!arms || !blockSizesStr) return null;
-    const total = arms.controls.reduce((s, c) => s + (c.get('ratio')?.value || 0), 0);
-    const sizes = blockSizesStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-    for (const size of sizes) { if (size % total !== 0) return { invalidBlockSize: true }; }
+    const arms = (group.get('designGroup.arms') as FormArray)?.value || [];
+    const blockSizesStr = group.get('allocationGroup.blockSizesStr')?.value as string || '';
+    const overridesArr = (group.get('allocationGroup.blockOverrides') as FormArray)?.value || [];
+
+    const blockSizes = blockSizesStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    const siteBlockOverrides: Record<string, any> = {};
+    const stratumBlockOverrides: Record<string, any> = {};
+
+    for (const ov of overridesArr) {
+      if (!ov.targetId?.trim()) continue;
+      const ovSizes = (ov.sizesStr || '').split(',').map((s: string) => parseInt(s.trim(), 10)).filter((n: number) => !isNaN(n));
+      if (ov.targetType === 'site') {
+        siteBlockOverrides[ov.targetId] = { sizes: ovSizes };
+      } else {
+        stratumBlockOverrides[ov.targetId] = { sizes: ovSizes };
+      }
+    }
+
+    const partialConfig = {
+      randomizationMethod: method as any,
+      arms,
+      blockSizes,
+      siteBlockOverrides,
+      stratumBlockOverrides
+    };
+
+    const errors = UnifiedValidationAuthority.validate(partialConfig);
+    if (errors.length > 0) {
+      const blockError = errors.find(e => e.toLowerCase().includes('multiple of total ratio') || e.toLowerCase().includes('block size'));
+      if (blockError) {
+        return { invalidBlockSize: true, message: blockError };
+      }
+    }
     return null;
   }
 

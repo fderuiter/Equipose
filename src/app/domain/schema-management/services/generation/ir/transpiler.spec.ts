@@ -51,7 +51,8 @@ describe('CodeTranspiler Metadata Validation', () => {
       blockSizes: [],
       globalBlockStrategy: undefined,
       siteBlockOverrides: undefined,
-      stratumBlockOverrides: undefined
+      stratumBlockOverrides: undefined,
+      minimizationConfig: { totalSampleSize: 100, p: 0.8 }
     } as RandomizationConfig;
     const code = CodeTranspiler.transpile('Python', minConfig, 'MINIMIZATION');
     expect(code).toContain('Algorithm: Pocock-Simon Minimization');

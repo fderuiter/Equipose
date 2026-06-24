@@ -837,7 +837,7 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
 
     it('throws when arm count is zero', () => {
       const config: RandomizationConfig = { ...BASE_CONFIG, arms: [] };
-      expect(() => generateRandomizationSchema(config)).toThrow('Total arm ratio must be greater than zero');
+      expect(() => generateRandomizationSchema(config)).toThrow('Arms array is empty. At least one treatment arm is required.');
     });
 
     it('throws when block sizes are empty', () => {
@@ -899,6 +899,7 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
       const config: RandomizationConfig = {
         ...BASE_CONFIG,
         randomizationMethod: 'MINIMIZATION',
+        minimizationConfig: { p: 0.8, totalSampleSize: 10 },
         capStrategy: 'PROPORTIONAL',
         blockSizes: []
       };
