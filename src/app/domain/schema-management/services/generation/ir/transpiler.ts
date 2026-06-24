@@ -102,7 +102,7 @@ export class CodeTranspiler {
       for (const row of schema) {
          schemaRows += `  {"SubjectID": "${FormattingUtil.escapePythonString(row.subjectId)}", "Site": "${FormattingUtil.escapePythonString(row.site)}", "Treatment": "${FormattingUtil.escapePythonString(row.treatmentArm)}", "BlockNumber": ${row.blockNumber}, "BlockSize": ${row.blockSize}, "StratumCode": "${FormattingUtil.escapePythonString(row.stratumCode)}"`;
          for (const s of config.strata || []) {
-             schemaRows += `, "${s.id}": "${FormattingUtil.escapePythonString(row.stratum[s.id])}"`;
+             schemaRows += `, "${FormattingUtil.escapePythonString(s.id)}": "${FormattingUtil.escapePythonString(row.stratum[s.id])}"`;
          }
          schemaRows += `},\n`;
       }
@@ -165,7 +165,7 @@ export class CodeTranspiler {
         for (const task of ir.tasks) {
           let extraStrata = '';
           for (const s of config.strata || []) {
-            extraStrata += `, "${s.id}": "${FormattingUtil.escapePythonString(task.stratumDetails[s.id])}"`;
+            extraStrata += `, "${FormattingUtil.escapePythonString(s.id)}": "${FormattingUtil.escapePythonString(task.stratumDetails[s.id])}"`;
           }
 
           algorithmicLogic += `count = 0\n`;
@@ -189,7 +189,7 @@ export class CodeTranspiler {
       
       let strataComments = '';
       (config.strata || []).forEach(s => {
-          strataComments += `# Stratum: ${s.id}, Levels: ${s.levels.map(l => FormattingUtil.escapePythonString(l)).join(', ')}\n`;
+          strataComments += `# Stratum: ${FormattingUtil.escapePythonString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapePythonString(l)).join(', ')}\n`;
       });
       data['strataComments'] = strataComments.trimEnd();
       data['minimizationParam'] = method === 'MINIMIZATION' ? `p_minimization = ${config.minimizationConfig?.p || 0.8} # maintain precision parity` : '';
