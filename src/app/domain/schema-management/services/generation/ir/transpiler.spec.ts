@@ -15,7 +15,6 @@ describe('CodeTranspiler Metadata Validation', () => {
     sites: ['Site 1'],
     strata: [],
     blockSizes: [2],
-    blockSizes: [2],
         stratumCaps: [{ levelIds: {}, cap: 4 }],
     seed: 'test-seed',
     subjectIdMask: '{SITE}-{SEQ:3}',
