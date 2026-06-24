@@ -108,9 +108,9 @@ export class CodeTranspiler {
       }
     } else if (lang === 'R') {
       schema.forEach((row, i) => {
-         schemaRows += `schema_list[[${i+1}]] <- data.frame(SubjectID="${FormattingUtil.escapeRString(row.subjectId)}", Site="${FormattingUtil.escapeRString(row.site)}", Treatment="${FormattingUtil.escapeRString(row.treatmentArm)}", BlockNumber=${row.blockNumber}, BlockSize=${row.blockSize}, StratumCode="${FormattingUtil.escapeRString(row.stratumCode)}"`;
+         schemaRows += `schema_list[[${i+1}]] <- data.frame("SubjectID"="${FormattingUtil.escapeRString(row.subjectId)}", "Site"="${FormattingUtil.escapeRString(row.site)}", "Treatment"="${FormattingUtil.escapeRString(row.treatmentArm)}", "BlockNumber"=${row.blockNumber}, "BlockSize"=${row.blockSize}, "StratumCode"="${FormattingUtil.escapeRString(row.stratumCode)}"`;
          for (const s of config.strata || []) {
-             schemaRows += `, ${s.id}="${FormattingUtil.escapeRString(row.stratum[s.id])}"`;
+             schemaRows += `, "${FormattingUtil.escapeRString(s.id)}"="${FormattingUtil.escapeRString(row.stratum[s.id])}"`;
          }
          schemaRows += `, stringsAsFactors=FALSE)\n`;
       });
@@ -304,7 +304,7 @@ export class CodeTranspiler {
       
       let strataComments = '';
       (config.strata || []).forEach(s => {
-          strataComments += `# Stratum: ${s.id}, Levels: ${s.levels.map(l => FormattingUtil.escapeRString(l)).join(', ')}\n`;
+          strataComments += `# Stratum: ${FormattingUtil.escapeRString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapeRString(l)).join(', ')}\n`;
       });
       data['strataComments'] = strataComments.trimEnd();
       data['minimizationParam'] = method === 'MINIMIZATION' ? `p_minimization <- ${config.minimizationConfig?.p || 0.8} # maintain precision parity` : '';
