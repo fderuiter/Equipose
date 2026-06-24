@@ -101,11 +101,30 @@ describe('TagInputComponent', () => {
       expect(component.control.value).toBe('Site A, Site B, Site C');
     });
 
-    it('should skip pasted duplicate values when splitting comma-separated input', () => {
-      component.tags = ['Site A'];
-      component.inputValue = 'Site A, Site B';
+    it('should split newline-separated pasted values into individual tags', () => {
+      component.inputValue = 'Site A\nSite B\r\nSite C';
       component.commitInput();
-      expect(component.tags).toEqual(['Site A', 'Site B']);
+      expect(component.tags).toEqual(['Site A', 'Site B', 'Site C']);
+      expect(component.control.value).toBe('Site A, Site B, Site C');
+    });
+
+    it('should handle mixed comma and newline separators', () => {
+      component.inputValue = 'Site A, Site B\nSite C,Site D';
+      component.commitInput();
+      expect(component.tags).toEqual(['Site A', 'Site B', 'Site C', 'Site D']);
+    });
+
+    it('should skip pasted duplicate values and handle duplicates within the paste', () => {
+      component.tags = ['Site A'];
+      component.inputValue = 'Site A, Site B, Site B, Site C';
+      component.commitInput();
+      expect(component.tags).toEqual(['Site A', 'Site B', 'Site C']);
+    });
+
+    it('should handle empty-string tokens from consecutive separators', () => {
+      component.inputValue = 'Site A,,Site B\n\nSite C';
+      component.commitInput();
+      expect(component.tags).toEqual(['Site A', 'Site B', 'Site C']);
     });
 
     it('should not add an empty tag', () => {
