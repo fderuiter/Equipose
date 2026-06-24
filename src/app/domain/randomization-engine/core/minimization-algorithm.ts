@@ -35,7 +35,7 @@ function sampleLevel(
 
   const probs = new Array<number>(expectedProbabilities.length);
   const EPSILON = 1e-9;
-  const SCALE = 1000000;
+  const SCALE = 1000000000000;
 
   if (explicitSum > 1.0 + EPSILON) {
     for (let i = 0; i < expectedProbabilities.length; i++) {
@@ -424,8 +424,8 @@ export function generateMinimization(
     if (preferred.length === arms.length || nonPreferred.length === 0) {
       assignedArm = selectWeightedArm(preferred);
     } else {
-      const r = Math.floor(rng() * 1000000);
-      const pScaled = Math.round(p * 1000000);
+      const r = Math.floor(rng() * 1000000000000);
+      const pScaled = Math.round(p * 1000000000000);
       if (r < pScaled) {
         assignedArm = selectWeightedArm(preferred);
       } else {
