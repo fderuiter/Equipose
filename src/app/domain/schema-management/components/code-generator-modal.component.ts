@@ -56,11 +56,7 @@ export class CodeGeneratorModalComponent implements OnInit {
         const { computeAuditHash } = await import('../../randomization-engine/core/crypto-hash');
         
         const generatedAt = new Date().toISOString();
-        const schema = generateRandomizationSchema(config);
-        const result: RandomizationResult = {
-          metadata: { protocolId: config.protocolId, studyName: config.studyName, phase: config.phase, seed: config.seed, strata: config.strata, config, generatedAt, auditHash: '' },
-          schema
-        };
+        const result = generateRandomizationSchema(config);
         const auditHash = await computeAuditHash(result);
         result.metadata.auditHash = auditHash;
         metadata = result.metadata;
