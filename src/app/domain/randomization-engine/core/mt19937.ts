@@ -1,4 +1,4 @@
-import seedrandom from 'seedrandom';
+import { AleaUtil } from '../../core/utils/alea.util';
 
 export class MT19937 {
   private mt: Uint32Array;
@@ -49,16 +49,7 @@ export class MT19937 {
   }
 
   static get128BitHash(seed: string | undefined): string {
-    const s = seed || '';
-    if (/^[0-9a-f]{32}$/i.test(s)) {
-      return s.toLowerCase();
-    }
-    const rng = seedrandom(s);
-    const arr = new Uint32Array(4);
-    for (let i = 0; i < 4; i++) {
-      arr[i] = Math.abs(rng.int32());
-    }
-    return Array.from(arr, n => n.toString(16).padStart(8, '0')).join('');
+    return AleaUtil.get128BitHash(seed);
   }
 
   static get31BitSeed(str: string | undefined): number {

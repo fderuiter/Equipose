@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 import { computeProportionalCaps, validateProportionalPercentages } from './cap-strategy';
+import { StratificationFactor } from '../../core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Helpers

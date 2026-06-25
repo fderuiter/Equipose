@@ -40,7 +40,6 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "rxjs": "~7.8.0",
-    "seedrandom": "^3.0.5",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -61,7 +60,6 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.2",
     "@types/pdf-parse": "^1.1.5",
-    "@types/seedrandom": "^3.0.8",
     "@vitest/coverage-v8": "^4.1.5",
     "angular-eslint": "21.4.0",
     "eslint": "^10.4.0",

@@ -315,7 +315,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
 
   it('should fall back to synchronous service if Worker constructor throws', async () => {
     // 1. Reset facade and stub Worker to throw
-    vi.stubGlobal('Worker', vi.fn().mockImplementation(() => {
+    vi.stubGlobal('Worker', vi.fn().mockImplementation(function() {
       throw new Error('Worker blocked');
     }));
 

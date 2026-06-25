@@ -15,7 +15,6 @@ describe('CodeTranspiler Metadata Validation', () => {
     sites: ['Site 1'],
     strata: [],
     blockSizes: [2],
-    blockSizes: [2],
         stratumCaps: [{ levelIds: {}, cap: 4 }],
     seed: 'test-seed',
     subjectIdMask: '{SITE}-{SEQ:3}',
@@ -71,7 +70,7 @@ describe('CodeTranspiler Metadata Validation', () => {
         sites: ['Site "1"', 'Site \\2\\'],
         strata: [
           {
-            id: 'Factor"With"Quotes',
+            id: 'Factor"With"Quotes', name: 'Factor"With"Quotes',
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
@@ -123,7 +122,7 @@ describe('CodeTranspiler Metadata Validation', () => {
         sites: ['Site "1"', 'Site \\2\\'],
         strata: [
           {
-            id: 'Factor"With"Quotes',
+            id: 'Factor"With"Quotes', name: 'Factor"With"Quotes',
             levels: ['Level "1"', "Level '2'", 'Level\\With\\Backslash', 'Unicode-α-Ω']
           }
         ],
