@@ -12,6 +12,7 @@ body:
         - Feature
         - Bug
         - Test Gap
+        - Validation Gap
         - Refactor / Tech Debt
         - Release Hardening
       default: 0
