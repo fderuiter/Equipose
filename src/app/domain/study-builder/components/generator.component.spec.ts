@@ -232,6 +232,32 @@ describe('GeneratorComponent (domain)', () => {
     expect(el.querySelector('[data-testid="zero-state"]')).toBeTruthy();
   });
 
+  it('state machine transition: Zero -> Generating -> Results', () => {
+    const fixture = TestBed.createComponent(GeneratorComponent);
+    fixture.detectChanges();
+    let el: HTMLElement = fixture.nativeElement;
+
+    // 1. Initial State: Zero-state visible
+    expect(el.querySelector('[data-testid="zero-state"]')).toBeTruthy();
+    expect(el.querySelector('[data-testid="skeleton-grid"]')).toBeFalsy();
+    expect(el.querySelector('#results-section')).toBeFalsy();
+
+    // 2. Start Generating: Skeleton visible
+    mockFacade.isGenerating.set(true);
+    fixture.detectChanges();
+    expect(el.querySelector('[data-testid="zero-state"]')).toBeFalsy();
+    expect(el.querySelector('[data-testid="skeleton-grid"]')).toBeTruthy();
+    expect(el.querySelector('#results-section')).toBeFalsy();
+
+    // 3. Generation Complete: Results visible
+    mockFacade.isGenerating.set(false);
+    mockFacade.results.set(MOCK_RESULT);
+    fixture.detectChanges();
+    expect(el.querySelector('[data-testid="zero-state"]')).toBeFalsy();
+    expect(el.querySelector('[data-testid="skeleton-grid"]')).toBeFalsy();
+    expect(el.querySelector('#results-section')).toBeTruthy();
+  });
+
   // ── Code generator modal ───────────────────────────────────────────────────
 
   it('should render the code generator modal when showCodeGenerator is true and config is set', () => {
