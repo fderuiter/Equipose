@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy, inject, ChangeDetectorRef } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 
 /**
  * TagInputComponent – an interactive chip/tag input that reads and writes
@@ -18,6 +19,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-tag-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [A11yValidationDirective],
   template: `
     <div
       class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 cursor-text transition-colors"
