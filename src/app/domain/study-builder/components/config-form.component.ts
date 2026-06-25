@@ -16,6 +16,7 @@ import { CapStrategy } from '../../core/models/randomization.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
 import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
+import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -25,7 +26,7 @@ import { UnifiedValidationAuthority } from '../../core/validation/unified-valida
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent],
+  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
