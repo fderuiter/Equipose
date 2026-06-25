@@ -66,6 +66,8 @@ Thumbs.db
 
 # Miscellaneous
 sample_output/
+stryker-tmp/
+reports/
 
 # wrangler files
 .wrangler
