@@ -1,0 +1,4 @@
+src/app/domain/randomization-engine/ @fderuiter
+src/app/domain/study-builder/ @fderuiter
+src/app/domain/schema-management/ @fderuiter
+.github/workflows/ @fderuiter
