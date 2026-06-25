@@ -1,7 +1,7 @@
-name: Refactor / Tech Debt
-description: Suggest code improvements and cleanup
-title: "[Refactor]: "
-labels: ["refactor"]
+name: Validation Gap
+description: Report a missing validation coverage
+title: "[Validation Gap]: "
+labels: ["validation-gap"]
 body:
   - type: dropdown
     id: type
@@ -9,11 +9,11 @@ body:
       label: Type
       description: What type of issue is this?
       options:
-        - Refactor / Tech Debt
+        - Validation Gap
+        - Test Gap
         - Bug
         - Feature
-        - Test Gap
-        - Validation Gap
+        - Refactor / Tech Debt
         - Release Hardening
       default: 0
     validations:
@@ -33,30 +33,23 @@ body:
     validations:
       required: true
   - type: textarea
-    id: expected
+    id: behavior
     attributes:
-      label: Expected Behavior
-      description: What should the code look/act like after the refactor?
+      label: What behavior is untested?
+      description: Describe the functionality that currently lacks validation coverage.
     validations:
       required: true
   - type: textarea
-    id: actual
+    id: impact
     attributes:
-      label: Actual Behavior / Gap
-      description: What is the current state of the code or the technical debt?
+      label: Why it matters
+      description: What is the risk of this behavior being unvalidated?
     validations:
       required: true
   - type: textarea
-    id: criteria
+    id: suggested-approach
     attributes:
-      label: Acceptance Criteria
-      description: What needs to be done for this issue to be considered resolved?
-    validations:
-      required: true
-  - type: textarea
-    id: test-plan
-    attributes:
-      label: Test Plan
-      description: How will this change be tested?
+      label: Suggested test approach
+      description: How should this gap be addressed? (e.g. unit test, integration test, E2E test)
     validations:
       required: true

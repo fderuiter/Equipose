@@ -10,6 +10,7 @@ body:
       description: What type of issue is this?
       options:
         - Test Gap
+        - Validation Gap
         - Bug
         - Feature
         - Refactor / Tech Debt
@@ -32,30 +33,23 @@ body:
     validations:
       required: true
   - type: textarea
-    id: expected
+    id: behavior
     attributes:
-      label: Expected Behavior
-      description: What is the expected behavior of the covered code?
+      label: What behavior is untested?
+      description: Describe the functionality that currently lacks test coverage.
     validations:
       required: true
   - type: textarea
-    id: actual
+    id: impact
     attributes:
-      label: Actual Behavior / Gap
-      description: What is the current test coverage gap?
+      label: Why it matters
+      description: What is the risk of this behavior being untested?
     validations:
       required: true
   - type: textarea
-    id: criteria
+    id: suggested-approach
     attributes:
-      label: Acceptance Criteria
-      description: What needs to be done for this issue to be considered resolved?
-    validations:
-      required: true
-  - type: textarea
-    id: test-plan
-    attributes:
-      label: Test Plan
-      description: How will the new tests be verified?
+      label: Suggested test approach
+      description: How should this gap be addressed? (e.g. unit test, integration test, E2E test)
     validations:
       required: true

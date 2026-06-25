@@ -46,7 +46,7 @@ jobs:
     - name: Install Dependencies
       run: pnpm install --frozen-lockfile
 
-    - name: Build Project
+    - name: Build and Enforce Bundle Budgets
       run: pnpm run build
 
     - name: Install Playwright Browsers

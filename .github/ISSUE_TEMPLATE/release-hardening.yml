@@ -13,6 +13,7 @@ body:
         - Bug
         - Feature
         - Test Gap
+        - Validation Gap
         - Refactor / Tech Debt
       default: 0
     validations:
