@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.stryker-mutator.io/stryker-config.schema.json",
+  "packageManager": "pnpm",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "reporters": ["html", "clear-text", "progress"],
+  "testRunner": "vitest",
+  "testRunner_comment": "vitest",
+  "mutate": ["src/app/domain/randomization-engine/core/minimization-algorithm.ts"],
+  "tempDirName": "stryker-tmp",
+  "cleanTempDir": true
+}

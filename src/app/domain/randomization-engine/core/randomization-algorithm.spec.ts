@@ -138,13 +138,13 @@ describe('generateRandomizationSchema – property tests', () => {
   });
 
   describe('Property Tests – Stratified Caps', () => {
-    const stratificationArbitrary = fc.array(
+    const stratificationArbitrary = fc.uniqueArray(
       fc.record({
-        id: fc.string({ minLength: 1, maxLength: 5 }),
-        name: fc.string({ minLength: 1, maxLength: 5 }),
-        levels: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 3 })
+        id: fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }),
+        name: fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }),
+        levels: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }), { minLength: 1, maxLength: 3 })
       }),
-      { minLength: 1, maxLength: 2 }
+      { minLength: 1, maxLength: 2, selector: (f) => f.id }
     );
 
     const stratifiedConfigArbitrary = fc
@@ -263,6 +263,82 @@ describe('generateRandomizationSchema – property tests', () => {
           }
         }),
         { numRuns: 50 }
+      );
+    });
+
+    it('maintains subject ID uniqueness across the entire schema', () => {
+      fc.assert(
+        fc.property(stratifiedConfigArbitrary, config => {
+          const result = generateRandomizationSchema(config);
+          const ids = result.schema.map(r => r.subjectId);
+          const uniqueIds = new Set(ids);
+          return uniqueIds.size === ids.length;
+        }),
+        { numRuns: 30 }
+      );
+    });
+
+    it('always assigns treatment arms that were defined in the config', () => {
+      fc.assert(
+        fc.property(stratifiedConfigArbitrary, config => {
+          const result = generateRandomizationSchema(config);
+          const validArmIds = new Set(config.arms.map((a: any) => a.id));
+          return result.schema.every(r => validArmIds.has(r.treatmentArmId));
+        }),
+        { numRuns: 30 }
+      );
+    });
+  });
+
+  describe('Property Tests – Hierarchical Block Strategy', () => {
+    const hbsConfigArbitrary = fc.record({
+      arms: fc.constant([{ id: 'A', name: 'Arm A', ratio: 1 }, { id: 'B', name: 'Arm B', ratio: 1 }]),
+      sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }), { minLength: 2, maxLength: 2 }),
+      seed: fc.string(),
+      globalBlockStrategy: fc.record({
+        selectionType: fc.constant('FIXED_SEQUENCE' as const),
+        sizes: fc.constant([2])
+      }),
+      protocolId: fc.constant('HBS-PROP'),
+      studyName: fc.constant('HBS Prop Test'),
+      phase: fc.constant('Phase I'),
+      strata: fc.constant([]),
+      blockSizes: fc.constant([2]),
+      subjectIdMask: fc.constant('{SITE}-{SEQ:3}')
+    }).chain(base => {
+      const site2 = base.sites[1];
+      return fc.record({
+        protocolId: fc.constant(base.protocolId),
+        studyName: fc.constant(base.studyName),
+        phase: fc.constant(base.phase),
+        arms: fc.constant(base.arms),
+        sites: fc.constant(base.sites),
+        strata: fc.constant(base.strata),
+        blockSizes: fc.constant(base.blockSizes),
+        seed: fc.constant(base.seed),
+        subjectIdMask: fc.constant(base.subjectIdMask),
+        globalBlockStrategy: fc.constant(base.globalBlockStrategy),
+        siteBlockOverrides: fc.record({
+          [site2]: fc.record({
+            selectionType: fc.constant('FIXED_SEQUENCE' as const),
+            sizes: fc.constant([4])
+          })
+        }),
+        stratumCaps: fc.constant([{ levelIds: {}, cap: 20 }])
+      });
+    });
+
+    it('respects site-specific block size overrides across various configurations', () => {
+      fc.assert(
+        fc.property(hbsConfigArbitrary, (config: any) => {
+          const result = generateRandomizationSchema(config);
+          const site1Rows = result.schema.filter(r => r.site === config.sites[0]);
+          const site2Rows = result.schema.filter(r => r.site === config.sites[1]);
+
+          site1Rows.forEach(r => expect(r.blockSize).toBe(2));
+          site2Rows.forEach(r => expect(r.blockSize).toBe(4));
+        }),
+        { numRuns: 30 }
       );
     });
   });
