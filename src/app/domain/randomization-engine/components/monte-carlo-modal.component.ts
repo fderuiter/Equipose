@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, effect, ElementRef, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { DialogRef } from '@angular/cdk/dialog';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
@@ -63,9 +64,6 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
         <!-- Progress state -->
         @if (facade.isMonteCarloRunning()) {
           <div class="space-y-3">
-            <div aria-live="polite" class="sr-only">
-              Simulating trials, {{ facade.monteCarloProgress() }}% completed
-            </div>
             <div class="flex justify-between items-center" aria-hidden="true">
               <span class="text-sm font-medium text-gray-700 dark:text-slate-300">Simulating trials…</span>
               <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ facade.monteCarloProgress() }}%</span>
@@ -85,6 +83,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
 
             <!-- Results state -->
             @if (facade.monteCarloResults(); as results) {
+              <h4 #resultsHeader tabindex="-1" class="sr-only outline-none">Simulation Results</h4>
               <!-- Summary stats -->
               <div [class]="summaryGridClass(results.attritionRate)">
                 <div class="bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center">
@@ -209,7 +208,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
 
               <!-- High imbalance warning (shown only with attrition and significant deviation) -->
               @if (results.attritionRate > 0 && maxRetainedDeviation() > ATTRITION_WARNING_THRESHOLD_PCT) {
-                <div class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/50 rounded-lg p-4 flex items-start gap-3" data-testid="mc-attrition-warning">
+                <div role="alert" tabindex="-1" #warningBanner class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/50 rounded-lg p-4 flex items-start gap-3 outline-none" data-testid="mc-attrition-warning">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -258,6 +257,47 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
 export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
   readonly dialogRef = inject(DialogRef);
+  private readonly liveAnnouncer = inject(LiveAnnouncer);
+
+  @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
+  @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;
+
+  constructor() {
+    let hasAnnouncedStart = false;
+    let lastAnnouncedProgress = 0;
+
+    effect(() => {
+      const isRunning = this.facade.isMonteCarloRunning();
+      const progress = this.facade.monteCarloProgress();
+      const results = this.facade.monteCarloResults();
+
+      if (isRunning) {
+        if (!hasAnnouncedStart) {
+          this.liveAnnouncer.announce('Simulation started');
+          hasAnnouncedStart = true;
+          lastAnnouncedProgress = 0;
+        } else if (progress > lastAnnouncedProgress && progress % 25 === 0 && progress < 100) {
+          this.liveAnnouncer.announce(`Simulation running, ${progress}% completed`);
+          lastAnnouncedProgress = progress;
+        }
+      } else if (results) {
+        if (hasAnnouncedStart) {
+          this.liveAnnouncer.announce('Simulation complete');
+          hasAnnouncedStart = false;
+        }
+        
+        setTimeout(() => {
+          if (this.warningBanner?.nativeElement) {
+            this.warningBanner.nativeElement.focus();
+          } else if (this.resultsHeader?.nativeElement) {
+            this.resultsHeader.nativeElement.focus();
+          }
+        }, 50);
+      } else {
+        hasAnnouncedStart = false;
+      }
+    });
+  }
 
   /** Threshold (in %) above which the post-attrition imbalance warning banner is shown. */
   protected readonly ATTRITION_WARNING_THRESHOLD_PCT = 2;
