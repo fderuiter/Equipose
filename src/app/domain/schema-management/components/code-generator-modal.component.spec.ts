@@ -14,7 +14,7 @@ describe('CodeGeneratorModalComponent (domain)', () => {
   let mockFacade: unknown;
   let mockCodeGeneratorService: unknown;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockFacade = {
       config: signal<RandomizationConfig | null>(null),
       results: signal(null),
@@ -42,9 +42,9 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       ]
     });
 
-    TestBed.runInInjectionContext(() => {
+    await TestBed.runInInjectionContext(async () => {
       component = new CodeGeneratorModalComponent();
-      component.ngOnInit();
+      await component.ngOnInit();
     });
   });
 
@@ -78,27 +78,27 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       (mockFacade as any).config.set(mockConfig);
     });
 
-    it('should generate valid R code', () => {
+    it('should generate valid R code', async () => {
       (mockCodeGeneratorService as any).generate.mockReturnValue('Mock R Code');
-      component.setActiveTab('R');
+      await component.setActiveTab('R');
       const code = component.currentCode;
-      expect((mockCodeGeneratorService as any).generate).toHaveBeenCalledWith('R', mockConfig);
+      expect((mockCodeGeneratorService as any).generate).toHaveBeenCalledWith('R', mockConfig, expect.anything());
       expect(code).toBe('Mock R Code');
     });
 
-    it('should generate valid Python code', () => {
+    it('should generate valid Python code', async () => {
       (mockCodeGeneratorService as any).generate.mockReturnValue('Mock Python Code');
-      component.setActiveTab('Python');
+      await component.setActiveTab('Python');
       const code = component.currentCode;
-      expect((mockCodeGeneratorService as any).generate).toHaveBeenCalledWith('Python', mockConfig);
+      expect((mockCodeGeneratorService as any).generate).toHaveBeenCalledWith('Python', mockConfig, expect.anything());
       expect(code).toBe('Mock Python Code');
     });
 
-    it('should generate valid SAS code', () => {
+    it('should generate valid SAS code', async () => {
       (mockCodeGeneratorService as any).generate.mockReturnValue('Mock SAS Code');
-      component.setActiveTab('SAS');
+      await component.setActiveTab('SAS');
       const code = component.currentCode;
-      expect((mockCodeGeneratorService as any).generate).toHaveBeenCalledWith('SAS', mockConfig);
+      expect((mockCodeGeneratorService as any).generate).toHaveBeenCalledWith('SAS', mockConfig, expect.anything());
       expect(code).toBe('Mock SAS Code');
     });
   });
@@ -108,8 +108,8 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       (mockFacade as any).config.set(null);
     });
 
-    it('should handle missing config gracefully', () => {
-      component.setActiveTab('R');
+    it('should handle missing config gracefully', async () => {
+      await component.setActiveTab('R');
       const code = component.currentCode;
       expect(code).toBe('');
       expect((mockCodeGeneratorService as any).generate).not.toHaveBeenCalled();
@@ -144,38 +144,38 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       vi.restoreAllMocks();
     });
 
-    const verifyDownloadFilename = (language: 'R' | 'SAS' | 'Python' | 'STATA', expectedFilename: string) => {
+    const verifyDownloadFilename = async (language: 'R' | 'SAS' | 'Python' | 'STATA', expectedFilename: string) => {
       const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
       vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
 
-      component.setActiveTab(language);
+      await component.setActiveTab(language);
       component.downloadCode();
 
       const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchorEl.getAttribute('download')).toBe(expectedFilename);
     };
 
-    it('should use randomization_schema.R as the filename for R code', () => {
-      verifyDownloadFilename('R', 'randomization_schema.R');
+    it('should use randomization_schema.R as the filename for R code', async () => {
+      await verifyDownloadFilename('R', 'randomization_schema.R');
     });
 
-    it('should use randomization_schema.sas as the filename for SAS code', () => {
-      verifyDownloadFilename('SAS', 'randomization_schema.sas');
+    it('should use randomization_schema.sas as the filename for SAS code', async () => {
+      await verifyDownloadFilename('SAS', 'randomization_schema.sas');
     });
 
-    it('should use randomization_schema.py as the filename for Python code', () => {
-      verifyDownloadFilename('Python', 'randomization_schema.py');
+    it('should use randomization_schema.py as the filename for Python code', async () => {
+      await verifyDownloadFilename('Python', 'randomization_schema.py');
     });
 
-    it('should use randomization_schema.do as the filename for STATA code', () => {
-      verifyDownloadFilename('STATA', 'randomization_schema.do');
+    it('should use randomization_schema.do as the filename for STATA code', async () => {
+      await verifyDownloadFilename('STATA', 'randomization_schema.do');
     });
 
-    it('should call URL.createObjectURL with a Blob', () => {
+    it('should call URL.createObjectURL with a Blob', async () => {
       vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
       vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
 
-      component.setActiveTab('R');
+      await component.setActiveTab('R');
       component.downloadCode();
 
       expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
@@ -185,7 +185,7 @@ describe('CodeGeneratorModalComponent (domain)', () => {
   describe('copyCode()', () => {
     let mockConfig: RandomizationConfig;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       mockConfig = {
         protocolId: 'COPY-TEST',
         studyName: 'Copy Test',
@@ -200,7 +200,7 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       };
       (mockFacade as any).config.set(mockConfig);
       (mockCodeGeneratorService as any).generate.mockReturnValue('Mock R Code');
-      component.setActiveTab('R');
+      await component.setActiveTab('R');
     });
 
     it('should write the current code to the clipboard', () => {
@@ -246,35 +246,35 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       (mockFacade as any).config.set(mockConfig);
     });
 
-    it('should set errorState when the code generator throws a CodeGenerationError', () => {
+    it('should set errorState when the code generator throws a CodeGenerationError', async () => {
       const codeGenErr = new CodeGenerationError('Specific failure', mockConfig);
       (mockCodeGeneratorService as any).generate.mockImplementation(() => { throw codeGenErr; });
 
-      component.setActiveTab('R');
+      await component.setActiveTab('R');
 
       expect(component.errorState()).toBe(codeGenErr);
       expect(component.currentCode).toBe('');
     });
 
-    it('should wrap non-CodeGenerationError exceptions in a CodeGenerationError', () => {
+    it('should wrap non-CodeGenerationError exceptions in a CodeGenerationError', async () => {
       (mockCodeGeneratorService as any).generate.mockImplementation(() => {
         throw new Error('raw failure');
       });
 
-      component.setActiveTab('R');
+      await component.setActiveTab('R');
 
       const err = component.errorState();
       expect(err).toBeInstanceOf(CodeGenerationError);
       expect(err!.message).toContain('raw failure');
     });
 
-    it('should clear errorState and show code when switching to a tab that succeeds', () => {
+    it('should clear errorState and show code when switching to a tab that succeeds', async () => {
       (mockCodeGeneratorService as any).generate.mockImplementationOnce(() => { throw new CodeGenerationError('bad', mockConfig); });
-      component.setActiveTab('R');
+      await component.setActiveTab('R');
       expect(component.errorState()).not.toBeNull();
 
       (mockCodeGeneratorService as any).generate.mockReturnValue('Good SAS code');
-      component.setActiveTab('SAS');
+      await component.setActiveTab('SAS');
       expect(component.errorState()).toBeNull();
       expect(component.currentCode).toBe('Good SAS code');
     });

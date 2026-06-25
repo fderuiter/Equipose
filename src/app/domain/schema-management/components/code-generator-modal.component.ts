@@ -3,6 +3,7 @@ import { JsonPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
+import { RandomizationResult } from '../../core/models/randomization.model';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -24,21 +25,21 @@ export class CodeGeneratorModalComponent implements OnInit {
   errorState = signal<CodeGenerationError | null>(null);
   generatedCode = signal<string>('');
 
-  ngOnInit() {
+  async ngOnInit() {
     this.activeTab.set(this.state.codeLanguage());
-    this.refreshCode();
+    await this.refreshCode();
   }
 
   get currentCode(): string {
     return this.generatedCode();
   }
 
-  setActiveTab(tab: 'R' | 'SAS' | 'Python' | 'STATA') {
+  async setActiveTab(tab: 'R' | 'SAS' | 'Python' | 'STATA') {
     this.activeTab.set(tab);
-    this.refreshCode();
+    await this.refreshCode();
   }
 
-  private refreshCode() {
+  private async refreshCode() {
     const config = this.state.config();
     this.errorState.set(null);
     if (!config) {
@@ -46,7 +47,25 @@ export class CodeGeneratorModalComponent implements OnInit {
       return;
     }
     try {
-      const code = this.codeGenService.generate(this.activeTab(), config);
+      let metadata: RandomizationResult['metadata'];
+      const currentResults = this.state.results();
+      if (currentResults && currentResults.metadata.config.seed === config.seed) {
+        metadata = currentResults.metadata;
+      } else {
+        const { generateRandomizationSchema } = await import('../../randomization-engine/core/randomization-algorithm');
+        const { computeAuditHash } = await import('../../randomization-engine/core/crypto-hash');
+        
+        const generatedAt = new Date().toISOString();
+        const schema = generateRandomizationSchema(config);
+        const result: RandomizationResult = {
+          metadata: { protocolId: config.protocolId, studyName: config.studyName, phase: config.phase, seed: config.seed, strata: config.strata, config, generatedAt, auditHash: '' },
+          schema
+        };
+        const auditHash = await computeAuditHash(result);
+        result.metadata.auditHash = auditHash;
+        metadata = result.metadata;
+      }
+      const code = this.codeGenService.generate(this.activeTab(), config, metadata);
       this.generatedCode.set(code);
     } catch (e) {
       console.error('Error generating code:', e);

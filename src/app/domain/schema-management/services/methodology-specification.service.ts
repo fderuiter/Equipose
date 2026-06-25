@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { RandomizationConfig } from '../../core/models/randomization.model';
+import { RandomizationConfig, RandomizationResult } from '../../core/models/randomization.model';
 import { ReportingStrategy } from './reporting/reporting-strategy.interface';
 import { BlockReportingStrategy } from './reporting/block-reporting.strategy';
 import { MinimizationReportingStrategy } from './reporting/minimization-reporting.strategy';
+import { APP_VERSION } from '../../../../environments/version';
 
 /**
  * Generates a formal, human-readable "Randomization Plan & Specifications"
@@ -31,6 +32,35 @@ export class MethodologySpecificationService {
     }
 
     return strategy.generateNarrative(config);
+  }
+
+  /**
+   * Builds the full audit manifest incorporating metadata and the narrative.
+   */
+  generateManifest(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
+    const lines: string[] = [];
+    const ts = metadata?.generatedAt ? new Date(metadata.generatedAt).toISOString() : new Date().toISOString();
+    const hash = metadata?.auditHash || 'PENDING (execute script to generate)';
+    const seed = metadata?.seed || config.seed;
+    
+    lines.push('SCIENTIFIC INTEGRITY MANIFEST');
+    lines.push('=============================');
+    lines.push('Trial Metadata');
+    lines.push(`Protocol ID: ${config.protocolId}`);
+    lines.push(`Study Name: ${config.studyName}`);
+    lines.push(`Phase: ${config.phase}`);
+    lines.push(`App Version: ${APP_VERSION}`);
+    lines.push(`Generated At (ISO 8601): ${ts}`);
+    lines.push('');
+    lines.push('PRNG & Audit');
+    lines.push(`PRNG Algorithm: Mersenne Twister (MT19937)`);
+    lines.push(`PRNG Seed: ${seed}`);
+    lines.push(`SHA-256 Audit Hash: ${hash}`);
+    lines.push('');
+    lines.push('Randomization Methodology');
+    lines.push(this.generateNarrative(config));
+    
+    return lines.join('\n');
   }
 
   // ---------------------------------------------------------------------------
