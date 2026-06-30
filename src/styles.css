@@ -19,6 +19,8 @@
     --border-strong: #d1d5db;
     --invalid-stripe: #fee2e2;
     --invalid-bg: #ffffff;
+    --focus-ring: #4f46e5;
+    --focus-offset: #ffffff;
   }
 
   .dark {
@@ -35,6 +37,8 @@
     --border-strong: #64748b;
     --invalid-stripe: #7f1d1d;
     --invalid-bg: #1e293b;
+    --focus-ring: #818cf8;
+    --focus-offset: #0f172a;
   }
 
   html,
@@ -46,11 +50,11 @@
   }
 
   :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
-    @apply border border-border-strong bg-surface text-main placeholder:text-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/35 focus-visible:border-indigo-500;
+    @apply border border-border-strong bg-surface text-main placeholder:text-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset focus-visible:border-focus-ring;
   }
 
   :where(button, [type='button'], [type='submit'], [type='reset']) {
-    @apply rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/35;
+    @apply rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset;
   }
 }
 
@@ -80,6 +84,8 @@
   --color-border-subtle: var(--border-subtle);
   --color-border-base: var(--border-base);
   --color-border-strong: var(--border-strong);
+  --color-focus-ring: var(--focus-ring);
+  --color-focus-offset: var(--focus-offset);
 
   --text-xs: 0.6076rem;
   --text-sm: 0.7292rem;

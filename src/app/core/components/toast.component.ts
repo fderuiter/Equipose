@@ -67,7 +67,7 @@ import { ToastMessage, ToastService } from '../services/toast.service';
           @if (toast.type === 'error') {
             <button
               type="button"
-              class="flex-shrink-0 rounded focus:outline-none focus:ring-2 focus:ring-rose-400 text-rose-400 hover:text-rose-600 transition-colors"
+              class="flex-shrink-0 rounded text-rose-400 hover:text-rose-600 transition-colors"
               [attr.aria-label]="'Dismiss error: ' + toast.message"
               (click)="toastService.dismiss(toast.id)"
             >
