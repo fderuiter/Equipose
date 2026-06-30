@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
 import { SeoService } from '../../../core/services/seo.service';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 // ---------------------------------------------------------------------------
 // Data model for the diff engine
@@ -31,7 +32,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
     <div class="space-y-8">
 
       <!-- Header -->
-      <div class="bg-surface rounded-xl shadow-sm border border-border-subtle p-6">
+      <div [class]="domainTheme.layout().cardClasses">
         <div class="flex items-center gap-3 mb-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="none"
                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -54,7 +55,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
       </div>
 
       <!-- Upload Zone -->
-      <div class="bg-surface rounded-xl shadow-sm border border-border-subtle p-6">
+      <div [class]="domainTheme.layout().cardClasses">
         <h3 class="text-sm font-semibold text-main mb-4">Upload RTSM Schema File</h3>
 
         <label
@@ -96,15 +97,15 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
         }
 
         @if (status() === 'error') {
-          <div class="mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+          <div class="mt-4 p-4 rounded-lg {{ domainTheme.getSemanticColor('error').bgLightClass }} {{ domainTheme.getSemanticColor('error').borderClass }}"
                data-testid="error-banner">
             <div class="flex items-start gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" fill="none"
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ domainTheme.getSemanticColor('error').textClass }} flex-shrink-0 mt-0.5" fill="none"
                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                       d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
-              <p class="text-sm text-red-700 dark:text-red-300" data-testid="error-message">{{ errorMessage() }}</p>
+              <p class="text-sm {{ domainTheme.getSemanticColor('error').textClass }}" data-testid="error-message">{{ errorMessage() }}</p>
             </div>
           </div>
         }
@@ -112,18 +113,18 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
 
       <!-- Pass Report -->
       @if (status() === 'pass') {
-        <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-6"
+        <div class="rounded-xl p-6 {{ domainTheme.getSemanticColor('success').bgLightClass }} {{ domainTheme.getSemanticColor('success').borderClass }}"
              data-testid="pass-report">
           <div class="flex items-start gap-4">
-            <div class="flex-shrink-0 h-12 w-12 rounded-full bg-emerald-100 dark:bg-emerald-800/40 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-600 dark:text-emerald-400"
+            <div class="flex-shrink-0 h-12 w-12 rounded-full {{ domainTheme.getSemanticColor('success').bgLightClass }} flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 {{ domainTheme.getSemanticColor('success').textLightClass }}"
                    fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-emerald-800 dark:text-emerald-300">RTSM Reproducibility Verified</h3>
-              <p class="mt-1 text-sm text-emerald-700 dark:text-emerald-400">
+              <h3 class="text-lg font-bold {{ domainTheme.getSemanticColor('success').textClass }}">RTSM Reproducibility Verified</h3>
+              <p class="mt-1 text-sm {{ domainTheme.getSemanticColor('success').textClass }}">
                 The provided PRNG seed perfectly reconstructs the uploaded RTSM schema with 100% mathematical
                 accuracy across all <strong>{{ uploadedSchema().length }}</strong> subjects.
               </p>
@@ -135,17 +136,17 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
       <!-- Fail Report -->
       @if (status() === 'fail') {
         <div class="space-y-4" data-testid="fail-report">
-          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
+          <div class="rounded-xl p-6 {{ domainTheme.getSemanticColor('error').bgLightClass }} {{ domainTheme.getSemanticColor('error').borderClass }}">
             <div class="flex items-start gap-4">
-              <div class="flex-shrink-0 h-12 w-12 rounded-full bg-red-100 dark:bg-red-800/40 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-red-600 dark:text-red-400"
+              <div class="flex-shrink-0 h-12 w-12 rounded-full {{ domainTheme.getSemanticColor('error').bgLightClass }} flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 {{ domainTheme.getSemanticColor('error').textLightClass }}"
                      fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-red-800 dark:text-red-300">RTSM Reproducibility Failed</h3>
-                <p class="mt-1 text-sm text-red-700 dark:text-red-400">
+                <h3 class="text-lg font-bold {{ domainTheme.getSemanticColor('error').textClass }}">RTSM Reproducibility Failed</h3>
+                <p class="mt-1 text-sm {{ domainTheme.getSemanticColor('error').textClass }}">
                   {{ discrepancies().length }} discrepancy(ies) were found between the uploaded RTSM schema
                   and the freshly generated schema. Review the mismatch log below.
                 </p>
@@ -154,7 +155,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
           </div>
 
           <!-- Discrepancy Table -->
-          <div class="bg-surface rounded-xl shadow-sm border border-border-subtle overflow-hidden"
+          <div class="{{ domainTheme.layout().cardBase }} {{ domainTheme.layout().borderRadius }} overflow-hidden"
                data-testid="discrepancy-table">
             <div class="px-6 py-4 border-b border-border-subtle">
               <h4 class="text-sm font-semibold text-main">RTSM Audit Mismatch Log</h4>
@@ -176,8 +177,8 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
                       <td class="px-6 py-3 tabular-nums text-gray-700 dark:text-slate-300">{{ d.rowIndex + 1 }}</td>
                       <td class="px-6 py-3 font-mono text-gray-700 dark:text-slate-300">{{ d.subjectId }}</td>
                       <td class="px-6 py-3 text-muted">{{ d.field }}</td>
-                      <td class="px-6 py-3 text-emerald-700 dark:text-emerald-400">{{ d.expected }}</td>
-                      <td class="px-6 py-3 text-red-700 dark:text-red-400">{{ d.actual }}</td>
+                      <td class="px-6 py-3 {{ domainTheme.getSemanticColor('success').textClass }}">{{ d.expected }}</td>
+                      <td class="px-6 py-3 {{ domainTheme.getSemanticColor('error').textClass }}">{{ d.actual }}</td>
                     </tr>
                   }
                 </tbody>
@@ -200,6 +201,8 @@ export class SchemaVerificationComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly discrepancies = signal<RowDiscrepancy[]>([]);
   readonly uploadedSchema = signal<GeneratedSchema[]>([]);
+
+  public readonly domainTheme = inject(DomainThemeService);
 
   constructor() {
     inject(SeoService).setPage({

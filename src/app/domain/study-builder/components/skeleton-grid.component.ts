@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 /**
  * SkeletonGridComponent
@@ -16,7 +17,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
     <div class="animate-pulse space-y-4" data-testid="skeleton-grid" aria-busy="true" aria-label="Generating schema…">
 
       <!-- ── Analytics placeholders ──────────────────────────────────── -->
-      <div class="bg-surface rounded-xl shadow-sm border border-border-subtle p-6">
+      <div [class]="domainTheme.layout().cardClasses">
         <!-- Header bar -->
         <div class="h-4 w-40 rounded-md bg-gray-200 dark:bg-slate-700 mb-6"></div>
 
@@ -62,7 +63,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       </div>
 
       <!-- ── Table skeleton ───────────────────────────────────────────── -->
-      <div class="bg-surface rounded-xl shadow-sm border border-border-subtle overflow-hidden">
+      <div [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' overflow-hidden'">
 
         <!-- Toolbar / action bar stub -->
         <div class="px-6 py-4 border-b border-border-subtle flex items-center justify-between">
@@ -113,6 +114,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   `
 })
 export class SkeletonGridComponent {
+  public readonly domainTheme = inject(DomainThemeService);
+
   /** Used only to drive the @for loop for bar-chart x-axis label stubs. */
   readonly barLabels = [1, 2, 3, 4, 5];
 

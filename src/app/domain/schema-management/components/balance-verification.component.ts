@@ -1,3 +1,4 @@
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
@@ -44,15 +45,15 @@ export interface MarginalBalanceRow {
         <div class="flex flex-wrap items-center gap-4 text-xs text-muted">
           <span class="font-semibold text-gray-700 dark:text-slate-300">Legend:</span>
           <span class="inline-flex items-center gap-1.5">
-            <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
+            <span class="inline-block w-3 h-3 rounded-full {{ domainTheme.getSemanticColor('success').bgClass }}"></span>
             Perfect balance
           </span>
           <span class="inline-flex items-center gap-1.5">
-            <span class="inline-block w-3 h-3 rounded-full bg-amber-400"></span>
+            <span class="inline-block w-3 h-3 rounded-full {{ domainTheme.getSemanticColor('warning').bgClass }}"></span>
             @if (isMinimization()) { Expected marginal deviation } @else { Expected deviation (incomplete block) }
           </span>
           <span class="inline-flex items-center gap-1.5">
-            <span class="inline-block w-3 h-3 rounded-full bg-red-500"></span>
+            <span class="inline-block w-3 h-3 rounded-full {{ domainTheme.getSemanticColor('error').bgClass }}"></span>
             Critical error - investigate
           </span>
           <span class="ml-auto text-muted italic">
@@ -61,7 +62,7 @@ export interface MarginalBalanceRow {
         </div>
 
         <!-- ── Global Balance ─────────────────────────────────────────── -->
-        <section class="bg-surface rounded-xl shadow-sm border border-border-subtle overflow-hidden">
+        <section [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' overflow-hidden'">
           <div class="px-6 py-4 border-b border-border-subtle">
             <h3 class="text-sm font-semibold text-main">Global Balance</h3>
             <p class="text-xs text-muted mt-0.5">
@@ -101,7 +102,7 @@ export interface MarginalBalanceRow {
 
         <!-- ── Per-Site Balance ───────────────────────────────────────── -->
         @if (siteRows().length > 0) {
-          <section class="bg-surface rounded-xl shadow-sm border border-border-subtle overflow-hidden">
+          <section [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' overflow-hidden'">
             <div class="px-6 py-4 border-b border-border-subtle">
               <h3 class="text-sm font-semibold text-main">Balance by Site</h3>
               <p class="text-xs text-muted mt-0.5">
@@ -186,7 +187,7 @@ export interface MarginalBalanceRow {
 
         <!-- ── Per-Stratum Balance ────────────────────────────────────── -->
         @if (!isMinimization() && stratumRows().length > 0) {
-          <section class="bg-surface rounded-xl shadow-sm border border-border-subtle overflow-hidden">
+          <section [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' overflow-hidden'">
             <div class="px-6 py-4 border-b border-border-subtle">
               <h3 class="text-sm font-semibold text-main">Balance by Stratum</h3>
               <p class="text-xs text-muted mt-0.5">
@@ -247,6 +248,7 @@ export interface MarginalBalanceRow {
   `,
 })
 export class BalanceVerificationComponent {
+  public readonly domainTheme = inject(DomainThemeService);
   protected readonly state = inject(RandomizationEngineFacade);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -424,9 +426,9 @@ export class BalanceVerificationComponent {
 
   cellClass(status: 0 | 1 | 2): string {
     switch (status) {
-      case 0: return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300';
-      case 1: return 'bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300';
-      case 2: return 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300';
+      case 0: return `${this.domainTheme.getSemanticColor('success').bgLightClass} ${this.domainTheme.getSemanticColor('success').textClass}`;
+      case 1: return `${this.domainTheme.getSemanticColor('warning').bgLightClass} ${this.domainTheme.getSemanticColor('warning').textClass}`;
+      case 2: return `${this.domainTheme.getSemanticColor('error').bgLightClass} ${this.domainTheme.getSemanticColor('error').textClass}`;
     }
   }
 

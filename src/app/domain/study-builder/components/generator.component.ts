@@ -11,6 +11,7 @@ import { BalanceVerificationComponent } from '../../schema-management/components
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { SeoService } from '../../../core/services/seo.service';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 type ResultsTab = 'grid' | 'balance';
 
@@ -30,7 +31,7 @@ type ResultsTab = 'grid' | 'balance';
   template: `
     <div class="space-y-8" data-testid="generator-page">
       <!-- Intro -->
-      <div class="bg-surface rounded-xl shadow-sm border border-border-subtle p-6">
+      <div [class]="domainTheme.layout().cardClasses">
         <div class="flex items-start justify-between gap-4 mb-3">
           <h2 class="text-lg font-semibold text-main" data-testid="generator-heading">Build Your RTSM Randomization Schema</h2>
           <a routerLink="/about"
@@ -116,7 +117,7 @@ type ResultsTab = 'grid' | 'balance';
               } @else {
                 <!-- Mobile: text-based analytics summary -->
                 @if (state.results(); as data) {
-                  <div data-testid="mobile-analytics-summary" class="bg-surface rounded-xl shadow-sm border border-border-subtle p-4 space-y-2">
+                  <div data-testid="mobile-analytics-summary" [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' p-4 space-y-2'">
                     <h3 class="text-sm font-semibold text-main">Schema Summary</h3>
                     <ul class="text-sm text-gray-700 dark:text-slate-300 space-y-1">
                       <li><span class="font-medium">Protocol:</span> {{data.metadata.protocolId}}</li>
@@ -158,6 +159,7 @@ type ResultsTab = 'grid' | 'balance';
 export class GeneratorComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   public readonly viewport = inject(ViewportService);
+  public readonly domainTheme = inject(DomainThemeService);
   private readonly document = inject(DOCUMENT);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

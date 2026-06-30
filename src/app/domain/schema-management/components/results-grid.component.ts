@@ -13,6 +13,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
 import { ExcelExportService } from '../services/excel-export.service';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
@@ -70,6 +71,7 @@ export class ResultsGridComponent {
   public state = inject(RandomizationEngineFacade);
   public viewState = inject(SchemaViewStateService);
   public readonly viewport = inject(ViewportService);
+  public readonly domainTheme = inject(DomainThemeService);
   private readonly toast = inject(ToastService);
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly excelExport = inject(ExcelExportService);

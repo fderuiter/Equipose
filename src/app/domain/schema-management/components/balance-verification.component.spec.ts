@@ -214,8 +214,8 @@ describe('BalanceVerificationComponent', () => {
     expect(component.cellClass(1)).toContain('amber');
   });
 
-  it('cellClass should return red for status 2', () => {
-    expect(component.cellClass(2)).toContain('red');
+  it('cellClass should return error semantic color for status 2', () => {
+    expect(component.cellClass(2)).toContain('rose');
   });
 
   it('tooltipText should mention "Perfect balance" for status 0', () => {
