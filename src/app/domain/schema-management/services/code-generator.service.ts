@@ -17,12 +17,11 @@ import { MethodologySpecificationService } from './methodology-specification.ser
 export const CODE_GENERATION_STRATEGIES = new InjectionToken<CodeGenerationStrategy[]>('CODE_GENERATION_STRATEGIES', {
   providedIn: 'root',
   factory: () => {
-    const methodologySpec = inject(MethodologySpecificationService);
     return [
-      new RStrategy(methodologySpec),
-      new PythonStrategy(methodologySpec),
-      new SasStrategy(methodologySpec),
-      new StataStrategy(methodologySpec)
+      new RStrategy(),
+      new PythonStrategy(),
+      new SasStrategy(),
+      new StataStrategy()
     ];
   }
 });
@@ -30,6 +29,7 @@ export const CODE_GENERATION_STRATEGIES = new InjectionToken<CodeGenerationStrat
 @Injectable({ providedIn: 'root' })
 export class CodeGeneratorService {
   private strategies = inject(CODE_GENERATION_STRATEGIES, { optional: true }) || [];
+  private methodologySpec = inject(MethodologySpecificationService);
 
   /**
    * Phase 0 – Language dispatch entry point.
@@ -50,9 +50,19 @@ export class CodeGeneratorService {
       output = strategy.generate(config, metadata);
     }
 
+    let header = '';
+    const manifest = this.methodologySpec.generateManifest(config, metadata);
+    if (language === 'R' || language === 'Python') {
+      header = this.methodologySpec.formatAsLineComments(manifest, '#');
+    } else {
+      header = this.methodologySpec.formatAsSasComment(manifest);
+    }
+
+    const finalOutput = `${header}\n\n${output}`;
+
     // Static mapping guard runs after generation
-    StaticMappingGuard.verify(language, config, output);
-    return output;
+    StaticMappingGuard.verify(language, config, finalOutput);
+    return finalOutput;
   }
 
   /**

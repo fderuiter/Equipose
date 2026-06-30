@@ -14,8 +14,8 @@ export class StaticMappingGuard {
     // 2. Verify Arms
     for (const arm of config.arms || []) {
       let armNameStr = arm.name;
-      if (language === 'R') armNameStr = FormattingUtil.escapeRString(arm.name);
-      else if (language === 'Python') armNameStr = FormattingUtil.escapePythonString(arm.name);
+      if (language === 'R') armNameStr = FormattingUtil.escapeString(arm.name);
+      else if (language === 'Python') armNameStr = FormattingUtil.escapeString(arm.name);
       else if (language === 'SAS') armNameStr = FormattingUtil.escapeSasString(arm.name);
       else if (language === 'STATA') armNameStr = FormattingUtil.stataLabelQuote(arm.name);
 
@@ -40,8 +40,8 @@ export class StaticMappingGuard {
 
       for (const level of stratum.levels || []) {
         let levelStr = level;
-        if (language === 'R') levelStr = FormattingUtil.escapeRString(level);
-        else if (language === 'Python') levelStr = FormattingUtil.escapePythonString(level);
+        if (language === 'R') levelStr = FormattingUtil.escapeString(level);
+        else if (language === 'Python') levelStr = FormattingUtil.escapeString(level);
         else if (language === 'SAS') levelStr = FormattingUtil.escapeSasString(level);
         else if (language === 'STATA') levelStr = FormattingUtil.stataLabelQuote(level);
 

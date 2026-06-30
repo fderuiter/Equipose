@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CodeTranspiler } from './transpiler';
+import { RStrategy } from '../r.strategy';
+import { PythonStrategy } from '../python.strategy';
+import { SasStrategy } from '../sas.strategy';
+import { StataStrategy } from '../stata.strategy';
 import { RandomizationConfig } from '../../../../core/models/randomization.model';
 import { execSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
@@ -15,18 +18,23 @@ describe('CodeTranspiler Metadata Validation', () => {
     sites: ['Site 1'],
     strata: [],
     blockSizes: [2],
-        stratumCaps: [{ levelIds: {}, cap: 4 }],
+    stratumCaps: [{ levelIds: {}, cap: 4 }],
     seed: 'test-seed',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'BLOCK'
   };
 
-  const languages = ['R', 'Python', 'SAS', 'STATA'] as const;
+  const strategies = [
+    new RStrategy(),
+    new PythonStrategy(),
+    new SasStrategy(),
+    new StataStrategy()
+  ];
 
-  languages.forEach(lang => {
-    describe(`${lang} Metadata`, () => {
-      it(`should contain the expected version header and provenance for ${lang}`, () => {
-        const code = CodeTranspiler.transpile(lang, mockConfig, 'BLOCK');
+  strategies.forEach(strategy => {
+    describe(`${strategy.language} Metadata`, () => {
+      it(`should contain the expected version header and provenance for ${strategy.language}`, () => {
+        const code = strategy.generate(mockConfig);
 
         // Assert Protocol ID
         expect(code).toContain('Protocol: TEST-PROT-001');
@@ -53,7 +61,8 @@ describe('CodeTranspiler Metadata Validation', () => {
       stratumBlockOverrides: undefined,
       minimizationConfig: { totalSampleSize: 100, p: 0.8 }
     } as RandomizationConfig;
-    const code = CodeTranspiler.transpile('Python', minConfig, 'MINIMIZATION');
+    const pythonStrategy = new PythonStrategy();
+    const code = pythonStrategy.generateMinimization(minConfig);
     expect(code).toContain('Algorithm: Pocock-Simon Minimization');
   });
 
@@ -85,7 +94,8 @@ describe('CodeTranspiler Metadata Validation', () => {
         randomizationMethod: 'BLOCK'
       };
 
-      const code = CodeTranspiler.transpile('Python', weirdConfig, 'BLOCK');
+      const pythonStrategy = new PythonStrategy();
+      const code = pythonStrategy.generate(weirdConfig);
 
       // Basic assertions that escaping is happening for some known fields
       expect(code).toContain('Arm \\"A\\" (Alpha)');
@@ -137,7 +147,8 @@ describe('CodeTranspiler Metadata Validation', () => {
         randomizationMethod: 'BLOCK'
       };
 
-      const code = CodeTranspiler.transpile('R', weirdConfig, 'BLOCK');
+      const rStrategy = new RStrategy();
+      const code = rStrategy.generate(weirdConfig);
 
       // Assert escaping of values
       expect(code).toContain('Arm \\"A\\" (Alpha)');
