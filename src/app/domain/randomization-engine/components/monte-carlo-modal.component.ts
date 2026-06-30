@@ -68,9 +68,9 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
               <span class="text-sm font-medium text-gray-700 dark:text-slate-300">Simulating trials…</span>
               <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ facade.monteCarloProgress() }}%</span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden" aria-hidden="true">
+            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600" aria-hidden="true">
                   <div
-                    class="bg-indigo-600 dark:bg-indigo-500 h-3 rounded-full transition-all duration-300 ease-out"
+                    class="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300 ease-out border-r-2 border-indigo-700 dark:border-indigo-400"
                     [style.width.%]="facade.monteCarloProgress()"
                     data-testid="mc-progress-bar"
                   ></div>
@@ -119,9 +119,9 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
                       <!-- Expected bar -->
                       <div class="flex items-center gap-2">
                         <span class="text-xs w-20 text-right text-disabled">Expected</span>
-                        <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden">
+                        <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                           <div
-                            class="bg-indigo-300 dark:bg-indigo-600/60 h-4 rounded-full transition-all duration-500"
+                            class="bg-indigo-300 dark:bg-indigo-600/60 h-full rounded-full transition-all duration-500 border-r border-indigo-400 dark:border-indigo-400"
                             [style.width.%]="barWidth(arm.expectedCount, results.totalSubjectsSimulated)"
                           ></div>
                         </div>
@@ -130,9 +130,9 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
                       <!-- Actual bar -->
                       <div class="flex items-center gap-2">
                         <span class="text-xs w-20 text-right text-disabled">Actual</span>
-                        <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden">
+                        <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                           <div
-                            class="bg-indigo-600 dark:bg-indigo-400 h-4 rounded-full transition-all duration-500"
+                            class="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all duration-500 border-r border-indigo-700 dark:border-indigo-200"
                             [style.width.%]="barWidth(arm.actualCount, results.totalSubjectsSimulated)"
                           ></div>
                         </div>
@@ -142,9 +142,9 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
                       @if (results.attritionRate > 0) {
                         <div class="flex items-center gap-2">
                           <span class="text-xs w-20 text-right text-purple-500 dark:text-purple-400">Retained</span>
-                          <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden">
+                          <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                             <div
-                              class="bg-purple-500 dark:bg-purple-400 h-4 rounded-full transition-all duration-500"
+                              class="bg-purple-500 dark:bg-purple-400 h-full rounded-full transition-all duration-500 border-r border-purple-700 dark:border-purple-200"
                               [style.width.%]="barWidth(arm.retainedCount, results.totalRetainedSubjects)"
                               data-testid="mc-retained-bar"
                             ></div>

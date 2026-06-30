@@ -70,7 +70,7 @@ async function assertInputAndButtonReadable(input: Locator, button: Locator): Pr
   expect(buttonStyle.borderRadius).not.toBe('0px');
 }
 
-async function runTransientStateChecks(page: Page, mode: 'light' | 'dark'): Promise<void> {
+async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
   await openGenerator(page);
   if (mode === 'dark') await applyDarkMode(page);
 
@@ -127,7 +127,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark'): Prom
   await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, { maxDiffPixels: 200 });
 }
 
-async function runThemeCoverage(page: Page, mode: 'light' | 'dark'): Promise<void> {
+async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
   await page.goto('http://localhost:4200');
   if (mode === 'dark') await applyDarkMode(page);
   await assertLandingVisible(page);
@@ -193,5 +193,21 @@ test.describe('Accessibility and visual regression - dark mode', () => {
 
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'dark');
+  });
+});
+
+test.describe('Accessibility and visual regression - high contrast mode', () => {
+  test.use({ forcedColors: 'active', colorScheme: 'dark' });
+
+  test.beforeEach(async ({ page }) => {
+    page.on('pageerror', err => console.log(`Page Error: ${err.message}`));
+  });
+
+  test('pages should pass accessibility, visibility, and screenshot baselines', async ({ page }) => {
+    await runThemeCoverage(page, 'high-contrast');
+  });
+
+  test('transient states should remain visible and accessible', async ({ page }) => {
+    await runTransientStateChecks(page, 'high-contrast');
   });
 });
