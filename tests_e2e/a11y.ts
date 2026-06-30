@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 
 /**
  * Runs an axe-core accessibility audit against the current page state.
@@ -43,3 +43,44 @@ export async function checkA11y(page: Page, includeSelector?: string) {
 
   return results;
 }
+
+/**
+ * FocusTrapPlugin simulates Tab-key loops to verify focus containment within transient overlays.
+ */
+export class FocusTrapPlugin {
+  /**
+   * Verifies that focus remains contained within the specified container
+   * during forward and backward Tab cycles.
+   */
+  static async verifyFocusContainment(page: Page, container: Locator, maxTabs = 15): Promise<void> {
+    // Forward Tab loop
+    let focusEscaped = false;
+    for (let i = 0; i < maxTabs; i++) {
+      await page.keyboard.press('Tab');
+      const isContained = await container.evaluate(node => node.contains(document.activeElement) || node === document.activeElement);
+      if (!isContained) {
+        focusEscaped = true;
+        break;
+      }
+    }
+    
+    if (focusEscaped) {
+      throw new Error(`Accessibility audit failed: Overlay detected without an active focus trap. Focus escaped during forward Tab loop.`);
+    }
+
+    // Backward Shift+Tab loop
+    for (let i = 0; i < maxTabs; i++) {
+      await page.keyboard.press('Shift+Tab');
+      const isContained = await container.evaluate(node => node.contains(document.activeElement) || node === document.activeElement);
+      if (!isContained) {
+        focusEscaped = true;
+        break;
+      }
+    }
+
+    if (focusEscaped) {
+      throw new Error(`Accessibility audit failed: Overlay detected without an active focus trap. Focus escaped during backward Shift+Tab loop.`);
+    }
+  }
+}
+

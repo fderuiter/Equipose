@@ -1,5 +1,5 @@
 import { test, expect, Locator, Page } from '@playwright/test';
-import { checkA11y } from './a11y';
+import { checkA11y, FocusTrapPlugin } from './a11y';
 import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator } from './generator-helpers';
 
 const screenshotOptions = { fullPage: true, maxDiffPixels: 200 } as const;
@@ -100,16 +100,36 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await page.getByRole('button', { name: /^Next$/i }).first().click();
   await page.getByRole('button', { name: /^Next$/i }).first().click();
   await expect(page.getByRole('button', { name: /Run Statistical QA/i })).toBeVisible();
-  await page.getByRole('button', { name: /Generate Code/i }).click();
+
+  // Test dropdown menu focus trap and restore
+  const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
+  await generateCodeBtn.click();
+  await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
+  const dropdownMenu = page.locator('.origin-bottom-right[role="menu"]').locator('..');
+  // wait for it to be ready
+  await page.waitForTimeout(100);
+  await FocusTrapPlugin.verifyFocusContainment(page, dropdownMenu, 5);
+  await page.keyboard.press('Escape');
+  // check focus restored
+  await expect(generateCodeBtn).toBeFocused();
+
+  // Now open code generator modal and test it
+  await generateCodeBtn.click();
   await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
   await page.getByRole('menuitem', { name: /R Script/i }).click();
   const modal = page.locator('div[role="dialog"]');
   await expect(modal).toBeVisible();
   await expect(modal.getByTestId('generated-code')).toBeVisible();
+  // Verify focus trap
+  await page.waitForTimeout(100);
+  await FocusTrapPlugin.verifyFocusContainment(page, modal, 8);
+  
   await checkA11y(page, 'div[role="dialog"]');
   await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, screenshotOptions);
   await modal.getByRole('button', { name: /Close/i }).first().click();
   await expect(modal).toBeHidden();
+  // check focus restored
+  await expect(generateCodeBtn).toBeFocused();
 
   await page.getByRole('button', { name: /Generate Schema/i }).click();
   const resultsSection = page.locator('#results-section');
@@ -133,6 +153,17 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await assertLandingVisible(page);
   await checkA11y(page);
   await expect(page).toHaveScreenshot(`landing-${mode}.png`, screenshotOptions);
+
+  // Test theme menu focus trap
+  const themeToggleBtn = page.getByRole('button', { name: /Toggle colour theme/i }).first();
+  await themeToggleBtn.click();
+  const themeMenu = page.getByRole('menu', { name: /Choose colour theme/i });
+  await expect(themeMenu).toBeVisible();
+  await page.waitForTimeout(100);
+  await FocusTrapPlugin.verifyFocusContainment(page, themeMenu, 5);
+  await page.keyboard.press('Escape');
+  await expect(themeMenu).toBeHidden();
+  await expect(themeToggleBtn).toBeFocused();
 
   await page.goto('http://localhost:4200/about');
   if (mode === 'dark') await applyDarkMode(page);
