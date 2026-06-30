@@ -9,7 +9,7 @@ import { DialogModule } from '@angular/cdk/dialog';
 import { ToastService } from '../../core/services/toast.service';
 
 /** Flush all pending microtasks so async signals settle. */
-const flushMicrotasks = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
+const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
 
 const mockConfig: RandomizationConfig = {
   protocolId: 'PARITY-TEST',

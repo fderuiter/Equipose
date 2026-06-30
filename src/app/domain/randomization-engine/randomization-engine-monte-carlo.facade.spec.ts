@@ -8,7 +8,7 @@ import { vi } from 'vitest';
 import type { MonteCarloProgressPayload, MonteCarloSuccessPayload } from './worker/worker-protocol';
 
 /** Flush all pending microtasks so async signals settle. */
-const flushMicrotasks = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
+const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared fixtures
