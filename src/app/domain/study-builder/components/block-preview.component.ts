@@ -1,5 +1,6 @@
 import { Component, computed, Input, ChangeDetectionStrategy, signal } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { PRECISION_SCALE } from '../../../core/constants/precision.config';
 
 /** One arm's data passed from the parent. */
 export interface ArmInput {
@@ -58,7 +59,8 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
 
       if (isValid) {
         arms.forEach((arm, idx) => {
-          const count = Math.round((arm.ratio / totalRatio) * blockSize);
+          const proportionScaled = Math.round((arm.ratio / totalRatio) * PRECISION_SCALE);
+          const count = Math.round((proportionScaled * blockSize) / PRECISION_SCALE);
           for (let i = 0; i < count; i++) {
             slots.push({
               bgClass: ARM_COLORS[idx % ARM_COLORS.length],
@@ -73,7 +75,8 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
         let rendered = 0;
         arms.forEach((arm, idx) => {
           if (rendered >= cleanCount) return;
-          const count = Math.round((arm.ratio / totalRatio) * cleanCount);
+          const proportionScaled = Math.round((arm.ratio / totalRatio) * PRECISION_SCALE);
+          const count = Math.round((proportionScaled * cleanCount) / PRECISION_SCALE);
           for (let i = 0; i < count && rendered < cleanCount; i++) {
             slots.push({
               bgClass: ARM_COLORS[idx % ARM_COLORS.length],

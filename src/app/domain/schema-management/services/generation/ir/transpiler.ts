@@ -5,6 +5,7 @@ import { ReproducibilityUtil } from '../reproducibility.util';
 import { R_TEMPLATE, SAS_TEMPLATE, PYTHON_TEMPLATE, STATA_TEMPLATE } from './templates';
 import { LogicIR, LogicIRTask } from './ir.model';
 import { APP_VERSION } from '../../../../../../environments/version';
+import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
 
 export class CodeTranspiler {
   
@@ -139,7 +140,9 @@ export class CodeTranspiler {
       appVersion: APP_VERSION,
       dateStr,
       algorithm,
-      seedHash: ir.seedHash
+      seedHash: ir.seedHash,
+      precisionScale: PRECISION_SCALE,
+      precisionEpsilon: PRECISION_EPSILON
     };
 
     let algorithmicLogic = '';
@@ -275,7 +278,7 @@ export class CodeTranspiler {
       data['strataComments'] = strataComments.trim();
       data['ratios'] = config.arms.map(a => a.ratio).join(', ');
 
-      data['minimizationParam'] = method === 'MINIMIZATION' ? `local p_minimization = round(${config.minimizationConfig?.p || 0.8}, 1e-6) // Stata 1e-6 precision handled` : '';
+      data['minimizationParam'] = method === 'MINIMIZATION' ? `local p_minimization = round(${config.minimizationConfig?.p || 0.8}, ${PRECISION_EPSILON}) // Stata ${PRECISION_EPSILON} precision handled` : '';
       
       let blockSizesParam = '';
       if (method === 'BLOCK') {

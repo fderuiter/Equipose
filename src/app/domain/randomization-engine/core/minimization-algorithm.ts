@@ -1,4 +1,5 @@
 import { RandomizationConfig, GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
+import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../core/constants/precision.config';
 import { generateSubjectId } from './subject-id-engine';
 import { SubjectRegistry } from './subject-registry';
 
@@ -35,41 +36,39 @@ function sampleLevel(
   }
 
   const probs = new Array<number>(expectedProbabilities.length);
-  const EPSILON = 1e-9;
-  const SCALE = 1000000000000;
 
-  if (explicitSum > 1.0 + EPSILON) {
+  if (explicitSum > 1.0 + PRECISION_EPSILON) {
     for (let i = 0; i < expectedProbabilities.length; i++) {
       const p = expectedProbabilities[i];
-      probs[i] = p !== undefined && p > 0 ? Math.round((p / explicitSum) * SCALE) : 0;
+      probs[i] = p !== undefined && p > 0 ? Math.round((p / explicitSum) * PRECISION_SCALE) : 0;
     }
-  } else if (Math.abs(explicitSum - 1.0) <= EPSILON) {
+  } else if (Math.abs(explicitSum - 1.0) <= PRECISION_EPSILON) {
     for (let i = 0; i < expectedProbabilities.length; i++) {
       const p = expectedProbabilities[i];
-      probs[i] = p !== undefined && p > 0 ? Math.round(p * SCALE) : 0;
+      probs[i] = p !== undefined && p > 0 ? Math.round(p * PRECISION_SCALE) : 0;
     }
-  } else if (explicitSum > EPSILON && explicitSum < 1.0 - EPSILON) {
+  } else if (explicitSum > PRECISION_EPSILON && explicitSum < 1.0 - PRECISION_EPSILON) {
     if (undefinedCount > 0) {
       const remainder = 1.0 - explicitSum;
       const share = remainder / undefinedCount;
       for (let i = 0; i < expectedProbabilities.length; i++) {
         const p = expectedProbabilities[i];
-        probs[i] = p !== undefined && p > 0 ? Math.round(p * SCALE) : (p === undefined ? Math.round(share * SCALE) : 0);
+        probs[i] = p !== undefined && p > 0 ? Math.round(p * PRECISION_SCALE) : (p === undefined ? Math.round(share * PRECISION_SCALE) : 0);
       }
     } else {
       for (let i = 0; i < expectedProbabilities.length; i++) {
         const p = expectedProbabilities[i];
-        probs[i] = p !== undefined && p > 0 ? Math.round((p / explicitSum) * SCALE) : 0;
+        probs[i] = p !== undefined && p > 0 ? Math.round((p / explicitSum) * PRECISION_SCALE) : 0;
       }
     }
   } else {
     const share = 1.0 / levels.length;
     for (let i = 0; i < levels.length; i++) {
-      probs[i] = Math.round(share * SCALE);
+      probs[i] = Math.round(share * PRECISION_SCALE);
     }
   }
 
-  // To fix floating point rounding where sum might not be exactly SCALE
+  // To fix floating point rounding where sum might not be exactly PRECISION_SCALE
   let totalScaled = 0;
   for (const p of probs) totalScaled += p;
 
@@ -370,8 +369,8 @@ export function generateMinimization(
     if (preferred.length === arms.length || nonPreferred.length === 0) {
       assignedArm = selectWeightedArm(preferred);
     } else {
-      const r = Math.floor(rng() * 1000000000000);
-      const pScaled = Math.round(p * 1000000000000);
+      const r = Math.floor(rng() * PRECISION_SCALE);
+      const pScaled = Math.round(p * PRECISION_SCALE);
       if (r < pScaled) {
         assignedArm = selectWeightedArm(preferred);
       } else {

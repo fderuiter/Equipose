@@ -9,6 +9,10 @@ set.seed({{seedHash}})
 # Ratios: {{ratios}}
 {{strataComments}}
 
+# --- PRECISION CONSTANTS ---
+PRECISION_SCALE <- {{precisionScale}}
+PRECISION_EPSILON <- {{precisionEpsilon}}
+
 # --- SINGLE-SOURCE TRANSPILED LOGIC ---
 {{minimizationParam}}
 schema_list <- list()
@@ -30,6 +34,10 @@ export const SAS_TEMPLATE = `
 %let strata_factors = {{strataFactors}};
 /* Ratios: {{ratios}} */
 {{strataComments}}
+
+/* --- PRECISION CONSTANTS --- */
+%let PRECISION_SCALE = {{precisionScale}};
+%let PRECISION_EPSILON = {{precisionEpsilon}};
 
 /* --- SINGLE-SOURCE TRANSPILED LOGIC --- */
 %let MAX_SITES = 1000; /* SAS site-limit constraint workaround */
@@ -57,6 +65,10 @@ rng = np.random.Generator(mt19937)
 # Ratios: {{ratios}}
 {{strataComments}}
 
+# --- PRECISION CONSTANTS ---
+PRECISION_SCALE = {{precisionScale}}
+PRECISION_EPSILON = {{precisionEpsilon}}
+
 # --- SINGLE-SOURCE TRANSPILED LOGIC ---
 {{minimizationParam}}
 {{algorithmicLogic}}
@@ -74,6 +86,10 @@ set seed {{seedHash}}
 {{armsVars}}
 {{strataComments}}
 * Ratios: {{ratios}}
+
+* --- PRECISION CONSTANTS ---
+local PRECISION_SCALE = {{precisionScale}}
+local PRECISION_EPSILON = {{precisionEpsilon}}
 
 * --- SINGLE-SOURCE TRANSPILED LOGIC ---
 local missing_val = . /* Stata missing value constant workaround */
