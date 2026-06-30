@@ -1,7 +1,5 @@
 import { StratificationFactor, StratumCap } from '../../core/models/randomization.model';
-
-const SCALE = 1000000000000n;
-const SCALE_NUM = Number(SCALE);
+import { PRECISION_SCALE, PRECISION_SCALE_BIGINT } from '../../../core/constants/precision.config';
 
 /**
  * Validates that every stratification factor's level percentages sum to exactly 100.
@@ -76,32 +74,32 @@ export function computeProportionalCaps(
 
   const capInt = Math.floor(globalCap);
   const capFrac = globalCap - capInt;
-  const globalCapScaled = BigInt(capInt) * SCALE + BigInt(Math.round(capFrac * SCALE_NUM));
+  const globalCapScaled = BigInt(capInt) * PRECISION_SCALE_BIGINT + BigInt(Math.round(capFrac * PRECISION_SCALE));
 
   // Step 1: Compute the theoretical (real-valued) target for each intersection.
   const entries = combinations.map(combo => {
-    let probability = SCALE;
+    let probability = PRECISION_SCALE_BIGINT;
     
     for (const factor of strata) {
       const levelName = combo[factor.id];
       const pct = percentages[factor.id]?.[levelName] ?? 0;
-      const pctBig = BigInt(Math.round(pct * SCALE_NUM));
-      probability = (probability * pctBig) / (100n * SCALE);
+      const pctBig = BigInt(Math.round(pct * PRECISION_SCALE));
+      probability = (probability * pctBig) / (100n * PRECISION_SCALE_BIGINT);
     }
 
-    const theoreticalValue = (probability * globalCapScaled) / SCALE;
+    const theoreticalValue = (probability * globalCapScaled) / PRECISION_SCALE_BIGINT;
     
-    let flooredBig = theoreticalValue / SCALE;
-    let remainderBig = theoreticalValue % SCALE;
+    let flooredBig = theoreticalValue / PRECISION_SCALE_BIGINT;
+    let remainderBig = theoreticalValue % PRECISION_SCALE_BIGINT;
     if (remainderBig < 0n) {
       flooredBig -= 1n;
-      remainderBig += SCALE;
+      remainderBig += PRECISION_SCALE_BIGINT;
     }
     
     const floored = Number(flooredBig);
     const remainder = Number(remainderBig);
     
-    return { levelIds: combo, theoreticalValue: Number(theoreticalValue) / SCALE_NUM, floored, remainder, finalCap: floored };
+    return { levelIds: combo, theoreticalValue: Number(theoreticalValue) / PRECISION_SCALE, floored, remainder, finalCap: floored };
   });
 
   // Step 2: Distribute remaining seats to the intersections with the largest remainders.
