@@ -22,7 +22,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
   imports: [A11yValidationDirective],
   template: `
     <div
-      class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 cursor-text transition-colors"
+      class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2 focus-within:ring-offset-focus-offset cursor-text transition-colors"
       (click)="tagInput.focus()" (keydown.enter)="tagInput.focus()" tabindex="0"
     >
       @for (tag of tags; track tag) {
@@ -31,7 +31,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
           <button
             type="button"
             (click)="removeTag(tag); $event.stopPropagation()" (keydown.enter)="removeTag(tag); $event.stopPropagation()" tabindex="0"
-            class="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 rounded-sm leading-none font-bold"
+            class="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"
             [attr.aria-label]="'Remove ' + tag"
             [attr.title]="'Remove ' + tag"
           >×</button>
@@ -46,7 +46,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
         (blur)="onBlur()"
         [placeholder]="tags.length === 0 ? placeholder : ''"
         [attr.aria-label]="placeholder"
-        class="flex-1 min-w-[80px] outline-none text-sm bg-transparent py-0.5 text-main placeholder-disabled"
+        class="flex-1 min-w-[80px] outline-none focus:ring-0 border-none text-sm bg-transparent py-0.5 text-main placeholder-disabled"
       />
     </div>
     <p class="text-xs text-muted mt-1">
