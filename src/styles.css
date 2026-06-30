@@ -120,3 +120,23 @@
   white-space: normal;
   text-align: left;
 }
+
+/* High Contrast Mode Overrides */
+@media (forced-colors: active) {
+  /* Progress bars and indicators must show borders */
+  .progress-bar-container,
+  [role="progressbar"],
+  [data-testid="mc-chart"] .rounded-full {
+    border: 1px solid CanvasText;
+  }
+  
+  /* The active part of the progress indicator */
+  .progress-bar-fill,
+  [data-testid="mc-progress-bar"],
+  [data-testid="mc-retained-bar"],
+  [data-testid="mc-chart"] .bg-indigo-300,
+  [data-testid="mc-chart"] .bg-indigo-600,
+  [data-testid="mc-chart"] .bg-purple-500 {
+    background-color: CanvasText !important;
+  }
+}

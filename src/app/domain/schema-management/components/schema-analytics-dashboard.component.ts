@@ -16,19 +16,14 @@ import {
 } from '@angular/core';
 import * as echarts from 'echarts/core';
 import { PieChart, BarChart } from 'echarts/charts';
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-} from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
+import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, AriaComponent } from 'echarts/components';
+import { SVGRenderer } from 'echarts/renderers';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { AdamLiteDataset, AdamLiteVariable } from '../../core/models/adam-lite.model';
 
 // Register only the ECharts modules we need (tree-shakeable).
-echarts.use([PieChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, CanvasRenderer]);
+echarts.use([PieChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, SVGRenderer, AriaComponent]);
 
 @Component({
   selector: 'app-echart',
@@ -62,7 +57,7 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
     if (!el || !this.option || this.chart) return;
 
     try {
-      this.chart = echarts.init(el, undefined, { renderer: 'canvas' });
+      this.chart = echarts.init(el, undefined, { renderer: 'svg' });
       this.chart.on('click', (params: echarts.ECElementEvent) => {
         this.chartClick.emit(params);
       });
@@ -191,6 +186,7 @@ export class SchemaAnalyticsDashboardComponent {
 
       if (isBlindedGroup) {
         option = {
+          aria: { enabled: true, decal: { show: true } },
           tooltip: { show: false },
           legend: { show: false },
           series: [{
@@ -211,6 +207,7 @@ export class SchemaAnalyticsDashboardComponent {
           }));
 
           option = {
+            aria: { enabled: true, decal: { show: true } },
             tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
             legend: { orient: 'horizontal', bottom: 0, textStyle: { fontSize: 11 } },
             series: [{
@@ -230,6 +227,7 @@ export class SchemaAnalyticsDashboardComponent {
           }));
 
           option = {
+            aria: { enabled: true, decal: { show: true } },
             tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
             legend: { show: false },
             grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
