@@ -37,7 +37,7 @@
       </button>
     </div>
 
-    <div class="bg-surface rounded-xl shadow-sm border border-border-subtle overflow-hidden">
+    <div [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' overflow-hidden'">
       <div class="p-4 sm:p-6 border-b border-border-subtle flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 class="text-xl font-bold text-main">Generated Schema</h2>

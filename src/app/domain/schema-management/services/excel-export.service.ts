@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { APP_VERSION } from '../../../../environments/version';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 /**
  * Generates a strongly-typed, two-sheet Excel (.xlsx) workbook from a
@@ -18,6 +19,7 @@ import { APP_VERSION } from '../../../../environments/version';
 @Injectable({ providedIn: 'root' })
 export class ExcelExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
+  private readonly domainTheme = inject(DomainThemeService);
 
   /**
    * Builds an xlsx Blob from the provided result and unblinded flag, then
@@ -125,6 +127,7 @@ export class ExcelExportService {
     // ── Data rows ───────────────────────────────────────────────────────────
     // Track the maximum character width encountered per column for auto-sizing.
     const maxWidths: number[] = headerLabels.map(h => h.length);
+    const arms = result.metadata.config.arms;
 
     for (const schema of result.schema) {
       const treatmentArmValue = isUnblinded ? schema.treatmentArm : '*** BLINDED ***';
@@ -153,6 +156,15 @@ export class ExcelExportService {
         const val = rowValues[key] ?? '';
         cell.value = val;
         cell.numFmt = '@'; // "@" format = "Text" in Excel
+
+        if (key === 'treatmentArm' && isUnblinded) {
+          const armIndex = arms.findIndex(a => a.id === schema.treatmentArmId);
+          if (armIndex !== -1) {
+            const hex = this.domainTheme.getArmColor(armIndex).hex;
+            const argb = 'FF' + hex.substring(1).toUpperCase();
+            cell.font = { bold: true, color: { argb } };
+          }
+        }
 
         // Track max width for auto-sizing.
         if (val.length > maxWidths[colIdx]) {

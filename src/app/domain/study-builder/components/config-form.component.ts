@@ -18,6 +18,7 @@ import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-n
 import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -39,6 +40,7 @@ export class ConfigFormComponent implements OnInit {
   readonly store = inject(StudyBuilderStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly toastService = inject(ToastService);
+  public readonly domainTheme = inject(DomainThemeService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly liveAnnouncer = inject(LiveAnnouncer);
 

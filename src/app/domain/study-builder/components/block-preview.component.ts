@@ -1,6 +1,7 @@
-import { Component, computed, Input, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, computed, Input, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PRECISION_SCALE } from '../../../core/constants/precision.config';
+import { DomainThemeService, ArmColorTokens } from '../../core/theme/domain-theme.service';
 
 /** One arm's data passed from the parent. */
 export interface ArmInput {
@@ -28,18 +29,6 @@ export interface BlockPreview {
   slots: BlockSlot[];
 }
 
-/** Fixed arm colour palette – high-contrast Tailwind colours. */
-export const ARM_COLORS: string[] = [
-  'bg-indigo-500',
-  'bg-emerald-500',
-  'bg-amber-500',
-  'bg-rose-500',
-  'bg-sky-500',
-  'bg-violet-500',
-  'bg-orange-500',
-  'bg-teal-500',
-];
-
 /** Calculate the total ratio from an array of arms. Returns at least 1. */
 export function calcTotalRatio(arms: ArmInput[]): number {
   const sum = arms.reduce((acc, a) => acc + (a.ratio ?? 0), 0);
@@ -47,7 +36,7 @@ export function calcTotalRatio(arms: ArmInput[]): number {
 }
 
 /** Build the preview data for all given block sizes given arm definitions. */
-export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPreview[] {
+export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColor: (index: number) => ArmColorTokens): BlockPreview[] {
   if (arms.length === 0 || blockSizes.length === 0) return [];
   const totalRatio = calcTotalRatio(arms);
 
@@ -63,7 +52,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
           const count = Math.round((proportionScaled * blockSize) / PRECISION_SCALE);
           for (let i = 0; i < count; i++) {
             slots.push({
-              bgClass: ARM_COLORS[idx % ARM_COLORS.length],
+              bgClass: getArmColor(idx).bgClass,
               isInvalid: false,
               tooltip: arm.name || arm.id,
               armName: arm.name || arm.id,
@@ -79,7 +68,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
           const count = Math.round((proportionScaled * cleanCount) / PRECISION_SCALE);
           for (let i = 0; i < count && rendered < cleanCount; i++) {
             slots.push({
-              bgClass: ARM_COLORS[idx % ARM_COLORS.length],
+              bgClass: getArmColor(idx).bgClass,
               isInvalid: false,
               tooltip: arm.name || arm.id,
               armName: arm.name || arm.id,
@@ -92,7 +81,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[]): BlockPrev
           const armIdx = slots.length % arms.length;
           const arm = arms[armIdx];
           slots.push({
-            bgClass: ARM_COLORS[armIdx % ARM_COLORS.length],
+            bgClass: getArmColor(armIdx).bgClass,
             isInvalid: false,
             tooltip: arm.name || arm.id,
             armName: arm.name || arm.id,
@@ -235,6 +224,8 @@ export class BlockPreviewComponent {
     return this._blockSizes();
   }
   private _blockSizes = signal<number[]>([]);
+  
+  private readonly domainTheme = inject(DomainThemeService);
 
   /** Skeleton placeholder squares for empty state. */
   readonly skeleton = Array.from({ length: 6 });
@@ -244,7 +235,7 @@ export class BlockPreviewComponent {
 
   /** Return the Tailwind bg class for an arm by index. */
   armColor(index: number): string {
-    return ARM_COLORS[index % ARM_COLORS.length];
+    return this.domainTheme.getArmColor(index).bgClass;
   }
 
   /** How many columns to use for the grid (max 12, snap to blockSize). */
@@ -254,6 +245,6 @@ export class BlockPreviewComponent {
 
   /** Computed per-block-size preview data. */
   readonly previews = computed<BlockPreview[]>(() =>
-    buildPreviews(this._arms(), this._blockSizes())
+    buildPreviews(this._arms(), this._blockSizes(), (idx) => this.domainTheme.getArmColor(idx))
   );
 }

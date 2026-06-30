@@ -21,6 +21,7 @@ import { SVGRenderer } from 'echarts/renderers';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { AdamLiteDataset, AdamLiteVariable } from '../../core/models/adam-lite.model';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 // Register only the ECharts modules we need (tree-shakeable).
 echarts.use([PieChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, SVGRenderer, AriaComponent]);
@@ -90,7 +91,7 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (viewState.adamDataset()) {
-      <div data-testid="schema-analytics-dashboard" class="bg-surface rounded-xl shadow-sm border border-border-subtle p-6 space-y-4">
+      <div data-testid="schema-analytics-dashboard" [class]="domainTheme.layout().cardClasses + ' space-y-4'">
 
         <!-- Header -->
         <div class="flex items-center justify-between">
@@ -144,6 +145,7 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
 })
 export class SchemaAnalyticsDashboardComponent {
   protected readonly viewState = inject(SchemaViewStateService);
+  protected readonly domainTheme = inject(DomainThemeService);
 
   private getCssColor(token: string, fallback: string): string {
     if (typeof window === 'undefined') return fallback;
@@ -166,7 +168,7 @@ export class SchemaAnalyticsDashboardComponent {
 
     const isUnblinded = this.viewState.isUnblinded();
     const blindedColour = this.getCssColor('--text-muted', '#94a3b8');
-    const palette = ['#6366f1', '#34d399', '#fb923c', '#f472b6', '#38bdf8', '#a78bfa'];
+    const palette = this.domainTheme.getArmColorHexPalette();
 
     const categoricalVars = dataset.variables.filter(v => v.type === 'categorical');
     const charts = [];

@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { DialogRef } from '@angular/cdk/dialog';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
+import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
 
@@ -52,11 +53,11 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
       <div class="px-6 pb-6 space-y-6 overflow-y-auto">
 
         <!-- Seed disclaimer banner -->
-            <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-3 flex items-start gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="{{ domainTheme.getSemanticColor('warning').bgLightClass }} {{ domainTheme.getSemanticColor('warning').borderClass }} rounded-lg p-3 flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ domainTheme.getSemanticColor('warning').textClass }} dark:{{ domainTheme.getSemanticColor('warning').textClass }} flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-xs text-amber-800 dark:text-amber-300" data-testid="seed-disclaimer-banner">
+              <p class="text-xs {{ domainTheme.getSemanticColor('warning').textClass }} dark:{{ domainTheme.getSemanticColor('warning').textClass }} data-testid="seed-disclaimer-banner">
                 <strong>Note:</strong> Your specific PRNG seed has been stripped for this simulation. Each of the 10,000 iterations uses a unique, cryptographically random seed to prove the general fairness of the algorithm independent of any specific seed value.
               </p>
             </div>
@@ -208,11 +209,11 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
 
               <!-- High imbalance warning (shown only with attrition and significant deviation) -->
               @if (results.attritionRate > 0 && maxRetainedDeviation() > ATTRITION_WARNING_THRESHOLD_PCT) {
-                <div role="alert" tabindex="-1" #warningBanner class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-700/50 rounded-lg p-4 flex items-start gap-3 outline-none" data-testid="mc-attrition-warning">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-rose-500 dark:text-rose-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div role="alert" tabindex="-1" #warningBanner class="{{ domainTheme.getSemanticColor('error').bgLightClass }} {{ domainTheme.getSemanticColor('error').borderClass }} rounded-lg p-4 flex items-start gap-3 outline-none" data-testid="mc-attrition-warning">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ domainTheme.getSemanticColor('error').textClass }} flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <p class="text-sm text-rose-800 dark:text-rose-300 leading-relaxed" data-testid="mc-attrition-warning-text">
+                  <p class="text-sm {{ domainTheme.getSemanticColor('error').textClass }} leading-relaxed" data-testid="mc-attrition-warning-text">
                     <strong>High post-attrition imbalance detected.</strong>
                     Under a {{ results.attritionRate }}% dropout rate, the maximum retained-arm deviation exceeds {{ ATTRITION_WARNING_THRESHOLD_PCT }}% ({{ maxRetainedDeviation() | number:'1.4-4' }}%).
                     Consider utilizing smaller block sizes or minimization to counter chronological bias under high attrition.
@@ -221,11 +222,11 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
               }
 
               <!-- Clinical confidence banner -->
-              <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/50 rounded-lg p-4 flex items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-emerald-500 dark:text-emerald-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="{{ domainTheme.getSemanticColor('success').bgLightClass }} {{ domainTheme.getSemanticColor('success').borderClass }} rounded-lg p-4 flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ domainTheme.getSemanticColor('success').textClass }} flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p class="text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed" data-testid="mc-confidence-statement">
+                <p class="text-sm {{ domainTheme.getSemanticColor('success').textClass }} leading-relaxed" data-testid="mc-confidence-statement">
                   <strong>Algorithm mathematically verified.</strong>
                   After {{ results.totalIterations | number }} independent trial simulations, actual treatment assignment deviates from target theoretical ratios by less than <strong>{{ preAttritionMaxDeviation() | number:'1.4-4' }}%</strong>, confirming true uniform distribution and absence of block bias.
                   @if (results.attritionRate > 0) {
@@ -351,9 +352,9 @@ export class MonteCarloModalComponent {
 
   deviationClass(arm: MonteCarloArmResult): string {
     const d = this.deviation(arm);
-    if (d < 0.1) return 'text-emerald-700 dark:text-emerald-400';
-    if (d < 1) return 'text-amber-700 dark:text-amber-400';
-    return 'text-red-600 dark:text-rose-400';
+    if (d < 0.1) return this.domainTheme.getSemanticColor('success').textClass;
+    if (d < 1) return this.domainTheme.getSemanticColor('warning').textClass;
+    return this.domainTheme.getSemanticColor('error').textClass;
   }
 
   /** Max pre-attrition deviation across all arms — always reflects algorithm fairness. */
@@ -386,8 +387,8 @@ export class MonteCarloModalComponent {
 
   maxDeviationClass(): string {
     const d = this.maxDeviation();
-    if (d < 0.1) return 'text-emerald-700 dark:text-emerald-400 text-2xl font-bold';
-    if (d < 1) return 'text-amber-700 dark:text-amber-400 text-2xl font-bold';
-    return 'text-red-600 dark:text-rose-400 text-2xl font-bold';
+    if (d < 0.1) return `${this.domainTheme.getSemanticColor('success').textClass} text-2xl font-bold`;
+    if (d < 1) return `${this.domainTheme.getSemanticColor('warning').textClass} text-2xl font-bold`;
+    return `${this.domainTheme.getSemanticColor('error').textClass} text-2xl font-bold`;
   }
 }
