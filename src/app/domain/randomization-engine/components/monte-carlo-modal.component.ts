@@ -57,7 +57,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 {{ domainTheme.getSemanticColor('warning').textClass }} dark:{{ domainTheme.getSemanticColor('warning').textClass }} flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-xs {{ domainTheme.getSemanticColor('warning').textClass }} dark:{{ domainTheme.getSemanticColor('warning').textClass }} data-testid="seed-disclaimer-banner">
+              <p class="text-xs {{ domainTheme.getSemanticColor('warning').textClass }} dark:{{ domainTheme.getSemanticColor('warning').textClass }}" data-testid="seed-disclaimer-banner">
                 <strong>Note:</strong> Your specific PRNG seed has been stripped for this simulation. Each of the 10,000 iterations uses a unique, cryptographically random seed to prove the general fairness of the algorithm independent of any specific seed value.
               </p>
             </div>
@@ -259,6 +259,7 @@ export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
   readonly dialogRef = inject(DialogRef);
   private readonly liveAnnouncer = inject(LiveAnnouncer);
+  protected readonly domainTheme = inject(DomainThemeService);
 
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
   @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;
