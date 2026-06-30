@@ -162,7 +162,10 @@ export class CodeTranspiler {
         algorithmicLogic += `    multiplier = size / total_ratio\n`;
         algorithmicLogic += `    for arm in arms:\n`;
         algorithmicLogic += `        block.extend([arm["name"]] * int(arm["ratio"] * multiplier))\n`;
-        algorithmicLogic += `    rng.shuffle(block)\n`;
+        algorithmicLogic += `    for i in range(len(block) - 1, 0, -1):\n`;
+        algorithmicLogic += `        rand_int = int(rng.bit_generator.random_raw())\n`;
+        algorithmicLogic += `        j = rand_int % (i + 1)\n`;
+        algorithmicLogic += `        block[i], block[j] = block[j], block[i]\n`;
         algorithmicLogic += `    return block\n\n`;
 
         for (const task of ir.tasks) {
@@ -174,7 +177,7 @@ export class CodeTranspiler {
           algorithmicLogic += `count = 0\n`;
           algorithmicLogic += `block_num = 1\n`;
           algorithmicLogic += `while count < ${task.cap}:\n`;
-          algorithmicLogic += `    size = int(rng.choice(block_sizes))\n`;
+          algorithmicLogic += `    size = block_sizes[int(rng.bit_generator.random_raw()) % len(block_sizes)]\n`;
           algorithmicLogic += `    block = build_block(size)\n`;
           algorithmicLogic += `    for trt in block:\n`;
           algorithmicLogic += `        seq_count += 1\n`;
@@ -233,24 +236,26 @@ export class CodeTranspiler {
           algorithmicLogic += `  cap = ${task.cap};\n`;
           algorithmicLogic += `  count = 0; block_num = 1;\n`;
           algorithmicLogic += `  do while(count < cap);\n`;
-          algorithmicLogic += `     size_idx = ceil(rand("Uniform") * ${ir.blockSizes.length});\n`;
+          algorithmicLogic += `     link get_rand_int; size_idx = mod(rand_int, ${ir.blockSizes.length});\n`;
           ir.blockSizes.forEach((bs, i) => {
-             if (i===0) algorithmicLogic += `     if size_idx=1 then size=${bs};\n`;
-             else algorithmicLogic += `     else if size_idx=${i+1} then size=${bs};\n`;
+             if (i===0) algorithmicLogic += `     if size_idx=0 then size=${bs};\n`;
+             else algorithmicLogic += `     else if size_idx=${i} then size=${bs};\n`;
           });
           algorithmicLogic += `     idx = 1;\n`;
           for (const arm of ir.arms) {
              algorithmicLogic += `     do i = 1 to (size / ${ir.totalRatio}) * ${arm.ratio}; blk[idx] = "${FormattingUtil.escapeSasString(arm.name)}"; idx=idx+1; end;\n`;
           }
           algorithmicLogic += `     do i = size to 2 by -1;\n`;
-          algorithmicLogic += `        j = ceil(rand("Uniform") * i);\n`;
+          algorithmicLogic += `        link get_rand_int; j = mod(rand_int, i) + 1;\n`;
           algorithmicLogic += `        temp = blk[i]; blk[i] = blk[j]; blk[j] = temp;\n`;
           algorithmicLogic += `     end;\n`;
           algorithmicLogic += `     do i = 1 to size;\n`;
           algorithmicLogic += `        Treatment = blk[i]; BlockNumber = block_num; BlockSize = size;\n`;
           algorithmicLogic += `        seq_count = seq_count + 1;\n`;
-          // basic subject id emulation for test parity
-          algorithmicLogic += `        SubjectID = "${FormattingUtil.escapeSasString(task.site)}-${FormattingUtil.escapeSasString(task.stratumCode)}-" || put(seq_count, z3.);\n`;
+          algorithmicLogic += `        SubjectID = "${FormattingUtil.escapeSasString(config.subjectIdMask)}";\n`;
+          algorithmicLogic += `        SubjectID = tranwrd(SubjectID, "{SITE}", "${FormattingUtil.escapeSasString(task.site)}");\n`;
+          algorithmicLogic += `        SubjectID = tranwrd(SubjectID, "{STRATUM}", "${FormattingUtil.escapeSasString(task.stratumCode)}");\n`;
+          algorithmicLogic += `        SubjectID = prxchange('s/\{SEQ:(\d+)\}/' || put(seq_count, z3.) || '/', -1, SubjectID);\n`; // Naive replace for sas
           algorithmicLogic += `        output;\n`;
           algorithmicLogic += `        count = count + 1;\n`;
           algorithmicLogic += `        if count >= cap then leave;\n`;
@@ -296,8 +301,68 @@ export class CodeTranspiler {
       if (isComplex) {
         algorithmicLogic = this.formatStaticSchema(lang, config, schema);
       } else {
-        // Fallback for STATA since writing full logic inside STATA via templates is complex
-        algorithmicLogic = this.formatStaticSchema(lang, config, schema);
+        algorithmicLogic += `block_sizes = (${ir.blockSizes.join(',')})\n`;
+        algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
+        algorithmicLogic += `arms = (${ir.arms.map(a => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
+        algorithmicLogic += `arm_ratios = (${ir.arms.map(a => a.ratio).join(',')})\n\n`;
+
+        algorithmicLogic += `string rowvector build_block(real scalar size) {\n`;
+        algorithmicLogic += `    string rowvector block\n`;
+        algorithmicLogic += `    real scalar multiplier, i, j, arm_idx, k\n`;
+        algorithmicLogic += `    string scalar temp\n`;
+        algorithmicLogic += `    block = J(1, 0, "")\n`;
+        algorithmicLogic += `    multiplier = size / total_ratio\n`;
+        algorithmicLogic += `    for (arm_idx=1; arm_idx<=cols(arms); arm_idx++) {\n`;
+        algorithmicLogic += `        for (k=1; k<=arm_ratios[arm_idx] * multiplier; k++) {\n`;
+        algorithmicLogic += `            block = block, arms[arm_idx]\n`;
+        algorithmicLogic += `        }\n`;
+        algorithmicLogic += `    }\n`;
+        algorithmicLogic += `    for (i=cols(block); i>=2; i--) {\n`;
+        algorithmicLogic += `        j = mod(random_int(), i) + 1\n`;
+        algorithmicLogic += `        temp = block[i]; block[i] = block[j]; block[j] = temp\n`;
+        algorithmicLogic += `    }\n`;
+        algorithmicLogic += `    return(block)\n`;
+        algorithmicLogic += `}\n\n`;
+
+        algorithmicLogic += `schema_out = J(0, ${6 + (config.strata?.length || 0)}, "")\n`;
+        algorithmicLogic += `seq_count = 0\n`;
+
+        for (const task of ir.tasks) {
+          algorithmicLogic += `count = 0\n`;
+          algorithmicLogic += `block_num = 1\n`;
+          algorithmicLogic += `while (count < ${task.cap}) {\n`;
+          algorithmicLogic += `    size = block_sizes[mod(random_int(), cols(block_sizes)) + 1]\n`;
+          algorithmicLogic += `    block = build_block(size)\n`;
+          algorithmicLogic += `    for (i=1; i<=cols(block); i++) {\n`;
+          algorithmicLogic += `        seq_count = seq_count + 1\n`;
+          // Basic ID mockup for Stata testing since string replace in Mata is limited
+          algorithmicLogic += `        subj_id = "${FormattingUtil.escapeSasString(task.site)}-${FormattingUtil.escapeSasString(task.stratumCode)}-" + strofreal(seq_count, "%03.0f")\n`;
+          
+          let extraStrata = '';
+          for (const s of config.strata || []) {
+              extraStrata += `, "${FormattingUtil.escapeSasString(task.stratumDetails[s.id])}"`;
+          }
+
+          algorithmicLogic += `        schema_out = schema_out \\ (subj_id, "${FormattingUtil.escapeSasString(task.site)}", block[i], strofreal(block_num), strofreal(size), "${FormattingUtil.escapeSasString(task.stratumCode)}"${extraStrata})\n`;
+          algorithmicLogic += `        count = count + 1\n`;
+          algorithmicLogic += `        if (count >= ${task.cap}) break\n`;
+          algorithmicLogic += `    }\n`;
+          algorithmicLogic += `    block_num = block_num + 1\n`;
+          algorithmicLogic += `}\n`;
+        }
+
+        // Export from Mata to Stata
+        algorithmicLogic += `st_addobs(rows(schema_out))\n`;
+        algorithmicLogic += `st_addvar("str20", "SubjectID"); st_sstore(., "SubjectID", schema_out[., 1])\n`;
+        algorithmicLogic += `st_addvar("str20", "Site"); st_sstore(., "Site", schema_out[., 2])\n`;
+        algorithmicLogic += `st_addvar("str50", "Treatment"); st_sstore(., "Treatment", schema_out[., 3])\n`;
+        algorithmicLogic += `st_addvar("double", "BlockNumber"); st_store(., "BlockNumber", strtoreal(schema_out[., 4]))\n`;
+        algorithmicLogic += `st_addvar("double", "BlockSize"); st_store(., "BlockSize", strtoreal(schema_out[., 5]))\n`;
+        algorithmicLogic += `st_addvar("str50", "StratumCode"); st_sstore(., "StratumCode", schema_out[., 6])\n`;
+
+        (config.strata || []).forEach((s, idx) => {
+            algorithmicLogic += `st_addvar("str50", "${FormattingUtil.sanitizeStataVarName(s.id)}"); st_sstore(., "${FormattingUtil.sanitizeStataVarName(s.id)}", schema_out[., ${7 + idx}])\n`;
+        });
       }
       data['algorithmicLogic'] = algorithmicLogic;
       return this.renderTemplate(STATA_TEMPLATE, data);
@@ -315,8 +380,54 @@ export class CodeTranspiler {
       if (isComplex) {
         algorithmicLogic = this.formatStaticSchema(lang, config, schema);
       } else {
-        // Fallback for R since writing full logic inside R via templates is complex
-        algorithmicLogic = this.formatStaticSchema(lang, config, schema);
+        algorithmicLogic += `block_sizes <- c(${ir.blockSizes.join(', ')})\n`;
+        algorithmicLogic += `total_ratio <- ${ir.totalRatio}\n`;
+        
+        let armsR = ir.arms.map(a => `list(name="${FormattingUtil.escapeRString(a.name)}", ratio=${a.ratio})`).join(', ');
+        algorithmicLogic += `arms <- list(${armsR})\n\n`;
+
+        algorithmicLogic += `build_block <- function(size) {\n`;
+        algorithmicLogic += `  block <- character(0)\n`;
+        algorithmicLogic += `  multiplier <- size / total_ratio\n`;
+        algorithmicLogic += `  for (arm in arms) {\n`;
+        algorithmicLogic += `    block <- c(block, rep(arm$name, as.integer(arm$ratio * multiplier)))\n`;
+        algorithmicLogic += `  }\n`;
+        algorithmicLogic += `  if (length(block) > 1) {\n`;
+        algorithmicLogic += `    for (i in length(block):2) {\n`;
+        algorithmicLogic += `      j <- (random_int() %% i) + 1\n`;
+        algorithmicLogic += `      temp <- block[i]; block[i] <- block[j]; block[j] <- temp\n`;
+        algorithmicLogic += `    }\n`;
+        algorithmicLogic += `  }\n`;
+        algorithmicLogic += `  return(block)\n`;
+        algorithmicLogic += `}\n\n`;
+
+        algorithmicLogic += `seq_count <- 0\n`;
+        for (const task of ir.tasks) {
+          algorithmicLogic += `count <- 0\n`;
+          algorithmicLogic += `block_num <- 1\n`;
+          algorithmicLogic += `while (count < ${task.cap}) {\n`;
+          algorithmicLogic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
+          algorithmicLogic += `  block <- build_block(size)\n`;
+          algorithmicLogic += `  for (trt in block) {\n`;
+          algorithmicLogic += `    seq_count <- seq_count + 1\n`;
+          // R naive replace for subject ID
+          algorithmicLogic += `    subj_id <- "${FormattingUtil.escapeRString(config.subjectIdMask)}"\n`;
+          algorithmicLogic += `    subj_id <- gsub("{SITE}", "${FormattingUtil.escapeRString(task.site)}", subj_id, fixed=TRUE)\n`;
+          algorithmicLogic += `    subj_id <- gsub("{STRATUM}", "${FormattingUtil.escapeRString(task.stratumCode)}", subj_id, fixed=TRUE)\n`;
+          algorithmicLogic += `    subj_id <- sub("\\\\{SEQ:[0-9]+\\\\}", sprintf("%03d", seq_count), subj_id)\n`;
+          
+          let extraStrata = '';
+          for (const s of config.strata || []) {
+              extraStrata += `, "${FormattingUtil.escapeRString(s.id)}"="${FormattingUtil.escapeRString(task.stratumDetails[s.id])}"`;
+          }
+
+          algorithmicLogic += `    schema_list[[length(schema_list)+1]] <- data.frame(SubjectID=subj_id, Site="${FormattingUtil.escapeRString(task.site)}", Treatment=trt, BlockNumber=block_num, BlockSize=size, StratumCode="${FormattingUtil.escapeRString(task.stratumCode)}"${extraStrata}, stringsAsFactors=FALSE)\n`;
+          algorithmicLogic += `    count <- count + 1\n`;
+          algorithmicLogic += `    if (count >= ${task.cap}) break\n`;
+          algorithmicLogic += `  }\n`;
+          algorithmicLogic += `  block_num <- block_num + 1\n`;
+          algorithmicLogic += `}\n`;
+        }
       }
       data['algorithmicLogic'] = algorithmicLogic;
       return this.renderTemplate(R_TEMPLATE, data);

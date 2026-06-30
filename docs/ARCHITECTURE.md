@@ -104,7 +104,7 @@ clinical-randomization-generator/
 │           │
 │           ├── core/
 │           │   └── models/
-│           │       └── randomization.model.ts   Shared interfaces (single source of truth)
+│           │       └── randomization.model.ts   Shared  (single source of truth)
 │           │
 │           ├── randomization-engine/        Bounded context 1
 │           │   ├── core/
@@ -125,7 +125,7 @@ clinical-randomization-generator/
 │           │   ├── worker/
 │           │   │   ├── randomization-engine.worker.ts      Web Worker entry point
 │           │   │   ├── attrition-prng.ts                   PRNG for monte-carlo attrition
-│           │   │   └── worker-protocol.ts                  Typed message interfaces
+│           │   │   └── worker-protocol.ts                  Typed message 
 │           │   ├── randomization.service.ts                Worker-unavailable fallback Observable wrapper
 │           │   ├── randomization.service.spec.ts
 │           │   ├── randomization-engine.facade.ts          Single UI entry point
@@ -673,7 +673,7 @@ flowchart TD
 
 ## 11. Data Model
 
-All interfaces live in a single file: `domain/core/models/randomization.model.ts`.
+All  live in a single file: `domain/core/models/randomization.model.ts`.
 This is the **shared kernel** - every other module imports from here; nothing
 re-declares these types.
 
@@ -814,8 +814,8 @@ same script text.
 
 The web app's PRNG is Mersenne Twister (MT19937). R, SAS, and Stata use this exact
 PRNG by default, allowing a byte-identical reproduction of the web UI schema inside a validated
-statistical environment natively. Python uses PCG64, but the exported schemas
-preserve all other structural properties of the design.
+statistical environment natively. Python uses the MT19937 implementation natively to guarantee exactly identical bitstream output.
+
 
 Instead, the generated scripts embed **all study parameters as literals** and use the
 language-native PRNG. The resulting schema is statistically identical in distribution
@@ -964,9 +964,9 @@ flowchart TD
   keeps the data structured and avoids parallel-array synchronisation errors.
 - The stratum caps dict uses a **tuple** key `(level1, level2, ...)` matching the
   `itertools.product` output exactly - no string join/split needed.
-- `np.random.default_rng(N)` uses PCG64, NumPy's modern default generator, which is
-  statistically superior to the legacy `np.random.seed()` / `np.random.shuffle()`
-  interface.
+- `np.random.MT19937` is used with `np.random.Generator` to bypass NumPy's modern defaults, ensuring
+  strict reproducibility across platforms
+  
 - MARGINAL_ONLY template: `marginal_caps` dict, `active_pool` list, per-subject cap
   enforcement, pool pruning after each block, `block_number` incremented per block,
   QC cross-tabs via pandas.
@@ -1046,11 +1046,11 @@ flowchart TD
 
 | | Web UI | R script | Python script | SAS script | STATA script |
 |---|---|---|---|---|---|
-| **Library** | Custom MT19937 | Base R | NumPy | SAS built-in | STATA built-in |
-| **Algorithm** | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | PCG64 | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) |
+| **Library** | Custom MT19937 | Custom MT19937 | NumPy | Custom MT19937 | Custom MT19937 (Mata) |
+| **Algorithm** | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) |
 | **Seed type** | Arbitrary string | 31-bit integer | 31-bit integer | 31-bit integer | 31-bit integer |
 | **Seed source** | User input or random string | `hashCode(webSeed)` | `hashCode(webSeed)` | `hashCode(webSeed)` | `hashCode(webSeed)` |
-| **Sequence matches web?** | N/A | ✅ Identical | ❌ Different | ✅ Identical | ✅ Identical |
+| **Sequence matches web?** | N/A | ✅ Identical | ✅ Identical | ✅ Identical | ✅ Identical |
 | **Balance properties match?** | N/A | ✅ Same | ✅ Same | ✅ Same | ✅ Same |
 | **Reproducible within language?** | ✅ | ✅ | ✅ | ✅ | ✅ |
 
