@@ -1,4 +1,66 @@
-import { AleaUtil } from '../../core/utils/alea.util';
+class HashPRNG {
+  private i: number = 0;
+  private j: number = 0;
+  private S: number[] = [];
+
+  constructor(seed: string) {
+    let key: number[] = [];
+    const mask = 255;
+    const width = 256;
+
+    let smear = 0;
+    let j_idx = 0;
+    while (j_idx < seed.length) {
+      const keyJ = key[mask & j_idx];
+      const smearVal = keyJ === undefined ? 0 : keyJ * 19;
+      smear ^= smearVal;
+      key[mask & j_idx] = mask & (smear + seed.charCodeAt(j_idx++));
+    }
+    if (!key.length) key = [0];
+
+    const keylen = key.length;
+    let t: number;
+    let i = 0;
+    let j = 0;
+
+    while (i < width) {
+      this.S[i] = i++;
+    }
+    for (i = 0; i < width; i++) {
+      this.S[i] = this.S[j = mask & (j + key[i % keylen] + (t = this.S[i]))];
+      this.S[j] = t;
+    }
+
+    let count = width;
+    let r = 0;
+    i = this.i;
+    j = this.j;
+    while (count--) {
+      t = this.S[i = mask & (i + 1)];
+      r = r * width + this.S[mask & ((this.S[i] = this.S[j = mask & (j + t)]) + (this.S[j] = t))];
+    }
+    this.i = i;
+    this.j = j;
+  }
+
+  int32(): number {
+    let count = 4;
+    let t: number;
+    let r = 0;
+    let i = this.i;
+    let j = this.j;
+    const mask = 255;
+    const width = 256;
+
+    while (count--) {
+      t = this.S[i = mask & (i + 1)];
+      r = r * width + this.S[mask & ((this.S[i] = this.S[j = mask & (j + t)]) + (this.S[j] = t))];
+    }
+    this.i = i;
+    this.j = j;
+    return r | 0;
+  }
+}
 
 export class MT19937 {
   private mt: Uint32Array;
@@ -14,7 +76,7 @@ export class MT19937 {
     }
   }
 
-  private random_int(): number {
+  public random_int(): number {
     const mag01 = new Uint32Array([0x0, 0x9908b0df]);
     let y: number;
 
@@ -49,7 +111,16 @@ export class MT19937 {
   }
 
   static get128BitHash(seed: string | undefined): string {
-    return AleaUtil.get128BitHash(seed);
+    const s = seed || '';
+    if (/^[0-9a-f]{32}$/i.test(s)) {
+      return s.toLowerCase();
+    }
+    const rng = new HashPRNG(s);
+    const arr = new Uint32Array(4);
+    for (let i = 0; i < 4; i++) {
+      arr[i] = Math.abs(rng.int32());
+    }
+    return Array.from(arr, (n) => n.toString(16).padStart(8, '0')).join('');
   }
 
   static get31BitSeed(str: string | undefined): number {

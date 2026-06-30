@@ -356,8 +356,9 @@ describe('generateRandomizationSchema – seeding', () => {
   });
 
   it('produces different sequences for different seeds', () => {
-    const r1 = generateRandomizationSchema(BASE_CONFIG);
-    const r2 = generateRandomizationSchema({ ...BASE_CONFIG, seed: 'different_seed' });
+    const config = { ...BASE_CONFIG, stratumCaps: [{ levelIds: {}, cap: 20 }] };
+    const r1 = generateRandomizationSchema(config);
+    const r2 = generateRandomizationSchema({ ...config, seed: 'different_seed' });
     const match = r1.schema.map(r => r.treatmentArmId).join() === r2.schema.map(r => r.treatmentArmId).join();
     expect(match).toBe(false);
   });

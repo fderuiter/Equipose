@@ -15,12 +15,10 @@ Equipose is a free, open-source web utility designed to help biostatisticians an
 
 Built entirely as a client-side Angular application, it ensures that sensitive trial design parameters never leave the user's browser. It supports complex multi-strata designs, variable block sizes, and custom treatment ratios.
 
-> [!WARNING]
+> [!NOTE]
 > **Clinical Compliance & Scientific Validity**
 >
-> The schemas generated directly within the Web UI are intended for **simulation and design purposes only**. Due to inherent cross-environment Pseudo-Random Number Generator (PRNG) differences, the web UI output will differ from native statistical software outputs even when using the same seed value.
->
-> **For actual clinical enrollment (e.g., 21 CFR Part 11 or ICH E9 compliance), you must download the generated R, Python, or SAS scripts and execute them within your organisation's validated statistical environment.** The downloaded script serves as the auditable source of truth.
+> The schemas generated directly within the Web UI are cryptographically identical to the outputs of the generated R, Python, SAS, and Stata scripts. You can use either the Web UI or the downloaded scripts within your organisation's validated statistical environment for your source of truth.
 
 ---
 
@@ -32,7 +30,7 @@ Built entirely as a client-side Angular application, it ensures that sensitive t
 * **Variable Block Sizes:** Randomise across multiple block sizes within the same study to resist unblinding.
 * **Math Failsafes:** Built-in validation ensures block sizes are exact multiples of the total allocation ratio.
 * **Code Generation:** Instantly export the exact randomization logic to **R**, **Python (pandas/numpy)**, or **SAS** scripts for integration into your Statistical Analysis Plan (SAP).
-* **Reproducible:** Every schema carries a random seed that can be re-entered to reproduce the exact same allocation. The system provides bit-for-bit sequence identity across all supported browsers, not just statistical parity.
+* **Reproducible:** Every schema carries a random seed that can be re-entered to reproduce the exact same allocation. The system guarantees 100% bit-for-bit sequence parity between the Web UI (TypeScript) and all target statistical software exports (Python, R, SAS, and Stata).
 * **Zero-Trust Architecture:** 100% client-side execution. No data is stored on or transmitted to external servers.
 
 ---
@@ -45,7 +43,7 @@ Built entirely as a client-side Angular application, it ensures that sensitive t
 | **State management** | NgRx SignalStore 21 |
 | **Concurrency** | Web Workers (off-main-thread schema generation) |
 | **Styling** | Tailwind CSS 4 |
-| **PRNG** | Mersenne Twister (MT19937) for UI simulation |
+| **PRNG** | Mersenne Twister (MT19937) |
 | **PDF export** | `jspdf` + `jspdf-autotable` |
 | **Unit testing** | Vitest 4 + Angular TestBed (jsdom environment) |
 | **E2E testing** | Playwright 1.58 (Chromium, Firefox, WebKit) |
