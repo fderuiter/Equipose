@@ -1,9 +1,10 @@
-import { Component, signal, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
 import { RandomizationResult } from '../../core/models/randomization.model';
+import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -13,7 +14,7 @@ import { RandomizationResult } from '../../core/models/randomization.model';
   selector: 'app-code-generator-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [JsonPipe],
+  imports: [JsonPipe, FocusManagerDirective],
   templateUrl: './code-generator-modal.component.html'
 })
 export class CodeGeneratorModalComponent implements OnInit {
@@ -24,6 +25,11 @@ export class CodeGeneratorModalComponent implements OnInit {
   copied = signal(false);
   errorState = signal<CodeGenerationError | null>(null);
   generatedCode = signal<string>('');
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.state.closeCodeGenerator();
+  }
 
   async ngOnInit() {
     this.activeTab.set(this.state.codeLanguage());

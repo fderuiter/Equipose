@@ -17,6 +17,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
 import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
+import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -26,7 +27,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective],
+  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -262,6 +263,13 @@ export class ConfigFormComponent implements OnInit {
   clickout(event: Event): void {
     if (this.dropdownOpen && this.dropdownContainer && !this.dropdownContainer.nativeElement.contains(event.target))
       this.dropdownOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.dropdownOpen) {
+      this.dropdownOpen = false;
+    }
   }
 
   get regulatoryGroup(): FormGroup { return this.form.get('regulatoryGroup') as FormGroup; }

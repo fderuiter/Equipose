@@ -6,11 +6,12 @@ import {ThemeService, ThemeMode} from './core/services/theme.service';
 import {UpdateNotificationService} from './core/services/update-notification.service';
 import {UpdateBannerComponent} from './core/components/update-banner.component';
 import {APP_VERSION} from '../environments/version';
+import { FocusManagerDirective } from './core/directives/focus-manager.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent, FocusManagerDirective],
   template: `
     <!-- Skip to main content (accessibility) -->
     <a href="#main-content"
@@ -80,7 +81,7 @@ import {APP_VERSION} from '../environments/version';
               </button>
 
               @if (themeMenuOpen()) {
-                <div role="menu" aria-label="Choose colour theme"
+                <div role="menu" aria-label="Choose colour theme" appFocusManager
                      class="absolute right-0 top-full mt-1 w-36 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md shadow-lg ring-1 ring-black/5 dark:ring-white/10 z-50 overflow-hidden">
                   <button type="button" role="menuitem" (click)="setTheme('Light')" class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors" [class.font-semibold]="theme.mode() === 'Light'">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -160,7 +161,7 @@ import {APP_VERSION} from '../environments/version';
 
         <!-- Mobile menu dropdown -->
         @if (mobileMenuOpen()) {
-          <nav id="mobile-menu" class="sm:hidden border-t border-indigo-600 dark:border-slate-700 bg-indigo-700 dark:bg-slate-800" aria-label="Mobile navigation">
+          <nav id="mobile-menu" class="sm:hidden border-t border-indigo-600 dark:border-slate-700 bg-indigo-700 dark:bg-slate-800" aria-label="Mobile navigation" appFocusManager>
             <div class="px-4 py-3 space-y-1">
               <a routerLink="/" routerLinkActive #mRlaHome="routerLinkActive" [routerLinkActiveOptions]="{exact: true}"
                  (click)="mobileMenuOpen.set(false)"
