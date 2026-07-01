@@ -1,3 +1,11 @@
+export type SubjectIdToken =
+  | { type: 'literal'; value: string }
+  | { type: 'site' }
+  | { type: 'stratum' }
+  | { type: 'seq'; length: number }
+  | { type: 'rnd'; length: number }
+  | { type: 'checksum' };
+
 export interface LogicIRTask {
   site: string;
   stratumCode: string;
@@ -13,4 +21,5 @@ export interface LogicIR {
   tasks: LogicIRTask[];
   method: 'BLOCK' | 'MINIMIZATION';
   minimizationP: number;
+  subjectIdTokens: SubjectIdToken[];
 }

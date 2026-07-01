@@ -89,6 +89,7 @@ export class StataStrategy implements CodeGenerationStrategy {
       algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
       algorithmicLogic += `arms = (${ir.arms.map(a => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
       algorithmicLogic += `arm_ratios = (${ir.arms.map(a => a.ratio).join(',')})\n\n`;
+      algorithmicLogic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n\n`;
 
       algorithmicLogic += `string rowvector build_block(real scalar size) {\n`;
       algorithmicLogic += `    string rowvector block\n`;
@@ -110,7 +111,7 @@ export class StataStrategy implements CodeGenerationStrategy {
 
       algorithmicLogic += `schema_out = J(0, ${6 + (config.strata?.length || 0)}, "")\n`;
       algorithmicLogic += `seq_count = 0\n`;
-
+      
       algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
         config,
         ir.tasks,
@@ -123,7 +124,64 @@ export class StataStrategy implements CodeGenerationStrategy {
           taskLogic += `    block = build_block(size)\n`;
           taskLogic += `    for (i=1; i<=cols(block); i++) {\n`;
           taskLogic += `        seq_count = seq_count + 1\n`;
-          taskLogic += `        subj_id = "${FormattingUtil.escapeSasString(task.site)}-${FormattingUtil.escapeSasString(task.stratumCode)}-" + strofreal(seq_count, "%03.0f")\n`;
+
+          let baseBuilder = '';
+          let hasChecksum = false;
+          let rndVarsSetup = '';
+          let rndCounter = 1;
+
+          for (const token of ir.subjectIdTokens) {
+            if (token.type === 'literal') {
+              baseBuilder += `"${FormattingUtil.escapeSasString(token.value)}" + `;
+            } else if (token.type === 'site') {
+              baseBuilder += `"${FormattingUtil.escapeSasString(task.site)}" + `;
+            } else if (token.type === 'stratum') {
+              baseBuilder += `"${FormattingUtil.escapeSasString(task.stratumCode)}" + `;
+            } else if (token.type === 'seq') {
+              baseBuilder += `strofreal(seq_count, "%0${token.length}.0f") + `;
+            } else if (token.type === 'rnd') {
+              rndVarsSetup += `        rnd_str_${rndCounter} = ""\n`;
+              rndVarsSetup += `        for (_k=1; _k<=${token.length}; _k++) {\n`;
+              rndVarsSetup += `            char_idx = mod(random_int(), 36) + 1\n`;
+              rndVarsSetup += `            rnd_str_${rndCounter} = rnd_str_${rndCounter} + substr(ALPHANUMERIC, char_idx, 1)\n`;
+              rndVarsSetup += `        }\n`;
+              baseBuilder += `rnd_str_${rndCounter} + `;
+              rndCounter++;
+            } else if (token.type === 'checksum') {
+              hasChecksum = true;
+              baseBuilder += `"{CHECKSUM}" + `;
+            }
+          }
+          baseBuilder = baseBuilder.slice(0, -3) || `""`;
+
+          taskLogic += rndVarsSetup;
+          taskLogic += `        subj_id = ${baseBuilder}\n`;
+
+          if (hasChecksum) {
+            taskLogic += `        base_for_luhn = subinstr(subj_id, "{CHECKSUM}", "")\n`;
+            taskLogic += `        digits = ""\n`;
+            taskLogic += `        c_codes = ascii(base_for_luhn)\n`;
+            taskLogic += `        for (_i=1; _i<=cols(c_codes); _i++) {\n`;
+            taskLogic += `            if (c_codes[_i] >= 48 & c_codes[_i] <= 57) digits = digits + char(c_codes[_i])\n`;
+            taskLogic += `        }\n`;
+            taskLogic += `        chk = "0"\n`;
+            taskLogic += `        if (strlen(digits) > 0) {\n`;
+            taskLogic += `            s = 0\n`;
+            taskLogic += `            is_even = 0\n`;
+            taskLogic += `            for (_i=strlen(digits); _i>=1; _i--) {\n`;
+            taskLogic += `                d = strtoreal(substr(digits, _i, 1))\n`;
+            taskLogic += `                if (is_even) {\n`;
+            taskLogic += `                    d = d * 2\n`;
+            taskLogic += `                    if (d > 9) d = d - 9\n`;
+            taskLogic += `                }\n`;
+            taskLogic += `                s = s + d\n`;
+            taskLogic += `                is_even = !is_even\n`;
+            taskLogic += `            }\n`;
+            taskLogic += `            chk = strofreal(mod(10 - mod(s, 10), 10))\n`;
+            taskLogic += `        }\n`;
+            taskLogic += `        subj_id = subinstr(subj_id, "{CHECKSUM}", chk)\n`;
+          }
+
           taskLogic += `        schema_out = schema_out \\ (subj_id, "${FormattingUtil.escapeSasString(task.site)}", block[i], strofreal(block_num), strofreal(size), "${FormattingUtil.escapeSasString(task.stratumCode)}"${formattedStrata})\n`;
           taskLogic += `        count = count + 1\n`;
           taskLogic += `        if (count >= ${task.cap}) break\n`;
