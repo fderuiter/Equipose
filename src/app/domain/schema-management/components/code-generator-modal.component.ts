@@ -5,6 +5,7 @@ import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { AnnouncerService } from '../../../core/services/announcer.service';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -20,6 +21,7 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
 export class CodeGeneratorModalComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   private codeGenService = inject(CodeGeneratorService);
+  private announcer = inject(AnnouncerService);
 
   activeTab = signal<'R' | 'SAS' | 'Python' | 'STATA'>('R');
   copied = signal(false);
@@ -89,6 +91,7 @@ export class CodeGeneratorModalComponent implements OnInit {
   }
 
   copyCode() {
+    this.announcer.announce('Copied to clipboard');
     navigator.clipboard.writeText(this.currentCode);
     this.copied.set(true);
     setTimeout(() => this.copied.set(false), 2000);
@@ -97,6 +100,7 @@ export class CodeGeneratorModalComponent implements OnInit {
   copyErrorLog() {
     const err = this.errorState();
     if (!err) return;
+    this.announcer.announce('Copied to clipboard');
     const payload = {
       errorName: err.name,
       message: err.message,
@@ -106,6 +110,7 @@ export class CodeGeneratorModalComponent implements OnInit {
   }
 
   downloadCode() {
+    this.announcer.announce('Starting file download');
     const code = this.currentCode;
     const tab = this.activeTab();
     const extension = tab === 'R' ? 'R' : tab === 'SAS' ? 'sas' : tab === 'STATA' ? 'do' : 'py';

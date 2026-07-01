@@ -3,6 +3,7 @@ import { RandomizationResult } from '../../core/models/randomization.model';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { APP_VERSION } from '../../../../environments/version';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { AnnouncerService } from '../../../core/services/announcer.service';
 
 /**
  * Generates a strongly-typed, two-sheet Excel (.xlsx) workbook from a
@@ -20,6 +21,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
 export class ExcelExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly domainTheme = inject(DomainThemeService);
+  private readonly announcer = inject(AnnouncerService);
 
   /**
    * Builds an xlsx Blob from the provided result and unblinded flag, then
@@ -29,6 +31,7 @@ export class ExcelExportService {
    * contribute to the main application bundle.
    */
   async exportXlsx(result: RandomizationResult, isUnblinded: boolean): Promise<void> {
+    this.announcer.announce('Starting file download');
     // Lazy-load ExcelJS to keep the initial bundle lean.
     // Guard against CJS/ESM interop variation: Angular's esbuild-based builder
     // may surface the namespace at the top level rather than under `.default`.

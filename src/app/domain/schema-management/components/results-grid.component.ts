@@ -14,6 +14,7 @@ import { APP_VERSION } from '../../../../environments/version';
 import { ExcelExportService } from '../services/excel-export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AnnouncerService } from '../../../core/services/announcer.service';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
 
@@ -74,6 +75,7 @@ export class ResultsGridComponent {
   public readonly viewport = inject(ViewportService);
   public readonly domainTheme = inject(DomainThemeService);
   private readonly toast = inject(ToastService);
+  private readonly announcer = inject(AnnouncerService);
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly excelExport = inject(ExcelExportService);
   private readonly destroyRef = inject(DestroyRef);
@@ -425,6 +427,7 @@ export class ResultsGridComponent {
   copyAuditHash(): void {
     const hash = this.state.results()?.metadata.auditHash;
     if (!hash) return;
+    this.announcer.announce('Audit hash copied to clipboard');
     navigator.clipboard.writeText(hash).then(() => {
       this.hashCopied.set(true);
       setTimeout(() => this.hashCopied.set(false), 2000);
@@ -438,6 +441,7 @@ export class ResultsGridComponent {
   }
 
   exportCsv() {
+    this.announcer.announce('Starting file download');
     const data = this.state.results();
     if (!data) return;
 
@@ -514,6 +518,7 @@ export class ResultsGridComponent {
   }
 
   exportJson() {
+    this.announcer.announce('Starting file download');
     const data = this.state.results();
     if (!data) return;
 
@@ -556,6 +561,7 @@ export class ResultsGridComponent {
   }
 
   exportPdf() {
+    this.announcer.announce('Starting file download');
     const data = this.state.results();
     if (!data) return;
 

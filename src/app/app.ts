@@ -6,13 +6,14 @@ import {DOCUMENT} from '@angular/common';
 import {ThemeService, ThemeMode} from './core/services/theme.service';
 import {UpdateNotificationService} from './core/services/update-notification.service';
 import {UpdateBannerComponent} from './core/components/update-banner.component';
+import {AnnouncerComponent} from './core/components/announcer.component';
 import {APP_VERSION} from '../environments/version';
 import { FocusManagerDirective } from './core/directives/focus-manager.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent, FocusManagerDirective, AppTooltipDirective],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent, FocusManagerDirective, AppTooltipDirective, AnnouncerComponent],
   template: `
     <!-- Skip to main content (accessibility) -->
     <a href="#main-content"
@@ -226,6 +227,7 @@ import { FocusManagerDirective } from './core/directives/focus-manager.directive
 
       <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <router-outlet></router-outlet>
+        <app-announcer></app-announcer>
       </main>
 
       <footer class="bg-surface border-t border-border-base">
