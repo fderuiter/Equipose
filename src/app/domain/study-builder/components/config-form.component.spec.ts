@@ -468,39 +468,6 @@ describe('ConfigFormComponent (domain)', () => {
     });
   });
 
-  describe('custom radio keyboard behavior', () => {
-    it('should move to the next option on ArrowRight', () => {
-      const control = component.form.get('designGroup.randomizationMethod');
-      control?.setValue('BLOCK');
-      const button = document.createElement('button');
-      const group = document.createElement('div');
-      group.setAttribute('role', 'radiogroup');
-      const radioOne = document.createElement('button');
-      radioOne.setAttribute('role', 'radio');
-      const radioTwo = document.createElement('button');
-      radioTwo.setAttribute('role', 'radio');
-      group.append(radioOne, radioTwo);
-      group.append(button);
-      button.focus();
-      const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
-      Object.defineProperty(event, 'currentTarget', { value: radioOne });
-
-      component.onRadioGroupArrowKey(event, control, ['BLOCK', 'MINIMIZATION']);
-
-      expect(control?.value).toBe('MINIMIZATION');
-    });
-
-    it('should wrap to the last option on ArrowLeft', () => {
-      const control = component.form.get('capsGroup.capStrategy');
-      control?.setValue('MANUAL_MATRIX');
-      const event = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
-
-      component.onRadioGroupArrowKey(event, control, ['MANUAL_MATRIX', 'PROPORTIONAL', 'MARGINAL_ONLY']);
-
-      expect(control?.value).toBe('MARGINAL_ONLY');
-    });
-  });
-
   describe('metadata fields', () => {
     it('should preserve seed and subjectIdMask values after metadata edits', () => {
       expect(component.form.get('metadataGroup.subjectIdMask')?.value).toBe('{SITE}-{STRATUM}-{SEQ:3}');

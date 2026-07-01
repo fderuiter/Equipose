@@ -17,6 +17,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
+import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -26,7 +27,7 @@ import { AppTooltipDirective } from '../../../core/directives/tooltip.directive'
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective],
+  imports: [ReactiveFormsModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -656,23 +657,6 @@ export class ConfigFormComponent implements OnInit {
   computedStratumCodes(): string[] {
     return this.computedStratumOptions().map(option => option.value);
   }
-
-  onRadioGroupArrowKey(event: KeyboardEvent, control: AbstractControl | null, values: readonly string[]): void {
-    if (values.length === 0 || !control) return;
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
-    event.preventDefault();
-
-    const currentValue = String(control.value ?? values[0]);
-    const currentIndex = Math.max(0, values.indexOf(currentValue));
-    const direction = event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1;
-    const nextIndex = (currentIndex + direction + values.length) % values.length;
-    control.setValue(values[nextIndex]);
-
-    const radioGroup = (event.currentTarget as HTMLElement | null)?.closest('[role="radiogroup"]');
-    const radios = radioGroup?.querySelectorAll<HTMLElement>('[role="radio"]');
-    radios?.item(nextIndex)?.focus();
-  }
-
 
   onStratumKeyDown(event: KeyboardEvent, index: number): void {
     // Arrow up/down to reorder

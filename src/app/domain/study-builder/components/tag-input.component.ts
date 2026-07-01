@@ -3,6 +3,7 @@ import { AbstractControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
+import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
 
 /**
  * TagInputComponent – an interactive chip/tag input that reads and writes
@@ -20,18 +21,20 @@ import { AppTooltipDirective } from '../../../core/directives/tooltip.directive'
   selector: 'app-tag-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [A11yValidationDirective, AppTooltipDirective],
+  imports: [A11yValidationDirective, AppTooltipDirective, RovingTabindexDirective],
   template: `
     <div
+      appRovingTabindex="button, input"
+      role="list"
       class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2 focus-within:ring-offset-focus-offset cursor-text transition-colors"
-      (click)="tagInput.focus()" (keydown.enter)="tagInput.focus()" tabindex="0"
+      (click)="tagInput.focus()" (keydown.enter)="tagInput.focus()"
     >
       @for (tag of tags; track tag) {
-        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 select-none">
+        <span role="listitem" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 select-none">
           {{ tag }}
           <button
             type="button"
-            (click)="removeTag(tag); $event.stopPropagation()" (keydown.enter)="removeTag(tag); $event.stopPropagation()" tabindex="0"
+            (click)="removeTag(tag); $event.stopPropagation()"
             class="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"
             [attr.aria-label]="'Remove ' + tag"
             [appTooltip]="'Remove ' + tag"
