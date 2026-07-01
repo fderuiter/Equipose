@@ -4,11 +4,10 @@ import {
   RandomizationConfig,
   RandomizationResult
 } from '../core/models/randomization.model';
-import { RandomizationService } from './randomization.service';
 import { AnnouncementService } from '../../core/services/announcement.service';
 import { ToastService } from '../../core/services/toast.service';
 import { computeAuditHash } from './core/crypto-hash';
-import { generateCryptoSeed } from './core/randomization-algorithm';
+import { generateRandomizationSchema, generateCryptoSeed } from './core/randomization-algorithm';
 import type {
   GenerationCommand,
   MonteCarloCommand,
@@ -20,7 +19,6 @@ import type {
 @Injectable({ providedIn: 'root' })
 export class RandomizationEngineFacade {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  private readonly randomizationService = inject(RandomizationService);
   private readonly toastService = inject(ToastService);
   private readonly announcementService = inject(AnnouncementService);
 
@@ -76,10 +74,11 @@ export class RandomizationEngineFacade {
     if (this.worker) {
       this.dispatchToWorker(newConfig);
     } else {
-      // SSR or Worker unavailable – fall back to synchronous in-thread service
-      this.randomizationService.generateSchema(newConfig).subscribe({
-        next: async res => {
-          const hash = await computeAuditHash(res);
+      // SSR or Worker unavailable – fall back to synchronous in-thread pure function
+      try {
+        const res = generateRandomizationSchema(newConfig);
+        // Hashing remains async
+        computeAuditHash(res).then(hash => {
           const resultWithHash: RandomizationResult = {
             ...res,
             metadata: { ...res.metadata, auditHash: hash }
@@ -87,14 +86,13 @@ export class RandomizationEngineFacade {
           this.results.set(resultWithHash);
           this.isGenerating.set(false);
           this.toastService.showSuccess('Schema successfully generated!');
-        },
-        error: err => {
-          const message = err.error?.error ?? 'An error occurred during schema generation.';
-          this.error.set(message);
-          this.isGenerating.set(false);
-          this.toastService.showError(message);
-        }
-      });
+        });
+      } catch (err: any) {
+        const message = err.message ?? 'An error occurred during schema generation.';
+        this.error.set(message);
+        this.isGenerating.set(false);
+        this.toastService.showError(message);
+      }
     }
   }
 
