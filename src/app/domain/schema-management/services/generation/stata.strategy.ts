@@ -63,8 +63,8 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
     } else {
       algorithmicLogic += `block_sizes = (${ir.blockSizes.join(',')})\n`;
       algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
-      algorithmicLogic += `arms = (${ir.arms.map(a => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
-      algorithmicLogic += `arm_ratios = (${ir.arms.map(a => a.ratio).join(',')})\n\n`;
+      algorithmicLogic += `arms = (${ir.arms.map((a: any) => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
+      algorithmicLogic += `arm_ratios = (${ir.arms.map((a: any) => a.ratio).join(',')})\n\n`;
       algorithmicLogic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n\n`;
 
       algorithmicLogic += `string rowvector build_block(real scalar size) {\n`;
