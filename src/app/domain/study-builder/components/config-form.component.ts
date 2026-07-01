@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostLis
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
@@ -41,6 +41,7 @@ export class ConfigFormComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly toastService = inject(ToastService);
   public readonly domainTheme = inject(DomainThemeService);
+  private readonly document = inject(DOCUMENT);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly announcementService = inject(AnnouncementService);
 
@@ -511,7 +512,7 @@ export class ConfigFormComponent implements OnInit {
     
     // Manage focus for wizard transition
     setTimeout(() => {
-      const stepHeader = document.getElementById(`step-header-${selectedIndex}`);
+      const stepHeader = this.document.getElementById(`step-header-${selectedIndex}`);
       if (stepHeader) {
         stepHeader.focus();
       }
@@ -682,7 +683,7 @@ export class ConfigFormComponent implements OnInit {
 
         // Set focus back to the moved element
         setTimeout(() => {
-          const handles = document.querySelectorAll('.stratum-drag-handle');
+          const handles = this.document.querySelectorAll('.stratum-drag-handle');
           if (handles[newIndex]) {
             (handles[newIndex] as HTMLElement).focus();
           }
