@@ -1,4 +1,5 @@
 import { RandomizationConfig, BlockRule } from '../models/randomization.model';
+import { MathUtil } from '../utils/math.util';
 
 export class UnifiedValidationAuthority {
   /**
@@ -14,11 +15,14 @@ export class UnifiedValidationAuthority {
       return errors;
     }
 
-    const totalRatio = config.arms.reduce((sum, arm) => sum + arm.ratio, 0);
-    if (totalRatio === 0) {
+    const totalRatioRaw = config.arms.reduce((sum, arm) => sum + arm.ratio, 0);
+    if (totalRatioRaw === 0) {
       errors.push('Total arm ratio must be greater than zero');
       return errors;
     }
+
+    const ratioGcd = MathUtil.gcdArray(config.arms.map(a => a.ratio));
+    const totalRatio = config.arms.reduce((sum, arm) => sum + (arm.ratio / ratioGcd), 0);
 
     // 2. Minimization specific validation
     if (config.randomizationMethod === 'MINIMIZATION') {

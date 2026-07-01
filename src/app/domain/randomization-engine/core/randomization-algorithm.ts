@@ -11,6 +11,7 @@ import {
 import { generateSubjectId } from './subject-id-engine';
 import { generateMinimization } from './minimization-algorithm';
 import { SubjectRegistry } from './subject-registry';
+import { MathUtil } from '../../core/utils/math.util';
 
 // ---------------------------------------------------------------------------
 // Crypto seed helper (shared with the Web Worker)
@@ -317,8 +318,16 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
     throw new Error(validationErrors[0]);
   }
 
-  // 2. Calculate total ratio sum
-  const totalRatio = resolvedConfig.arms.reduce((sum, arm) => sum + arm.ratio, 0);
+  // 2. Simplify ratios and calculate total ratio sum
+  const ratioGcd = MathUtil.gcdArray(resolvedConfig.arms.map(a => a.ratio));
+  const simplifiedArms = resolvedConfig.arms.map(arm => ({
+    ...arm,
+    ratio: arm.ratio / ratioGcd
+  }));
+  const totalRatio = simplifiedArms.reduce((sum, arm) => sum + arm.ratio, 0);
+
+  // Apply simplified arms for internal generation logic
+  const internalConfig = { ...resolvedConfig, arms: simplifiedArms };
 
   // 5. Early validation for MARGINAL_ONLY cap strategy
   if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
@@ -343,19 +352,19 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
     }
   }
 
-  const registry = new SubjectRegistry(resolvedConfig);
+  const registry = new SubjectRegistry(internalConfig);
 
   const schema: GeneratedSchema[] = [];
   /** Tracks all assigned subject IDs to prevent duplicates (relevant for {RND:n} tokens). */
   const usedSubjectIds = new Set<string>();
 
-  if (resolvedConfig.randomizationMethod === 'MINIMIZATION') {
-    schema.push(...generateMinimization(resolvedConfig, rng, registry));
-  } else if (resolvedConfig.capStrategy === 'MARGINAL_ONLY') {
-    generateMarginalOnly(resolvedConfig, rng, rng_int, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
+  if (internalConfig.randomizationMethod === 'MINIMIZATION') {
+    schema.push(...generateMinimization(internalConfig, rng, registry));
+  } else if (internalConfig.capStrategy === 'MARGINAL_ONLY') {
+    generateMarginalOnly(internalConfig, rng, rng_int, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   } else {
     // Both 'MANUAL_MATRIX' (default) and 'PROPORTIONAL' use intersection caps.
-    generateStandard(resolvedConfig, rng, rng_int, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
+    generateStandard(internalConfig, rng, rng_int, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   }
 
   return {
