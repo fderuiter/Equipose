@@ -4,6 +4,7 @@ import { RandomizationEngineFacade } from '../randomization-engine.facade';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
+import { ProgressAnnouncerService } from '../../../core/services/progress-announcer.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,11 +64,11 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
         <!-- Progress state -->
         @if (facade.isMonteCarloRunning()) {
           <div class="space-y-3">
-            <div class="flex justify-between items-center" aria-hidden="true">
+            <div class="flex justify-between items-center">
               <span class="text-sm font-medium text-gray-700 dark:text-slate-300">Simulating trials…</span>
               <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ facade.monteCarloProgress() }}%</span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600" aria-hidden="true">
+            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600">
                   <div
                     class="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300 ease-out border-r-2 border-indigo-700 dark:border-indigo-400"
                     [style.width.%]="facade.monteCarloProgress()"
@@ -257,6 +258,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
 export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
   protected readonly domainTheme = inject(DomainThemeService);
+  protected readonly progressAnnouncer = inject(ProgressAnnouncerService);
 
   @ViewChild('modalDialog') modalDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
@@ -275,6 +277,16 @@ export class MonteCarloModalComponent {
         if (this.modalDialog?.nativeElement && this.modalDialog.nativeElement.open) {
           this.modalDialog.nativeElement.close();
         }
+      }
+    });
+
+    effect(() => {
+      const progress = this.facade.monteCarloProgress();
+      if (progress > 0 || this.facade.isMonteCarloRunning()) {
+        this.progressAnnouncer.announceProgress(progress, 'Simulation');
+      }
+      if (!this.facade.isMonteCarloRunning() && progress === 0) {
+        this.progressAnnouncer.resetTask('Simulation');
       }
     });
 
