@@ -1,49 +1,60 @@
-import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter } from 'rxjs/operators';
+import { Injectable, signal } from '@angular/core';
 
 /**
  * UpdateNotificationService
  *
- * Listens to Angular Service Worker lifecycle events and exposes a reactive
+ * Listens to native Service Worker lifecycle events and exposes a reactive
  * signal that the UI can use to display a non-intrusive update-available
- * banner.  When the user confirms, the page reloads to activate the new
+ * banner. When the user confirms, the page reloads to activate the new
  * cache and service worker version.
- *
- * If the `SwUpdate` service is not enabled (e.g. in development mode or
- * when the service worker is not registered), this service becomes a no-op
- * so that the rest of the application is unaffected.
  */
 @Injectable({ providedIn: 'root' })
 export class UpdateNotificationService {
-  private readonly swUpdate = inject(SwUpdate, { optional: true });
-  private readonly destroyRef = inject(DestroyRef);
-
   /** True when a new application version has been detected and is ready. */
   readonly updateAvailable = signal(false);
 
-  constructor() {
-    if (!this.swUpdate?.isEnabled) {
-      return;
-    }
+  private waitingWorker: ServiceWorker | null = null;
 
-    // Listen for the SW telling us a new version is ready to activate.
-    this.swUpdate.versionUpdates
-      .pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.updateAvailable.set(true);
+  constructor() {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        if (!reg) return;
+
+        if (reg.waiting) {
+          this.waitingWorker = reg.waiting;
+          this.updateAvailable.set(true);
+        }
+
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                this.waitingWorker = newWorker;
+                this.updateAvailable.set(true);
+              }
+            });
+          }
+        });
       });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          document.location.reload();
+        }
+      });
+    }
   }
 
-  /** Reload the page to activate the waiting service worker and new cache. */
+  /** Tell the waiting worker to activate, which will trigger the reload. */
   activateUpdate(): void {
-    this.swUpdate?.activateUpdate().then(() => {
+    if (this.waitingWorker) {
+      this.waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    } else {
       document.location.reload();
-    });
+    }
   }
 
   /** Dismiss the banner without reloading (user can reload manually later). */

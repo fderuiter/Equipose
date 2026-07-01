@@ -44,7 +44,6 @@
           },
           "configurations": {
             "production": {
-              "serviceWorker": "ngsw-config.json",
               "budgets": [
                 {
                   "type": "initial",
@@ -60,7 +59,6 @@
               "outputHashing": "all"
             },
             "pwa": {
-              "serviceWorker": "ngsw-config.json",
               "optimization": true,
               "extractLicenses": false,
               "sourceMap": true
