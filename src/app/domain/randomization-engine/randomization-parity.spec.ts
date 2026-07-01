@@ -5,7 +5,6 @@ import { RandomizationService } from './randomization.service';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
 import { generateRandomizationSchema } from './core/randomization-algorithm';
 import { vi } from 'vitest';
-import { DialogModule } from '@angular/cdk/dialog';
 import { ToastService } from '../../core/services/toast.service';
 
 /** Flush all pending microtasks so async signals settle. */
@@ -91,7 +90,7 @@ describe('RandomizationEngine Parity (Worker vs Fallback)', () => {
 
     // Setup Worker Facade
     TestBed.configureTestingModule({
-      imports: [DialogModule],
+      imports: [],
       providers: [
         { provide: PLATFORM_ID, useValue: 'browser' },
         { provide: ToastService, useValue: mockToastService },
@@ -104,7 +103,7 @@ describe('RandomizationEngine Parity (Worker vs Fallback)', () => {
     // Reset and setup Fallback Facade
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-        imports: [DialogModule],
+        imports: [],
         providers: [
           { provide: PLATFORM_ID, useValue: 'server' },
           { provide: ToastService, useValue: mockToastService },

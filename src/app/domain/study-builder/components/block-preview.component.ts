@@ -1,5 +1,4 @@
 import { Component, computed, Input, ChangeDetectionStrategy, signal, inject } from '@angular/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { PRECISION_SCALE } from '../../../core/constants/precision.config';
 import { DomainThemeService, ArmColorTokens } from '../../core/theme/domain-theme.service';
 
@@ -110,7 +109,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
   selector: 'app-block-preview',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatTooltipModule],
+  imports: [],
   styles: [`
     .invalid-slot {
       background: repeating-linear-gradient(45deg, var(--invalid-stripe), var(--invalid-stripe) 4px, var(--invalid-bg) 4px, var(--invalid-bg) 10px);
@@ -142,6 +141,11 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
       }
 
       <!-- Per-block-size previews -->
+      <!-- Shared tooltip popover -->
+      <div id="block-preview-tooltip" popover="manual" class="fixed m-0 z-50 bg-gray-900 text-white text-xs rounded py-1 px-2 pointer-events-none" [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
+        {{ tooltipText() }}
+      </div>
+
       @if (previews().length === 0) {
         <!-- Empty state skeleton -->
         <div class="space-y-3">
@@ -184,16 +188,14 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
                 @if (slot.isInvalid) {
                   <div
                     class="rounded-md h-8 w-8 border-2 border-dashed border-red-400 invalid-slot"
-                    [matTooltip]="slot.tooltip"
-                    matTooltipClass="app-tooltip"
+                    (mouseenter)="showTooltip($event, slot.tooltip)" (mouseleave)="hideTooltip()"
                     role="img"
                     aria-label="Unallocatable subject slot"
                   ></div>
                 } @else {
                   <div
                     class="rounded-md h-8 w-8 {{ slot.bgClass }}"
-                    [matTooltip]="slot.tooltip"
-                    matTooltipClass="app-tooltip"
+                    (mouseenter)="showTooltip($event, slot.tooltip)" (mouseleave)="hideTooltip()"
                     role="img"
                     [attr.aria-label]="slot.armName"
                   ></div>
@@ -247,4 +249,27 @@ export class BlockPreviewComponent {
   readonly previews = computed<BlockPreview[]>(() =>
     buildPreviews(this._arms(), this._blockSizes(), (idx) => this.domainTheme.getArmColor(idx))
   );
+
+  tooltipText = signal('');
+  tooltipX = signal(0);
+  tooltipY = signal(0);
+
+  showTooltip(event: MouseEvent, text: string): void {
+    this.tooltipText.set(text);
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.tooltipX.set(rect.left + rect.width / 2);
+    this.tooltipY.set(rect.top - 30);
+    const popover = document.getElementById('block-preview-tooltip') as any;
+    if (popover && typeof popover.showPopover === 'function') {
+      popover.showPopover();
+    }
+  }
+
+  hideTooltip(): void {
+    const popover = document.getElementById('block-preview-tooltip') as any;
+    if (popover && typeof popover.hidePopover === 'function') {
+      popover.hidePopover();
+    }
+  }
 }

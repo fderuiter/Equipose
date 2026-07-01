@@ -84,7 +84,7 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
     expect(component.stratumCaps.length).toBe(2);
 
     // 3. Navigate to Enrollment Caps step
-    component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+    component.setStep(component.capsStepIndex);
     fixture.detectChanges();
 
     // Now stratumCaps should be regenerated
@@ -97,7 +97,7 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
 
   it('should preserve existing cap values when regenerating combinations if levelIds match', () => {
     // 1. Set some custom caps
-    component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+    component.setStep(component.capsStepIndex);
     component.stratumCaps.at(0).get('cap')?.setValue(50); // <65
     component.stratumCaps.at(1).get('cap')?.setValue(30); // >=65
     fixture.detectChanges();
@@ -110,7 +110,7 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
     fixture.detectChanges();
 
     // 3. Navigate to Enrollment Caps step
-    component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+    component.setStep(component.capsStepIndex);
     fixture.detectChanges();
 
     // Combinations are now {age: '<65', gender: 'M'} and {age: '>=65', gender: 'M'}
@@ -128,7 +128,7 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
     component.addStratum();
     component.strata.at(1).get('id')?.setValue('gender');
     component.strata.at(1).get('levelsStr')?.setValue('M, F');
-    component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+    component.setStep(component.capsStepIndex);
 
     // Set a specific cap
     const targetCombo = { age: '<65', gender: 'F' };
@@ -138,11 +138,12 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
     fixture.detectChanges();
 
     // 2. Reorder strata (age, gender) -> (gender, age)
-    component.onStrataDrop({ previousIndex: 0, currentIndex: 1 } as any);
+    component.draggedStratumIndex = 0;
+    component.onDrop({ preventDefault: () => {} } as any, 1);
     fixture.detectChanges();
 
     // 3. Navigate back to caps step to trigger sync
-    component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+    component.setStep(component.capsStepIndex);
     fixture.detectChanges();
 
     // The combination { age: '<65', gender: 'F' } should still have cap 99

@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
-import { CdkMenuModule, CdkMenuTrigger } from '@angular/cdk/menu';
-import { ScrollDispatcher, ScrollingModule } from '@angular/cdk/scrolling';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { GeneratedSchema } from '../../core/models/randomization.model';
@@ -61,10 +59,12 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CdkMenuModule, ScrollingModule, KeyValuePipe],
+  imports: [KeyValuePipe],
   templateUrl: './results-grid.component.html',
   styles: [`
     .dot { transition: transform 0.2s ease-in-out; }
+    [popover] { margin: 0; border: none; padding: 0; background: transparent; overflow: visible; }
+    [popover]:popover-open { display: block; }
   `]
 })
 export class ResultsGridComponent {
@@ -76,15 +76,13 @@ export class ResultsGridComponent {
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly excelExport = inject(ExcelExportService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly scrollDispatcher = inject(ScrollDispatcher);
-
-  @ViewChildren(CdkMenuTrigger) private menuTriggers?: QueryList<CdkMenuTrigger>;
-
   /**
    * Tracks the row whose kebab menu is currently open so the shared menu
    * template can reference the correct data payload.
    */
   activeMenuRow = signal<GeneratedSchema | null>(null);
+  menuPosition = signal({ x: 0, y: 0 });
+  filterPosition = signal({ x: 0, y: 0 });
 
   /** Signals that the audit hash was just copied; drives the ✓ icon. */
   hashCopied = signal(false);
@@ -246,11 +244,6 @@ export class ResultsGridComponent {
     effect(() => {
       this.viewState.syncResults(this.state.results());
     });
-
-    this.scrollDispatcher
-      .scrolled()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.closeOpenMenus());
   }
 
   toggleBlinding() {
@@ -258,20 +251,39 @@ export class ResultsGridComponent {
   }
 
   /** Opens the kebab context menu for a specific data row. */
-  openRowMenu(row: GeneratedSchema): void {
+  openRowMenu(row: GeneratedSchema, event: MouseEvent): void {
     this.activeMenuRow.set(row);
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.menuPosition.set({
+      x: rect.right - 160,
+      y: rect.bottom + 4
+    });
+    const popover = document.getElementById('shared-row-menu') as any;
+    if (popover && typeof popover.showPopover === 'function') {
+      popover.showPopover();
+    }
+  }
+
+  closeRowMenu(): void {
+    const popover = document.getElementById('shared-row-menu') as any;
+    if (popover && typeof popover.hidePopover === 'function') {
+      popover.hidePopover();
+    }
   }
 
   /** Placeholder: marks a subject as dropped from the trial. */
   markAsDropped(row: GeneratedSchema | null): void {
     if (!row) return;
     console.info('[ResultsGrid] Mark as Dropped – Subject:', row.subjectId);
+    this.closeRowMenu();
   }
 
   /** Placeholder: displays stratum detail for a subject. */
   viewStratumDetails(row: GeneratedSchema | null): void {
     if (!row) return;
     console.info('[ResultsGrid] View Stratum Details – Subject:', row.subjectId, 'Stratum:', row.stratum);
+    this.closeRowMenu();
   }
 
   /**
@@ -315,8 +327,25 @@ export class ResultsGridComponent {
   }
 
   /** Records which column's filter panel is currently active. */
-  openColumnFilter(column: string): void {
+  openColumnFilter(column: string, event: MouseEvent): void {
     this.activeFilterColumn.set(column);
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.filterPosition.set({
+      x: rect.left,
+      y: rect.bottom + 4
+    });
+    const popover = document.getElementById('shared-filter-menu') as any;
+    if (popover && typeof popover.showPopover === 'function') {
+      popover.showPopover();
+    }
+  }
+
+  closeColumnFilter(): void {
+    const popover = document.getElementById('shared-filter-menu') as any;
+    if (popover && typeof popover.hidePopover === 'function') {
+      popover.hidePopover();
+    }
   }
 
   /** Updates the filter value for `activeFilterColumn`. */
@@ -333,6 +362,7 @@ export class ResultsGridComponent {
       delete next[column];
       return next;
     });
+    this.closeColumnFilter();
   }
 
   /** Clears all active column filters at once. */
@@ -342,7 +372,8 @@ export class ResultsGridComponent {
 
   /** Closes any currently-open CDK menus. */
   closeOpenMenus(): void {
-    this.menuTriggers?.forEach(trigger => trigger.close());
+    this.closeRowMenu();
+    this.closeColumnFilter();
   }
 
   /** Middle-truncated display value for the audit hash banner. */

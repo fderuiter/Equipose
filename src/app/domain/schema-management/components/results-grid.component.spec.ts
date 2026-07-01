@@ -116,7 +116,7 @@ describe('ResultsGridComponent (domain)', () => {
       (mockFacade as any).results.set(mockResult);
       fixture.detectChanges();
 
-      component.openColumnFilter('site');
+      component.openColumnFilter('site', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Site 1');
       fixture.detectChanges();
 
@@ -130,7 +130,7 @@ describe('ResultsGridComponent (domain)', () => {
       (mockFacade as any).results.set(mockResult);
       fixture.detectChanges();
 
-      component.openColumnFilter('treatmentArm');
+      component.openColumnFilter('treatmentArm', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Active');
       fixture.detectChanges();
 
@@ -144,7 +144,7 @@ describe('ResultsGridComponent (domain)', () => {
       (mockFacade as any).results.set(mockResult);
       fixture.detectChanges();
 
-      component.openColumnFilter('stratum_site');
+      component.openColumnFilter('stratum_site', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Site 2');
       fixture.detectChanges();
 
@@ -158,7 +158,7 @@ describe('ResultsGridComponent (domain)', () => {
       (mockFacade as any).results.set(mockResult);
       fixture.detectChanges();
 
-      component.openColumnFilter('site');
+      component.openColumnFilter('site', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('NONEXISTENT_XYZ');
       fixture.detectChanges();
 
@@ -170,7 +170,7 @@ describe('ResultsGridComponent (domain)', () => {
       (mockFacade as any).results.set(mockResult);
       fixture.detectChanges();
 
-      component.openColumnFilter('site');
+      component.openColumnFilter('site', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Site 1');
       fixture.detectChanges();
       const filtered = component.processedData().length;
@@ -186,9 +186,9 @@ describe('ResultsGridComponent (domain)', () => {
       (mockFacade as any).results.set(mockResult);
       fixture.detectChanges();
 
-      component.openColumnFilter('site');
+      component.openColumnFilter('site', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Site 1');
-      component.openColumnFilter('treatmentArm');
+      component.openColumnFilter('treatmentArm', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Active');
       expect(Object.keys(component.filterState()).length).toBeGreaterThan(0);
 
@@ -200,7 +200,7 @@ describe('ResultsGridComponent (domain)', () => {
     it('hasActiveFilter should return true only when filter is non-empty', () => {
       expect(component.hasActiveFilter('site')).toBe(false);
 
-      component.openColumnFilter('site');
+      component.openColumnFilter('site', { currentTarget: document.createElement('button') } as any);
       component.updateColumnFilter('Site 1');
       expect(component.hasActiveFilter('site')).toBe(true);
 

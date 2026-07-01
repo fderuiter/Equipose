@@ -140,9 +140,9 @@ describe('generateRandomizationSchema – property tests', () => {
   describe('Property Tests – Stratified Caps', () => {
     const stratificationArbitrary = fc.uniqueArray(
       fc.record({
-        id: fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }),
-        name: fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }),
-        levels: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }), { minLength: 1, maxLength: 3 })
+        id: fc.string({ minLength: 1, maxLength: 5,  }),
+        name: fc.string({ minLength: 1, maxLength: 5,  }),
+        levels: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5,  }), { minLength: 1, maxLength: 3 })
       }),
       { minLength: 1, maxLength: 2, selector: (f) => f.id }
     );
@@ -293,7 +293,7 @@ describe('generateRandomizationSchema – property tests', () => {
   describe('Property Tests – Hierarchical Block Strategy', () => {
     const hbsConfigArbitrary = fc.record({
       arms: fc.constant([{ id: 'A', name: 'Arm A', ratio: 1 }, { id: 'B', name: 'Arm B', ratio: 1 }]),
-      sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5, alphaNumeric: true }), { minLength: 2, maxLength: 2 }),
+      sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5,  }), { minLength: 2, maxLength: 2 }),
       seed: fc.string(),
       globalBlockStrategy: fc.record({
         selectionType: fc.constant('FIXED_SEQUENCE' as const),

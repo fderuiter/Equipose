@@ -1,21 +1,21 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" [class]="'space-y-6 ' + domainTheme.layout().cardClasses">
-  <div cdkStepper #wizard="cdkStepper" [linear]="!isSimulationMode" (selectionChange)="onStepSelectionChange($event)" class="space-y-6">
+  <div class="space-y-6">
     <div class="flex justify-between items-center">
       <ol class="grid grid-cols-2 lg:grid-cols-6 gap-2 flex-grow">
         @for (label of stepLabels; track label; let i = $index) {
           <li [id]="'step-header-' + i" tabindex="-1" class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors outline-none focus:ring-2 focus:ring-indigo-500"
-              [class.border-indigo-500]="wizard.selectedIndex === i"
-              [class.bg-indigo-50]="wizard.selectedIndex === i"
-              [class.text-indigo-700]="wizard.selectedIndex === i"
-              [class.border-emerald-500]="wizard.selectedIndex > i"
-              [class.bg-emerald-50]="wizard.selectedIndex > i"
-              [class.text-emerald-700]="wizard.selectedIndex > i"
-              [class.border-gray-300]="wizard.selectedIndex < i"
-              [class.bg-white]="wizard.selectedIndex < i"
-              [class.text-gray-600]="wizard.selectedIndex < i"
-              [class.dark:border-slate-600]="wizard.selectedIndex < i"
-              [class.dark:bg-slate-800]="wizard.selectedIndex < i"
-              [class.dark:text-slate-200]="wizard.selectedIndex < i">
+              [class.border-indigo-500]="currentStepIndex() === i"
+              [class.bg-indigo-50]="currentStepIndex() === i"
+              [class.text-indigo-700]="currentStepIndex() === i"
+              [class.border-emerald-500]="currentStepIndex() > i"
+              [class.bg-emerald-50]="currentStepIndex() > i"
+              [class.text-emerald-700]="currentStepIndex() > i"
+              [class.border-gray-300]="currentStepIndex() < i"
+              [class.bg-white]="currentStepIndex() < i"
+              [class.text-gray-600]="currentStepIndex() < i"
+              [class.dark:border-slate-600]="currentStepIndex() < i"
+              [class.dark:bg-slate-800]="currentStepIndex() < i"
+              [class.dark:text-slate-200]="currentStepIndex() < i">
             <span class="block text-[10px] uppercase tracking-wide">Step {{ i }}</span>
             <span>{{ label }}</span>
           </li>
@@ -29,9 +29,7 @@
       }
     </div>
 
-    <ng-container [ngTemplateOutlet]="wizard.selected?.content"></ng-container>
-
-    <cdk-step [stepControl]="regulatoryGroup">
+        @if (currentStepIndex() === 0) {
       <div [formGroup]="regulatoryGroup" class="space-y-4">
         <app-regulatory-notice></app-regulatory-notice>
         <div class="flex items-center space-x-2 mt-4 px-1">
@@ -40,11 +38,11 @@
         </div>
       </div>
       <div class="pt-4 border-t flex justify-end">
-        <button type="button" cdkStepperNext [disabled]="regulatoryGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+        <button type="button" (click)="nextStep()" [disabled]="regulatoryGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
       </div>
-    </cdk-step>
+    }
 
-    <cdk-step [stepControl]="metadataGroup">
+    @if (currentStepIndex() === 1) {
       <div [formGroup]="metadataGroup" class="space-y-4">
         <div class="mb-2 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400 p-4 rounded-r-md">
           <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">Study-Agnostic Randomization Presets</h3>
@@ -94,11 +92,11 @@
       </div>
 
       <div class="pt-4 border-t flex justify-end">
-        <button type="button" cdkStepperNext [disabled]="metadataGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+        <button type="button" (click)="nextStep()" [disabled]="metadataGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
       </div>
-    </cdk-step>
+    }
 
-    <cdk-step [stepControl]="designGroup">
+    @if (currentStepIndex() === 2) {
       <div [formGroup]="designGroup" class="space-y-4">
         <section>
           <h2 class="text-lg font-semibold mb-2">Randomization Algorithm</h2>
@@ -148,12 +146,12 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <button type="button" cdkStepperPrevious class="px-4 py-2 rounded-lg border">Previous</button>
-        <button type="button" cdkStepperNext [disabled]="designGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+        <button type="button" (click)="previousStep()" class="px-4 py-2 rounded-lg border">Previous</button>
+        <button type="button" (click)="nextStep()" [disabled]="designGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
       </div>
-    </cdk-step>
+    }
 
-    <cdk-step [stepControl]="strataGroup">
+    @if (currentStepIndex() === 3) {
       <div [formGroup]="strataGroup" class="space-y-4">
         <section>
           <span id="sitesLabel" class="block text-sm mb-1">Sites</span>
@@ -168,14 +166,14 @@
             </div>
             <button type="button" (click)="addStratum()" class="text-sm px-3 py-1 rounded-lg bg-indigo-50">+ Add Factor</button>
           </div>
-          <div formArrayName="strata" cdkDropList (cdkDropListDropped)="onStrataDrop($event)" class="space-y-3">
+          <div formArrayName="strata" class="space-y-3">
             @if (strata.length === 0) {
               <p class="text-sm italic text-gray-500">No stratification factors defined.</p>
             }
             @for (stratum of strata.controls; track stratum; let stratumIndex = $index) {
-              <div [formGroupName]="$index" cdkDrag class="rounded-xl border p-4 space-y-3">
+              <div [formGroupName]="$index" draggable="true" (dragstart)="onDragStart($event, $index)" (dragover)="onDragOver($event, $index)" (drop)="onDrop($event, $index)" (dragend)="onDragEnd()" class="rounded-xl border p-4 space-y-3">
                 <div class="flex items-start gap-2">
-                  <button type="button" cdkDragHandle aria-label="Drag to reorder factor" title="Drag to reorder" class="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)">
+                  <button type="button"  aria-label="Drag to reorder factor" title="Drag to reorder" class="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 9h8M8 15h8" />
                       </svg>
@@ -229,12 +227,12 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <button type="button" cdkStepperPrevious class="px-4 py-2 rounded-lg border">Previous</button>
-        <button type="button" cdkStepperNext [disabled]="isStrataStepNextDisabled" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+        <button type="button" (click)="previousStep()" class="px-4 py-2 rounded-lg border">Previous</button>
+        <button type="button" (click)="nextStep()" [disabled]="isStrataStepNextDisabled" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
       </div>
-    </cdk-step>
+    }
 
-    <cdk-step [stepControl]="allocationGroup">
+    @if (currentStepIndex() === 4) {
       <div [formGroup]="allocationGroup" class="space-y-4">
         @if (randomizationMethod === 'BLOCK') {
           <div class="space-y-4">
@@ -341,12 +339,12 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <button type="button" cdkStepperPrevious class="px-4 py-2 rounded-lg border">Previous</button>
-        <button type="button" cdkStepperNext [disabled]="allocationGroup.invalid || form.errors?.['invalidBlockSize']" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+        <button type="button" (click)="previousStep()" class="px-4 py-2 rounded-lg border">Previous</button>
+        <button type="button" (click)="nextStep()" [disabled]="allocationGroup.invalid || form.errors?.['invalidBlockSize']" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
       </div>
-    </cdk-step>
+    }
 
-    <cdk-step [stepControl]="capsGroup">
+    @if (currentStepIndex() === 5) {
       <div [formGroup]="capsGroup" class="space-y-4">
         @if (capsResetWarning()) {
           <div class="rounded-lg border {{ domainTheme.getSemanticColor('warning').borderClass }} {{ domainTheme.getSemanticColor('warning').bgLightClass }} {{ domainTheme.getSemanticColor('warning').textClass }} px-3 py-2 text-sm">
@@ -447,12 +445,12 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <button type="button" cdkStepperPrevious class="px-4 py-2 rounded-lg border">Previous</button>
-        <button type="button" cdkStepperNext [disabled]="capsGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
+        <button type="button" (click)="previousStep()" class="px-4 py-2 rounded-lg border">Previous</button>
+        <button type="button" (click)="nextStep()" [disabled]="capsGroup.invalid" class="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50">Next</button>
       </div>
-    </cdk-step>
+    }
 
-    <cdk-step [stepControl]="form">
+    @if (currentStepIndex() === 6) {
       <div class="space-y-4">
         <section class="rounded-lg border p-4">
           <h2 class="text-lg font-semibold mb-2">Configuration Review</h2>
@@ -472,7 +470,7 @@
       </div>
 
       <div class="pt-4 border-t flex flex-wrap justify-between gap-2">
-        <button type="button" cdkStepperPrevious class="px-4 py-2 rounded-lg border">Previous</button>
+        <button type="button" (click)="previousStep()" class="px-4 py-2 rounded-lg border">Previous</button>
         <div class="flex flex-wrap justify-end gap-2">
           <button type="button" (click)="onRunMonteCarlo()" [disabled]="!form.valid" class="bg-white border border-purple-200 text-purple-700 px-4 py-2 rounded-lg disabled:opacity-50 text-sm">
             Run Statistical QA
@@ -495,6 +493,6 @@
           <button type="submit" [disabled]="!form.valid" class="bg-indigo-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 text-sm">Generate Schema</button>
         </div>
       </div>
-    </cdk-step>
+    }
   </div>
 </form>
