@@ -4,7 +4,6 @@ import { RandomizationEngineFacade } from '../randomization-engine.facade';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
-import { ProgressAnnouncerService } from '../../../core/services/progress-announcer.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,13 +67,14 @@ import { ProgressAnnouncerService } from '../../../core/services/progress-announ
               <span class="text-sm font-medium text-gray-700 dark:text-slate-300">Simulating trials…</span>
               <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ facade.monteCarloProgress() }}%</span>
             </div>
-            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600">
-                  <div
-                    class="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300 ease-out border-r-2 border-indigo-700 dark:border-indigo-400"
-                    [style.width.%]="facade.monteCarloProgress()"
-                    data-testid="mc-progress-bar"
-                  ></div>
-                </div>
+            <progress
+              class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600 [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-indigo-600 dark:[&::-webkit-progress-value]:bg-indigo-500 [&::-moz-progress-bar]:bg-indigo-600 dark:[&::-moz-progress-bar]:bg-indigo-500 transition-all duration-300 ease-out"
+              [value]="facade.monteCarloProgress()"
+              max="100"
+              data-testid="mc-progress-bar"
+            >
+              {{ facade.monteCarloProgress() }}%
+            </progress>
                 <p class="text-xs text-muted text-center">
                   {{ progressIterations() | number }} / 10,000 iterations completed - running off the main UI thread via Web Worker
                 </p>
@@ -221,7 +221,7 @@ import { ProgressAnnouncerService } from '../../../core/services/progress-announ
               }
 
               <!-- Clinical confidence banner -->
-              <div class="{{ domainTheme.getSemanticColor('success').bgLightClass }} {{ domainTheme.getSemanticColor('success').borderClass }} rounded-lg p-4 flex items-start gap-3">
+              <div #completionAlert tabindex="-1" class="outline-none {{ domainTheme.getSemanticColor('success').bgLightClass }} {{ domainTheme.getSemanticColor('success').borderClass }} rounded-lg p-4 flex items-start gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ domainTheme.getSemanticColor('success').textClass }} flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -258,11 +258,10 @@ import { ProgressAnnouncerService } from '../../../core/services/progress-announ
 export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
   protected readonly domainTheme = inject(DomainThemeService);
-  protected readonly progressAnnouncer = inject(ProgressAnnouncerService);
-
   @ViewChild('modalDialog') modalDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
   @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;
+  @ViewChild('completionAlert') completionAlert?: ElementRef<HTMLElement>;
 
   constructor() {
     effect(() => {
@@ -281,20 +280,12 @@ export class MonteCarloModalComponent {
     });
 
     effect(() => {
-      const progress = this.facade.monteCarloProgress();
-      if (progress > 0 || this.facade.isMonteCarloRunning()) {
-        this.progressAnnouncer.announceProgress(progress, 'Simulation');
-      }
-      if (!this.facade.isMonteCarloRunning() && progress === 0) {
-        this.progressAnnouncer.resetTask('Simulation');
-      }
-    });
-
-    effect(() => {
       const results = this.facade.monteCarloResults();
       if (results) {
         setTimeout(() => {
-          if (this.warningBanner?.nativeElement) {
+          if (this.completionAlert?.nativeElement) {
+            this.completionAlert.nativeElement.focus();
+          } else if (this.warningBanner?.nativeElement) {
             this.warningBanner.nativeElement.focus();
           } else if (this.resultsHeader?.nativeElement) {
             this.resultsHeader.nativeElement.focus();
