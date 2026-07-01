@@ -16,6 +16,7 @@ import { UnifiedValidationAuthority } from '../../core/validation/unified-valida
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -25,7 +26,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective],
+  imports: [ReactiveFormsModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {

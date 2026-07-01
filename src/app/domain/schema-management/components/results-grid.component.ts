@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
+import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { GeneratedSchema } from '../../core/models/randomization.model';
@@ -59,7 +60,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe],
+  imports: [KeyValuePipe, AppTooltipDirective],
   templateUrl: './results-grid.component.html',
   styles: [`
     .dot { transition: transform 0.2s ease-in-out; }

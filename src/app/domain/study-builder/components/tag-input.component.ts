@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetec
 import { AbstractControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
+import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 
 /**
  * TagInputComponent – an interactive chip/tag input that reads and writes
@@ -19,7 +20,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
   selector: 'app-tag-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [A11yValidationDirective],
+  imports: [A11yValidationDirective, AppTooltipDirective],
   template: `
     <div
       class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2 focus-within:ring-offset-focus-offset cursor-text transition-colors"
@@ -33,7 +34,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
             (click)="removeTag(tag); $event.stopPropagation()" (keydown.enter)="removeTag(tag); $event.stopPropagation()" tabindex="0"
             class="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"
             [attr.aria-label]="'Remove ' + tag"
-            [attr.title]="'Remove ' + tag"
+            [appTooltip]="'Remove ' + tag"
           >×</button>
         </span>
       }
