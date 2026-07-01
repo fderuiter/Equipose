@@ -101,16 +101,14 @@
       <div [formGroup]="designGroup" class="space-y-4">
         <section>
           <h2 class="text-lg font-semibold mb-2">Randomization Algorithm</h2>
-          <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Randomization algorithm">
+          <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Randomization algorithm" appRovingTabindex="[role='radio']">
             <button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('BLOCK')" class="flex-1 px-3 py-2 text-sm"
                     role="radio" [attr.aria-checked]="randomizationMethod === 'BLOCK'"
-                    (keydown)="onRadioGroupArrowKey($event, designGroup.get('randomizationMethod'), ['BLOCK', 'MINIMIZATION'])"
                     [class.bg-indigo-600]="randomizationMethod === 'BLOCK'" [class.text-white]="randomizationMethod === 'BLOCK'">
               Stratified Block
             </button>
             <button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('MINIMIZATION')" class="flex-1 px-3 py-2 text-sm border-l"
                     role="radio" [attr.aria-checked]="randomizationMethod === 'MINIMIZATION'"
-                    (keydown)="onRadioGroupArrowKey($event, designGroup.get('randomizationMethod'), ['BLOCK', 'MINIMIZATION'])"
                     [class.bg-indigo-600]="randomizationMethod === 'MINIMIZATION'" [class.text-white]="randomizationMethod === 'MINIMIZATION'">
               Minimization
             </button>
@@ -247,14 +245,12 @@
 
             <div>
               <span class="block text-sm mb-2">Block Selection Mode</span>
-              <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Block selection mode">
+              <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Block selection mode" appRovingTabindex="[role='radio']">
                 <button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('RANDOM_POOL')" class="flex-1 px-3 py-2 text-sm"
                         role="radio" [attr.aria-checked]="blockSelectionType === 'RANDOM_POOL'"
-                        (keydown)="onRadioGroupArrowKey($event, allocationGroup.get('blockSelectionType'), ['RANDOM_POOL', 'FIXED_SEQUENCE'])"
                         [class.bg-indigo-600]="blockSelectionType === 'RANDOM_POOL'" [class.text-white]="blockSelectionType === 'RANDOM_POOL'">Random</button>
                 <button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('FIXED_SEQUENCE')" class="flex-1 px-3 py-2 text-sm border-l"
                         role="radio" [attr.aria-checked]="blockSelectionType === 'FIXED_SEQUENCE'"
-                        (keydown)="onRadioGroupArrowKey($event, allocationGroup.get('blockSelectionType'), ['RANDOM_POOL', 'FIXED_SEQUENCE'])"
                         [class.bg-indigo-600]="blockSelectionType === 'FIXED_SEQUENCE'" [class.text-white]="blockSelectionType === 'FIXED_SEQUENCE'">Fixed</button>
               </div>
             </div>
@@ -286,14 +282,12 @@
                       </div>
                     </div>
                     <input type="text" formControlName="sizesStr" class="w-full rounded-lg border px-3 py-1.5 text-sm" placeholder="e.g., 2, 4">
-                    <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Override block selection mode">
+                    <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Override block selection mode" appRovingTabindex="[role='radio']">
                       <button type="button" (click)="override.get('selectionType')?.setValue('RANDOM_POOL')" class="flex-1 px-3 py-1.5 text-xs"
                               role="radio" [attr.aria-checked]="override.get('selectionType')?.value === 'RANDOM_POOL'"
-                              (keydown)="onRadioGroupArrowKey($event, override.get('selectionType'), ['RANDOM_POOL', 'FIXED_SEQUENCE'])"
                               [class.bg-indigo-600]="override.get('selectionType')?.value === 'RANDOM_POOL'" [class.text-white]="override.get('selectionType')?.value === 'RANDOM_POOL'">Random</button>
                       <button type="button" (click)="override.get('selectionType')?.setValue('FIXED_SEQUENCE')" class="flex-1 px-3 py-1.5 text-xs border-l"
                               role="radio" [attr.aria-checked]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'"
-                              (keydown)="onRadioGroupArrowKey($event, override.get('selectionType'), ['RANDOM_POOL', 'FIXED_SEQUENCE'])"
                               [class.bg-indigo-600]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [class.text-white]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'">Fixed</button>
                     </div>
                     <button type="button" (click)="removeBlockOverride(i)" class="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Override" appTooltip="Remove Override">
@@ -355,18 +349,15 @@
 
         <div>
           <span class="block text-sm mb-2">Enrollment Cap Strategy</span>
-          <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Enrollment cap strategy">
+          <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Enrollment cap strategy" appRovingTabindex="[role='radio']">
             <button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MANUAL_MATRIX')" class="flex-1 px-3 py-2 text-xs"
                     role="radio" [attr.aria-checked]="capStrategy === 'MANUAL_MATRIX'"
-                    (keydown)="onRadioGroupArrowKey($event, capsGroup.get('capStrategy'), ['MANUAL_MATRIX', 'PROPORTIONAL', 'MARGINAL_ONLY'])"
                     [class.bg-indigo-600]="capStrategy === 'MANUAL_MATRIX'" [class.text-white]="capStrategy === 'MANUAL_MATRIX'">Manual Matrix</button>
             <button type="button" (click)="capsGroup.get('capStrategy')?.setValue('PROPORTIONAL')" class="flex-1 px-3 py-2 text-xs border-l"
                     role="radio" [attr.aria-checked]="capStrategy === 'PROPORTIONAL'"
-                    (keydown)="onRadioGroupArrowKey($event, capsGroup.get('capStrategy'), ['MANUAL_MATRIX', 'PROPORTIONAL', 'MARGINAL_ONLY'])"
                     [class.bg-indigo-600]="capStrategy === 'PROPORTIONAL'" [class.text-white]="capStrategy === 'PROPORTIONAL'">Proportional</button>
             <button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MARGINAL_ONLY')" class="flex-1 px-3 py-2 text-xs border-l"
                     role="radio" [attr.aria-checked]="capStrategy === 'MARGINAL_ONLY'"
-                    (keydown)="onRadioGroupArrowKey($event, capsGroup.get('capStrategy'), ['MANUAL_MATRIX', 'PROPORTIONAL', 'MARGINAL_ONLY'])"
                     [class.bg-indigo-600]="capStrategy === 'MARGINAL_ONLY'" [class.text-white]="capStrategy === 'MARGINAL_ONLY'">Marginal Only</button>
           </div>
         </div>
