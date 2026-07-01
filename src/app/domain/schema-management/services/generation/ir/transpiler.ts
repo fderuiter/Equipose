@@ -3,7 +3,7 @@ import { generateRandomizationSchema } from '../../../../randomization-engine/co
 import { FormattingUtil } from '../formatting.util';
 import { ReproducibilityUtil } from '../reproducibility.util';
 import { R_TEMPLATE, SAS_TEMPLATE, PYTHON_TEMPLATE, STATA_TEMPLATE } from './templates';
-import { LogicIR, LogicIRTask } from './ir.model';
+import { LogicIR, LogicIRTask, SubjectIdToken } from './ir.model';
 import { APP_VERSION } from '../../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
 
@@ -16,6 +16,40 @@ export class CodeTranspiler {
       result = result.replace(regex, String(value));
     }
     return result.trim() + '\n';
+  }
+
+  private static parseSubjectIdMask(mask: string): SubjectIdToken[] {
+    const tokens: SubjectIdToken[] = [];
+    const regex = /(\{SITE\}|\{STRATUM\}|\{SEQ:\d+\}|\{RND:\d+\}|\{CHECKSUM\}|\[SiteID\]|\[StratumCode\]|\[0+1\])/g;
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(mask)) !== null) {
+      if (match.index > lastIndex) {
+        tokens.push({ type: 'literal', value: mask.slice(lastIndex, match.index) });
+      }
+      const tokenStr = match[0];
+      if (tokenStr === '{SITE}' || tokenStr === '[SiteID]') {
+        tokens.push({ type: 'site' });
+      } else if (tokenStr === '{STRATUM}' || tokenStr === '[StratumCode]') {
+        tokens.push({ type: 'stratum' });
+      } else if (tokenStr === '{CHECKSUM}') {
+        tokens.push({ type: 'checksum' });
+      } else if (tokenStr.startsWith('{SEQ:')) {
+        const length = parseInt(tokenStr.slice(5, -1), 10);
+        tokens.push({ type: 'seq', length });
+      } else if (tokenStr.startsWith('{RND:')) {
+        const length = parseInt(tokenStr.slice(5, -1), 10);
+        tokens.push({ type: 'rnd', length });
+      } else if (tokenStr.startsWith('[0') && tokenStr.endsWith('1]')) {
+        const length = tokenStr.length - 2; // e.g. [01] -> length 4 - 2 = 2
+        tokens.push({ type: 'seq', length });
+      }
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < mask.length) {
+      tokens.push({ type: 'literal', value: mask.slice(lastIndex) });
+    }
+    return tokens;
   }
 
   public static buildIR(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): LogicIR {
@@ -60,6 +94,8 @@ export class CodeTranspiler {
       }
     }
 
+    const subjectIdTokens = CodeTranspiler.parseSubjectIdMask(config.subjectIdMask || '[SiteID]-[StratumCode]-[0001]');
+
     return {
       seedHash,
       totalRatio,
@@ -67,7 +103,8 @@ export class CodeTranspiler {
       blockSizes: config.blockSizes || [],
       tasks,
       method,
-      minimizationP: config.minimizationConfig?.p || 0.8
+      minimizationP: config.minimizationConfig?.p || 0.8,
+      subjectIdTokens
     };
   }
 

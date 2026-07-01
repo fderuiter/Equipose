@@ -56,6 +56,7 @@ export class RStrategy implements CodeGenerationStrategy {
     } else {
       algorithmicLogic += `block_sizes <- c(${ir.blockSizes.join(', ')})\n`;
       algorithmicLogic += `total_ratio <- ${ir.totalRatio}\n`;
+      algorithmicLogic += `ALPHANUMERIC <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9")\n`;
       
       let armsR = ir.arms.map(a => `list(name="${FormattingUtil.escapeString(a.name)}", ratio=${a.ratio})`).join(', ');
       algorithmicLogic += `arms <- list(${armsR})\n\n`;
@@ -89,10 +90,53 @@ export class RStrategy implements CodeGenerationStrategy {
           taskLogic += `  block <- build_block(size)\n`;
           taskLogic += `  for (trt in block) {\n`;
           taskLogic += `    seq_count <- seq_count + 1\n`;
-          taskLogic += `    subj_id <- "${FormattingUtil.escapeString(config.subjectIdMask)}"\n`;
-          taskLogic += `    subj_id <- gsub("{SITE}", "${FormattingUtil.escapeString(task.site)}", subj_id, fixed=TRUE)\n`;
-          taskLogic += `    subj_id <- gsub("{STRATUM}", "${FormattingUtil.escapeString(task.stratumCode)}", subj_id, fixed=TRUE)\n`;
-          taskLogic += `    subj_id <- sub("\\\\{SEQ:[0-9]+\\\\}", sprintf("%03d", seq_count), subj_id)\n`;
+
+          let baseBuilder = 'paste0(';
+          let hasChecksum = false;
+          const args = [];
+          for (const token of ir.subjectIdTokens) {
+            if (token.type === 'literal') {
+              args.push(`"${FormattingUtil.escapeString(token.value)}"`);
+            } else if (token.type === 'site') {
+              args.push(`"${FormattingUtil.escapeString(task.site)}"`);
+            } else if (token.type === 'stratum') {
+              args.push(`"${FormattingUtil.escapeString(task.stratumCode)}"`);
+            } else if (token.type === 'seq') {
+              args.push(`sprintf("%0${token.length}d", seq_count)`);
+            } else if (token.type === 'rnd') {
+              args.push(`paste0(ALPHANUMERIC[(replicate(${token.length}, random_int()) %% length(ALPHANUMERIC)) + 1], collapse="")`);
+            } else if (token.type === 'checksum') {
+              hasChecksum = true;
+              args.push(`"{CHECKSUM}"`);
+            }
+          }
+          baseBuilder += args.join(', ') + ')';
+
+          taskLogic += `    subj_id <- ${baseBuilder}\n`;
+          if (hasChecksum) {
+            taskLogic += `    if (grepl("{CHECKSUM}", subj_id, fixed=TRUE)) {\n`;
+            taskLogic += `      base_for_luhn <- gsub("{CHECKSUM}", "", subj_id, fixed=TRUE)\n`;
+            taskLogic += `      digits <- gsub("\\\\D", "", base_for_luhn)\n`;
+            taskLogic += `      chk <- "0"\n`;
+            taskLogic += `      if (nchar(digits) > 0) {\n`;
+            taskLogic += `        s <- 0\n`;
+            taskLogic += `        is_even <- FALSE\n`;
+            taskLogic += `        chars <- strsplit(digits, "")[[1]]\n`;
+            taskLogic += `        for (i in length(chars):1) {\n`;
+            taskLogic += `          d <- as.integer(chars[i])\n`;
+            taskLogic += `          if (is_even) {\n`;
+            taskLogic += `            d <- d * 2\n`;
+            taskLogic += `            if (d > 9) d <- d - 9\n`;
+            taskLogic += `          }\n`;
+            taskLogic += `          s <- s + d\n`;
+            taskLogic += `          is_even <- !is_even\n`;
+            taskLogic += `        }\n`;
+            taskLogic += `        chk <- as.character((10 - (s %% 10)) %% 10)\n`;
+            taskLogic += `      }\n`;
+            taskLogic += `      subj_id <- sub("{CHECKSUM}", chk, subj_id, fixed=TRUE)\n`;
+            taskLogic += `    }\n`;
+          }
+
           taskLogic += `    schema_list[[length(schema_list)+1]] <- data.frame(SubjectID=subj_id, Site="${FormattingUtil.escapeString(task.site)}", Treatment=trt, BlockNumber=block_num, BlockSize=size, StratumCode="${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}, stringsAsFactors=FALSE)\n`;
           taskLogic += `    count <- count + 1\n`;
           taskLogic += `    if (count >= ${task.cap}) break\n`;

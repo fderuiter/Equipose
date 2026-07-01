@@ -75,6 +75,8 @@ export class SasStrategy implements CodeGenerationStrategy {
       algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, config, schema);
     } else {
       algorithmicLogic += `  array blk[1000] $50 _temporary_;\n`;
+      algorithmicLogic += `  length ALPHANUMERIC $ 36;\n`;
+      algorithmicLogic += `  ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";\n`;
       algorithmicLogic += `  seq_count = 0;\n`;
       
       algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
@@ -104,10 +106,68 @@ export class SasStrategy implements CodeGenerationStrategy {
           taskLogic += `     do i = 1 to size;\n`;
           taskLogic += `        Treatment = blk[i]; BlockNumber = block_num; BlockSize = size;\n`;
           taskLogic += `        seq_count = seq_count + 1;\n`;
-          taskLogic += `        SubjectID = "${FormattingUtil.escapeSasString(config.subjectIdMask)}";\n`;
-          taskLogic += `        SubjectID = tranwrd(SubjectID, "{SITE}", "${FormattingUtil.escapeSasString(task.site)}");\n`;
-          taskLogic += `        SubjectID = tranwrd(SubjectID, "{STRATUM}", "${FormattingUtil.escapeSasString(task.stratumCode)}");\n`;
-          taskLogic += `        SubjectID = prxchange('s/\{SEQ:(\d+)\}/' || put(seq_count, z3.) || '/', -1, SubjectID);\n`; // Naive replace for sas
+
+          let baseBuilder = '';
+          let hasChecksum = false;
+          let rndVarsSetup = '';
+          let rndCounter = 1;
+
+          for (const token of ir.subjectIdTokens) {
+            if (token.type === 'literal') {
+              baseBuilder += `"${FormattingUtil.escapeSasString(token.value)}" || `;
+            } else if (token.type === 'site') {
+              baseBuilder += `"${FormattingUtil.escapeSasString(task.site)}" || `;
+            } else if (token.type === 'stratum') {
+              baseBuilder += `"${FormattingUtil.escapeSasString(task.stratumCode)}" || `;
+            } else if (token.type === 'seq') {
+              baseBuilder += `put(seq_count, z${token.length}.) || `;
+            } else if (token.type === 'rnd') {
+              rndVarsSetup += `        length rnd_str_${rndCounter} $ ${token.length};\n`;
+              rndVarsSetup += `        rnd_str_${rndCounter} = "";\n`;
+              rndVarsSetup += `        do _k = 1 to ${token.length};\n`;
+              rndVarsSetup += `          link get_rand_int;\n`;
+              rndVarsSetup += `          char_idx = mod(rand_int, 36) + 1;\n`;
+              rndVarsSetup += `          rnd_str_${rndCounter} = trim(rnd_str_${rndCounter}) || substr(ALPHANUMERIC, char_idx, 1);\n`;
+              rndVarsSetup += `        end;\n`;
+              baseBuilder += `trim(rnd_str_${rndCounter}) || `;
+              rndCounter++;
+            } else if (token.type === 'checksum') {
+              hasChecksum = true;
+              baseBuilder += `"{CHECKSUM}" || `;
+            }
+          }
+          if (baseBuilder.endsWith(' || ')) {
+            baseBuilder = baseBuilder.slice(0, -4);
+          }
+          if (baseBuilder === '') {
+            baseBuilder = `""`;
+          }
+
+          taskLogic += rndVarsSetup;
+          taskLogic += `        SubjectID = ${baseBuilder};\n`;
+          if (hasChecksum) {
+            taskLogic += `        if index(SubjectID, "{CHECKSUM}") > 0 then do;\n`;
+            taskLogic += `          base_for_luhn = tranwrd(SubjectID, "{CHECKSUM}", "");\n`;
+            taskLogic += `          digits = prxchange('s/\\D//', -1, trim(base_for_luhn));\n`;
+            taskLogic += `          chk = "0";\n`;
+            taskLogic += `          if length(trim(digits)) > 0 then do;\n`;
+            taskLogic += `            s = 0;\n`;
+            taskLogic += `            is_even = 0;\n`;
+            taskLogic += `            do _i = length(trim(digits)) to 1 by -1;\n`;
+            taskLogic += `              d = input(substr(trim(digits), _i, 1), 1.);\n`;
+            taskLogic += `              if is_even then do;\n`;
+            taskLogic += `                d = d * 2;\n`;
+            taskLogic += `                if d > 9 then d = d - 9;\n`;
+            taskLogic += `              end;\n`;
+            taskLogic += `              s = s + d;\n`;
+            taskLogic += `              if is_even = 1 then is_even = 0; else is_even = 1;\n`;
+            taskLogic += `            end;\n`;
+            taskLogic += `            chk = put(mod(10 - mod(s, 10), 10), 1.);\n`;
+            taskLogic += `          end;\n`;
+            taskLogic += `          SubjectID = tranwrd(SubjectID, "{CHECKSUM}", trim(left(chk)));\n`;
+            taskLogic += `        end;\n`;
+          }
+
           taskLogic += `        output;\n`;
           taskLogic += `        count = count + 1;\n`;
           taskLogic += `        if count >= cap then leave;\n`;
