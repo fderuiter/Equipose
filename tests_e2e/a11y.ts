@@ -84,3 +84,30 @@ export class FocusTrapPlugin {
   }
 }
 
+/**
+ * StructuralAriaPlugin validates the presence and hierarchy of ARIA roles
+ * in modal components, ensuring complete WAI-ARIA implementations.
+ */
+export class StructuralAriaPlugin {
+  /**
+   * Validates that any tablist within the container has at least one associated tabpanel.
+   * If a tablist is found but no tabpanels exist in the container, it throws an error.
+   */
+  static async verifyTablistHierarchy(page: Page, container: Locator): Promise<void> {
+    const errorMsg = await container.evaluate(node => {
+      const tablists = node.querySelectorAll('[role="tablist"]');
+      for (const tablist of Array.from(tablists)) {
+        const panels = node.querySelectorAll('[role="tabpanel"]');
+        if (panels.length === 0) {
+          return 'Tab list detected without associated tab panels.';
+        }
+      }
+      return null;
+    });
+
+    if (errorMsg) {
+      throw new Error(`Accessibility audit failed: ${errorMsg}`);
+    }
+  }
+}
+

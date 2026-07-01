@@ -1,5 +1,5 @@
 import { test, expect, Locator, Page } from '@playwright/test';
-import { checkA11y, FocusTrapPlugin } from './a11y';
+import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin } from './a11y';
 import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator } from './generator-helpers';
 
 const screenshotOptions = { fullPage: true, maxDiffPixels: 200 } as const;
@@ -123,6 +123,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   // Verify focus trap
   await page.waitForTimeout(100);
   await FocusTrapPlugin.verifyFocusContainment(page, modal, 8);
+  await StructuralAriaPlugin.verifyTablistHierarchy(page, modal);
   
   await checkA11y(page, 'div[role="dialog"]');
   
