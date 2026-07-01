@@ -66,7 +66,7 @@ describe('generateRandomizationSchema – core behaviour', () => {
   it('assigns a generatedAt ISO timestamp', () => {
     const result = generateRandomizationSchema(BASE_CONFIG);
     expect(() => new Date(result.metadata.generatedAt)).not.toThrow();
-    expect(new Date(result.metadata.generatedAt).getFullYear()).toBeGreaterThan(2020);
+    expect(parseInt(result.metadata.generatedAt.substring(0, 4), 10)).toBeGreaterThan(2020);
   });
 
   it('copies config verbatim into metadata.config', () => {
