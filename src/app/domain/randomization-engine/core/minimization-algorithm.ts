@@ -3,13 +3,7 @@ import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../core/constants/prec
 import { generateSubjectId } from './subject-id-engine';
 import { SubjectRegistry } from './subject-registry';
 
-function gcd(a: number, b: number): number {
-  return b === 0 ? a : gcd(b, a % b);
-}
-
-function lcm(a: number, b: number): number {
-  return a === 0 || b === 0 ? 0 : Math.abs(a * b) / gcd(a, b);
-}
+import { MathUtil } from '../../core/utils/math.util';
 
 /**
  * Samples a level for one stratification factor based on expected probabilities,
@@ -150,7 +144,7 @@ export function generateMinimization(
   let armRatioLcm = 1;
   for (const arm of arms) {
     if (arm.ratio > 0) {
-      armRatioLcm = lcm(armRatioLcm, arm.ratio);
+      armRatioLcm = MathUtil.lcm(armRatioLcm, arm.ratio);
     }
   }
   const ratioMultipliers = new Map<string, number>();
