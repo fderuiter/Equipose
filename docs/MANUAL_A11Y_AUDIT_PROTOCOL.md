@@ -34,3 +34,17 @@ To ensure legal and functional compliance for clinical study configurations by m
 
 ### Conclusion
 The interaction integrity updates satisfy all criteria. Manual audit confirms that standard keyboard navigation effectively reorders list items with full auditory feedback, and dynamic focus management safely guides users through wizard transitions.
+
+#### 3. Monte Carlo Simulation Workflow
+- [ ] Open the Monte Carlo modal.
+- [ ] **Screen Reader Verification:** NVDA/VoiceOver announces simulation progress updates periodically (e.g., at 25% increments).
+- [ ] **Screen Reader Verification:** NVDA/VoiceOver announces when the simulation has finished and results are available.
+- [ ] Press the `Escape` key while the simulation is running.
+- [ ] **Verification:** The application state correctly reflects that the simulation is cancelled and no longer running.
+
+#### 4. Code Generation Workflow
+- [ ] Open the Code Generation modal.
+- [ ] **Keyboard Verification:** Use the `Left Arrow` and `Right Arrow` keys to navigate between the different language tabs (R, SAS, Python, Stata).
+- [ ] **Screen Reader Verification:** NVDA/VoiceOver announces the currently selected tab and its status.
+- [ ] Click the "Copy Code" button.
+- [ ] **Screen Reader Verification:** A live region announcement confirms "Copied to clipboard!".

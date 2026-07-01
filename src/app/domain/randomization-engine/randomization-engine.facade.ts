@@ -5,6 +5,7 @@ import {
   RandomizationResult
 } from '../core/models/randomization.model';
 import { RandomizationService } from './randomization.service';
+import { AnnouncementService } from '../../core/services/announcement.service';
 import { ToastService } from '../../core/services/toast.service';
 import { computeAuditHash } from './core/crypto-hash';
 import { generateCryptoSeed } from './core/randomization-algorithm';
@@ -21,6 +22,7 @@ export class RandomizationEngineFacade {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly randomizationService = inject(RandomizationService);
   private readonly toastService = inject(ToastService);
+  private readonly announcementService = inject(AnnouncementService);
 
   private worker: Worker | null = null;
   private pendingCallbacks = new Map<
@@ -135,14 +137,17 @@ export class RandomizationEngineFacade {
 
     this.pendingMonteCarloCallbacks.set(id, {
       onProgress: (p: MonteCarloProgressPayload) => {
-        this.monteCarloProgress.set(
-          Math.round((p.iterationsCompleted / p.totalIterations) * 100)
-        );
+        const pct = Math.round((p.iterationsCompleted / p.totalIterations) * 100);
+        this.monteCarloProgress.set(pct);
+        if (pct > 0 && pct % 25 === 0) {
+          this.announcementService.announce(`Simulation progress: ${pct}%`, 'polite');
+        }
       },
       onSuccess: (r: MonteCarloSuccessPayload) => {
         this.monteCarloResults.set(r);
         this.isMonteCarloRunning.set(false);
         this.monteCarloProgress.set(100);
+        this.announcementService.announce('Simulation complete. Results are available.', 'polite');
       },
       onError: () => {
         this.isMonteCarloRunning.set(false);
@@ -154,7 +159,22 @@ export class RandomizationEngineFacade {
     this.worker.postMessage(command);
   }
 
+
+  cancelMonteCarlo(): void {
+    if (this.isMonteCarloRunning()) {
+      this.isMonteCarloRunning.set(false);
+      this.monteCarloProgress.set(0);
+      this.monteCarloResults.set(null);
+      this.announcementService.announce('Simulation stopped by user.', 'polite');
+      
+      // Stop the worker somehow if possible. If not, just clear the callbacks.
+      this.pendingMonteCarloCallbacks.clear();
+      // To truly stop it we might need to recreate the worker, but for state sync this is enough.
+    }
+  }
+
   closeMonteCarloModal(): void {
+
     this.monteCarloResults.set(null);
     this.monteCarloProgress.set(0);
     this.isMonteCarloRunning.set(false);

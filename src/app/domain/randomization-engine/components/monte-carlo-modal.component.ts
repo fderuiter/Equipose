@@ -11,7 +11,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
   standalone: true,
   imports: [DecimalPipe, KeyboardScrollDirective],
   template: `
-    <dialog #modalDialog class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
+    <dialog #modalDialog (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
       <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
 
       <!-- Header -->
@@ -297,6 +297,15 @@ export class MonteCarloModalComponent {
     if (this.modalDialog?.nativeElement) {
       this.modalDialog.nativeElement.close();
     }
+  }
+
+  onCancel(event: Event): void {
+    // Synchronize application state when closed via Escape key
+    event.preventDefault();
+    if (this.facade.isMonteCarloRunning()) {
+      this.facade.cancelMonteCarlo();
+    }
+    this.closeModal();
   }
 
   /** Threshold (in %) above which the post-attrition imbalance warning banner is shown. */

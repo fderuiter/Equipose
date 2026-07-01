@@ -125,6 +125,20 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await FocusTrapPlugin.verifyFocusContainment(page, modal, 8);
   
   await checkA11y(page, 'div[role="dialog"]');
+  
+  // Verify accessibility across all language paths
+  await page.getByRole('tab', { name: /SAS/i }).click();
+  await expect(modal.getByTestId('generated-code')).toBeVisible();
+  await checkA11y(page, 'div[role="dialog"]');
+
+  await page.getByRole('tab', { name: /Python/i }).click();
+  await expect(modal.getByTestId('generated-code')).toBeVisible();
+  await checkA11y(page, 'div[role="dialog"]');
+
+  await page.getByRole('tab', { name: /Stata/i }).click();
+  await expect(modal.getByTestId('generated-code')).toBeVisible();
+  await checkA11y(page, 'div[role="dialog"]');
+  
   await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, screenshotOptions);
   await modal.getByRole('button', { name: /Close/i }).first().click();
   await expect(modal).toBeHidden();

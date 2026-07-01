@@ -114,6 +114,9 @@ importers:
       angular-eslint:
         specifier: 21.4.0
         version: 21.4.0(@angular/cli@21.2.8(@types/node@25.6.0)(chokidar@5.0.0))(chokidar@5.0.0)(eslint@10.4.0(jiti@2.6.1))(typescript-eslint@8.59.3(eslint@10.4.0(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
+      axe-core:
+        specifier: ^4.12.1
+        version: 4.12.1
       eslint:
         specifier: ^10.4.0
         version: 10.4.0(jiti@2.6.1)
@@ -2876,6 +2879,10 @@ packages:
 
   axe-core@4.11.4:
     resolution: {integrity: sha512-KunSNx+TVpkAw/6ULfhnx+HWRecjqZGTOyquAoWHYLRSdK1tB5Ihce1ZW+UY3fj33bYAFWPu7W/GRSmmrCGuxA==}
+    engines: {node: '>=4'}
+
+  axe-core@4.12.1:
+    resolution: {integrity: sha512-s7iGf5GaVMxEG0ENN9x+xTr7GFZCb1ZP/1uATUpCEK2X78nDB3RwbtFCo9pGAf9ru+VwoQ464DkaLEeRM08wJA==}
     engines: {node: '>=4'}
 
   axobject-query@4.1.0:
@@ -8428,6 +8435,8 @@ snapshots:
   async@3.2.6: {}
 
   axe-core@4.11.4: {}
+
+  axe-core@4.12.1: {}
 
   axobject-query@4.1.0: {}
 

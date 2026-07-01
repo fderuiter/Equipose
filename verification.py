@@ -30,21 +30,21 @@ def run_cuj(page):
     download_info.value.save_as("./output/shadow.py")
 
     # Get code for R
-    page.get_by_role("button", name="R", exact=True).click()
+    page.get_by_role("tab", name="R", exact=True).click()
     page.wait_for_timeout(500)
     with page.expect_download() as download_info:
         page.locator("button:has-text('Download')").first.click()
     download_info.value.save_as("./output/shadow.R")
 
     # Get code for SAS
-    page.get_by_role("button", name="SAS", exact=True).click()
+    page.get_by_role("tab", name="SAS", exact=True).click()
     page.wait_for_timeout(500)
     with page.expect_download() as download_info:
         page.locator("button:has-text('Download')").first.click()
     download_info.value.save_as("./output/shadow.sas")
 
     # Get code for Stata
-    page.get_by_role("button", name="Stata", exact=True).click()
+    page.get_by_role("tab", name="Stata", exact=True).click()
     page.wait_for_timeout(500)
     with page.expect_download() as download_info:
         page.locator("button:has-text('Download')").first.click()
