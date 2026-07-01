@@ -1,3 +1,4 @@
+import { AppTooltipDirective } from './core/directives/tooltip.directive';
 import {ChangeDetectionStrategy, Component, HostListener, inject, signal, PLATFORM_ID} from '@angular/core';
 import {RouterOutlet, RouterLink, RouterLinkActive} from '@angular/router';
 import {isPlatformBrowser} from '@angular/common';
@@ -11,7 +12,7 @@ import { FocusManagerDirective } from './core/directives/focus-manager.directive
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent, FocusManagerDirective],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent, FocusManagerDirective, AppTooltipDirective],
   template: `
     <!-- Skip to main content (accessibility) -->
     <a href="#main-content"
@@ -56,7 +57,7 @@ import { FocusManagerDirective } from './core/directives/focus-manager.directive
                 (click)="toggleThemeMenu($event)"
                 class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-indigo-100 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
                 aria-label="Toggle colour theme"
-                title="Toggle colour theme"
+                appTooltip="Toggle colour theme"
                 [attr.aria-expanded]="themeMenuOpen()"
                 aria-haspopup="true"
               >
@@ -114,7 +115,7 @@ import { FocusManagerDirective } from './core/directives/focus-manager.directive
               (click)="toggleThemeMenu($event)"
               class="flex items-center rounded-lg p-2 text-indigo-100 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
               aria-label="Toggle colour theme"
-              title="Toggle colour theme"
+              appTooltip="Toggle colour theme"
               [attr.aria-expanded]="themeMenuOpen()"
             >
               @if (theme.mode() === 'Light') {
@@ -142,7 +143,7 @@ import { FocusManagerDirective } from './core/directives/focus-manager.directive
               [attr.aria-expanded]="mobileMenuOpen()"
               aria-controls="mobile-menu"
               aria-label="Toggle navigation menu"
-              title="Toggle navigation menu"
+              appTooltip="Toggle navigation menu"
             >
               @if (!mobileMenuOpen()) {
                 <!-- Hamburger icon -->

@@ -108,7 +108,7 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
                   (click)="viewState.clearFilter()"
                   class="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200 leading-none rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   aria-label="Remove filter"
-                  title="Remove filter"
+                  appTooltip="Remove filter"
                 >✕</button>
               </span>
               <button

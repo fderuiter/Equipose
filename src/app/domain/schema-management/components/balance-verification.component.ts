@@ -1,6 +1,7 @@
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
+import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
 
@@ -35,7 +36,7 @@ export interface MarginalBalanceRow {
 @Component({
   selector: 'app-balance-verification',
   standalone: true,
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, AppTooltipDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (state.results(); as result) {
@@ -87,11 +88,11 @@ export interface MarginalBalanceRow {
                   @for (ab of globalRow().arms; track ab.arm.id) {
                     <td class="px-6 py-3 text-right tabular-nums"
                         [class]="cellClass(ab.status)"
-                        [title]="tooltipText(ab)">
+                        [appTooltip]="tooltipText(ab)">
                       {{ ab.actual }}&nbsp;/&nbsp;{{ ab.target | number:'1.0-2' }}
                       @if (ab.status === 0) { <span class="ml-1">✓</span> }
                       @if (ab.status === 1) { <span class="ml-1">⚠</span> }
-                      @if (ab.status === 2) { <span class="ml-1" title="Critical error">✕</span> }
+                      @if (ab.status === 2) { <span class="ml-1" appTooltip="Critical error">✕</span> }
                     </td>
                   }
                 </tr>
@@ -128,11 +129,11 @@ export interface MarginalBalanceRow {
                       @for (ab of row.arms; track ab.arm.id) {
                         <td class="px-6 py-3 text-right tabular-nums"
                             [class]="cellClass(ab.status)"
-                            [title]="tooltipText(ab)">
+                            [appTooltip]="tooltipText(ab)">
                           {{ ab.actual }}&nbsp;/&nbsp;{{ ab.target | number:'1.0-2' }}
                           @if (ab.status === 0) { <span class="ml-1">✓</span> }
                           @if (ab.status === 1) { <span class="ml-1">⚠</span> }
-                          @if (ab.status === 2) { <span class="ml-1" title="Critical error">✕</span> }
+                          @if (ab.status === 2) { <span class="ml-1" appTooltip="Critical error">✕</span> }
                         </td>
                       }
                     </tr>
@@ -208,16 +209,16 @@ export interface MarginalBalanceRow {
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                   @for (row of stratumRows(); track row.label) {
                     <tr class="hover:bg-hover/30">
-                      <td class="px-6 py-3 font-medium text-main max-w-xs truncate" [title]="row.label">{{ row.label }}</td>
+                      <td class="px-6 py-3 font-medium text-main max-w-xs truncate" [appTooltip]="row.label">{{ row.label }}</td>
                       <td class="px-6 py-3 text-right tabular-nums text-gray-700 dark:text-slate-300">{{ row.total }}</td>
                       @for (ab of row.arms; track ab.arm.id) {
                         <td class="px-6 py-3 text-right tabular-nums"
                             [class]="cellClass(ab.status)"
-                            [title]="tooltipText(ab)">
+                            [appTooltip]="tooltipText(ab)">
                           {{ ab.actual }}&nbsp;/&nbsp;{{ ab.target | number:'1.0-2' }}
                           @if (ab.status === 0) { <span class="ml-1">✓</span> }
                           @if (ab.status === 1) { <span class="ml-1">⚠</span> }
-                          @if (ab.status === 2) { <span class="ml-1" title="Critical error">✕</span> }
+                          @if (ab.status === 2) { <span class="ml-1" appTooltip="Critical error">✕</span> }
                         </td>
                       }
                     </tr>
