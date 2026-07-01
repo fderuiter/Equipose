@@ -1,6 +1,5 @@
 import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Dialog } from '@angular/cdk/dialog';
 import {
   RandomizationConfig,
   RandomizationResult
@@ -9,7 +8,6 @@ import { RandomizationService } from './randomization.service';
 import { ToastService } from '../../core/services/toast.service';
 import { computeAuditHash } from './core/crypto-hash';
 import { generateCryptoSeed } from './core/randomization-algorithm';
-import { MonteCarloModalComponent } from './components/monte-carlo-modal.component';
 import type {
   GenerationCommand,
   MonteCarloCommand,
@@ -18,23 +16,11 @@ import type {
   WorkerResponse
 } from './worker/worker-protocol';
 
-/**
- * RandomizationEngineFacade
- *
- * Single access point for all randomization operations.  UI components must
- * inject this facade instead of `RandomizationService` directly.
- *
- * In the browser, computation is offloaded to a dedicated Web Worker so the
- * main thread remains responsive during heavy schema generation.  In SSR
- * (server-side rendering) contexts where `Worker` is unavailable, execution
- * falls back to the synchronous `RandomizationService`.
- */
 @Injectable({ providedIn: 'root' })
 export class RandomizationEngineFacade {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly randomizationService = inject(RandomizationService);
   private readonly toastService = inject(ToastService);
-  private readonly dialog = inject(Dialog);
 
   private worker: Worker | null = null;
   private pendingCallbacks = new Map<
@@ -69,8 +55,6 @@ export class RandomizationEngineFacade {
   readonly monteCarloProgress = signal(0);
   readonly monteCarloResults = signal<MonteCarloSuccessPayload | null>(null);
   
-  private monteCarloDialogRef: any = null;
-
   constructor() {
     if (this.isBrowser) {
       this.initWorker();
@@ -140,20 +124,6 @@ export class RandomizationEngineFacade {
     this.isMonteCarloRunning.set(true);
     this.monteCarloProgress.set(0);
     this.monteCarloResults.set(null);
-    
-    // Open standardized dialog
-    this.monteCarloDialogRef = this.dialog.open(MonteCarloModalComponent, {
-      panelClass: 'mc-dialog-panel',
-      hasBackdrop: true,
-      disableClose: false,
-      autoFocus: true,
-      restoreFocus: true
-    });
-    
-    this.monteCarloDialogRef.closed.subscribe(() => {
-       // Stop the run if the modal was closed mid-flight or reset state
-       this.closeMonteCarloModal();
-    });
 
     if (!this.worker) {
       this.isMonteCarloRunning.set(false);
@@ -185,10 +155,6 @@ export class RandomizationEngineFacade {
   }
 
   closeMonteCarloModal(): void {
-    if (this.monteCarloDialogRef) {
-      this.monteCarloDialogRef.close();
-      this.monteCarloDialogRef = null;
-    }
     this.monteCarloResults.set(null);
     this.monteCarloProgress.set(0);
     this.isMonteCarloRunning.set(false);

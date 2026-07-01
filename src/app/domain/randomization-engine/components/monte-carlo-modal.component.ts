@@ -1,7 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, effect, ElementRef, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { DialogRef } from '@angular/cdk/dialog';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
@@ -13,8 +11,8 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
   standalone: true,
   imports: [DecimalPipe, KeyboardScrollDirective],
   template: `
-    <!-- Modal panel (CDK Dialog provides the backdrop and container) -->
-    <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden shadow-xl dark:shadow-slate-900/50 transform transition-all w-full max-w-4xl max-h-[90vh] border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
+    <dialog #modalDialog class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
+      <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
 
       <!-- Header -->
       <div class="bg-overlay/80 px-6 pt-5 pb-4 flex-none">
@@ -37,7 +35,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
               @if (!facade.isMonteCarloRunning()) {
                 <button
                   type="button"
-                  (click)="facade.closeMonteCarloModal()"
+                  (click)="closeModal()"
                   class="text-disabled hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                   aria-label="Close"
                 >
@@ -50,7 +48,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
           </div>
 
       <!-- Body -->
-      <div class="px-6 pb-6 space-y-6 overflow-y-auto">
+      <div class="px-6 pb-6 space-y-6 overflow-y-auto flex-1">
 
         <!-- Seed disclaimer banner -->
             <div class="{{ domainTheme.getSemanticColor('warning').bgLightClass }} {{ domainTheme.getSemanticColor('warning').borderClass }} rounded-lg p-3 flex items-start gap-2">
@@ -243,7 +241,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
         <div class="bg-gray-50/80 dark:bg-slate-900/50 px-6 py-3 flex justify-end border-t border-border-subtle flex-none">
           <button
             type="button"
-            (click)="facade.closeMonteCarloModal()"
+            (click)="closeModal()"
             class="inline-flex justify-center rounded-lg border border-border-strong shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             data-testid="modal-close-footer"
           >
@@ -252,42 +250,37 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
         </div>
       }
 
-    </div>
+      </div>
+    </dialog>
   `
 })
 export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
-  readonly dialogRef = inject(DialogRef);
-  private readonly liveAnnouncer = inject(LiveAnnouncer);
   protected readonly domainTheme = inject(DomainThemeService);
 
+  @ViewChild('modalDialog') modalDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
   @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;
 
   constructor() {
-    let hasAnnouncedStart = false;
-    let lastAnnouncedProgress = 0;
-
     effect(() => {
       const isRunning = this.facade.isMonteCarloRunning();
-      const progress = this.facade.monteCarloProgress();
       const results = this.facade.monteCarloResults();
 
-      if (isRunning) {
-        if (!hasAnnouncedStart) {
-          this.liveAnnouncer.announce('Simulation started');
-          hasAnnouncedStart = true;
-          lastAnnouncedProgress = 0;
-        } else if (progress > lastAnnouncedProgress && progress % 25 === 0 && progress < 100) {
-          this.liveAnnouncer.announce(`Simulation running, ${progress}% completed`);
-          lastAnnouncedProgress = progress;
+      if (isRunning || results) {
+        if (this.modalDialog?.nativeElement && !this.modalDialog.nativeElement.open) {
+          this.modalDialog.nativeElement.showModal();
         }
-      } else if (results) {
-        if (hasAnnouncedStart) {
-          this.liveAnnouncer.announce('Simulation complete');
-          hasAnnouncedStart = false;
+      } else {
+        if (this.modalDialog?.nativeElement && this.modalDialog.nativeElement.open) {
+          this.modalDialog.nativeElement.close();
         }
-        
+      }
+    });
+
+    effect(() => {
+      const results = this.facade.monteCarloResults();
+      if (results) {
         setTimeout(() => {
           if (this.warningBanner?.nativeElement) {
             this.warningBanner.nativeElement.focus();
@@ -295,10 +288,15 @@ export class MonteCarloModalComponent {
             this.resultsHeader.nativeElement.focus();
           }
         }, 50);
-      } else {
-        hasAnnouncedStart = false;
       }
     });
+  }
+
+  closeModal(): void {
+    this.facade.closeMonteCarloModal();
+    if (this.modalDialog?.nativeElement) {
+      this.modalDialog.nativeElement.close();
+    }
   }
 
   /** Threshold (in %) above which the post-attrition imbalance warning banner is shown. */
@@ -310,18 +308,11 @@ export class MonteCarloModalComponent {
 
   /** Returns the Tailwind grid class for the summary card row based on active card count. */
   summaryGridClass(attritionRate: number): string {
-    // 4 cards when attrition > 0 (adds "Retained Subjects" card); 3 cards otherwise.
     return attritionRate > 0
       ? 'grid grid-cols-2 sm:grid-cols-4 gap-4'
       : 'grid grid-cols-2 sm:grid-cols-3 gap-4';
   }
 
-  /**
-   * Returns the class string for the "Max Arm Deviation" summary card.
-   * When attrition = 0 there are only 3 cards in a 2-column mobile grid, so
-   * `col-span-2` ensures the card fills the full row on small screens.
-   * `sm:col-span-1` restores the natural single-column width at the sm breakpoint.
-   */
   deviationCardClass(attritionRate: number): string {
     const base = 'bg-gray-50 dark:bg-slate-700/50 rounded-lg p-4 text-center';
     return attritionRate === 0 ? `${base} col-span-2 sm:col-span-1` : base;
@@ -332,20 +323,11 @@ export class MonteCarloModalComponent {
     return (count / total) * 100;
   }
 
-  /**
-   * Pre-attrition deviation: compares `actualCount` against `expectedCount`
-   * (both always on the pre-attrition, total-simulated basis).
-   * This reflects the algorithm's inherent fairness independent of dropout.
-   */
   deviation(arm: MonteCarloArmResult): number {
     if (arm.expectedCount === 0) return 0;
     return Math.abs((arm.actualCount - arm.expectedCount) / arm.expectedCount) * 100;
   }
 
-  /**
-   * Post-attrition deviation: compares `retainedCount` against `expectedRetainedCount`
-   * (both on the retained-subjects basis). Reflects balance after applying dropout.
-   */
   retainedDeviation(arm: MonteCarloArmResult): number {
     if (arm.expectedRetainedCount === 0) return 0;
     return Math.abs((arm.retainedCount - arm.expectedRetainedCount) / arm.expectedRetainedCount) * 100;
@@ -358,19 +340,12 @@ export class MonteCarloModalComponent {
     return this.domainTheme.getSemanticColor('error').textClass;
   }
 
-  /** Max pre-attrition deviation across all arms — always reflects algorithm fairness. */
   preAttritionMaxDeviation(): number {
     const results = this.facade.monteCarloResults();
     if (!results) return 0;
     return results.arms.reduce((max, arm) => Math.max(max, this.deviation(arm)), 0);
   }
 
-  /**
-   * Max deviation for the "Max Arm Deviation" summary card.
-   * Shows the retained deviation when attrition is active so the card always reflects
-   * the most impactful metric (post-dropout balance under attrition, or algorithm
-   * fairness otherwise).
-   */
   maxDeviation(): number {
     const results = this.facade.monteCarloResults();
     if (!results) return 0;
@@ -379,7 +354,6 @@ export class MonteCarloModalComponent {
       : this.preAttritionMaxDeviation();
   }
 
-  /** Max post-attrition deviation — used for the warning banner. */
   maxRetainedDeviation(): number {
     const results = this.facade.monteCarloResults();
     if (!results) return 0;

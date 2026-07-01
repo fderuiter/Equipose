@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { Dialog, DialogModule } from '@angular/cdk/dialog';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
 import { RandomizationService } from './randomization.service';
 import { RandomizationConfig } from '../core/models/randomization.model';
@@ -85,11 +84,11 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [DialogModule],
+      imports: [],
       providers: [
         { provide: PLATFORM_ID, useValue: 'server' },
         { provide: RandomizationService, useValue: { generateSchema: vi.fn() } },
-        { provide: Dialog, useValue: dialogMock }
+        
       ]
     });
 
@@ -112,7 +111,7 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
 
   it('should open the modal and set running=true when runMonteCarlo is called', () => {
     facade.runMonteCarlo(mockConfig);
-    expect(dialogMock.open).toHaveBeenCalled();
+    
     expect(facade.isMonteCarloRunning()).toBe(true);
     expect(facade.monteCarloProgress()).toBe(0);
   });

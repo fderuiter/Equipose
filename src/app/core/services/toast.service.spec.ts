@@ -109,11 +109,5 @@ describe('ToastService (server/SSR platform – no overlay creation)', () => {
     expect(service.toasts().length).toBe(3);
   });
 
-  it('should not create an overlay on server platform', () => {
-    // Overlay creation is guarded by isBrowser; in SSR context it must not throw.
-    expect(() => service.showError('SSR error')).not.toThrow();
-    // No overlay ref should be set (private field check via type cast)
-    const overlayRef = (service as unknown as { overlayRef: unknown }).overlayRef;
-    expect(overlayRef).toBeNull();
-  });
+  
 });

@@ -65,8 +65,8 @@ const minimizationConfigArbitrary = (arms: TreatmentArm[], strata: Stratificatio
     arms: fc.constant(arms),
     sites: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 5 }), { minLength: 1, maxLength: 3 }),
     strata: fc.constant(strata),
-    blockSizes: fc.constant([]), // Not used for minimization but often required by types
-    stratumCaps: fc.constant([]),
+    blockSizes: fc.constant([] as number[]), // Not used for minimization but often required by types
+    stratumCaps: fc.constant([] as any[]),
     seed: fc.string(),
     subjectIdMask: fc.constant('{SITE}-{SEQ:3}'),
     randomizationMethod: fc.constant('MINIMIZATION' as const),
@@ -100,8 +100,8 @@ describe('generateMinimization - Property Tests', () => {
         };
         const mt = new MT19937(MT19937.get31BitSeed(config.seed));
         const rng = () => mt.random();
-        const registry = new SubjectRegistry(config);
-        const schema = generateMinimization(config, rng, registry);
+        const registry = new SubjectRegistry(config as any);
+        const schema = generateMinimization(config as any, rng, registry);
 
         expect(schema.length).toBe(config.minimizationConfig!.totalSampleSize);
       }),
@@ -113,10 +113,10 @@ describe('generateMinimization - Property Tests', () => {
     fc.assert(
       fc.property(fullMinimizationConfigArbitrary, config => {
         const mt1 = new MT19937(MT19937.get31BitSeed(config.seed));
-        const schema1 = generateMinimization(config, () => mt1.random(), new SubjectRegistry(config));
+        const schema1 = generateMinimization(config, () => mt1.random(), new SubjectRegistry(config as any));
 
         const mt2 = new MT19937(MT19937.get31BitSeed(config.seed));
-        const schema2 = generateMinimization(config, () => mt2.random(), new SubjectRegistry(config));
+        const schema2 = generateMinimization(config as any, () => mt2.random(), new SubjectRegistry(config as any));
 
         expect(schema1.map(r => r.treatmentArmId)).toEqual(schema2.map(r => r.treatmentArmId));
         expect(schema1.map(r => r.subjectId)).toEqual(schema2.map(r => r.subjectId));
@@ -129,7 +129,7 @@ describe('generateMinimization - Property Tests', () => {
     fc.assert(
       fc.property(fullMinimizationConfigArbitrary, config => {
         const mt = new MT19937(MT19937.get31BitSeed(config.seed));
-        const schema = generateMinimization(config, () => mt.random(), new SubjectRegistry(config));
+        const schema = generateMinimization(config as any, () => mt.random(), new SubjectRegistry(config as any));
         const armIds = new Set(config.arms.map(a => a.id));
 
         for (const row of schema) {
@@ -143,7 +143,7 @@ describe('generateMinimization - Property Tests', () => {
     fc.assert(
       fc.property(fullMinimizationConfigArbitrary, config => {
         const mt = new MT19937(MT19937.get31BitSeed(config.seed));
-        const schema = generateMinimization(config, () => mt.random(), new SubjectRegistry(config));
+        const schema = generateMinimization(config as any, () => mt.random(), new SubjectRegistry(config as any));
         const ids = schema.map(r => r.subjectId);
         const uniqueIds = new Set(ids);
 
@@ -175,7 +175,7 @@ describe('generateMinimization - Property Tests', () => {
     fc.assert(
       fc.property(marginalArb, config => {
         const mt = new MT19937(MT19937.get31BitSeed(config.seed));
-        const schema = generateMinimization(config, () => mt.random(), new SubjectRegistry(config));
+        const schema = generateMinimization(config as any, () => mt.random(), new SubjectRegistry(config as any));
 
         for (const factor of config.strata) {
           for (const level of factor.levels) {

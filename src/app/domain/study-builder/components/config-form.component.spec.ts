@@ -7,7 +7,6 @@ import { StudyBuilderStore } from '../store/study-builder.store';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { By } from '@angular/platform-browser';
-import { CdkStepper } from '@angular/cdk/stepper';
 
 describe('ConfigFormComponent (domain)', () => {
   let component: ConfigFormComponent;
@@ -288,7 +287,8 @@ describe('ConfigFormComponent (domain)', () => {
       const secondId = (component.strata.at(1).value as { id: string }).id;
 
       // Simulate dragging index 0 to index 1
-      component.onStrataDrop({ previousIndex: 0, currentIndex: 1 } as any);
+      component.draggedStratumIndex = 0;
+      component.onDrop({ preventDefault: () => {} } as any, 1);
 
       expect((component.strata.at(0).value as { id: string }).id).toBe(secondId);
       expect((component.strata.at(1).value as { id: string }).id).toBe(firstId);
@@ -299,7 +299,8 @@ describe('ConfigFormComponent (domain)', () => {
       component.loadPreset('complex');
       markCapsStaleSpy.mockClear();
 
-      component.onStrataDrop({ previousIndex: 0, currentIndex: 1 } as any);
+      component.draggedStratumIndex = 0;
+      component.onDrop({ preventDefault: () => {} } as any, 1);
 
       expect(markCapsStaleSpy).toHaveBeenCalledOnce();
     });
@@ -307,7 +308,8 @@ describe('ConfigFormComponent (domain)', () => {
     it('should not change strata when onStrataDrop() has equal indices', () => {
       component.loadPreset('standard');
       const snapshot = component.strata.value;
-      component.onStrataDrop({ previousIndex: 0, currentIndex: 0 } as any);
+      component.draggedStratumIndex = 0;
+      component.onDrop({ preventDefault: () => {} } as any, 0);
       expect(component.strata.value).toEqual(snapshot);
     });
 
@@ -317,16 +319,16 @@ describe('ConfigFormComponent (domain)', () => {
 
       expect(component.stratumCaps.length).toBe(initialCapsLength);
 
-      component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+      component.setStep(component.capsStepIndex);
       expect(component.stratumCaps.length).toBe(3);
     });
 
     it('should show reset warning when returning to caps after strata changes', () => {
-      component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+      component.setStep(component.capsStepIndex);
       expect(component.capsResetWarning()).toBe(false);
 
       component.strata.at(0).get('levelsStr')?.setValue('<65, >=65, >=80');
-      component.onStepSelectionChange({ selectedIndex: component.capsStepIndex } as any);
+      component.setStep(component.capsStepIndex);
 
       expect(component.capsResetWarning()).toBe(true);
       expect(component.matrixComputed()).toBe(false);
@@ -635,8 +637,7 @@ describe('ConfigFormComponent (domain)', () => {
   describe('Allocation mechanics validation UI', () => {
     const goToAllocationStep = (): void => {
       for (let i = 0; i < 4; i += 1) {
-        const nextButton = fixture.nativeElement.querySelector('button[cdkStepperNext]') as HTMLButtonElement;
-        nextButton.click();
+        component.nextStep();
         fixture.detectChanges();
       }
     };

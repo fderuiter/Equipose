@@ -8,6 +8,7 @@ import { ResultsGridComponent } from '../../schema-management/components/results
 import { CodeGeneratorModalComponent } from '../../schema-management/components/code-generator-modal.component';
 import { SchemaAnalyticsDashboardComponent } from '../../schema-management/components/schema-analytics-dashboard.component';
 import { BalanceVerificationComponent } from '../../schema-management/components/balance-verification.component';
+import { MonteCarloModalComponent } from '../../randomization-engine/components/monte-carlo-modal.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { SeoService } from '../../../core/services/seo.service';
@@ -27,6 +28,7 @@ type ResultsTab = 'grid' | 'balance';
     CodeGeneratorModalComponent,
     SchemaAnalyticsDashboardComponent,
     BalanceVerificationComponent,
+    MonteCarloModalComponent,
   ],
   template: `
     <div class="space-y-8" data-testid="generator-page">
@@ -153,6 +155,9 @@ type ResultsTab = 'grid' | 'balance';
       @if (state.showCodeGenerator() && state.config()) {
         <app-code-generator-modal></app-code-generator-modal>
       }
+
+      <!-- Monte Carlo Validation Modal -->
+      <app-monte-carlo-modal></app-monte-carlo-modal>
     </div>
   `
 })

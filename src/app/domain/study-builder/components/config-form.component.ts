@@ -1,10 +1,7 @@
 import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { map, startWith } from 'rxjs/operators';
-import { CdkDragDrop, CdkDropList, CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
-import { CdkStepperModule, StepperSelectionEvent } from '@angular/cdk/stepper';
 import { NgTemplateOutlet } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
@@ -28,7 +25,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, NgTemplateOutlet, CdkDropList, CdkDrag, CdkDragHandle, CdkStepperModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective],
+  imports: [ReactiveFormsModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -42,7 +39,6 @@ export class ConfigFormComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   public readonly domainTheme = inject(DomainThemeService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly liveAnnouncer = inject(LiveAnnouncer);
 
   dropdownOpen = false;
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
@@ -99,6 +95,9 @@ export class ConfigFormComponent implements OnInit {
   readonly capsResetWarning = signal(false);
   private readonly capsDirtyFromStrata = signal(true);
   private readonly hasVisitedCapsStep = signal(false);
+
+  readonly currentStepIndex = signal(0);
+  draggedStratumIndex: number | null = null;
 
   form: FormGroup = this.fb.group(
     {
@@ -487,9 +486,9 @@ export class ConfigFormComponent implements OnInit {
     this.promoteToStudy.emit();
   }
 
-  onStepSelectionChange(event: StepperSelectionEvent): void {
+  onStepSelectionChange(selectedIndex: number): void {
     this.capsResetWarning.set(false);
-    if (event.selectedIndex === this.capsStepIndex) {
+    if (selectedIndex === this.capsStepIndex) {
       const capsWereDirty = this.capsDirtyFromStrata();
       const shouldWarn = this.hasVisitedCapsStep() && capsWereDirty;
       if (capsWereDirty) {
@@ -507,7 +506,7 @@ export class ConfigFormComponent implements OnInit {
     
     // Manage focus for wizard transition
     setTimeout(() => {
-      const stepHeader = document.getElementById(`step-header-${event.selectedIndex}`);
+      const stepHeader = document.getElementById(`step-header-${selectedIndex}`);
       if (stepHeader) {
         stepHeader.focus();
       }
@@ -673,16 +672,6 @@ export class ConfigFormComponent implements OnInit {
     radios?.item(nextIndex)?.focus();
   }
 
-  onStrataDrop(event: CdkDragDrop<FormGroup[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    const control = this.strata.at(event.previousIndex);
-    this.strata.removeAt(event.previousIndex, { emitEvent: false });
-    this.strata.insert(event.currentIndex, control, { emitEvent: false });
-    const reorderedStrata = this.strata.value as StratumFormValue[];
-    this.store.setStrata(reorderedStrata);
-    this.syncLevelDetails(reorderedStrata);
-    this.markCapsStale();
-  }
 
   onStratumKeyDown(event: KeyboardEvent, index: number): void {
     // Arrow up/down to reorder
@@ -701,7 +690,7 @@ export class ConfigFormComponent implements OnInit {
         this.markCapsStale();
         
         const stratumName = control.get('name')?.value || 'Unnamed Factor';
-        this.liveAnnouncer.announce(`Moved ${stratumName} to position ${newIndex + 1}`);
+        
 
         // Set focus back to the moved element
         setTimeout(() => {
@@ -921,5 +910,60 @@ export class ConfigFormComponent implements OnInit {
     } catch {
       return '{}';
     }
+  }
+
+  nextStep(): void {
+    if (this.currentStepIndex() < this.stepLabels.length - 1) {
+      this.setStep(this.currentStepIndex() + 1);
+    }
+  }
+
+  previousStep(): void {
+    if (this.currentStepIndex() > 0) {
+      this.setStep(this.currentStepIndex() - 1);
+    }
+  }
+
+  setStep(index: number): void {
+    this.currentStepIndex.set(index);
+    this.onStepSelectionChange(index);
+  }
+
+  // --- HTML5 Drag and Drop Handlers ---
+  
+  onDragStart(event: DragEvent, index: number): void {
+    this.draggedStratumIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.dropEffect = 'move';
+      event.dataTransfer.setData('text/plain', index.toString());
+    }
+  }
+
+  onDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+
+  onDrop(event: DragEvent, index: number): void {
+    event.preventDefault();
+    const previousIndex = this.draggedStratumIndex;
+    if (previousIndex !== null && previousIndex !== index) {
+      const control = this.strata.at(previousIndex);
+      this.strata.removeAt(previousIndex, { emitEvent: false });
+      this.strata.insert(index, control, { emitEvent: false });
+      
+      const reorderedStrata = this.strata.value as StratumFormValue[];
+      this.store.setStrata(reorderedStrata);
+      this.syncLevelDetails(reorderedStrata);
+      this.markCapsStale();
+    }
+    this.draggedStratumIndex = null;
+  }
+
+  onDragEnd(): void {
+    this.draggedStratumIndex = null;
   }
 }
