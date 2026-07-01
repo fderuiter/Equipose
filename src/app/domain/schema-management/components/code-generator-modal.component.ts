@@ -5,6 +5,8 @@ import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { AnnouncementService } from '../../../core/services/announcement.service';
+
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -20,6 +22,8 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
 export class CodeGeneratorModalComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   private codeGenService = inject(CodeGeneratorService);
+  private announcementService = inject(AnnouncementService);
+
 
   activeTab = signal<'R' | 'SAS' | 'Python' | 'STATA'>('R');
   copied = signal(false);
@@ -88,9 +92,33 @@ export class CodeGeneratorModalComponent implements OnInit {
     }
   }
 
+  onTabKeydown(event: KeyboardEvent) {
+    const tabs: ('R' | 'SAS' | 'Python' | 'STATA')[] = ['R', 'SAS', 'Python', 'STATA'];
+    const currentIndex = tabs.indexOf(this.activeTab());
+    let newIndex = currentIndex;
+
+    if (event.key === 'ArrowRight') {
+      newIndex = (currentIndex + 1) % tabs.length;
+    } else if (event.key === 'ArrowLeft') {
+      newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    this.setActiveTab(tabs[newIndex]);
+    
+    // Set focus to the new tab button
+    setTimeout(() => {
+      const btn = document.getElementById('tab-' + tabs[newIndex]);
+      if (btn) btn.focus();
+    }, 0);
+  }
+
   copyCode() {
     navigator.clipboard.writeText(this.currentCode);
     this.copied.set(true);
+    this.announcementService.announce('Copied to clipboard!', 'polite');
     setTimeout(() => this.copied.set(false), 2000);
   }
 
@@ -103,6 +131,7 @@ export class CodeGeneratorModalComponent implements OnInit {
       context: err.context
     };
     navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    this.announcementService.announce('Copied error log to clipboard!', 'polite');
   }
 
   downloadCode() {
