@@ -94,20 +94,32 @@ export class CodeGeneratorModalComponent implements OnInit {
 
   onTabKeydown(event: KeyboardEvent) {
     const tabs: ('R' | 'SAS' | 'Python' | 'STATA')[] = ['R', 'SAS', 'Python', 'STATA'];
-    const currentIndex = tabs.indexOf(this.activeTab());
-    let newIndex = currentIndex;
+    const target = event.target as HTMLElement;
+    
+    let currentFocusedIndex = tabs.findIndex(t => 'tab-' + t === target.id);
+    if (currentFocusedIndex === -1) {
+      currentFocusedIndex = tabs.indexOf(this.activeTab());
+    }
 
-    if (event.key === 'ArrowRight') {
-      newIndex = (currentIndex + 1) % tabs.length;
-    } else if (event.key === 'ArrowLeft') {
-      newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+    let newIndex = currentFocusedIndex;
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      newIndex = (currentFocusedIndex + 1) % tabs.length;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      newIndex = (currentFocusedIndex - 1 + tabs.length) % tabs.length;
+    } else if (event.key === 'Home') {
+      newIndex = 0;
+    } else if (event.key === 'End') {
+      newIndex = tabs.length - 1;
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.setActiveTab(tabs[currentFocusedIndex]);
+      return;
     } else {
       return;
     }
 
     event.preventDefault();
-    this.setActiveTab(tabs[newIndex]);
-    
     // Set focus to the new tab button
     setTimeout(() => {
       const btn = document.getElementById('tab-' + tabs[newIndex]);

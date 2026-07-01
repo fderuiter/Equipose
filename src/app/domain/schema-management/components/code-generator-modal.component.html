@@ -73,12 +73,14 @@
                     </div>
                   </div>
                 } @else {
-                                    <div
+                  <div
                     role="tabpanel"
                     [id]="'panel-' + activeTab()"
                     [attr.aria-labelledby]="'tab-' + activeTab()"
                     class="bg-slate-900 dark:bg-slate-950 rounded-xl p-4 overflow-x-auto max-h-[60vh] overflow-y-auto shadow-inner"
                     tabindex="0"
+                    aria-live="polite"
+                    aria-atomic="true"
                     aria-label="Generated code output">
                     <pre data-testid="generated-code" class="text-gray-100 text-sm font-mono"><code>{{ currentCode }}</code></pre>
                   </div>
