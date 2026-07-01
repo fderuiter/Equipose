@@ -11,6 +11,7 @@ import { MethodologySpecificationService } from '../services/methodology-specifi
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
+import { DateUtil } from '../../../core/utils/date.util';
 import { ExcelExportService } from '../services/excel-export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -393,14 +394,6 @@ export class ResultsGridComponent {
     return s.replace(/[^A-Za-z0-9._-]/g, '_').trim();
   }
 
-  /** Returns today's date as a compact `YYYYMMDD` string for use in export filenames. */
-  private formatDateStamp(date = new Date()): string {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}${mm}${dd}`;
-  }
-
   /**
    * Sanitizes a value for CSV export to prevent Formula Injection (CSV Injection).
    * It escapes double quotes, wraps the value in double quotes, and prepends a single
@@ -463,7 +456,7 @@ export class ResultsGridComponent {
     });
 
     const watermark = "DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema for RTSM/IRT implementation.";
-    const timestamp = new Date(data.metadata.generatedAt).toISOString();
+    const timestamp = DateUtil.getIsoTimestamp(new Date(data.metadata.generatedAt));
     const methodologyComments = this.methodologySpec.formatForCsv(
       this.methodologySpec.generateNarrative(data.metadata.config)
     );
@@ -485,7 +478,7 @@ export class ResultsGridComponent {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     const safeProtocol = this.sanitizeFilename(data.metadata.protocolId);
-    const dateStamp = this.formatDateStamp();
+    const dateStamp = DateUtil.getFileDatestamp();
     link.setAttribute('href', url);
     link.setAttribute('download', `randomization_${dateStamp}_${safeProtocol}_${this.isUnblinded() ? 'unblinded' : 'blinded'}.csv`);
     link.style.visibility = 'hidden';
@@ -566,7 +559,7 @@ export class ResultsGridComponent {
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const timestamp = new Date(data.metadata.generatedAt).toISOString();
+    const timestamp = DateUtil.getIsoTimestamp(new Date(data.metadata.generatedAt));
     const auditHash = data.metadata.auditHash;
     const truncatedHash = auditHash ? `${auditHash.substring(0, 16)}…${auditHash.substring(48, 64)}` : 'N/A';
 

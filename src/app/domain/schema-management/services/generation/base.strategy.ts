@@ -1,5 +1,6 @@
 import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../../randomization-engine/core/randomization-algorithm';
+import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
@@ -34,7 +35,7 @@ export abstract class AbstractCodeGenerationStrategy implements CodeGenerationSt
     const resolvedConfig = { ...config, seed: result.metadata.seed };
     const ir = CodeTranspiler.buildIR(resolvedConfig, method);
 
-    const dateStr = new Date().toISOString();
+    const dateStr = DateUtil.getIsoTimestamp();
     const algorithm = method === 'MINIMIZATION' ? 'Pocock-Simon Minimization' : 'PRNG Algorithm: MT19937';
 
     const data: Record<string, string | number> = {

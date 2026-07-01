@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { MethodologySpecificationService } from './methodology-specification.service';
+import { DateUtil } from '../../../core/utils/date.util';
 import { APP_VERSION } from '../../../../environments/version';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
@@ -52,11 +53,7 @@ export class ExcelExportService {
     const blindLabel = isUnblinded ? 'unblinded' : 'blinded';
     const safeProtocol = result.metadata.protocolId.replace(/[^A-Za-z0-9._-]/g, '_');
     const now = new Date();
-    const dateStamp = [
-      now.getFullYear(),
-      String(now.getMonth() + 1).padStart(2, '0'),
-      String(now.getDate()).padStart(2, '0'),
-    ].join('');
+    const dateStamp = DateUtil.getFileDatestamp(now);
     link.setAttribute('download', `randomization_${dateStamp}_${safeProtocol}_${blindLabel}.xlsx`);
     link.style.display = 'none';
     document.body.appendChild(link);
@@ -224,7 +221,7 @@ export class ExcelExportService {
 
     // ── TRIAL METADATA ───────────────────────────────────────────────────────
     addSectionHeader('Trial Metadata', 3);
-    const timestamp = new Date(result.metadata.generatedAt).toISOString();
+    const timestamp = DateUtil.getIsoTimestamp(new Date(result.metadata.generatedAt));
     const metaRows: [string, string][] = [
       ['Protocol ID', result.metadata.protocolId],
       ['Study Name', result.metadata.studyName],

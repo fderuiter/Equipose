@@ -6,8 +6,9 @@ import {DOCUMENT} from '@angular/common';
 import {ThemeService, ThemeMode} from './core/services/theme.service';
 import {UpdateNotificationService} from './core/services/update-notification.service';
 import {UpdateBannerComponent} from './core/components/update-banner.component';
-import {APP_VERSION} from '../environments/version';
+import { APP_VERSION } from '../environments/version';
 import { FocusManagerDirective } from './core/directives/focus-manager.directive';
+import { DateUtil } from './core/utils/date.util';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -292,7 +293,7 @@ import { FocusManagerDirective } from './core/directives/focus-manager.directive
 export class App {
   readonly theme = inject(ThemeService);
   readonly updateService = inject(UpdateNotificationService);
-  readonly currentYear = new Date().getFullYear();
+  readonly currentYear = DateUtil.getCurrentYear();
   readonly appVersion = APP_VERSION;
 
   readonly themeMenuOpen = signal(false);
