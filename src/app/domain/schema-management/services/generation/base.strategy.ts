@@ -22,12 +22,12 @@ export abstract class AbstractCodeGenerationStrategy implements CodeGenerationSt
   }
 
   protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): string {
-    const isComplex = method === 'MINIMIZATION' || 
+    const isComplex = Boolean(method === 'MINIMIZATION' || 
                       config.capStrategy === 'MARGINAL_ONLY' || 
                       (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') ||
                       (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) ||
                       (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
-                      (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0);
+                      (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0));
     
     const result = generateRandomizationSchema(config);
     const schema = result.schema;

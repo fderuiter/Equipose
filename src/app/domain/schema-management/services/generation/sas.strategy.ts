@@ -66,7 +66,7 @@ export class SasStrategy extends AbstractCodeGenerationStrategy {
           taskLogic += `  count = 0; block_num = 1;\n`;
           taskLogic += `  do while(count < cap);\n`;
           taskLogic += `     link get_rand_int; size_idx = mod(rand_int, ${ir.blockSizes.length});\n`;
-          ir.blockSizes.forEach((bs, i) => {
+          ir.blockSizes.forEach((bs: any, i: number) => {
              if (i===0) taskLogic += `     if size_idx=0 then size=${bs};\n`;
              else taskLogic += `     else if size_idx=${i} then size=${bs};\n`;
           });

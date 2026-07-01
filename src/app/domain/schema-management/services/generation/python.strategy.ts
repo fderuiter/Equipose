@@ -43,7 +43,7 @@ export class PythonStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n`;
       algorithmicLogic += `block_sizes = [${ir.blockSizes.join(', ')}]\n`;
       algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
-      algorithmicLogic += `arms = [${ir.arms.map(a => `{"name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
+      algorithmicLogic += `arms = [${ir.arms.map((a: any) => `{"name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
       
       algorithmicLogic += `def build_block(size):\n`;
       algorithmicLogic += `    block = []\n`;
