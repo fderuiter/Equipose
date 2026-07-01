@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule, FormArray } from '@angular/forms';
+import { ReactiveFormsModule, FormArray } from '../../../core/forms/signal-forms';
 import { ConfigFormComponent } from './config-form.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore } from '../store/study-builder.store';

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLinkDirective } from '../../../core/router/router-link.directive';
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
 import { SeoService } from '../../../core/services/seo.service';
@@ -26,7 +26,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
 @Component({
   selector: 'app-schema-verification',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLinkDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">

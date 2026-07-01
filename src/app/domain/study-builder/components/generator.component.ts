@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, effect, signal, viewChild, OnInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { RouterLinkDirective } from '../../../core/router/router-link.directive';
+import { SignalRouter } from '../../../core/router/signal-router.service';
 import { ConfigFormComponent } from './config-form.component';
 import { ZeroStateComponent } from './zero-state.component';
 import { SkeletonGridComponent } from './skeleton-grid.component';
@@ -20,7 +21,7 @@ type ResultsTab = 'grid' | 'balance';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-generator',
   imports: [
-    RouterLink,
+    RouterLinkDirective,
     ConfigFormComponent,
     ZeroStateComponent,
     SkeletonGridComponent,
@@ -166,8 +167,7 @@ export class GeneratorComponent implements OnInit {
   public readonly viewport = inject(ViewportService);
   public readonly domainTheme = inject(DomainThemeService);
   private readonly document = inject(DOCUMENT);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  private readonly router = inject(SignalRouter);
 
   readonly introBadges = ['Stratified', 'Reproducible', 'Seeded', 'Deterministic', 'Multi-site'];
 
@@ -182,11 +182,9 @@ export class GeneratorComponent implements OnInit {
   private static readonly SCROLL_DELAY_MS = 100;
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      if (params['mode'] === 'simulation') {
-        this.isSimulationMode.set(true);
-      }
-    });
+    if (this.router.queryParams()['mode'] === 'simulation') {
+      this.isSimulationMode.set(true);
+    }
   }
 
   constructor() {
@@ -238,7 +236,12 @@ export class GeneratorComponent implements OnInit {
 
   handlePromoteToStudy(): void {
     this.isSimulationMode.set(false);
-    this.router.navigate([], { queryParams: { mode: null }, queryParamsHandling: 'merge' });
+    
+    // Clear the mode query param
+    const currentParams = { ...this.router.queryParams() };
+    delete currentParams['mode'];
+    this.router.navigate(this.router.path(), currentParams);
+    
     const form = this.configForm();
     if (form) {
       // Clear the "Simulation" placeholders to force the user to enter real administrative data

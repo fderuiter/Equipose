@@ -13,7 +13,6 @@ import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
 import { ExcelExportService } from '../services/excel-export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
 
