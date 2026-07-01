@@ -4,6 +4,7 @@
       <ol class="grid grid-cols-2 lg:grid-cols-6 gap-2 flex-grow">
         @for (label of stepLabels; track label; let i = $index) {
           <li [id]="'step-header-' + i" tabindex="-1" class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors outline-none focus:ring-2 focus:ring-indigo-500"
+              [attr.aria-current]="currentStepIndex() === i ? 'step' : null"
               [class.border-indigo-500]="currentStepIndex() === i"
               [class.bg-indigo-50]="currentStepIndex() === i"
               [class.text-indigo-700]="currentStepIndex() === i"

@@ -1,54 +1,21 @@
 import { Injectable } from '@angular/core';
-import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
-import { CodeGenerationStrategy } from './base.strategy';
+import { RandomizationConfig } from '../../../core/models/randomization.model';
+import { AbstractCodeGenerationStrategy } from './base.strategy';
 import { CodeTranspiler } from './ir/transpiler';
 import { IrIterationHelper } from './ir/iteration.helper';
 import { FormattingUtil } from './formatting.util';
 import { STATA_TEMPLATE } from './ir/templates';
-import { generateRandomizationSchema } from '../../../randomization-engine/core/randomization-algorithm';
-import { APP_VERSION } from '../../../../../environments/version';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
+import { PRECISION_EPSILON } from '../../../../core/constants/precision.config';
 
 @Injectable()
-export class StataStrategy implements CodeGenerationStrategy {
+export class StataStrategy extends AbstractCodeGenerationStrategy {
   readonly language = 'STATA';
 
-  constructor() {}
-
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.transpile(config, 'BLOCK');
+  constructor() {
+    super();
   }
 
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.transpile(config, 'MINIMIZATION');
-  }
-
-  private transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): string {
-    const isComplex = method === 'MINIMIZATION' || 
-                      config.capStrategy === 'MARGINAL_ONLY' || 
-                      (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') ||
-                      (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) ||
-                      (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
-                      (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0);
-    
-    const result = generateRandomizationSchema(config);
-    const schema = result.schema;
-    const resolvedConfig = { ...config, seed: result.metadata.seed };
-    const ir = CodeTranspiler.buildIR(resolvedConfig, method);
-
-    const dateStr = new Date().toISOString();
-    const algorithm = method === 'MINIMIZATION' ? 'Pocock-Simon Minimization' : 'PRNG Algorithm: MT19937';
-
-    const data: Record<string, string | number> = {
-      protocolId: config.protocolId,
-      appVersion: APP_VERSION,
-      dateStr,
-      algorithm,
-      seedHash: ir.seedHash,
-      precisionScale: PRECISION_SCALE,
-      precisionEpsilon: PRECISION_EPSILON
-    };
-
+  protected override customizeDataSetup(data: Record<string, string | number>, config: RandomizationConfig, ir: any, method: 'BLOCK' | 'MINIMIZATION', schema: any[]): void {
     let armsVars = '';
     config.arms.forEach((a, i) => {
       armsVars += `local arm_name_${i + 1} ${FormattingUtil.stataLabelQuote(a.name)}\n`;
@@ -79,7 +46,16 @@ export class StataStrategy implements CodeGenerationStrategy {
     let strataLength = '';
     (config.strata || []).forEach(s => strataLength += `gen str50 ${FormattingUtil.sanitizeStataVarName(s.id)} = ""\n`);
     data['strataLength'] = strataLength.trimEnd();
+  }
 
+  protected generateLanguageScript(
+    config: RandomizationConfig,
+    ir: any,
+    method: 'BLOCK' | 'MINIMIZATION',
+    isComplex: boolean,
+    schema: any[],
+    data: Record<string, string | number>
+  ): string {
     let algorithmicLogic = '';
 
     if (isComplex) {
@@ -87,8 +63,8 @@ export class StataStrategy implements CodeGenerationStrategy {
     } else {
       algorithmicLogic += `block_sizes = (${ir.blockSizes.join(',')})\n`;
       algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
-      algorithmicLogic += `arms = (${ir.arms.map(a => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
-      algorithmicLogic += `arm_ratios = (${ir.arms.map(a => a.ratio).join(',')})\n\n`;
+      algorithmicLogic += `arms = (${ir.arms.map((a: any) => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
+      algorithmicLogic += `arm_ratios = (${ir.arms.map((a: any) => a.ratio).join(',')})\n\n`;
       algorithmicLogic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n\n`;
 
       algorithmicLogic += `string rowvector build_block(real scalar size) {\n`;

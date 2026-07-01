@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
-import { RandomizationService } from './randomization.service';
 import { RandomizationConfig } from '../core/models/randomization.model';
 import { vi } from 'vitest';
 import type { MonteCarloProgressPayload, MonteCarloSuccessPayload } from './worker/worker-protocol';
@@ -87,7 +86,6 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
       imports: [],
       providers: [
         { provide: PLATFORM_ID, useValue: 'server' },
-        { provide: RandomizationService, useValue: { generateSchema: vi.fn() } },
         
       ]
     });

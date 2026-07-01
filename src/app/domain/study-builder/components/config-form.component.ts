@@ -17,6 +17,7 @@ import { A11yValidationDirective } from '../../../core/directives/a11y-validatio
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
+import { AnnouncementService } from '../../../core/services/announcement.service';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
 
 /**
@@ -41,6 +42,7 @@ export class ConfigFormComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   public readonly domainTheme = inject(DomainThemeService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly announcementService = inject(AnnouncementService);
 
   dropdownOpen = false;
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
@@ -489,6 +491,7 @@ export class ConfigFormComponent implements OnInit {
   }
 
   onStepSelectionChange(selectedIndex: number): void {
+    this.announcementService.announce(this.stepLabels[selectedIndex]);
     this.capsResetWarning.set(false);
     if (selectedIndex === this.capsStepIndex) {
       const capsWereDirty = this.capsDirtyFromStrata();

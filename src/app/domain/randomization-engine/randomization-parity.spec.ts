@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
-import { RandomizationService } from './randomization.service';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
 import { generateRandomizationSchema } from './core/randomization-algorithm';
 import { vi } from 'vitest';
@@ -93,8 +92,7 @@ describe('RandomizationEngine Parity (Worker vs Fallback)', () => {
       imports: [],
       providers: [
         { provide: PLATFORM_ID, useValue: 'browser' },
-        { provide: ToastService, useValue: mockToastService },
-        RandomizationService
+        { provide: ToastService, useValue: mockToastService }
       ]
     });
     workerFacade = TestBed.inject(RandomizationEngineFacade);
@@ -106,8 +104,7 @@ describe('RandomizationEngine Parity (Worker vs Fallback)', () => {
         imports: [],
         providers: [
           { provide: PLATFORM_ID, useValue: 'server' },
-          { provide: ToastService, useValue: mockToastService },
-          RandomizationService
+          { provide: ToastService, useValue: mockToastService }
         ]
     });
     fallbackFacade = TestBed.inject(RandomizationEngineFacade);

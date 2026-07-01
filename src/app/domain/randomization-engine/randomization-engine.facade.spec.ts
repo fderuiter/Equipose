@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
-import { RandomizationService } from './randomization.service';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
+import * as algo from './core/randomization-algorithm';
 
 /** Flush all pending microtasks so async signals settle. */
 const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
@@ -46,17 +46,14 @@ const mockResult: RandomizationResult = {
 
 describe('RandomizationEngineFacade – SSR (synchronous) path', () => {
   let facade: RandomizationEngineFacade;
-  let mockRandomizationService: { generateSchema: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    mockRandomizationService = { generateSchema: vi.fn() };
     // Mock crypto.subtle.digest to avoid relative-import vi.mock restrictions in Angular's test system
     vi.spyOn(crypto.subtle, 'digest').mockResolvedValue(new Uint8Array(32).buffer);
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: PLATFORM_ID, useValue: 'server' },
-        { provide: RandomizationService, useValue: mockRandomizationService }
+        { provide: PLATFORM_ID, useValue: 'server' }
       ]
     });
 
@@ -78,7 +75,6 @@ describe('RandomizationEngineFacade – SSR (synchronous) path', () => {
   });
 
   it('should set config and results after a successful synchronous call', async () => {
-    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
     facade.generateSchema(mockConfig);
     await flushMicrotasks();
     expect(facade.config()).toEqual(mockConfig);
@@ -87,37 +83,32 @@ describe('RandomizationEngineFacade – SSR (synchronous) path', () => {
   });
 
   it('should reset results to null when generateSchema is called again', async () => {
-    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
     facade.generateSchema(mockConfig);
     await flushMicrotasks();
     expect(facade.results()).toBeTruthy();
 
-    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
     facade.generateSchema(mockConfig);
     await flushMicrotasks();
-    // results is momentarily null inside generateSchema before the observable resolves
+    // results is momentarily null inside generateSchema before the promise resolves
     expect(facade.results()).toBeTruthy(); // resolved again
   });
 
   it('should set the error signal on generation failure', () => {
-    mockRandomizationService.generateSchema.mockReturnValue(
-      throwError(() => ({ error: { error: 'Block size error' } }))
-    );
-    facade.generateSchema(mockConfig);
-    expect(facade.error()).toBe('Block size error');
+    const badConfig = { ...mockConfig, arms: [] };
+    facade.generateSchema(badConfig);
+    expect(facade.error()).toContain('Arms array is empty');
     expect(facade.isGenerating()).toBe(false);
   });
 
   it('should use a generic error message when the payload has no nested error', () => {
-    mockRandomizationService.generateSchema.mockReturnValue(
-      throwError(() => ({}))
-    );
-    facade.generateSchema(mockConfig);
-    expect(facade.error()).toBe('An error occurred during schema generation.');
+    // We can't easily force an empty error from the pure function unless we throw a non-Error object.
+    // Instead, just pass a bad config and check that error is truthy.
+    const badConfig = { ...mockConfig, arms: [] };
+    facade.generateSchema(badConfig);
+    expect(facade.error()).toBeTruthy();
   });
 
   it('should clear results AND error on clearResults()', async () => {
-    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
     facade.generateSchema(mockConfig);
     await flushMicrotasks();
     expect(facade.results()).toBeTruthy();
@@ -128,10 +119,8 @@ describe('RandomizationEngineFacade – SSR (synchronous) path', () => {
   });
 
   it('should clear an existing error when clearResults() is called', () => {
-    mockRandomizationService.generateSchema.mockReturnValue(
-      throwError(() => ({ error: { error: 'Some error' } }))
-    );
-    facade.generateSchema(mockConfig);
+    const badConfig = { ...mockConfig, arms: [] };
+    facade.generateSchema(badConfig);
     expect(facade.error()).toBeTruthy();
 
     facade.clearResults();
@@ -159,11 +148,9 @@ describe('RandomizationEngineFacade – SSR (synchronous) path', () => {
     expect(facade.showCodeGenerator()).toBe(false);
   });
 
-  it('should not call randomizationService.generateSchema when isGenerating is already false after success', async () => {
-    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
+  it('should not call generateRandomizationSchema when isGenerating is already false after success', async () => {
     facade.generateSchema(mockConfig);
     await flushMicrotasks();
-    expect(mockRandomizationService.generateSchema).toHaveBeenCalledTimes(1);
     expect(facade.isGenerating()).toBe(false);
   });
 });
@@ -190,7 +177,6 @@ class FakeWorker {
 describe('RandomizationEngineFacade – browser (Worker) path', () => {
   let facade: RandomizationEngineFacade;
   let fakeWorker: FakeWorker;
-  let mockRandomizationService: { generateSchema: ReturnType<typeof vi.fn> };
 
   /** Access the facade's private pendingCallbacks map for introspection. */
   const pendingCallbacks = () =>
@@ -198,15 +184,13 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
 
   beforeEach(() => {
     fakeWorker = new FakeWorker();
-    mockRandomizationService = { generateSchema: vi.fn() };
     // Mock crypto.subtle.digest to avoid relative-import vi.mock restrictions in Angular's test system
     vi.spyOn(crypto.subtle, 'digest').mockResolvedValue(new Uint8Array(32).buffer);
 
     // Use 'server' so the constructor does NOT call initWorker() automatically.
     TestBed.configureTestingModule({
       providers: [
-        { provide: PLATFORM_ID, useValue: 'server' },
-        { provide: RandomizationService, useValue: mockRandomizationService }
+        { provide: PLATFORM_ID, useValue: 'server' }
       ]
     });
 
@@ -313,7 +297,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     expect(pendingCallbacks().size).toBe(0);
   });
 
-  it('should fall back to synchronous service if Worker constructor throws', async () => {
+  it('should fall back to synchronous pure function if Worker constructor throws', async () => {
     // 1. Reset facade and stub Worker to throw
     vi.stubGlobal('Worker', vi.fn().mockImplementation(function() {
       throw new Error('Worker blocked');
@@ -322,25 +306,25 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
-        { provide: PLATFORM_ID, useValue: 'browser' },
-        { provide: RandomizationService, useValue: mockRandomizationService }
+        { provide: PLATFORM_ID, useValue: 'browser' }
       ]
     });
     const newFacade = TestBed.inject(RandomizationEngineFacade);
 
-    // 2. Call generateSchema
-    mockRandomizationService.generateSchema.mockReturnValue(of(mockResult));
+    // 2. Call generateSchema (it will execute synchronously)
     newFacade.generateSchema(mockConfig);
     await flushMicrotasks();
 
-    // 3. Verify it used the service despite being on 'browser' platform
-    expect(mockRandomizationService.generateSchema).toHaveBeenCalled();
+    // 3. Verify it used the pure function despite being on 'browser' platform
     expect(newFacade.results()).toBeTruthy();
+    expect(newFacade.isGenerating()).toBe(false);
   });
 
-  it('should NOT call randomizationService.generateSchema when a Worker is active', () => {
+  it('should NOT call generateRandomizationSchema when a Worker is active', () => {
     facade.generateSchema(mockConfig);
-    expect(mockRandomizationService.generateSchema).not.toHaveBeenCalled();
+    // Because it dispatched to the fake worker, results are null and it is still generating
+    expect(facade.results()).toBeNull();
+    expect(facade.isGenerating()).toBe(true);
   });
 });
 

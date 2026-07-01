@@ -1,54 +1,39 @@
 import { Injectable } from '@angular/core';
-import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
-import { CodeGenerationStrategy } from './base.strategy';
+import { RandomizationConfig } from '../../../core/models/randomization.model';
+import { AbstractCodeGenerationStrategy } from './base.strategy';
 import { CodeTranspiler } from './ir/transpiler';
 import { IrIterationHelper } from './ir/iteration.helper';
 import { FormattingUtil } from './formatting.util';
 import { R_TEMPLATE } from './ir/templates';
-import { generateRandomizationSchema } from '../../../randomization-engine/core/randomization-algorithm';
-import { APP_VERSION } from '../../../../../environments/version';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
 
 @Injectable()
-export class RStrategy implements CodeGenerationStrategy {
+export class RStrategy extends AbstractCodeGenerationStrategy {
   readonly language = 'R';
 
-  constructor() {}
-
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.transpile(config, 'BLOCK');
+  constructor() {
+    super();
   }
 
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.transpile(config, 'MINIMIZATION');
-  }
-
-  private transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): string {
-    const isComplex = method === 'MINIMIZATION' || 
-                      config.capStrategy === 'MARGINAL_ONLY' || 
-                      (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') ||
-                      (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) ||
-                      (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
-                      (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0);
+  protected override customizeDataSetup(data: Record<string, string | number>, config: RandomizationConfig, ir: any, method: 'BLOCK' | 'MINIMIZATION', schema: any[]): void {
+    data['arms'] = config.arms.map(a => FormattingUtil.escapeString(a.name)).join(', ');
+    data['ratios'] = config.arms.map(a => a.ratio).join(', ');
     
-    const result = generateRandomizationSchema(config);
-    const schema = result.schema;
-    const resolvedConfig = { ...config, seed: result.metadata.seed };
-    const ir = CodeTranspiler.buildIR(resolvedConfig, method);
+    let strataComments = '';
+    (config.strata || []).forEach(s => {
+        strataComments += `# Stratum: ${FormattingUtil.escapeString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapeString(l)).join(', ')}\n`;
+    });
+    data['strataComments'] = strataComments.trimEnd();
+    data['minimizationParam'] = method === 'MINIMIZATION' ? `p_minimization <- ${config.minimizationConfig?.p || 0.8} # maintain precision parity` : '';
+  }
 
-    const dateStr = new Date().toISOString();
-    const algorithm = method === 'MINIMIZATION' ? 'Pocock-Simon Minimization' : 'PRNG Algorithm: MT19937';
-
-    const data: Record<string, string | number> = {
-      protocolId: config.protocolId,
-      appVersion: APP_VERSION,
-      dateStr,
-      algorithm,
-      seedHash: ir.seedHash,
-      precisionScale: PRECISION_SCALE,
-      precisionEpsilon: PRECISION_EPSILON
-    };
-
+  protected generateLanguageScript(
+    config: RandomizationConfig,
+    ir: any,
+    method: 'BLOCK' | 'MINIMIZATION',
+    isComplex: boolean,
+    schema: any[],
+    data: Record<string, string | number>
+  ): string {
     let algorithmicLogic = '';
 
     if (isComplex) {
@@ -58,7 +43,7 @@ export class RStrategy implements CodeGenerationStrategy {
       algorithmicLogic += `total_ratio <- ${ir.totalRatio}\n`;
       algorithmicLogic += `ALPHANUMERIC <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9")\n`;
       
-      let armsR = ir.arms.map(a => `list(name="${FormattingUtil.escapeString(a.name)}", ratio=${a.ratio})`).join(', ');
+      let armsR = ir.arms.map((a: any) => `list(name="${FormattingUtil.escapeString(a.name)}", ratio=${a.ratio})`).join(', ');
       algorithmicLogic += `arms <- list(${armsR})\n\n`;
 
       algorithmicLogic += `build_block <- function(size) {\n`;
@@ -149,15 +134,6 @@ export class RStrategy implements CodeGenerationStrategy {
     }
     
     data['algorithmicLogic'] = algorithmicLogic;
-    data['arms'] = config.arms.map(a => FormattingUtil.escapeString(a.name)).join(', ');
-    data['ratios'] = config.arms.map(a => a.ratio).join(', ');
-    
-    let strataComments = '';
-    (config.strata || []).forEach(s => {
-        strataComments += `# Stratum: ${FormattingUtil.escapeString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapeString(l)).join(', ')}\n`;
-    });
-    data['strataComments'] = strataComments.trimEnd();
-    data['minimizationParam'] = method === 'MINIMIZATION' ? `p_minimization <- ${config.minimizationConfig?.p || 0.8} # maintain precision parity` : '';
 
     return CodeTranspiler.renderTemplate(R_TEMPLATE, data);
   }

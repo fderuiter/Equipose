@@ -4,6 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ConfigFormComponent } from './config-form.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore } from '../store/study-builder.store';
+import { AnnouncementService } from '../../../core/services/announcement.service';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { By } from '@angular/platform-browser';
@@ -12,6 +13,7 @@ describe('ConfigFormComponent (domain)', () => {
   let component: ConfigFormComponent;
   let fixture: ComponentFixture<ConfigFormComponent>;
   let mockFacade: unknown;
+  let announcementServiceSpy: any;
 
   beforeEach(async () => {
     mockFacade = {
@@ -26,11 +28,16 @@ describe('ConfigFormComponent (domain)', () => {
       closeCodeGenerator: vi.fn(),
       clearResults: vi.fn()
     };
+    
+    announcementServiceSpy = {
+      announce: vi.fn()
+    };
 
     await TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, ConfigFormComponent],
       providers: [
         { provide: RandomizationEngineFacade, useValue: mockFacade },
+        { provide: AnnouncementService, useValue: announcementServiceSpy },
         StudyBuilderStore
       ]
     }).compileComponents();
@@ -638,6 +645,47 @@ describe('ConfigFormComponent (domain)', () => {
 
     it('should filter out empty segments created by consecutive commas', () => {
       expect(component.parseCommaSeparated('a,,b')).toEqual(['a', 'b']);
+    });
+  });
+
+  describe('Accessibility Improvements', () => {
+    it('should call AnnouncementService.announce with the step label when navigating', () => {
+      expect(announcementServiceSpy.announce).not.toHaveBeenCalled();
+      
+      component.nextStep();
+      fixture.detectChanges();
+      
+      expect(announcementServiceSpy.announce).toHaveBeenCalledWith('Setup & Metadata');
+      
+      component.previousStep();
+      fixture.detectChanges();
+      
+      expect(announcementServiceSpy.announce).toHaveBeenCalledWith('Regulatory Disclaimer');
+    });
+
+    it('should set aria-current="step" only on the active step header', () => {
+      const stepHeaders = fixture.debugElement.queryAll(By.css('ol li'));
+      
+      // Step 0 should have aria-current="step"
+      expect(stepHeaders[0].attributes['aria-current']).toBe('step');
+      
+      // Others should not have aria-current
+      for (let i = 1; i < stepHeaders.length; i++) {
+        expect(stepHeaders[i].attributes['aria-current']).toBeUndefined();
+      }
+      
+      // Navigate to step 1
+      component.nextStep();
+      fixture.detectChanges();
+      
+      // Now step 1 should have aria-current="step"
+      expect(stepHeaders[0].attributes['aria-current']).toBeUndefined();
+      expect(stepHeaders[1].attributes['aria-current']).toBe('step');
+      
+      // Others should not have aria-current
+      for (let i = 2; i < stepHeaders.length; i++) {
+        expect(stepHeaders[i].attributes['aria-current']).toBeUndefined();
+      }
     });
   });
 });
