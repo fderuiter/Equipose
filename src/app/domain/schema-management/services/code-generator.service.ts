@@ -4,24 +4,24 @@ import {
   ConfigurationValidationError,
   UnsupportedLanguageError,
 } from '../errors/code-generation-errors';
-import { CodeGenerationStrategy } from './generation/base.strategy';
+import { CodeGenerationStrategy, BaseOrchestrator } from './generation/base.strategy';
 import { StaticMappingGuard } from './generation/static-mapping.guard';
 import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
 
-import { RStrategy } from './generation/r.strategy';
-import { PythonStrategy } from './generation/python.strategy';
-import { SasStrategy } from './generation/sas.strategy';
-import { StataStrategy } from './generation/stata.strategy';
+import { R_CONFIG } from './generation/r.strategy';
+import { PYTHON_CONFIG } from './generation/python.strategy';
+import { SAS_CONFIG } from './generation/sas.strategy';
+import { STATA_CONFIG } from './generation/stata.strategy';
 import { MethodologySpecificationService } from './methodology-specification.service';
 
 export const CODE_GENERATION_STRATEGIES = new InjectionToken<CodeGenerationStrategy[]>('CODE_GENERATION_STRATEGIES', {
   providedIn: 'root',
   factory: () => {
     return [
-      new RStrategy(),
-      new PythonStrategy(),
-      new SasStrategy(),
-      new StataStrategy()
+      new BaseOrchestrator(R_CONFIG),
+      new BaseOrchestrator(PYTHON_CONFIG),
+      new BaseOrchestrator(SAS_CONFIG),
+      new BaseOrchestrator(STATA_CONFIG)
     ];
   }
 });
