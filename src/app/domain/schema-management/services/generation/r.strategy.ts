@@ -1,128 +1,75 @@
-import { Injectable } from '@angular/core';
-import { RandomizationConfig } from '../../../core/models/randomization.model';
-import { AbstractCodeGenerationStrategy } from './base.strategy';
-import { CodeTranspiler } from './ir/transpiler';
-import { IrIterationHelper } from './ir/iteration.helper';
 import { FormattingUtil } from './formatting.util';
 import { R_TEMPLATE } from './ir/templates';
+import { LanguageConfig } from './framework/language-config';
 
-@Injectable()
-export class RStrategy extends AbstractCodeGenerationStrategy {
-  readonly language = 'R';
-
-  constructor() {
-    super();
-  }
-
-  protected override customizeDataSetup(data: Record<string, string | number>, config: RandomizationConfig, ir: any, method: 'BLOCK' | 'MINIMIZATION', schema: any[]): void {
-    data['arms'] = config.arms.map(a => FormattingUtil.escapeString(a.name)).join(', ');
-    data['ratios'] = config.arms.map(a => a.ratio).join(', ');
+export const R_CONFIG: LanguageConfig = {
+  language: 'R',
+  indexStart: 1,
+  template: R_TEMPLATE,
+  customizeDataSetup: (data, config, ir, method, schema) => {
+    data['arms'] = config.arms.map((a: any) => FormattingUtil.escapeString(a.name)).join(', ');
+    data['ratios'] = config.arms.map((a: any) => a.ratio).join(', ');
     
     let strataComments = '';
-    (config.strata || []).forEach(s => {
-        strataComments += `# Stratum: ${FormattingUtil.escapeString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapeString(l)).join(', ')}\n`;
+    (config.strata || []).forEach((s: any) => {
+        strataComments += `# Stratum: ${FormattingUtil.escapeString(s.id)}, Levels: ${s.levels.map((l: any) => FormattingUtil.escapeString(l)).join(', ')}\n`;
     });
     data['strataComments'] = strataComments.trimEnd();
     data['minimizationParam'] = method === 'MINIMIZATION' ? `p_minimization <- ${config.minimizationConfig?.p || 0.8} # maintain precision parity` : '';
-  }
-
-  protected generateLanguageScript(
-    config: RandomizationConfig,
-    ir: any,
-    method: 'BLOCK' | 'MINIMIZATION',
-    isComplex: boolean,
-    schema: any[],
-    data: Record<string, string | number>
-  ): string {
-    let algorithmicLogic = '';
-
-    if (isComplex) {
-      algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, config, schema);
-    } else {
-      algorithmicLogic += `block_sizes <- c(${ir.blockSizes.join(', ')})\n`;
-      algorithmicLogic += `total_ratio <- ${ir.totalRatio}\n`;
-      algorithmicLogic += `ALPHANUMERIC <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9")\n`;
-      
+  },
+  components: {
+    initialization: (ir) => {
+      let logic = `block_sizes <- c(${ir.blockSizes.join(', ')})\ntotal_ratio <- ${ir.totalRatio}\n`;
+      logic += `ALPHANUMERIC <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9")\n`;
       let armsR = ir.arms.map((a: any) => `list(name="${FormattingUtil.escapeString(a.name)}", ratio=${a.ratio})`).join(', ');
-      algorithmicLogic += `arms <- list(${armsR})\n\n`;
+      logic += `arms <- list(${armsR})\n\nseq_count <- 0\n`;
+      return logic;
+    },
+    fisherYates: (ir) => ir.templates['R'].fisherYates,
+    buildBlock: (ir) => ir.templates['R'].buildBlock,
+    luhn: `    if (grepl("{CHECKSUM}", subj_id, fixed=TRUE)) {\n      base_for_luhn <- gsub("{CHECKSUM}", "", subj_id, fixed=TRUE)\n      digits <- gsub("\\\\D", "", base_for_luhn)\n      chk <- "0"\n      if (nchar(digits) > 0) {\n        s <- 0\n        is_even <- FALSE\n        chars <- strsplit(digits, "")[[1]]\n        for (i in length(chars):1) {\n          d <- as.integer(chars[i])\n          if (is_even) {\n            d <- d * 2\n            if (d > 9) d <- d - 9\n          }\n          s <- s + d\n          is_even <- !is_even\n        }\n        chk <- as.character((10 - (s %% 10)) %% 10)\n      }\n      subj_id <- sub("{CHECKSUM}", chk, subj_id, fixed=TRUE)\n    }`,
+    subjectIdBuilder: (tokens, task) => {
+      let baseBuilder = 'paste0(';
+      const args = [];
+      for (const token of tokens) {
+        if (token.type === 'literal') {
+          args.push(`"${FormattingUtil.escapeString(token.value)}"`);
+        } else if (token.type === 'site') {
+          args.push(`"${FormattingUtil.escapeString(task.site)}"`);
+        } else if (token.type === 'stratum') {
+          args.push(`"${FormattingUtil.escapeString(task.stratumCode)}"`);
+        } else if (token.type === 'seq') {
+          args.push(`sprintf("%0${token.length}d", seq_count)`);
+        } else if (token.type === 'rnd') {
+          args.push(`paste0(ALPHANUMERIC[(replicate(${token.length}, random_int()) %% length(ALPHANUMERIC)) + 1], collapse="")`);
+        } else if (token.type === 'checksum') {
+          args.push(`"{CHECKSUM}"`);
 
-      algorithmicLogic += `${ir.templates['R'].fisherYates}\n\n`;
-      algorithmicLogic += `${ir.templates['R'].buildBlock}\n\n`;
-
-      algorithmicLogic += `seq_count <- 0\n`;
-      
-      algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
-        config,
-        ir.tasks,
-        (stratumId, stratumValue) => `, "${FormattingUtil.escapeString(stratumId)}"="${FormattingUtil.escapeString(stratumValue)}"`,
-        (task, formattedStrata) => {
-          let taskLogic = `count <- 0\n`;
-          taskLogic += `block_num <- 1\n`;
-          taskLogic += `while (count < ${task.cap}) {\n`;
-          taskLogic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
-          taskLogic += `  block <- build_block(size, total_ratio, arms)\n`;
-          taskLogic += `  for (trt in block) {\n`;
-          taskLogic += `    seq_count <- seq_count + 1\n`;
-
-          let baseBuilder = 'paste0(';
-          let hasChecksum = false;
-          const args = [];
-          for (const token of ir.subjectIdTokens) {
-            if (token.type === 'literal') {
-              args.push(`"${FormattingUtil.escapeString(token.value)}"`);
-            } else if (token.type === 'site') {
-              args.push(`"${FormattingUtil.escapeString(task.site)}"`);
-            } else if (token.type === 'stratum') {
-              args.push(`"${FormattingUtil.escapeString(task.stratumCode)}"`);
-            } else if (token.type === 'seq') {
-              args.push(`sprintf("%0${token.length}d", seq_count)`);
-            } else if (token.type === 'rnd') {
-              args.push(`paste0(ALPHANUMERIC[(replicate(${token.length}, random_int()) %% length(ALPHANUMERIC)) + 1], collapse="")`);
-            } else if (token.type === 'checksum') {
-              hasChecksum = true;
-              args.push(`"{CHECKSUM}"`);
-            }
-          }
-          baseBuilder += args.join(', ') + ')';
-
-          taskLogic += `    subj_id <- ${baseBuilder}\n`;
-          if (hasChecksum) {
-            taskLogic += `    if (grepl("{CHECKSUM}", subj_id, fixed=TRUE)) {\n`;
-            taskLogic += `      base_for_luhn <- gsub("{CHECKSUM}", "", subj_id, fixed=TRUE)\n`;
-            taskLogic += `      digits <- gsub("\\\\D", "", base_for_luhn)\n`;
-            taskLogic += `      chk <- "0"\n`;
-            taskLogic += `      if (nchar(digits) > 0) {\n`;
-            taskLogic += `        s <- 0\n`;
-            taskLogic += `        is_even <- FALSE\n`;
-            taskLogic += `        chars <- strsplit(digits, "")[[1]]\n`;
-            taskLogic += `        for (i in length(chars):1) {\n`;
-            taskLogic += `          d <- as.integer(chars[i])\n`;
-            taskLogic += `          if (is_even) {\n`;
-            taskLogic += `            d <- d * 2\n`;
-            taskLogic += `            if (d > 9) d <- d - 9\n`;
-            taskLogic += `          }\n`;
-            taskLogic += `          s <- s + d\n`;
-            taskLogic += `          is_even <- !is_even\n`;
-            taskLogic += `        }\n`;
-            taskLogic += `        chk <- as.character((10 - (s %% 10)) %% 10)\n`;
-            taskLogic += `      }\n`;
-            taskLogic += `      subj_id <- sub("{CHECKSUM}", chk, subj_id, fixed=TRUE)\n`;
-            taskLogic += `    }\n`;
-          }
-
-          taskLogic += `    schema_list[[length(schema_list)+1]] <- data.frame(SubjectID=subj_id, Site="${FormattingUtil.escapeString(task.site)}", Treatment=trt, BlockNumber=block_num, BlockSize=size, StratumCode="${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}, stringsAsFactors=FALSE)\n`;
-          taskLogic += `    count <- count + 1\n`;
-          taskLogic += `    if (count >= ${task.cap}) break\n`;
-          taskLogic += `  }\n`;
-          taskLogic += `  block_num <- block_num + 1\n`;
-          taskLogic += `}\n`;
-          return taskLogic;
         }
-      );
+      }
+      baseBuilder += args.join(', ') + ')';
+      return `    subj_id <- ${baseBuilder}`;
+    },
+    recordAppend: (task, config) => {
+      let formattedStrata = '';
+      for (const s of config.strata || []) {
+        formattedStrata += `, "${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(task.stratumDetails[s.id])}"`;
+      }
+      return `    schema_list[[length(schema_list)+1]] <- data.frame(SubjectID=subj_id, Site="${FormattingUtil.escapeString(task.site)}", Treatment=trt, BlockNumber=block_num, BlockSize=size, StratumCode="${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}, stringsAsFactors=FALSE)`;
+    },
+    taskLoop: (task, taskLogic, config) => {
+      let logic = `count <- 0\nblock_num <- 1\nwhile (count < ${task.cap}) {\n`;
+      logic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
+      logic += `  block <- build_block(size, total_ratio, arms)\n`;
+      logic += `  for (trt in block) {\n`;
+      logic += `    seq_count <- seq_count + 1\n`;
+      logic += taskLogic;
+      logic += `    count <- count + 1\n`;
+      logic += `    if (count >= ${task.cap}) break\n`;
+      logic += `  }\n`;
+      logic += `  block_num <- block_num + 1\n`;
+      logic += `}\n`;
+      return logic;
     }
-    
-    data['algorithmicLogic'] = algorithmicLogic;
-
-    return CodeTranspiler.renderTemplate(R_TEMPLATE, data);
   }
-}
+};
