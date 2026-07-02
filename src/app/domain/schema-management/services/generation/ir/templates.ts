@@ -58,6 +58,17 @@ data RandomizationSchema;
   /* --- MT19937 PRNG --- */
   %mt19937_init(&seed);
 
+  /* --- RUNTIME PARITY VALIDATION --- */
+  array val_vec[100] _temporary_ ({{validationVectorSpace}});
+  do v_idx = 1 to 100;
+    link get_rand_int;
+    if rand_int ne val_vec[v_idx] then do;
+      put "CRITICAL ERROR: PRNG Sequence Mismatch at index " v_idx;
+      put "Expected: " val_vec[v_idx] " Got: " rand_int;
+      abort;
+    end;
+  end;
+
 {{algorithmicLogic}}
 
   return;
@@ -120,6 +131,18 @@ do "mt19937_v1.0.0.do"
 mata:
 
 init_mt({{seedHash}})
+
+// --- RUNTIME PARITY VALIDATION ---
+real rowvector val_vec
+val_vec = ({{validationVector}})
+for (v_idx=1; v_idx<=100; v_idx++) {
+    r_val = random_int()
+    if (r_val != val_vec[v_idx]) {
+        errprintf("CRITICAL ERROR: PRNG Sequence Mismatch at index %g\n", v_idx)
+        errprintf("Expected: %g Got: %g\n", val_vec[v_idx], r_val)
+        exit(9)
+    }
+}
 
 // Stata arrays and logic will be placed here
 {{algorithmicLogic}}

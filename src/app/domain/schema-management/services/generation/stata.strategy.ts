@@ -79,7 +79,7 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `        }\n`;
       algorithmicLogic += `    }\n`;
       algorithmicLogic += `    for (i=cols(block); i>=2; i--) {\n`;
-      algorithmicLogic += `        j = mod(random_int(), i) + 1\n`;
+      algorithmicLogic += `        j = trunc((random_int() / 4294967296) * i) + 1\n`;
       algorithmicLogic += `        temp = block[i]; block[i] = block[j]; block[j] = temp\n`;
       algorithmicLogic += `    }\n`;
       algorithmicLogic += `    return(block)\n`;
@@ -96,7 +96,7 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
           let taskLogic = `count = 0\n`;
           taskLogic += `block_num = 1\n`;
           taskLogic += `while (count < ${task.cap}) {\n`;
-          taskLogic += `    size = block_sizes[mod(random_int(), cols(block_sizes)) + 1]\n`;
+          taskLogic += `    size = block_sizes[trunc((random_int() / 4294967296) * cols(block_sizes)) + 1]\n`;
           taskLogic += `    block = build_block(size)\n`;
           taskLogic += `    for (i=1; i<=cols(block); i++) {\n`;
           taskLogic += `        seq_count = seq_count + 1\n`;
@@ -118,7 +118,7 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
             } else if (token.type === 'rnd') {
               rndVarsSetup += `        rnd_str_${rndCounter} = ""\n`;
               rndVarsSetup += `        for (_k=1; _k<=${token.length}; _k++) {\n`;
-              rndVarsSetup += `            char_idx = mod(random_int(), 36) + 1\n`;
+              rndVarsSetup += `            char_idx = trunc((random_int() / 4294967296) * 36) + 1\n`;
               rndVarsSetup += `            rnd_str_${rndCounter} = rnd_str_${rndCounter} + substr(ALPHANUMERIC, char_idx, 1)\n`;
               rndVarsSetup += `        }\n`;
               baseBuilder += `rnd_str_${rndCounter} + `;
