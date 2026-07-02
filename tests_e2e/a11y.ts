@@ -56,24 +56,34 @@ export class FocusAuditor {
    * 
    * @param page - Playwright Page object.
    * @param triggerAction - Function containing the interaction to perform.
-   * @param expectedRestoredLocator - Locator of the element expected to receive focus.
+   * @param expectedRestoredLocator - Optional locator of the element expected to receive focus.
+   *                                  If omitted, the framework automatically records the active element
+   *                                  before the action and asserts it is restored.
    */
   static async assertFocusRestoration(
     page: Page,
     triggerAction: () => Promise<void>,
-    expectedRestoredLocator: Locator
+    expectedRestoredLocator?: Locator
   ): Promise<void> {
+    // Record initiating element if no explicit expected locator is provided
+    let initiatingElementHandle;
+    if (!expectedRestoredLocator) {
+      initiatingElementHandle = await page.evaluateHandle(() => document.activeElement);
+    }
+
     await triggerAction();
 
-    const isFocused = await expectedRestoredLocator.evaluate(
-      (node) => node === document.activeElement
-    );
+    const isFocused = expectedRestoredLocator
+      ? await expectedRestoredLocator.evaluate((node) => node === document.activeElement)
+      : await page.evaluate((expectedNode) => expectedNode === document.activeElement, initiatingElementHandle);
 
     if (!isFocused) {
       const activeElementDetails = await page.evaluate(() => {
         const active = document.activeElement;
         if (!active) return 'null';
-        return `tag: <${active.tagName.toLowerCase()}>, id: ${active.id || 'none'}, class: ${active.className || 'none'}, HTML: ${active.outerHTML.substring(0, 100)}`;
+        const isBody = active === document.body;
+        const details = `tag: <${active.tagName.toLowerCase()}>, id: ${active.id || 'none'}, class: ${active.className || 'none'}, HTML: ${active.outerHTML.substring(0, 100)}`;
+        return isBody ? `Document Body (${details})` : details;
       });
       throw new Error(`Accessibility audit failed: Focus was not restored to the expected element. Active element is: ${activeElementDetails}`);
     }
@@ -90,14 +100,20 @@ export class FocusAuditor {
     page: Page,
     transitionAction: () => Promise<void>
   ): Promise<void> {
+    const preTransitionActive = await page.evaluate(() => {
+      const active = document.activeElement;
+      if (!active) return 'null';
+      return `tag: <${active.tagName.toLowerCase()}>, id: ${active.id || 'none'}, class: ${active.className || 'none'}, HTML: ${active.outerHTML.substring(0, 100)}`;
+    });
+
     await transitionAction();
 
     const isBodyFocused = await page.evaluate(() => {
-      return document.activeElement === document.body;
+      return document.activeElement === document.body || document.activeElement === null;
     });
 
     if (isBodyFocused) {
-      throw new Error(`Accessibility audit failed: Focus was stranded on the document body after transition.`);
+      throw new Error(`Accessibility audit failed: Focus was stranded on the document body after transition. Focus was previously on: ${preTransitionActive}`);
     }
   }
 }
@@ -108,9 +124,18 @@ export class FocusAuditor {
 export class FocusTrapPlugin {
   /**
    * Verifies that focus remains contained within the specified container
-   * during forward and backward Tab cycles.
+   * during forward and backward Tab cycles. If no container is provided,
+   * it automatically detects the active modal or dialog.
    */
-  static async verifyFocusContainment(page: Page, container: Locator, maxTabs = 15): Promise<void> {
+  static async verifyFocusContainment(page: Page, container?: Locator, maxTabs = 15): Promise<void> {
+    if (!container) {
+      // Auto-detect modal or dialog
+      container = page.locator('[role="dialog"], [role="alertdialog"], .modal').locator('visible=true').first();
+      await container.waitFor({ state: 'visible', timeout: 2000 }).catch(() => {
+        throw new Error('Accessibility audit failed: No visible modal or dialog found for focus-trap verification.');
+      });
+    }
+
     const getActiveElementDetails = async () => {
       return await page.evaluate(() => {
         const active = document.activeElement;
