@@ -1,6 +1,7 @@
 import { FormattingUtil } from './formatting.util';
 import { R_TEMPLATE } from './ir/templates';
 import { LanguageConfig } from './framework/language-config';
+import { CodeTranspiler } from './ir/transpiler';
 
 export const R_CONFIG: LanguageConfig = {
   language: 'R',
@@ -25,49 +26,47 @@ export const R_CONFIG: LanguageConfig = {
       logic += `arms <- list(${armsR})\n\nseq_count <- 0\n`;
       return logic;
     },
-    fisherYates: `build_block <- function(size) {\n  block <- character(0)\n  multiplier <- size / total_ratio\n  for (arm in arms) {\n    block <- c(block, rep(arm$name, as.integer(arm$ratio * multiplier)))\n  }\n  if (length(block) > 1) {\n    for (i in length(block):2) {\n      j <- (random_int() %% i) + 1\n      temp <- block[i]; block[i] <- block[j]; block[j] <- temp\n    }\n  }\n  return(block)\n}\n`,
-    luhn: `    if (grepl("{CHECKSUM}", subj_id, fixed=TRUE)) {\n      base_for_luhn <- gsub("{CHECKSUM}", "", subj_id, fixed=TRUE)\n      digits <- gsub("\\\\D", "", base_for_luhn)\n      chk <- "0"\n      if (nchar(digits) > 0) {\n        s <- 0\n        is_even <- FALSE\n        chars <- strsplit(digits, "")[[1]]\n        for (i in length(chars):1) {\n          d <- as.integer(chars[i])\n          if (is_even) {\n            d <- d * 2\n            if (d > 9) d <- d - 9\n          }\n          s <- s + d\n          is_even <- !is_even\n        }\n        chk <- as.character((10 - (s %% 10)) %% 10)\n      }\n      subj_id <- sub("{CHECKSUM}", chk, subj_id, fixed=TRUE)\n    }`,
-    subjectIdBuilder: (tokens, task) => {
-      let baseBuilder = 'paste0(';
-      const args = [];
-      for (const token of tokens) {
-        if (token.type === 'literal') {
-          args.push(`"${FormattingUtil.escapeString(token.value)}"`);
-        } else if (token.type === 'site') {
-          args.push(`"${FormattingUtil.escapeString(task.site)}"`);
-        } else if (token.type === 'stratum') {
-          args.push(`"${FormattingUtil.escapeString(task.stratumCode)}"`);
-        } else if (token.type === 'seq') {
-          args.push(`sprintf("%0${token.length}d", seq_count)`);
-        } else if (token.type === 'rnd') {
-          args.push(`paste0(ALPHANUMERIC[(replicate(${token.length}, random_int()) %% length(ALPHANUMERIC)) + 1], collapse="")`);
-        } else if (token.type === 'checksum') {
-          args.push(`"{CHECKSUM}"`);
-        }
+    fisherYates: `build_block <- function(size) {\n  block <- character(0)\n  multiplier <- size / total_ratio\n  for (arm in arms) {\n    block <- c(block, rep(arm$name, as.integer(arm$ratio * multiplier)))\n  }\n  if (length(block) > 1) {\n    for (i in length(block):2) {\n      j <- floor((mt19937_int() / 4294967296) * i) + 1\n      temp <- block[i]; block[i] <- block[j]; block[j] <- temp\n    }\n  }\n  return(block)\n}\n`,
+    roundRobinLoop: (ir, config) => {
+      let algorithmicLogic = `tasks <- list()\n`;
+      for (const t of ir.tasks) {
+         let strataStr = '';
+         for (const s of config.strata || []) {
+             strataStr += `, "${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(t.stratumDetails[s.id])}"`;
+         }
+         algorithmicLogic += `tasks[[length(tasks)+1]] <- list(site="${FormattingUtil.escapeString(t.site)}", stratumCode="${FormattingUtil.escapeString(t.stratumCode)}", cap=${t.cap}, count=0, block_num=1, strata='${strataStr}')\n`;
       }
-      baseBuilder += args.join(', ') + ')';
-      return `    subj_id <- ${baseBuilder}`;
-    },
-    recordAppend: (task, config) => {
-      let formattedStrata = '';
-      for (const s of config.strata || []) {
-        formattedStrata += `, "${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(task.stratumDetails[s.id])}"`;
-      }
-      return `    schema_list[[length(schema_list)+1]] <- data.frame(SubjectID=subj_id, Site="${FormattingUtil.escapeString(task.site)}", Treatment=trt, BlockNumber=block_num, BlockSize=size, StratumCode="${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}, stringsAsFactors=FALSE)`;
-    },
-    taskLoop: (task, taskLogic, config) => {
-      let logic = `count <- 0\nblock_num <- 1\nwhile (count < ${task.cap}) {\n`;
-      logic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
-      logic += `  block <- build_block(size)\n`;
-      logic += `  for (trt in block) {\n`;
-      logic += `    seq_count <- seq_count + 1\n`;
-      logic += taskLogic;
-      logic += `    count <- count + 1\n`;
-      logic += `    if (count >= ${task.cap}) break\n`;
-      logic += `  }\n`;
-      logic += `  block_num <- block_num + 1\n`;
-      logic += `}\n`;
-      return logic;
+      algorithmicLogic += `\n`;
+
+      algorithmicLogic += `site_counts <- new.env(hash=TRUE)\n`;
+      algorithmicLogic += `added_in_pass <- TRUE\n`;
+      algorithmicLogic += `while (added_in_pass) {\n`;
+      algorithmicLogic += `  added_in_pass <- FALSE\n`;
+      algorithmicLogic += `  for (t_idx in seq_along(tasks)) {\n`;
+      algorithmicLogic += `    if (tasks[[t_idx]]$count < tasks[[t_idx]]$cap) {\n`;
+      algorithmicLogic += `      added_in_pass <- TRUE\n`;
+      algorithmicLogic += `      size <- block_sizes[floor((mt19937_int() / 4294967296) * length(block_sizes)) + 1]\n`;
+      algorithmicLogic += `      block <- build_block(size)\n`;
+      algorithmicLogic += `      for (trt in block) {\n`;
+      algorithmicLogic += `        site <- tasks[[t_idx]]$site\n`;
+      algorithmicLogic += `        if (is.null(site_counts[[site]])) site_counts[[site]] <- 0\n`;
+      algorithmicLogic += `        site_counts[[site]] <- site_counts[[site]] + 1\n`;
+      algorithmicLogic += `        seq_count <- site_counts[[site]]\n`;
+      
+      algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('R', ir.subjectIdTokens, 'tasks[[t_idx]]$site', 'tasks[[t_idx]]$stratumCode', 'seq_count');
+      
+      algorithmicLogic += `        strata_eval <- eval(parse(text=paste0("list(", substr(tasks[[t_idx]]$strata, 3, nchar(tasks[[t_idx]]$strata)), ")")))\n`;
+      algorithmicLogic += `        row_df <- data.frame(SubjectID=subj_id, Site=tasks[[t_idx]]$site, Treatment=trt, BlockNumber=tasks[[t_idx]]$block_num, BlockSize=size, StratumCode=tasks[[t_idx]]$stratumCode, stringsAsFactors=FALSE)\n`;
+      algorithmicLogic += `        if (length(strata_eval) > 0) row_df <- cbind(row_df, as.data.frame(strata_eval, stringsAsFactors=FALSE))\n`;
+      algorithmicLogic += `        schema_list[[length(schema_list)+1]] <- row_df\n`;
+      algorithmicLogic += `        tasks[[t_idx]]$count <- tasks[[t_idx]]$count + 1\n`;
+      algorithmicLogic += `        if (tasks[[t_idx]]$count >= tasks[[t_idx]]$cap) break\n`;
+      algorithmicLogic += `      }\n`;
+      algorithmicLogic += `      tasks[[t_idx]]$block_num <- tasks[[t_idx]]$block_num + 1\n`;
+      algorithmicLogic += `    }\n`;
+      algorithmicLogic += `  }\n`;
+      algorithmicLogic += `}\n`;
+      return algorithmicLogic;
     }
   }
 };
