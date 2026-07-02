@@ -104,7 +104,7 @@ the generated SAS/Stata **code** and the underlying **schema** are equivalent
 by construction.
 
 **Important Notice:** The static validation and script generation feature set does
-not provide bit-for-bit PRNG sequence parity between the web UI (which uses Alea)
+not provide bit-for-bit PRNG sequence parity between the web UI (which uses MT19937)
 and the SAS/Stata implementations (which use Mersenne Twister). The statistical
 allocation properties and structural rules are identical, but bit-for-bit parity
 with the UI is not expected.
@@ -133,6 +133,12 @@ Every generated SAS/Stata script embeds:
 
 These fields are verified by the E2E audit-trail tests (`tests_e2e/audit-trail.spec.ts`),
 tagged `[REQ-21CFR11-001]` through `[REQ-21CFR11-004]`.
+
+### 4.5 Configuration Constants
+
+- **Validation Vector:** `['B', 'B', 'A', 'A', 'A', 'B', 'B', 'A']`
+- **Precision Parity:** `1000000000000`
+
 
 ---
 
