@@ -27,7 +27,7 @@ export function generateCryptoSeed(): string {
 // Shared block-generation helpers
 // ---------------------------------------------------------------------------
 
-function buildBlock(arms: TreatmentArm[], blockSize: number, totalRatio: number, rng: () => number, rng_int?: () => number): TreatmentArm[] {
+function buildBlock(arms: TreatmentArm[], blockSize: number, totalRatio: number, rng: () => number): TreatmentArm[] {
   const block: TreatmentArm[] = [];
   const multiplier = blockSize / totalRatio;
   for (const arm of arms) {
@@ -37,7 +37,7 @@ function buildBlock(arms: TreatmentArm[], blockSize: number, totalRatio: number,
   }
   // Fisher-Yates shuffle using raw 32-bit integers
   for (let i = block.length - 1; i > 0; i--) {
-    const j = rng_int ? (rng_int() % (i + 1)) : Math.floor(rng() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [block[i], block[j]] = [block[j], block[i]];
   }
   return block;
@@ -89,7 +89,7 @@ function resolveBlockRule(config: RandomizationConfig, site: string, stratumCode
  *   then uses the PRNG to pick from the remaining pool. Falls back to the full
  *   sizes array if every size has been exhausted.
  */
-function selectBlockSize(rule: BlockRule, state: BlockState, rng: () => number, rng_int?: () => number): number {
+function selectBlockSize(rule: BlockRule, state: BlockState, rng: () => number): number {
   if (rule.selectionType === 'FIXED_SEQUENCE') {
     const size = rule.sizes[state.sequenceIndex % rule.sizes.length];
     state.sequenceIndex++;
@@ -108,7 +108,7 @@ function selectBlockSize(rule: BlockRule, state: BlockState, rng: () => number, 
     // If all sizes are exhausted, fall back to the full pool (soft-cap behaviour).
   }
 
-  const idx = rng_int ? (rng_int() % available.length) : Math.floor(rng() * available.length);
+  const idx = Math.floor(rng() * available.length);
   const size = available[idx];
   state.usageCounts.set(size, (state.usageCounts.get(size) ?? 0) + 1);
   return size;
@@ -139,7 +139,6 @@ function collectAllBlockSizes(config: RandomizationConfig): number[] {
 function generateStandard(
   resolvedConfig: RandomizationConfig,
   rng: () => number,
-  rng_int: () => number,
   strataCombinations: Record<string, string>[],
   totalRatio: number,
   schema: GeneratedSchema[],
@@ -171,8 +170,8 @@ function generateStandard(
         const stratumCode = registry.getStratumCode(stratum);
         const state = stateMap.get(`${site}|${stratumCode}`)!;
 
-        const blockSize = selectBlockSize(state.rule, state.blockState, rng, rng_int);
-        const block = buildBlock(resolvedConfig.arms, blockSize, totalRatio, rng, rng_int);
+        const blockSize = selectBlockSize(state.rule, state.blockState, rng);
+        const block = buildBlock(resolvedConfig.arms, blockSize, totalRatio, rng);
 
         for (const arm of block) {
           if (!registry.canAddSubject(stratum)) break;
@@ -214,7 +213,6 @@ function generateStandard(
 function generateMarginalOnly(
   resolvedConfig: RandomizationConfig,
   rng: () => number,
-  rng_int: () => number,
   strataCombinations: Record<string, string>[],
   totalRatio: number,
   schema: GeneratedSchema[],
@@ -234,7 +232,7 @@ function generateMarginalOnly(
 
     while (activePool.length > 0) {
       // Randomly select a combination from the active pool.
-      const poolIdx = rng_int ? (rng_int() % activePool.length) : Math.floor(rng() * activePool.length);
+      const poolIdx = Math.floor(rng() * activePool.length);
       const stratum = activePool[poolIdx];
 
       // Resolve block rule and pick a block size using the hierarchical strategy.
@@ -243,8 +241,8 @@ function generateMarginalOnly(
       if (!siteBlockStates.has(stratumCode)) {
         siteBlockStates.set(stratumCode, newBlockState());
       }
-      const blockSize = selectBlockSize(rule, siteBlockStates.get(stratumCode)!, rng, rng_int);
-      const block = buildBlock(resolvedConfig.arms, blockSize, totalRatio, rng, rng_int);
+      const blockSize = selectBlockSize(rule, siteBlockStates.get(stratumCode)!, rng);
+      const block = buildBlock(resolvedConfig.arms, blockSize, totalRatio, rng);
       // Increment per generated block so downstream grouping/sorting (which uses
       // site|stratumCode|blockNumber) remains meaningful in MARGINAL_ONLY mode.
       blockNumber++;
@@ -299,7 +297,6 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
 
   const mt = new MT19937(MT19937.get31BitSeed(resolvedConfig.seed));
   const rng = () => mt.random();
-  const rng_int = () => mt.random_int();
 
   // Generate all strata combinations
   let strataCombinations: Record<string, string>[] = [{}];
@@ -361,10 +358,10 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
   if (internalConfig.randomizationMethod === 'MINIMIZATION') {
     schema.push(...generateMinimization(internalConfig, rng, registry));
   } else if (internalConfig.capStrategy === 'MARGINAL_ONLY') {
-    generateMarginalOnly(internalConfig, rng, rng_int, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
+    generateMarginalOnly(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   } else {
     // Both 'MANUAL_MATRIX' (default) and 'PROPORTIONAL' use intersection caps.
-    generateStandard(internalConfig, rng, rng_int, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
+    generateStandard(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   }
 
   return {

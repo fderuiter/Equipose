@@ -132,33 +132,33 @@
         "subjectId": "US01-001",
         "site": "US01",
         "stratum": {
-          "sex": "M"
+          "sex": "F"
         },
-        "stratumCode": "M",
-        "blockNumber": 1,
-        "blockSize": 3,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "D"
-      },
-      {
-        "subjectId": "US01-002",
-        "site": "US01",
-        "stratum": {
-          "sex": "M"
-        },
-        "stratumCode": "M",
+        "stratumCode": "F",
         "blockNumber": 1,
         "blockSize": 3,
         "treatmentArm": "Control",
         "treatmentArmId": "C"
       },
       {
+        "subjectId": "US01-002",
+        "site": "US01",
+        "stratum": {
+          "sex": "F"
+        },
+        "stratumCode": "F",
+        "blockNumber": 1,
+        "blockSize": 3,
+        "treatmentArm": "Drug",
+        "treatmentArmId": "D"
+      },
+      {
         "subjectId": "US01-003",
         "site": "US01",
         "stratum": {
-          "sex": "M"
+          "sex": "F"
         },
-        "stratumCode": "M",
+        "stratumCode": "F",
         "blockNumber": 1,
         "blockSize": 3,
         "treatmentArm": "Drug",
@@ -180,10 +180,10 @@
         "subjectId": "US01-005",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
-        "blockNumber": 3,
+        "stratumCode": "M",
+        "blockNumber": 2,
         "blockSize": 3,
         "treatmentArm": "Control",
         "treatmentArmId": "C"
@@ -192,10 +192,10 @@
         "subjectId": "US01-006",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
-        "blockNumber": 3,
+        "stratumCode": "M",
+        "blockNumber": 2,
         "blockSize": 3,
         "treatmentArm": "Drug",
         "treatmentArmId": "D"
@@ -204,13 +204,13 @@
         "subjectId": "US01-007",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
+        "stratumCode": "M",
         "blockNumber": 3,
         "blockSize": 3,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "D"
+        "treatmentArm": "Control",
+        "treatmentArmId": "C"
       },
       {
         "subjectId": "US01-008",
@@ -221,8 +221,8 @@
         "stratumCode": "F",
         "blockNumber": 4,
         "blockSize": 3,
-        "treatmentArm": "Control",
-        "treatmentArmId": "C"
+        "treatmentArm": "Drug",
+        "treatmentArmId": "D"
       },
       {
         "subjectId": "US01-009",
@@ -233,8 +233,8 @@
         "stratumCode": "F",
         "blockNumber": 4,
         "blockSize": 3,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "D"
+        "treatmentArm": "Control",
+        "treatmentArmId": "C"
       },
       {
         "subjectId": "US01-010",

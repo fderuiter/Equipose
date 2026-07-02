@@ -85,88 +85,83 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `    return(block)\n`;
       algorithmicLogic += `}\n\n`;
 
-      algorithmicLogic += `schema_out = J(0, ${6 + (config.strata?.length || 0)}, "")\n`;
-      algorithmicLogic += `seq_count = 0\n`;
+      algorithmicLogic += `string scalar stata_rnd_str(real scalar len) {\n`;
+      algorithmicLogic += `    string scalar res; res = "";\n`;
+      algorithmicLogic += `    real scalar k;\n`;
+      algorithmicLogic += `    for (k=1; k<=len; k++) { res = res + substr("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", trunc((random_int() / 4294967296) * 36) + 1, 1); }\n`;
+      algorithmicLogic += `    return(res);\n`;
+      algorithmicLogic += `}\n\n`;
       
-      algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
-        config,
-        ir.tasks,
-        (stratumId, stratumValue) => `, "${FormattingUtil.escapeSasString(stratumValue)}"`,
-        (task, formattedStrata) => {
-          let taskLogic = `count = 0\n`;
-          taskLogic += `block_num = 1\n`;
-          taskLogic += `while (count < ${task.cap}) {\n`;
-          taskLogic += `    size = block_sizes[trunc((random_int() / 4294967296) * cols(block_sizes)) + 1]\n`;
-          taskLogic += `    block = build_block(size)\n`;
-          taskLogic += `    for (i=1; i<=cols(block); i++) {\n`;
-          taskLogic += `        seq_count = seq_count + 1\n`;
+      algorithmicLogic += `string scalar luhn_checksum(string scalar val) {\n`;
+      algorithmicLogic += `    string scalar base_for_luhn, digits, chk\n`;
+      algorithmicLogic += `    real rowvector c_codes\n`;
+      algorithmicLogic += `    real scalar _i, s, is_even, d\n`;
+      algorithmicLogic += `    base_for_luhn = subinstr(val, "{CHECKSUM}", ""); digits = ""; c_codes = ascii(base_for_luhn);\n`;
+      algorithmicLogic += `    for (_i=1; _i<=cols(c_codes); _i++) { if (c_codes[_i] >= 48 & c_codes[_i] <= 57) digits = digits + char(c_codes[_i]); }\n`;
+      algorithmicLogic += `    chk = "0";\n`;
+      algorithmicLogic += `    if (strlen(digits) > 0) { s = 0; is_even = 0;\n`;
+      algorithmicLogic += `        for (_i=strlen(digits); _i>=1; _i--) { d = strtoreal(substr(digits, _i, 1)); if (is_even) { d = d * 2; if (d > 9) d = d - 9; } s = s + d; is_even = !is_even; }\n`;
+      algorithmicLogic += `        chk = strofreal(mod(10 - mod(s, 10), 10)); }\n`;
+      algorithmicLogic += `    return(subinstr(val, "{CHECKSUM}", chk));\n`;
+      algorithmicLogic += `}\n\n`;
 
-          let baseBuilder = '';
-          let hasChecksum = false;
-          let rndVarsSetup = '';
-          let rndCounter = 1;
-
-          for (const token of ir.subjectIdTokens) {
-            if (token.type === 'literal') {
-              baseBuilder += `"${FormattingUtil.escapeSasString(token.value)}" + `;
-            } else if (token.type === 'site') {
-              baseBuilder += `"${FormattingUtil.escapeSasString(task.site)}" + `;
-            } else if (token.type === 'stratum') {
-              baseBuilder += `"${FormattingUtil.escapeSasString(task.stratumCode)}" + `;
-            } else if (token.type === 'seq') {
-              baseBuilder += `strofreal(seq_count, "%0${token.length}.0f") + `;
-            } else if (token.type === 'rnd') {
-              rndVarsSetup += `        rnd_str_${rndCounter} = ""\n`;
-              rndVarsSetup += `        for (_k=1; _k<=${token.length}; _k++) {\n`;
-              rndVarsSetup += `            char_idx = trunc((random_int() / 4294967296) * 36) + 1\n`;
-              rndVarsSetup += `            rnd_str_${rndCounter} = rnd_str_${rndCounter} + substr(ALPHANUMERIC, char_idx, 1)\n`;
-              rndVarsSetup += `        }\n`;
-              baseBuilder += `rnd_str_${rndCounter} + `;
-              rndCounter++;
-            } else if (token.type === 'checksum') {
-              hasChecksum = true;
-              baseBuilder += `"{CHECKSUM}" + `;
-            }
+      algorithmicLogic += `schema_out = J(0, ${6 + (config.strata?.length || 0)}, "")\n`;
+      
+      const numTasks = ir.tasks.length;
+      algorithmicLogic += `task_caps = (${ir.tasks.map((t: any) => t.cap).join(',')})\n`;
+      algorithmicLogic += `task_counts = J(1, ${numTasks}, 0)\n`;
+      algorithmicLogic += `task_block_nums = J(1, ${numTasks}, 1)\n`;
+      algorithmicLogic += `site_counts = asarray_create("string")\n`;
+      
+      algorithmicLogic += `added_in_pass = 1\n`;
+      algorithmicLogic += `while (added_in_pass) {\n`;
+      algorithmicLogic += `    added_in_pass = 0\n`;
+      algorithmicLogic += `    for (t_idx=1; t_idx<=${numTasks}; t_idx++) {\n`;
+      algorithmicLogic += `        if (task_counts[t_idx] < task_caps[t_idx]) {\n`;
+      algorithmicLogic += `            added_in_pass = 1\n`;
+      
+      algorithmicLogic += `            task_site = ""\n`;
+      algorithmicLogic += `            task_stratum = ""\n`;
+      algorithmicLogic += `            task_strata_arr = J(1, ${config.strata?.length || 0}, "")\n`;
+      
+      ir.tasks.forEach((task: any, i: number) => {
+          const t = i + 1;
+          let strataArrStr = '';
+          (config.strata || []).forEach((s, sIdx) => {
+              strataArrStr += `task_strata_arr[${sIdx + 1}] = "${FormattingUtil.escapeSasString(task.stratumDetails[s.id])}"; `;
+          });
+          if (i === 0) {
+              algorithmicLogic += `            if (t_idx == ${t}) { task_site = "${FormattingUtil.escapeSasString(task.site)}"; task_stratum = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataArrStr} }\n`;
+          } else {
+              algorithmicLogic += `            else if (t_idx == ${t}) { task_site = "${FormattingUtil.escapeSasString(task.site)}"; task_stratum = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataArrStr} }\n`;
           }
-          baseBuilder = baseBuilder.slice(0, -3) || `""`;
-
-          taskLogic += rndVarsSetup;
-          taskLogic += `        subj_id = ${baseBuilder}\n`;
-
-          if (hasChecksum) {
-            taskLogic += `        base_for_luhn = subinstr(subj_id, "{CHECKSUM}", "")\n`;
-            taskLogic += `        digits = ""\n`;
-            taskLogic += `        c_codes = ascii(base_for_luhn)\n`;
-            taskLogic += `        for (_i=1; _i<=cols(c_codes); _i++) {\n`;
-            taskLogic += `            if (c_codes[_i] >= 48 & c_codes[_i] <= 57) digits = digits + char(c_codes[_i])\n`;
-            taskLogic += `        }\n`;
-            taskLogic += `        chk = "0"\n`;
-            taskLogic += `        if (strlen(digits) > 0) {\n`;
-            taskLogic += `            s = 0\n`;
-            taskLogic += `            is_even = 0\n`;
-            taskLogic += `            for (_i=strlen(digits); _i>=1; _i--) {\n`;
-            taskLogic += `                d = strtoreal(substr(digits, _i, 1))\n`;
-            taskLogic += `                if (is_even) {\n`;
-            taskLogic += `                    d = d * 2\n`;
-            taskLogic += `                    if (d > 9) d = d - 9\n`;
-            taskLogic += `                }\n`;
-            taskLogic += `                s = s + d\n`;
-            taskLogic += `                is_even = !is_even\n`;
-            taskLogic += `            }\n`;
-            taskLogic += `            chk = strofreal(mod(10 - mod(s, 10), 10))\n`;
-            taskLogic += `        }\n`;
-            taskLogic += `        subj_id = subinstr(subj_id, "{CHECKSUM}", chk)\n`;
-          }
-
-          taskLogic += `        schema_out = schema_out \\ (subj_id, "${FormattingUtil.escapeSasString(task.site)}", block[i], strofreal(block_num), strofreal(size), "${FormattingUtil.escapeSasString(task.stratumCode)}"${formattedStrata})\n`;
-          taskLogic += `        count = count + 1\n`;
-          taskLogic += `        if (count >= ${task.cap}) break\n`;
-          taskLogic += `    }\n`;
-          taskLogic += `    block_num = block_num + 1\n`;
-          taskLogic += `}\n`;
-          return taskLogic;
-        }
-      );
+      });
+      
+      algorithmicLogic += `            size = block_sizes[trunc((random_int() / 4294967296) * cols(block_sizes)) + 1]\n`;
+      algorithmicLogic += `            block = build_block(size)\n`;
+      algorithmicLogic += `            for (i=1; i<=cols(block); i++) {\n`;
+      
+      algorithmicLogic += `                if (asarray_contains(site_counts, task_site)) {\n`;
+      algorithmicLogic += `                    seq_count = asarray(site_counts, task_site) + 1\n`;
+      algorithmicLogic += `                } else {\n`;
+      algorithmicLogic += `                    seq_count = 1\n`;
+      algorithmicLogic += `                }\n`;
+      algorithmicLogic += `                asarray(site_counts, task_site, seq_count)\n`;
+      
+      algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('STATA', ir.subjectIdTokens, 'task_site', 'task_stratum', 'seq_count');
+      
+      algorithmicLogic += `                row_res = (subj_id, task_site, block[i], strofreal(task_block_nums[t_idx]), strofreal(size), task_stratum)\n`;
+      if (config.strata && config.strata.length > 0) {
+          algorithmicLogic += `                row_res = row_res, task_strata_arr\n`;
+      }
+      algorithmicLogic += `                schema_out = schema_out \\ row_res\n`;
+      algorithmicLogic += `                task_counts[t_idx] = task_counts[t_idx] + 1\n`;
+      algorithmicLogic += `                if (task_counts[t_idx] >= task_caps[t_idx]) break\n`;
+      algorithmicLogic += `            }\n`;
+      algorithmicLogic += `            task_block_nums[t_idx] = task_block_nums[t_idx] + 1\n`;
+      algorithmicLogic += `        }\n`;
+      algorithmicLogic += `    }\n`;
+      algorithmicLogic += `}\n`;
 
       // Export from Mata to Stata
       algorithmicLogic += `st_addobs(rows(schema_out))\n`;

@@ -54,83 +54,51 @@ export class RStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `  }\n`;
       algorithmicLogic += `  if (length(block) > 1) {\n`;
       algorithmicLogic += `    for (i in length(block):2) {\n`;
-      algorithmicLogic += `      j <- (random_int() %% i) + 1\n`;
+      algorithmicLogic += `      j <- floor((mt19937_int() / 4294967296) * i) + 1\n`;
       algorithmicLogic += `      temp <- block[i]; block[i] <- block[j]; block[j] <- temp\n`;
       algorithmicLogic += `    }\n`;
       algorithmicLogic += `  }\n`;
       algorithmicLogic += `  return(block)\n`;
       algorithmicLogic += `}\n\n`;
 
-      algorithmicLogic += `seq_count <- 0\n`;
+      algorithmicLogic += `tasks <- list()\n`;
+      for (const t of ir.tasks) {
+         let strataStr = '';
+         for (const s of config.strata || []) {
+             strataStr += `, "${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(t.stratumDetails[s.id])}"`;
+         }
+         algorithmicLogic += `tasks[[length(tasks)+1]] <- list(site="${FormattingUtil.escapeString(t.site)}", stratumCode="${FormattingUtil.escapeString(t.stratumCode)}", cap=${t.cap}, count=0, block_num=1, strata='${strataStr}')\n`;
+      }
+      algorithmicLogic += `\n`;
+
+      algorithmicLogic += `site_counts <- new.env(hash=TRUE)\n`;
+      algorithmicLogic += `added_in_pass <- TRUE\n`;
+      algorithmicLogic += `while (added_in_pass) {\n`;
+      algorithmicLogic += `  added_in_pass <- FALSE\n`;
+      algorithmicLogic += `  for (t_idx in seq_along(tasks)) {\n`;
+      algorithmicLogic += `    if (tasks[[t_idx]]$count < tasks[[t_idx]]$cap) {\n`;
+      algorithmicLogic += `      added_in_pass <- TRUE\n`;
+      algorithmicLogic += `      size <- block_sizes[floor((mt19937_int() / 4294967296) * length(block_sizes)) + 1]\n`;
+      algorithmicLogic += `      block <- build_block(size)\n`;
+      algorithmicLogic += `      for (trt in block) {\n`;
+      algorithmicLogic += `        site <- tasks[[t_idx]]$site\n`;
+      algorithmicLogic += `        if (is.null(site_counts[[site]])) site_counts[[site]] <- 0\n`;
+      algorithmicLogic += `        site_counts[[site]] <- site_counts[[site]] + 1\n`;
+      algorithmicLogic += `        seq_count <- site_counts[[site]]\n`;
       
-      algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
-        config,
-        ir.tasks,
-        (stratumId, stratumValue) => `, "${FormattingUtil.escapeString(stratumId)}"="${FormattingUtil.escapeString(stratumValue)}"`,
-        (task, formattedStrata) => {
-          let taskLogic = `count <- 0\n`;
-          taskLogic += `block_num <- 1\n`;
-          taskLogic += `while (count < ${task.cap}) {\n`;
-          taskLogic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
-          taskLogic += `  block <- build_block(size)\n`;
-          taskLogic += `  for (trt in block) {\n`;
-          taskLogic += `    seq_count <- seq_count + 1\n`;
-
-          let baseBuilder = 'paste0(';
-          let hasChecksum = false;
-          const args = [];
-          for (const token of ir.subjectIdTokens) {
-            if (token.type === 'literal') {
-              args.push(`"${FormattingUtil.escapeString(token.value)}"`);
-            } else if (token.type === 'site') {
-              args.push(`"${FormattingUtil.escapeString(task.site)}"`);
-            } else if (token.type === 'stratum') {
-              args.push(`"${FormattingUtil.escapeString(task.stratumCode)}"`);
-            } else if (token.type === 'seq') {
-              args.push(`sprintf("%0${token.length}d", seq_count)`);
-            } else if (token.type === 'rnd') {
-              args.push(`paste0(ALPHANUMERIC[(replicate(${token.length}, random_int()) %% length(ALPHANUMERIC)) + 1], collapse="")`);
-            } else if (token.type === 'checksum') {
-              hasChecksum = true;
-              args.push(`"{CHECKSUM}"`);
-            }
-          }
-          baseBuilder += args.join(', ') + ')';
-
-          taskLogic += `    subj_id <- ${baseBuilder}\n`;
-          if (hasChecksum) {
-            taskLogic += `    if (grepl("{CHECKSUM}", subj_id, fixed=TRUE)) {\n`;
-            taskLogic += `      base_for_luhn <- gsub("{CHECKSUM}", "", subj_id, fixed=TRUE)\n`;
-            taskLogic += `      digits <- gsub("\\\\D", "", base_for_luhn)\n`;
-            taskLogic += `      chk <- "0"\n`;
-            taskLogic += `      if (nchar(digits) > 0) {\n`;
-            taskLogic += `        s <- 0\n`;
-            taskLogic += `        is_even <- FALSE\n`;
-            taskLogic += `        chars <- strsplit(digits, "")[[1]]\n`;
-            taskLogic += `        for (i in length(chars):1) {\n`;
-            taskLogic += `          d <- as.integer(chars[i])\n`;
-            taskLogic += `          if (is_even) {\n`;
-            taskLogic += `            d <- d * 2\n`;
-            taskLogic += `            if (d > 9) d <- d - 9\n`;
-            taskLogic += `          }\n`;
-            taskLogic += `          s <- s + d\n`;
-            taskLogic += `          is_even <- !is_even\n`;
-            taskLogic += `        }\n`;
-            taskLogic += `        chk <- as.character((10 - (s %% 10)) %% 10)\n`;
-            taskLogic += `      }\n`;
-            taskLogic += `      subj_id <- sub("{CHECKSUM}", chk, subj_id, fixed=TRUE)\n`;
-            taskLogic += `    }\n`;
-          }
-
-          taskLogic += `    schema_list[[length(schema_list)+1]] <- data.frame(SubjectID=subj_id, Site="${FormattingUtil.escapeString(task.site)}", Treatment=trt, BlockNumber=block_num, BlockSize=size, StratumCode="${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}, stringsAsFactors=FALSE)\n`;
-          taskLogic += `    count <- count + 1\n`;
-          taskLogic += `    if (count >= ${task.cap}) break\n`;
-          taskLogic += `  }\n`;
-          taskLogic += `  block_num <- block_num + 1\n`;
-          taskLogic += `}\n`;
-          return taskLogic;
-        }
-      );
+      algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('R', ir.subjectIdTokens, 'tasks[[t_idx]]$site', 'tasks[[t_idx]]$stratumCode', 'seq_count');
+      
+      algorithmicLogic += `        strata_eval <- eval(parse(text=paste0("list(", substr(tasks[[t_idx]]$strata, 3, nchar(tasks[[t_idx]]$strata)), ")")))\n`;
+      algorithmicLogic += `        row_df <- data.frame(SubjectID=subj_id, Site=tasks[[t_idx]]$site, Treatment=trt, BlockNumber=tasks[[t_idx]]$block_num, BlockSize=size, StratumCode=tasks[[t_idx]]$stratumCode, stringsAsFactors=FALSE)\n`;
+      algorithmicLogic += `        if (length(strata_eval) > 0) row_df <- cbind(row_df, as.data.frame(strata_eval, stringsAsFactors=FALSE))\n`;
+      algorithmicLogic += `        schema_list[[length(schema_list)+1]] <- row_df\n`;
+      algorithmicLogic += `        tasks[[t_idx]]$count <- tasks[[t_idx]]$count + 1\n`;
+      algorithmicLogic += `        if (tasks[[t_idx]]$count >= tasks[[t_idx]]$cap) break\n`;
+      algorithmicLogic += `      }\n`;
+      algorithmicLogic += `      tasks[[t_idx]]$block_num <- tasks[[t_idx]]$block_num + 1\n`;
+      algorithmicLogic += `    }\n`;
+      algorithmicLogic += `  }\n`;
+      algorithmicLogic += `}\n`;
     }
     
     data['algorithmicLogic'] = algorithmicLogic;

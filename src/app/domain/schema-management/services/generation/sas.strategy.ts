@@ -52,106 +52,62 @@ export class SasStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `  array blk[1000] $50 _temporary_;\n`;
       algorithmicLogic += `  length ALPHANUMERIC $ 36;\n`;
       algorithmicLogic += `  ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";\n`;
-      algorithmicLogic += `  seq_count = 0;\n`;
       
-      algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
-        config,
-        ir.tasks,
-        (stratumId, stratumValue) => `  ${FormattingUtil.escapeSasString(stratumId)}="${FormattingUtil.escapeSasString(stratumValue)}";\n`,
-        (task, formattedStrata) => {
-          let taskLogic = `  /* Task: ${FormattingUtil.escapeSasString(task.site)} ${FormattingUtil.escapeSasString(task.stratumCode)} */\n`;
-          taskLogic += `  Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}";\n`;
-          taskLogic += formattedStrata;
-          taskLogic += `  cap = ${task.cap};\n`;
-          taskLogic += `  count = 0; block_num = 1;\n`;
-          taskLogic += `  do while(count < cap);\n`;
-          taskLogic += `     link get_rand_int; size_idx = int((rand_int / 4294967296) * ${ir.blockSizes.length});\n`;
-          ir.blockSizes.forEach((bs: any, i: number) => {
-             if (i===0) taskLogic += `     if size_idx=0 then size=${bs};\n`;
-             else taskLogic += `     else if size_idx=${i} then size=${bs};\n`;
-          });
-          taskLogic += `     idx = 1;\n`;
-          for (const arm of ir.arms) {
-             taskLogic += `     do i = 1 to (size / ${ir.totalRatio}) * ${arm.ratio}; blk[idx] = "${FormattingUtil.escapeSasString(arm.name)}"; idx=idx+1; end;\n`;
-          }
-          taskLogic += `     do i = size to 2 by -1;\n`;
-          taskLogic += `        link get_rand_int; j = int((rand_int / 4294967296) * i) + 1;\n`;
-          taskLogic += `        temp = blk[i]; blk[i] = blk[j]; blk[j] = temp;\n`;
-          taskLogic += `     end;\n`;
-          taskLogic += `     do i = 1 to size;\n`;
-          taskLogic += `        Treatment = blk[i]; BlockNumber = block_num; BlockSize = size;\n`;
-          taskLogic += `        seq_count = seq_count + 1;\n`;
-
-          let baseBuilder = '';
-          let hasChecksum = false;
-          let rndVarsSetup = '';
-          let rndCounter = 1;
-
-          for (const token of ir.subjectIdTokens) {
-            if (token.type === 'literal') {
-              baseBuilder += `"${FormattingUtil.escapeSasString(token.value)}" || `;
-            } else if (token.type === 'site') {
-              baseBuilder += `"${FormattingUtil.escapeSasString(task.site)}" || `;
-            } else if (token.type === 'stratum') {
-              baseBuilder += `"${FormattingUtil.escapeSasString(task.stratumCode)}" || `;
-            } else if (token.type === 'seq') {
-              baseBuilder += `put(seq_count, z${token.length}.) || `;
-            } else if (token.type === 'rnd') {
-              rndVarsSetup += `        length rnd_str_${rndCounter} $ ${token.length};\n`;
-              rndVarsSetup += `        rnd_str_${rndCounter} = "";\n`;
-              rndVarsSetup += `        do _k = 1 to ${token.length};\n`;
-              rndVarsSetup += `          link get_rand_int;\n`;
-              rndVarsSetup += `          char_idx = int((rand_int / 4294967296) * 36) + 1;\n`;
-              rndVarsSetup += `          rnd_str_${rndCounter} = trim(rnd_str_${rndCounter}) || substr(ALPHANUMERIC, char_idx, 1);\n`;
-              rndVarsSetup += `        end;\n`;
-              baseBuilder += `trim(rnd_str_${rndCounter}) || `;
-              rndCounter++;
-            } else if (token.type === 'checksum') {
-              hasChecksum = true;
-              baseBuilder += `"{CHECKSUM}" || `;
-            }
-          }
-          if (baseBuilder.endsWith(' || ')) {
-            baseBuilder = baseBuilder.slice(0, -4);
-          }
-          if (baseBuilder === '') {
-            baseBuilder = `""`;
-          }
-
-          taskLogic += rndVarsSetup;
-          taskLogic += `        SubjectID = ${baseBuilder};\n`;
-          if (hasChecksum) {
-            taskLogic += `        if index(SubjectID, "{CHECKSUM}") > 0 then do;\n`;
-            taskLogic += `          base_for_luhn = tranwrd(SubjectID, "{CHECKSUM}", "");\n`;
-            taskLogic += `          digits = prxchange('s/\\D//', -1, trim(base_for_luhn));\n`;
-            taskLogic += `          chk = "0";\n`;
-            taskLogic += `          if length(trim(digits)) > 0 then do;\n`;
-            taskLogic += `            s = 0;\n`;
-            taskLogic += `            is_even = 0;\n`;
-            taskLogic += `            do _i = length(trim(digits)) to 1 by -1;\n`;
-            taskLogic += `              d = input(substr(trim(digits), _i, 1), 1.);\n`;
-            taskLogic += `              if is_even then do;\n`;
-            taskLogic += `                d = d * 2;\n`;
-            taskLogic += `                if d > 9 then d = d - 9;\n`;
-            taskLogic += `              end;\n`;
-            taskLogic += `              s = s + d;\n`;
-            taskLogic += `              if is_even = 1 then is_even = 0; else is_even = 1;\n`;
-            taskLogic += `            end;\n`;
-            taskLogic += `            chk = put(mod(10 - mod(s, 10), 10), 1.);\n`;
-            taskLogic += `          end;\n`;
-            taskLogic += `          SubjectID = tranwrd(SubjectID, "{CHECKSUM}", trim(left(chk)));\n`;
-            taskLogic += `        end;\n`;
-          }
-
-          taskLogic += `        output;\n`;
-          taskLogic += `        count = count + 1;\n`;
-          taskLogic += `        if count >= cap then leave;\n`;
-          taskLogic += `     end;\n`;
-          taskLogic += `     block_num = block_num + 1;\n`;
-          taskLogic += `  end;\n`;
-          return taskLogic;
-        }
-      );
+      const numTasks = ir.tasks.length;
+      algorithmicLogic += `  array task_caps[${numTasks}] _temporary_ (${ir.tasks.map((t: any) => t.cap).join(' ')});\n`;
+      algorithmicLogic += `  array task_counts[${numTasks}] _temporary_ (${ir.tasks.map(() => 0).join(' ')});\n`;
+      algorithmicLogic += `  array task_block_num[${numTasks}] _temporary_ (${ir.tasks.map(() => 1).join(' ')});\n`;
+      algorithmicLogic += `  array site_counts[1000] _temporary_;\n`;
+      algorithmicLogic += `  do _init = 1 to 1000; site_counts[_init] = 0; end;\n`;
+      
+      algorithmicLogic += `  added_in_pass = 1;\n`;
+      algorithmicLogic += `  do while(added_in_pass = 1);\n`;
+      algorithmicLogic += `    added_in_pass = 0;\n`;
+      algorithmicLogic += `    do t_idx = 1 to ${numTasks};\n`;
+      algorithmicLogic += `      if task_counts[t_idx] < task_caps[t_idx] then do;\n`;
+      algorithmicLogic += `        added_in_pass = 1;\n`;
+      
+      ir.tasks.forEach((task: any, i: number) => {
+         const t = i + 1;
+         let strataStr = '';
+         for (const s of config.strata || []) {
+             strataStr += `${FormattingUtil.escapeSasString(s.id)}="${FormattingUtil.escapeSasString(task.stratumDetails[s.id])}"; `;
+         }
+         if (i === 0) {
+             algorithmicLogic += `        if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}site_idx = ${config.sites!.indexOf(task.site) + 1}; end;\n`;
+         } else {
+             algorithmicLogic += `        else if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}site_idx = ${config.sites!.indexOf(task.site) + 1}; end;\n`;
+         }
+      });
+      
+      algorithmicLogic += `        link get_rand_int; size_idx = int((rand_int / 4294967296) * ${ir.blockSizes.length});\n`;
+      ir.blockSizes.forEach((bs: any, i: number) => {
+         if (i===0) algorithmicLogic += `        if size_idx=0 then size=${bs};\n`;
+         else algorithmicLogic += `        else if size_idx=${i} then size=${bs};\n`;
+      });
+      algorithmicLogic += `        idx = 1;\n`;
+      for (const arm of ir.arms) {
+         algorithmicLogic += `        do i = 1 to (size / ${ir.totalRatio}) * ${arm.ratio}; blk[idx] = "${FormattingUtil.escapeSasString(arm.name)}"; idx=idx+1; end;\n`;
+      }
+      algorithmicLogic += `        do i = size to 2 by -1;\n`;
+      algorithmicLogic += `           link get_rand_int; j = int((rand_int / 4294967296) * i) + 1;\n`;
+      algorithmicLogic += `           temp = blk[i]; blk[i] = blk[j]; blk[j] = temp;\n`;
+      algorithmicLogic += `        end;\n`;
+      algorithmicLogic += `        do i = 1 to size;\n`;
+      algorithmicLogic += `           Treatment = blk[i]; BlockNumber = task_block_num[t_idx]; BlockSize = size;\n`;
+      algorithmicLogic += `           site_counts[site_idx] = site_counts[site_idx] + 1;\n`;
+      algorithmicLogic += `           seq_count = site_counts[site_idx];\n`;
+      
+      algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('SAS', ir.subjectIdTokens, 'Site', 'StratumCode', 'seq_count');
+      
+      algorithmicLogic += `           output;\n`;
+      algorithmicLogic += `           task_counts[t_idx] = task_counts[t_idx] + 1;\n`;
+      algorithmicLogic += `           if task_counts[t_idx] >= task_caps[t_idx] then leave;\n`;
+      algorithmicLogic += `        end;\n`;
+      algorithmicLogic += `        task_block_num[t_idx] = task_block_num[t_idx] + 1;\n`;
+      algorithmicLogic += `      end;\n`;
+      algorithmicLogic += `    end;\n`;
+      algorithmicLogic += `  end;\n`;
     }
     data['algorithmicLogic'] = algorithmicLogic;
     return CodeTranspiler.renderTemplate(SAS_TEMPLATE, data);
