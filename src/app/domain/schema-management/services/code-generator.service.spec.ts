@@ -42,9 +42,9 @@ describe('CodeGeneratorService', () => {
       stratumCaps: []
     } as any;
     
-    expect(service.generate('R', config)).toContain('Randomization Schema');
-    expect(service.generate('Python', config)).toContain('Randomization Schema');
-    expect(service.generate('SAS', config)).toContain('Randomization Schema');
-    expect(service.generate('STATA', config)).toContain('Randomization Schema');
+    expect(service.generate('R', config)).toContain('SCIENTIFIC INTEGRITY MANIFEST');
+    expect(service.generate('Python', config)).toContain('SCIENTIFIC INTEGRITY MANIFEST');
+    expect(service.generate('SAS', config)).toContain('SCIENTIFIC INTEGRITY MANIFEST');
+    expect(service.generate('STATA', config)).toContain('SCIENTIFIC INTEGRITY MANIFEST');
   });
 });

@@ -4,7 +4,7 @@ import { AbstractCodeGenerationStrategy } from './base.strategy';
 import { CodeTranspiler } from './ir/transpiler';
 import { IrIterationHelper } from './ir/iteration.helper';
 import { FormattingUtil } from './formatting.util';
-import { STATA_TEMPLATE } from './ir/templates';
+import { STATA_TEMPLATE, FISHER_YATES_TEMPLATE, LUHN_TEMPLATE } from './ir/templates';
 import { PRECISION_EPSILON } from '../../../../core/constants/precision.config';
 
 @Injectable()
@@ -16,21 +16,13 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
   }
 
   protected override customizeDataSetup(data: Record<string, string | number>, config: RandomizationConfig, ir: any, method: 'BLOCK' | 'MINIMIZATION', schema: any[]): void {
+    super.customizeDataSetup(data, config, ir, method, schema);
+    
     let armsVars = '';
     config.arms.forEach((a, i) => {
       armsVars += `local arm_name_${i + 1} ${FormattingUtil.stataLabelQuote(a.name)}\n`;
     });
     data['armsVars'] = armsVars.trim();
-
-    let strataComments = '';
-    (config.strata || []).forEach((s, i) => {
-        strataComments += `local strata_${i+1} ${FormattingUtil.stataLabelQuote(FormattingUtil.sanitizeStataVarName(s.id))}\n`;
-        s.levels.forEach(l => {
-            strataComments += `* Level: ${FormattingUtil.stataLabelQuote(l)}\n`;
-        });
-    });
-    data['strataComments'] = strataComments.trim();
-    data['ratios'] = config.arms.map(a => a.ratio).join(', ');
 
     data['minimizationParam'] = method === 'MINIMIZATION' ? `local p_minimization = round(${config.minimizationConfig?.p || 0.8}, ${PRECISION_EPSILON}) // Stata ${PRECISION_EPSILON} precision handled` : '';
     
@@ -78,10 +70,7 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `            block = block, arms[arm_idx]\n`;
       algorithmicLogic += `        }\n`;
       algorithmicLogic += `    }\n`;
-      algorithmicLogic += `    for (i=cols(block); i>=2; i--) {\n`;
-      algorithmicLogic += `        j = mod(random_int(), i) + 1\n`;
-      algorithmicLogic += `        temp = block[i]; block[i] = block[j]; block[j] = temp\n`;
-      algorithmicLogic += `    }\n`;
+      algorithmicLogic += CodeTranspiler.renderTemplate(FISHER_YATES_TEMPLATE[this.language], { indexOffset: 1 });
       algorithmicLogic += `    return(block)\n`;
       algorithmicLogic += `}\n\n`;
 
@@ -134,28 +123,7 @@ export class StataStrategy extends AbstractCodeGenerationStrategy {
           taskLogic += `        subj_id = ${baseBuilder}\n`;
 
           if (hasChecksum) {
-            taskLogic += `        base_for_luhn = subinstr(subj_id, "{CHECKSUM}", "")\n`;
-            taskLogic += `        digits = ""\n`;
-            taskLogic += `        c_codes = ascii(base_for_luhn)\n`;
-            taskLogic += `        for (_i=1; _i<=cols(c_codes); _i++) {\n`;
-            taskLogic += `            if (c_codes[_i] >= 48 & c_codes[_i] <= 57) digits = digits + char(c_codes[_i])\n`;
-            taskLogic += `        }\n`;
-            taskLogic += `        chk = "0"\n`;
-            taskLogic += `        if (strlen(digits) > 0) {\n`;
-            taskLogic += `            s = 0\n`;
-            taskLogic += `            is_even = 0\n`;
-            taskLogic += `            for (_i=strlen(digits); _i>=1; _i--) {\n`;
-            taskLogic += `                d = strtoreal(substr(digits, _i, 1))\n`;
-            taskLogic += `                if (is_even) {\n`;
-            taskLogic += `                    d = d * 2\n`;
-            taskLogic += `                    if (d > 9) d = d - 9\n`;
-            taskLogic += `                }\n`;
-            taskLogic += `                s = s + d\n`;
-            taskLogic += `                is_even = !is_even\n`;
-            taskLogic += `            }\n`;
-            taskLogic += `            chk = strofreal(mod(10 - mod(s, 10), 10))\n`;
-            taskLogic += `        }\n`;
-            taskLogic += `        subj_id = subinstr(subj_id, "{CHECKSUM}", chk)\n`;
+            taskLogic += CodeTranspiler.renderTemplate(LUHN_TEMPLATE[this.language], {});
           }
 
           taskLogic += `        schema_out = schema_out \\ (subj_id, "${FormattingUtil.escapeSasString(task.site)}", block[i], strofreal(block_num), strofreal(size), "${FormattingUtil.escapeSasString(task.stratumCode)}"${formattedStrata})\n`;

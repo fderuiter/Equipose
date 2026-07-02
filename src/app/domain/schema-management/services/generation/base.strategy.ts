@@ -4,6 +4,8 @@ import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
+import { FormattingUtil } from './formatting.util';
+import { MANIFEST_TEMPLATE } from './ir/templates';
 
 export interface CodeGenerationStrategy {
   readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
@@ -60,7 +62,30 @@ export abstract class AbstractCodeGenerationStrategy implements CodeGenerationSt
     method: 'BLOCK' | 'MINIMIZATION', 
     schema: any[]
   ): void {
-    // Default implementation does nothing. Child strategies can override this.
+    const isSas = this.language === 'SAS';
+    const isStata = this.language === 'STATA';
+    const cStart = isSas ? '/*' : (isStata ? '*' : '#');
+    const cEnd = isSas ? ' */' : '';
+
+    let strataComments = '';
+    (config.strata || []).forEach(s => {
+        strataComments += `${cStart} Stratum: ${FormattingUtil.escapeString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapeString(l)).join(', ')}${cEnd}\n`;
+    });
+
+    const manifest = CodeTranspiler.renderTemplate(MANIFEST_TEMPLATE, {
+        cStart,
+        cEnd,
+        protocolId: config.protocolId,
+        appVersion: APP_VERSION,
+        dateStr: String(data['dateStr']),
+        algorithm: String(data['algorithm']),
+        seedHash: String(data['seedHash']),
+        arms: config.arms.map(a => FormattingUtil.escapeString(a.name)).join(', '),
+        ratios: config.arms.map(a => a.ratio).join(', '),
+        strataComments: strataComments.trimEnd()
+    });
+
+    data['manifest'] = manifest;
   }
 
   protected abstract generateLanguageScript(

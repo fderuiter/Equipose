@@ -4,7 +4,7 @@ import { AbstractCodeGenerationStrategy } from './base.strategy';
 import { CodeTranspiler } from './ir/transpiler';
 import { IrIterationHelper } from './ir/iteration.helper';
 import { FormattingUtil } from './formatting.util';
-import { PYTHON_TEMPLATE } from './ir/templates';
+import { PYTHON_TEMPLATE, FISHER_YATES_TEMPLATE, LUHN_TEMPLATE } from './ir/templates';
 
 @Injectable()
 export class PythonStrategy extends AbstractCodeGenerationStrategy {
@@ -15,14 +15,7 @@ export class PythonStrategy extends AbstractCodeGenerationStrategy {
   }
 
   protected override customizeDataSetup(data: Record<string, string | number>, config: RandomizationConfig, ir: any, method: 'BLOCK' | 'MINIMIZATION', schema: any[]): void {
-    data['arms'] = config.arms.map(a => FormattingUtil.escapeString(a.name)).join(', ');
-    data['ratios'] = config.arms.map(a => a.ratio).join(', ');
-    
-    let strataComments = '';
-    (config.strata || []).forEach(s => {
-        strataComments += `# Stratum: ${FormattingUtil.escapeString(s.id)}, Levels: ${s.levels.map(l => FormattingUtil.escapeString(l)).join(', ')}\n`;
-    });
-    data['strataComments'] = strataComments.trimEnd();
+    super.customizeDataSetup(data, config, ir, method, schema);
     data['minimizationParam'] = method === 'MINIMIZATION' ? `p_minimization = ${config.minimizationConfig?.p || 0.8} # maintain precision parity` : '';
   }
 
@@ -50,10 +43,7 @@ export class PythonStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `    multiplier = size / total_ratio\n`;
       algorithmicLogic += `    for arm in arms:\n`;
       algorithmicLogic += `        block.extend([arm["name"]] * int(arm["ratio"] * multiplier))\n`;
-      algorithmicLogic += `    for i in range(len(block) - 1, 0, -1):\n`;
-      algorithmicLogic += `        rand_int = int(rng.bit_generator.random_raw())\n`;
-      algorithmicLogic += `        j = rand_int % (i + 1)\n`;
-      algorithmicLogic += `        block[i], block[j] = block[j], block[i]\n`;
+      algorithmicLogic += CodeTranspiler.renderTemplate(FISHER_YATES_TEMPLATE[this.language], { indexOffset: 1 });
       algorithmicLogic += `    return block\n\n`;
 
       algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
@@ -91,21 +81,7 @@ export class PythonStrategy extends AbstractCodeGenerationStrategy {
 
           taskLogic += `        subj_id = ${baseBuilder}\n`;
           if (hasChecksum) {
-            taskLogic += `        base_for_luhn = subj_id.replace("{CHECKSUM}", "")\n`;
-            taskLogic += `        digits = re.sub(r'\\D', '', base_for_luhn)\n`;
-            taskLogic += `        chk = "0"\n`;
-            taskLogic += `        if digits:\n`;
-            taskLogic += `            s = 0\n`;
-            taskLogic += `            is_even = False\n`;
-            taskLogic += `            for i in range(len(digits) - 1, -1, -1):\n`;
-            taskLogic += `                d = int(digits[i])\n`;
-            taskLogic += `                if is_even:\n`;
-            taskLogic += `                    d *= 2\n`;
-            taskLogic += `                    if d > 9: d -= 9\n`;
-            taskLogic += `                s += d\n`;
-            taskLogic += `                is_even = not is_even\n`;
-            taskLogic += `            chk = str((10 - (s % 10)) % 10)\n`;
-            taskLogic += `        subj_id = subj_id.replace("{CHECKSUM}", chk)\n`;
+            taskLogic += CodeTranspiler.renderTemplate(LUHN_TEMPLATE[this.language], {});
           }
 
           taskLogic += `        schema.append({"SubjectID": subj_id, "Site": "${FormattingUtil.escapeString(task.site)}", "Treatment": trt, "BlockNumber": block_num, "BlockSize": size, "StratumCode": "${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}})\n`;

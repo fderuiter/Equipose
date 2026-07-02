@@ -15,7 +15,7 @@ export class CodeTranspiler {
       const regex = new RegExp(`{{${key}}}`, 'g');
       result = result.replace(regex, String(value));
     }
-    return result.trim() + '\n';
+    return result.replace(/^\n+/, '').trimEnd() + '\n';
   }
 
   private static parseSubjectIdMask(mask: string): SubjectIdToken[] {
