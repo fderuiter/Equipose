@@ -1,6 +1,9 @@
 import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
 import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
+import { ButtonComponent } from '../../../core/components/ui/button.component';
+import { TextInputComponent } from '../../../core/components/ui/text-input.component';
+import { CheckboxComponent } from '../../../core/components/ui/checkbox.component';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
@@ -27,7 +30,7 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SIGNAL_FORM_DIRECTIVES, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
+  imports: [SIGNAL_FORM_DIRECTIVES, ButtonComponent, TextInputComponent, CheckboxComponent, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -102,6 +105,7 @@ export class ConfigFormComponent implements OnInit {
 
   readonly currentStepIndex = signal(0);
   draggedStratumIndex: number | null = null;
+
 
   form: FormGroup = this.fb.group(
     {

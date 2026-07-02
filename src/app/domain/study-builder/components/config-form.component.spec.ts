@@ -458,7 +458,7 @@ describe('ConfigFormComponent (domain)', () => {
       await flushMicrotasks();
 
       expect(component.form.get('capsGroup.capStrategy')?.value).toBe('MANUAL_MATRIX');
-      expect(component.form.get('capsGroup.globalCap')?.disabled).toBe(true);
+      expect((component.form.get('capsGroup.globalCap') as any)?.disabled).toBe(true);
     });
   });
 
@@ -517,8 +517,8 @@ describe('ConfigFormComponent (domain)', () => {
       component.form.updateValueAndValidity();
 
       // Ensure block controls are enabled initially
-      expect(component.form.get('allocationGroup.blockSizesStr')?.disabled).toBe(false);
-      expect(component.form.get('allocationGroup.blockSelectionType')?.disabled).toBe(false);
+      expect((component.form.get('allocationGroup.blockSizesStr') as any)?.disabled).toBe(false);
+      expect((component.form.get('allocationGroup.blockSelectionType') as any)?.disabled).toBe(false);
 
       // 2. Switch to MINIMIZATION
       component.form.get('designGroup.randomizationMethod')?.setValue('MINIMIZATION');
@@ -529,10 +529,10 @@ describe('ConfigFormComponent (domain)', () => {
       fixture.detectChanges();
 
       // UI state: Block fields disabled, Min fields enabled
-      expect(component.form.get('allocationGroup.blockSizesStr')?.disabled).toBe(true);
-      expect(component.form.get('allocationGroup.blockSelectionType')?.disabled).toBe(true);
-      expect(component.form.get('allocationGroup.minimizationP')?.disabled).toBe(false);
-      expect(component.form.get('allocationGroup.totalSampleSize')?.disabled).toBe(false);
+      expect((component.form.get('allocationGroup.blockSizesStr') as any)?.disabled).toBe(true);
+      expect((component.form.get('allocationGroup.blockSelectionType') as any)?.disabled).toBe(true);
+      expect((component.form.get('allocationGroup.minimizationP') as any)?.disabled).toBe(false);
+      expect((component.form.get('allocationGroup.totalSampleSize') as any)?.disabled).toBe(false);
 
       // Payload cleanliness: The generated config should not have block specific values
       component.onSubmit();
@@ -558,7 +558,7 @@ describe('ConfigFormComponent (domain)', () => {
       await flushMicrotasks();
       component.form.updateValueAndValidity();
 
-      expect(component.form.get('allocationGroup.minimizationP')?.disabled).toBe(false);
+      expect((component.form.get('allocationGroup.minimizationP') as any)?.disabled).toBe(false);
 
       // Switch to BLOCK
       component.form.get('designGroup.randomizationMethod')?.setValue('BLOCK');
@@ -568,9 +568,9 @@ describe('ConfigFormComponent (domain)', () => {
       fixture.detectChanges();
 
       // UI State: Min fields disabled, block fields enabled
-      expect(component.form.get('allocationGroup.minimizationP')?.disabled).toBe(true);
-      expect(component.form.get('allocationGroup.totalSampleSize')?.disabled).toBe(true);
-      expect(component.form.get('allocationGroup.blockSizesStr')?.disabled).toBe(false);
+      expect((component.form.get('allocationGroup.minimizationP') as any)?.disabled).toBe(true);
+      expect((component.form.get('allocationGroup.totalSampleSize') as any)?.disabled).toBe(true);
+      expect((component.form.get('allocationGroup.blockSizesStr') as any)?.disabled).toBe(false);
 
       // Payload cleanliness: Should not contain minimization config
       component.onSubmit();
