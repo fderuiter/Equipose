@@ -3,6 +3,8 @@ import { AbstractControl } from '../../../core/forms/signal-forms';
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
+import { ButtonComponent } from '../../../core/components/ui/button.component';
+import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 
 /**
  * TagInputComponent – an interactive chip/tag input that reads and writes
@@ -12,7 +14,7 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
   selector: 'app-tag-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [A11yValidationDirective, AppTooltipDirective, RovingTabindexDirective],
+  imports: [A11yValidationDirective, AppTooltipDirective, RovingTabindexDirective, ButtonComponent, TextInputComponent],
   template: `
     <div
       appRovingTabindex="button, input"
@@ -23,26 +25,19 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
       @for (tag of tags; track tag) {
         <span role="listitem" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 select-none">
           {{ tag }}
-          <button
-            type="button"
-            (click)="removeTag(tag); $event.stopPropagation()"
-            class="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"
-            [attr.aria-label]="'Remove ' + tag"
+          <app-button type="button"
+            (click)="removeTag(tag); $event.stopPropagation()" customClass="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"[attr.aria-label]="'Remove ' + tag"
             [appTooltip]="'Remove ' + tag"
-          >×</button>
+           variant="bare">×</app-button>
         </span>
       }
-      <input
-        #tagInput
-        type="text"
+      <app-text-input #tagInput type="text"
         [value]="inputValue"
         (input)="inputValue = $any($event.target).value"
         (keydown)="onKeydown($event)"
         (blur)="onBlur()"
         [placeholder]="tags.length === 0 ? placeholder : ''"
-        [attr.aria-label]="ariaLabel || placeholder"
-        class="flex-1 min-w-[80px] outline-none focus:ring-0 border-none text-sm bg-transparent py-0.5 text-main placeholder-disabled"
-      />
+        [attr.aria-label]="ariaLabel || placeholder" customClass="flex-1 min-w-[80px] outline-none focus:ring-0 border-none text-sm bg-transparent py-0.5 text-main placeholder-disabled" variant="bare"></app-text-input>
     </div>
     <p class="text-xs text-muted mt-1">
       Press <kbd class="font-mono bg-gray-100 dark:bg-slate-600 dark:text-slate-300 border border-gray-200 dark:border-slate-500 rounded px-1">Enter</kbd>
@@ -55,7 +50,7 @@ export class TagInputComponent implements OnInit {
   @Input() placeholder = 'Type and press Enter…';
   @Input() ariaLabel?: string;
 
-  @ViewChild('tagInput') tagInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('tagInput') tagInput!: any;
 
 
   tags: string[] = [];

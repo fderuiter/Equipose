@@ -146,6 +146,11 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
         {{ tooltipText() }}
       </div>
 
+      <!-- Shared tooltip popover -->
+      <div id="block-preview-tooltip" popover="manual" class="fixed m-0 z-50 bg-gray-900 text-white text-xs rounded py-1 px-2 pointer-events-none" [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
+        {{ tooltipText() }}
+      </div>
+
       @if (previews().length === 0) {
         <!-- Empty state skeleton -->
         <div class="space-y-3">
