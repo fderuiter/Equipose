@@ -1,6 +1,7 @@
 import { FormattingUtil } from './formatting.util';
 import { PYTHON_TEMPLATE } from './ir/templates';
 import { LanguageConfig } from './framework/language-config';
+import { CodeTranspiler } from './ir/transpiler';
 
 export const PYTHON_CONFIG: LanguageConfig = {
   language: 'Python',
@@ -28,46 +29,41 @@ export const PYTHON_CONFIG: LanguageConfig = {
     },
     fisherYates: (ir) => ir.templates['Python'].fisherYates,
     buildBlock: (ir) => ir.templates['Python'].buildBlock,
-    luhn: `        base_for_luhn = subj_id.replace("{CHECKSUM}", "")\n        digits = re.sub(r'\\D', '', base_for_luhn)\n        chk = "0"\n        if digits:\n            s = 0\n            is_even = False\n            for i in range(len(digits) - 1, -1, -1):\n                d = int(digits[i])\n                if is_even:\n                    d *= 2\n                    if d > 9: d -= 9\n                s += d\n                is_even = not is_even\n            chk = str((10 - (s % 10)) % 10)\n        subj_id = subj_id.replace("{CHECKSUM}", chk)`,
-    subjectIdBuilder: (tokens, task) => {
-      let baseBuilder = '';
-      for (const token of tokens) {
-        if (token.type === 'literal') {
-          baseBuilder += `"${FormattingUtil.escapeString(token.value)}" + `;
-        } else if (token.type === 'site') {
-          baseBuilder += `"${FormattingUtil.escapeString(task.site)}" + `;
-        } else if (token.type === 'stratum') {
-          baseBuilder += `"${FormattingUtil.escapeString(task.stratumCode)}" + `;
-        } else if (token.type === 'seq') {
-          baseBuilder += `str(seq_count).zfill(${token.length}) + `;
-        } else if (token.type === 'rnd') {
-          baseBuilder += `''.join(ALPHANUMERIC[int(rng.bit_generator.random_raw()) % len(ALPHANUMERIC)] for _ in range(${token.length})) + `;
-        } else if (token.type === 'checksum') {
-          baseBuilder += `"{CHECKSUM}" + `;
+    roundRobinLoop: (ir, config) => {
+      let algorithmicLogic = `tasks = [\n`;
+      for (const t of ir.tasks) {
+         let strataStr = '';
+         for (const s of config.strata || []) {
+             strataStr += `"${FormattingUtil.escapeString(s.id)}": "${FormattingUtil.escapeString(t.stratumDetails[s.id])}", `;
+         }
+         algorithmicLogic += `  {"site": "${FormattingUtil.escapeString(t.site)}", "stratumCode": "${FormattingUtil.escapeString(t.stratumCode)}", "cap": ${t.cap}, "count": 0, "block_num": 1, "strata_dict": {${strataStr}}},\n`;
+      }
+      algorithmicLogic += `]\n\n`;
 
-        }
-      }
-      baseBuilder = baseBuilder.slice(0, -3) || '""';
-      return `        subj_id = ${baseBuilder}`;
-    },
-    recordAppend: (task, config) => {
-      let formattedStrata = '';
-      for (const s of config.strata || []) {
-        formattedStrata += `, "${FormattingUtil.escapeString(s.id)}": "${FormattingUtil.escapeString(task.stratumDetails[s.id])}"`;
-      }
-      return `        schema.append({"SubjectID": subj_id, "Site": "${FormattingUtil.escapeString(task.site)}", "Treatment": trt, "BlockNumber": block_num, "BlockSize": size, "StratumCode": "${FormattingUtil.escapeString(task.stratumCode)}"${formattedStrata}})`;
-    },
-    taskLoop: (task, taskLogic, config) => {
-      let logic = `count = 0\nblock_num = 1\nwhile count < ${task.cap}:\n`;
-      logic += `    size = block_sizes[int(rng.bit_generator.random_raw()) % len(block_sizes)]\n`;
-      logic += `    block = build_block(size, total_ratio, arms)\n`;
-      logic += `    for trt in block:\n`;
-      logic += `        seq_count += 1\n`;
-      logic += taskLogic;
-      logic += `        count += 1\n`;
-      logic += `        if count >= ${task.cap}: break\n`;
-      logic += `    block_num += 1\n`;
-      return logic;
+      algorithmicLogic += `site_counts = {}\n`;
+      algorithmicLogic += `added_in_pass = True\n`;
+      algorithmicLogic += `while added_in_pass:\n`;
+      algorithmicLogic += `    added_in_pass = False\n`;
+      algorithmicLogic += `    for task in tasks:\n`;
+      algorithmicLogic += `        if task["count"] < task["cap"]:\n`;
+      algorithmicLogic += `            added_in_pass = True\n`;
+      algorithmicLogic += `            rand_int = int(rng.bit_generator.random_raw())\n`;
+      algorithmicLogic += `            size = block_sizes[int((rand_int / 4294967296) * len(block_sizes))]\n`;
+      algorithmicLogic += `            block = build_block(size)\n`;
+      algorithmicLogic += `            for trt in block:\n`;
+      algorithmicLogic += `                site = task["site"]\n`;
+      algorithmicLogic += `                site_counts[site] = site_counts.get(site, 0) + 1\n`;
+      algorithmicLogic += `                seq_count = site_counts[site]\n`;
+      
+      algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('Python', ir.subjectIdTokens, 'task["site"]', 'task["stratumCode"]', 'seq_count');
+      
+      algorithmicLogic += `                row = {"SubjectID": subj_id, "Site": task["site"], "Treatment": trt, "BlockNumber": task["block_num"], "BlockSize": size, "StratumCode": task["stratumCode"]}\n`;
+      algorithmicLogic += `                row.update(task["strata_dict"])\n`;
+      algorithmicLogic += `                schema.append(row)\n`;
+      algorithmicLogic += `                task["count"] += 1\n`;
+      algorithmicLogic += `                if task["count"] >= task["cap"]: break\n`;
+      algorithmicLogic += `            task["block_num"] += 1\n`;
+      return algorithmicLogic;
     }
   }
 };

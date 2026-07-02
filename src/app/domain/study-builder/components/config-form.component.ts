@@ -21,7 +21,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
-import { createStepper, StepperState } from "../../../core/utils/stepper.util";
+import { createStepper, StepperState, StepConfig } from "../../../core/utils/stepper.util";
 
 /**
  * ⚡ Bolt Performance Optimization:
