@@ -65,7 +65,7 @@ export class SasStrategy extends AbstractCodeGenerationStrategy {
           taskLogic += `  cap = ${task.cap};\n`;
           taskLogic += `  count = 0; block_num = 1;\n`;
           taskLogic += `  do while(count < cap);\n`;
-          taskLogic += `     link get_rand_int; size_idx = mod(rand_int, ${ir.blockSizes.length});\n`;
+          taskLogic += `     link get_rand_int; size_idx = int((rand_int / 4294967296) * ${ir.blockSizes.length});\n`;
           ir.blockSizes.forEach((bs: any, i: number) => {
              if (i===0) taskLogic += `     if size_idx=0 then size=${bs};\n`;
              else taskLogic += `     else if size_idx=${i} then size=${bs};\n`;
@@ -75,7 +75,7 @@ export class SasStrategy extends AbstractCodeGenerationStrategy {
              taskLogic += `     do i = 1 to (size / ${ir.totalRatio}) * ${arm.ratio}; blk[idx] = "${FormattingUtil.escapeSasString(arm.name)}"; idx=idx+1; end;\n`;
           }
           taskLogic += `     do i = size to 2 by -1;\n`;
-          taskLogic += `        link get_rand_int; j = mod(rand_int, i) + 1;\n`;
+          taskLogic += `        link get_rand_int; j = int((rand_int / 4294967296) * i) + 1;\n`;
           taskLogic += `        temp = blk[i]; blk[i] = blk[j]; blk[j] = temp;\n`;
           taskLogic += `     end;\n`;
           taskLogic += `     do i = 1 to size;\n`;
@@ -101,7 +101,7 @@ export class SasStrategy extends AbstractCodeGenerationStrategy {
               rndVarsSetup += `        rnd_str_${rndCounter} = "";\n`;
               rndVarsSetup += `        do _k = 1 to ${token.length};\n`;
               rndVarsSetup += `          link get_rand_int;\n`;
-              rndVarsSetup += `          char_idx = mod(rand_int, 36) + 1;\n`;
+              rndVarsSetup += `          char_idx = int((rand_int / 4294967296) * 36) + 1;\n`;
               rndVarsSetup += `          rnd_str_${rndCounter} = trim(rnd_str_${rndCounter}) || substr(ALPHANUMERIC, char_idx, 1);\n`;
               rndVarsSetup += `        end;\n`;
               baseBuilder += `trim(rnd_str_${rndCounter}) || `;
