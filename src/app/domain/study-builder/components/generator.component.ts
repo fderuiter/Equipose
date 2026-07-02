@@ -65,6 +65,63 @@ type ResultsTab = 'grid' | 'balance';
         <app-config-form #configForm [isSimulationMode]="isSimulationMode()" (promoteToStudy)="handlePromoteToStudy()"></app-config-form>
       </div>
 
+      <!-- ── Integrated Grid Status Bar ────────────────────────────── -->
+      <div 
+        aria-live="polite" 
+        aria-atomic="true" 
+        class="bg-surface border border-border-subtle rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
+        data-testid="grid-status-bar"
+      >
+        <div class="flex items-center gap-3">
+          <h3 class="text-sm font-semibold text-main m-0">Simulation Status:</h3>
+          @if (state.isGenerating()) {
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800" data-testid="status-generating">
+              <svg class="animate-[spin_1s_linear_infinite] h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Generating
+            </span>
+          } @else if (state.results()) {
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800" data-testid="status-complete">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Complete
+            </span>
+          } @else {
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200 dark:bg-slate-800 dark:text-gray-300 dark:border-slate-700" data-testid="status-ready">
+              Ready
+            </span>
+          }
+        </div>
+        
+        @if (state.results() && !state.isGenerating()) {
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-muted">Audit Hash:</span>
+            <span class="font-mono text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded border border-gray-200 dark:border-slate-700 text-main" [title]="state.results()?.metadata?.auditHash">
+              {{ truncatedAuditHash }}
+            </span>
+            <button
+              type="button"
+              (click)="copyAuditHash()"
+              class="shrink-0 p-1.5 rounded-md border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors"
+              aria-label="Copy audit hash to clipboard"
+              data-testid="copy-hash-btn">
+              @if (hashCopied()) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              }
+            </button>
+          </div>
+        }
+      </div>
+
       <!-- ── Deterministic Results State Machine ───────────────────── -->
       <!--
         Exactly ONE of these three states is visible at any given time:
@@ -175,6 +232,25 @@ export class GeneratorComponent implements OnInit {
   readonly activeTab = signal<ResultsTab>('grid');
 
   readonly isSimulationMode = signal(false);
+  readonly hashCopied = signal(false);
+
+  /** Middle-truncated display value for the audit hash banner. */
+  get truncatedAuditHash(): string {
+    const hash = this.state.results()?.metadata?.auditHash ?? '';
+    return hash.length > 24 ? `${hash.substring(0, 12)}...${hash.substring(hash.length - 12)}` : hash;
+  }
+
+  /** Copies the audit hash to the clipboard and briefly shows a ✓ icon. */
+  copyAuditHash(): void {
+    const hash = this.state.results()?.metadata?.auditHash;
+    if (!hash) return;
+    navigator.clipboard.writeText(hash).then(() => {
+      this.hashCopied.set(true);
+      setTimeout(() => this.hashCopied.set(false), 2000);
+    }).catch(() => {
+      // Clipboard write failed
+    });
+  }
 
   /** Reference to the embedded config form so we can drive preset loading. */
   private readonly configForm = viewChild<ConfigFormComponent>('configForm');
