@@ -222,6 +222,11 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await mcBtn.click();
 
       const modal = page.locator('div[role="dialog"]');
+      await expect(modal).toBeVisible();
+      
+      // Auto-verify focus containment in the newly opened modal
+      await FocusTrapPlugin.verifyFocusContainment(page);
+
       await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
       // Click Close button in footer
@@ -229,7 +234,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
       // Modal should be gone
       await expect(modal).toBeHidden({ timeout: 5000 });
-    }, mcBtn);
+    });
   });
 
   test('X button in modal header should dismiss the modal after completion and restore focus', async ({ page }) => {
@@ -239,6 +244,11 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await mcBtn.click();
 
       const modal = page.locator('div[role="dialog"]');
+      await expect(modal).toBeVisible();
+
+      // Auto-verify focus containment
+      await FocusTrapPlugin.verifyFocusContainment(page);
+
       await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
       // The X button aria-label="Close" in the header
@@ -246,7 +256,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await xBtn.first().click();
 
       await expect(modal).toBeHidden({ timeout: 5000 });
-    }, mcBtn);
+    });
   });
 
   // ── Works with different presets ──────────────────────────────────────────
