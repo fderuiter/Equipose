@@ -15,6 +15,8 @@ import { DateUtil } from '../../../core/utils/date.util';
 import { ExcelExportService } from '../services/excel-export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
+import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+
 export type SortDirection = 'asc' | 'desc' | 'none';
 
 export interface SortState {
@@ -60,7 +62,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective],
+  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective],
   templateUrl: './results-grid.component.html',
   styles: [`
     .dot { transition: transform 0.2s ease-in-out; }
@@ -104,6 +106,9 @@ export class ResultsGridComponent {
 
   /** Which column's filter dropdown is currently open. */
   activeFilterColumn = signal<string | null>(null);
+
+  isRowMenuOpen = signal<boolean>(false);
+  isFilterMenuOpen = signal<boolean>(false);
 
   /**
    * Reactive data pipeline for the flat view:
@@ -270,6 +275,15 @@ export class ResultsGridComponent {
     }
   }
 
+  onRowMenuToggle(event: Event): void {
+    const toggleEvent = event as any;
+    if (toggleEvent.newState === 'closed') {
+      this.isRowMenuOpen.set(false);
+    } else if (toggleEvent.newState === 'open') {
+      this.isRowMenuOpen.set(true);
+    }
+  }
+
   /** Placeholder: marks a subject as dropped from the trial. */
   markAsDropped(row: GeneratedSchema | null): void {
     if (!row) return;
@@ -343,6 +357,15 @@ export class ResultsGridComponent {
     const popover = document.getElementById('shared-filter-menu') as any;
     if (popover && typeof popover.hidePopover === 'function') {
       popover.hidePopover();
+    }
+  }
+
+  onFilterMenuToggle(event: Event): void {
+    const toggleEvent = event as any;
+    if (toggleEvent.newState === 'closed') {
+      this.isFilterMenuOpen.set(false);
+    } else if (toggleEvent.newState === 'open') {
+      this.isFilterMenuOpen.set(true);
     }
   }
 
