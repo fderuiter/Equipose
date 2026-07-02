@@ -966,11 +966,17 @@ jobs:
         echo "=== Updated ARCHITECTURE.md (preview) ==="
         head -40 docs/ARCHITECTURE.md
 
+    - name: Generate Exception Report
+      run: |
+        node scripts/generate-exception-report.mjs
+        echo "=== Updated SAS_Stata_Exception_Report.md (preview) ==="
+        head -40 docs/SAS_Stata_Exception_Report.md
+
     - name: Upload updated documentation artifact
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
       with:
         name: architecture-documentation
-        path: docs/ARCHITECTURE.md
+        path: docs/
         retention-days: 90
 
   release:
