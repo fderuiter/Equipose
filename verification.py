@@ -1,3 +1,10 @@
+"""
+DEPRECATION NOTICE:
+This script is deprecated in favor of integrated testing via the `randomization-algorithm-golden.spec.ts` 
+and the E2E unified test runner. All cross-platform parity checking is now fully integrated into the CI 
+workflow using direct Ground Truth Golden Fixture tests. Do not use this script for future clinical compliance verification.
+"""
+
 import subprocess
 import json
 import os

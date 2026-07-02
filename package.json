@@ -19,7 +19,7 @@
     "pretest": "node generate-version.js",
     "deploy": "pnpm run build && wrangler deploy",
     "preview": "pnpm run build && wrangler dev",
-    "verify:logic": "python3 verification.py",
+    "verify:logic": "vitest run src/app/domain/randomization-engine/core/randomization-algorithm-golden.spec.ts",
     "fixtures:generate": "tsx scripts/generate-golden-fixtures.ts"
   },
   "private": true,
