@@ -35,6 +35,7 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
   protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): string {
     const isComplex = Boolean(method === 'MINIMIZATION' || 
                       config.capStrategy === 'MARGINAL_ONLY' || 
+                      (config.sites && config.sites.length > 1) ||
                       (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') ||
                       (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) ||
                       (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
