@@ -26,7 +26,7 @@
       ],
       "stratumCaps": [
         {
-          "levels": [],
+          "levelIds": {},
           "cap": 8
         }
       ],
@@ -34,7 +34,88 @@
       "subjectIdMask": "{SITE}-{SEQ:3}",
       "randomizationMethod": "PERMUTED_BLOCK"
     },
-    "schema": []
+    "schema": [
+      {
+        "subjectId": "S01-001",
+        "site": "S01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
+      },
+      {
+        "subjectId": "S01-002",
+        "site": "S01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
+      },
+      {
+        "subjectId": "S01-003",
+        "site": "S01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Drug",
+        "treatmentArmId": "A"
+      },
+      {
+        "subjectId": "S01-004",
+        "site": "S01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Drug",
+        "treatmentArmId": "A"
+      },
+      {
+        "subjectId": "S02-001",
+        "site": "S02",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Drug",
+        "treatmentArmId": "A"
+      },
+      {
+        "subjectId": "S02-002",
+        "site": "S02",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
+      },
+      {
+        "subjectId": "S02-003",
+        "site": "S02",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Drug",
+        "treatmentArmId": "A"
+      },
+      {
+        "subjectId": "S02-004",
+        "site": "S02",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 4,
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
+      }
+    ]
   },
   "minimization": {
     "config": {
@@ -168,9 +249,9 @@
         "subjectId": "US01-004",
         "site": "US01",
         "stratum": {
-          "sex": "M"
+          "sex": "F"
         },
-        "stratumCode": "M",
+        "stratumCode": "F",
         "blockNumber": 2,
         "blockSize": 3,
         "treatmentArm": "Drug",
@@ -183,7 +264,7 @@
           "sex": "F"
         },
         "stratumCode": "F",
-        "blockNumber": 3,
+        "blockNumber": 2,
         "blockSize": 3,
         "treatmentArm": "Control",
         "treatmentArmId": "C"
@@ -195,7 +276,7 @@
           "sex": "F"
         },
         "stratumCode": "F",
-        "blockNumber": 3,
+        "blockNumber": 2,
         "blockSize": 3,
         "treatmentArm": "Drug",
         "treatmentArmId": "D"
@@ -204,9 +285,9 @@
         "subjectId": "US01-007",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
+        "stratumCode": "M",
         "blockNumber": 3,
         "blockSize": 3,
         "treatmentArm": "Drug",
@@ -221,8 +302,8 @@
         "stratumCode": "F",
         "blockNumber": 4,
         "blockSize": 3,
-        "treatmentArm": "Control",
-        "treatmentArmId": "C"
+        "treatmentArm": "Drug",
+        "treatmentArmId": "D"
       },
       {
         "subjectId": "US01-009",
@@ -233,8 +314,8 @@
         "stratumCode": "F",
         "blockNumber": 4,
         "blockSize": 3,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "D"
+        "treatmentArm": "Control",
+        "treatmentArmId": "C"
       },
       {
         "subjectId": "US01-010",
@@ -276,7 +357,7 @@
       ],
       "stratumCaps": [
         {
-          "levels": [],
+          "levelIds": {},
           "cap": 4
         }
       ],
@@ -284,7 +365,48 @@
       "subjectIdMask": "{SITE}-{SEQ:5}",
       "randomizationMethod": "PERMUTED_BLOCK"
     },
-    "schema": []
+    "schema": [
+      {
+        "subjectId": "US01-00001",
+        "site": "US01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 2,
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
+      },
+      {
+        "subjectId": "US01-00002",
+        "site": "US01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 1,
+        "blockSize": 2,
+        "treatmentArm": "Low Dose",
+        "treatmentArmId": "A"
+      },
+      {
+        "subjectId": "US01-00003",
+        "site": "US01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 2,
+        "blockSize": 2,
+        "treatmentArm": "Low Dose",
+        "treatmentArmId": "A"
+      },
+      {
+        "subjectId": "US01-00004",
+        "site": "US01",
+        "stratum": {},
+        "stratumCode": "",
+        "blockNumber": 2,
+        "blockSize": 2,
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
+      }
+    ]
   },
   "complex_multi_strata": {
     "config": {
@@ -331,32 +453,20 @@
       ],
       "stratumCaps": [
         {
-          "levels": [
-            "Low",
-            "NA"
-          ],
-          "cap": 4
+          "cap": 4,
+          "levelIds": {}
         },
         {
-          "levels": [
-            "Low",
-            "EU"
-          ],
-          "cap": 4
+          "cap": 4,
+          "levelIds": {}
         },
         {
-          "levels": [
-            "High",
-            "NA"
-          ],
-          "cap": 4
+          "cap": 4,
+          "levelIds": {}
         },
         {
-          "levels": [
-            "High",
-            "EU"
-          ],
-          "cap": 4
+          "cap": 4,
+          "levelIds": {}
         }
       ],
       "seed": "GOLDEN_SEED_5",

@@ -10,7 +10,7 @@ import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.stor
 import { TagInputComponent } from './tag-input.component';
 import { previewSubjectIdMask, validateSubjectIdMask } from '../../randomization-engine/core/subject-id-engine';
 import { BlockPreviewComponent, ArmInput } from './block-preview.component';
-import { computeProportionalCaps, validateProportionalPercentages } from '../../randomization-engine/core/cap-strategy';
+import { computeProportionalCaps, validateProportionalPercentages } from '../../shared/statistical/largest-remainder';
 import { CapStrategy } from '../../core/models/randomization.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
@@ -21,6 +21,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
+import { createStepper, StepperState, StepConfig } from "../../../core/utils/stepper.util";
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -103,7 +104,41 @@ export class ConfigFormComponent implements OnInit {
   private readonly capsDirtyFromStrata = signal(true);
   private readonly hasVisitedCapsStep = signal(false);
 
-  readonly currentStepIndex = signal(0);
+  private buildStepperConfigs(): Record<number, StepConfig> {
+    const configs: Record<number, StepConfig> = {};
+    for (let i = 0; i < this.stepLabels.length; i++) {
+      configs[i] = {
+        onEnter: () => {
+          this.announcementService.announce(this.stepLabels[i]);
+          this.capsResetWarning.set(false);
+          if (i === this.capsStepIndex) {
+            const capsWereDirty = this.capsDirtyFromStrata();
+            const shouldWarn = this.hasVisitedCapsStep() && capsWereDirty;
+            if (capsWereDirty) {
+              this.syncStratumCaps();
+              this.resetCapLevelInputs();
+              this.matrixComputed.set(false);
+            }
+            this.capsDirtyFromStrata.set(false);
+            this.hasVisitedCapsStep.set(true);
+            if (shouldWarn) {
+              this.capsResetWarning.set(true);
+            }
+          }
+          this.cdr.markForCheck();
+          
+          const stepHeader = this.document.getElementById(`step-header-${i}`);
+          if (stepHeader) {
+            stepHeader.focus();
+          }
+        }
+      };
+    }
+    return configs;
+  }
+
+  readonly stepper = createStepper(this.stepLabels.length, this.buildStepperConfigs());
+  readonly currentStepIndex = this.stepper.currentStepIndex;
   draggedStratumIndex: number | null = null;
 
 
@@ -149,6 +184,7 @@ export class ConfigFormComponent implements OnInit {
   );
 
   constructor() {
+    
     this.subjectIdPreview = computed(() => {
       const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
       return previewSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '');
@@ -486,34 +522,6 @@ export class ConfigFormComponent implements OnInit {
 
   onPromoteToStudy(): void {
     this.promoteToStudy.emit();
-  }
-
-  onStepSelectionChange(selectedIndex: number): void {
-    this.announcementService.announce(this.stepLabels[selectedIndex]);
-    this.capsResetWarning.set(false);
-    if (selectedIndex === this.capsStepIndex) {
-      const capsWereDirty = this.capsDirtyFromStrata();
-      const shouldWarn = this.hasVisitedCapsStep() && capsWereDirty;
-      if (capsWereDirty) {
-        this.syncStratumCaps();
-        this.resetCapLevelInputs();
-        this.matrixComputed.set(false);
-      }
-      this.capsDirtyFromStrata.set(false);
-      this.hasVisitedCapsStep.set(true);
-      if (shouldWarn) {
-        this.capsResetWarning.set(true);
-      }
-    }
-    this.cdr.markForCheck();
-    
-    // Manage focus for wizard transition
-    setTimeout(() => {
-      const stepHeader = this.document.getElementById(`step-header-${selectedIndex}`);
-      if (stepHeader) {
-        stepHeader.focus();
-      }
-    }, 50);
   }
 
   private markCapsStale(): void {
@@ -899,20 +907,15 @@ export class ConfigFormComponent implements OnInit {
   }
 
   nextStep(): void {
-    if (this.currentStepIndex() < this.stepLabels.length - 1) {
-      this.setStep(this.currentStepIndex() + 1);
-    }
+    this.stepper.next();
   }
 
   previousStep(): void {
-    if (this.currentStepIndex() > 0) {
-      this.setStep(this.currentStepIndex() - 1);
-    }
+    this.stepper.previous();
   }
 
   setStep(index: number): void {
-    this.currentStepIndex.set(index);
-    this.onStepSelectionChange(index);
+    this.stepper.goTo(index);
   }
 
   // --- HTML5 Drag and Drop Handlers ---

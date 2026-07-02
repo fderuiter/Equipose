@@ -1,3 +1,4 @@
+import { createStepper } from '../../../core/utils/stepper.util';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLinkDirective } from '../../../core/router/router-link.directive';
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
@@ -192,6 +193,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
   `
 })
 export class SchemaVerificationComponent {
+  readonly stepper = createStepper(3);
 
   // ── UI state signals ──────────────────────────────────────────────────────
 
@@ -243,6 +245,7 @@ export class SchemaVerificationComponent {
   // ── Core processing pipeline ─────────────────────────────────────────────
 
   private processFile(file: File): void {
+    this.stepper.goTo(0);
     this.fileName.set(file.name);
     this.status.set('idle');
     this.errorMessage.set(null);
@@ -269,6 +272,7 @@ export class SchemaVerificationComponent {
    * Validates the parsed JSON structure, re-runs the algorithm, and diffs.
    */
   verify(parsed: unknown): void {
+    this.stepper.goTo(1);
     // ── 1. Schema validation ───────────────────────────────────────────────
     if (!this.isValidResult(parsed)) {
       this.setError('Invalid file structure: Missing RandomizationConfig metadata or schema array.');
@@ -301,6 +305,7 @@ export class SchemaVerificationComponent {
     } else {
       this.discrepancies.set(diffs);
       this.status.set('fail');
+    this.stepper.goTo(2);
     }
   }
 

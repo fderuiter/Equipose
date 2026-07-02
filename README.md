@@ -157,3 +157,6 @@ code script via `src/environments/version.ts`.
 
 GNU Affero General Public License v3.0 - see [LICENSE](LICENSE) for details.
 
+
+### Testing & Verification
+**Deprecation Notice:** The legacy `verification.py` script has been deprecated. Cross-platform parity testing (guaranteeing exact sequence matches across TypeScript, Python, and R) is now fully integrated into our primary test runner using deterministic golden fixtures. Run `pnpm run verify:logic` to execute the ground-truth sequence verification.

@@ -1,4 +1,5 @@
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { formatStratumCode } from '../../shared/statistical/stratum-format';
 
 export class SubjectRegistry {
   private marginalCapMap = new Map<string, Map<string, number | undefined>>();
@@ -41,7 +42,7 @@ export class SubjectRegistry {
   }
 
   static computeStratumCode(strata: RandomizationConfig['strata'], stratum: Record<string, string>): string {
-    return strata.map(s => (stratum[s.id] || '').substring(0, 3).toUpperCase()).join('-');
+    return formatStratumCode(strata, stratum);
   }
 
   getStratumCode(stratum: Record<string, string>): string {

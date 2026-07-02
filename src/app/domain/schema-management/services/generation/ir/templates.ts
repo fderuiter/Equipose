@@ -24,7 +24,7 @@ schema_list <- list()
 {{algorithmicLogic}}
 schema <- do.call(rbind, schema_list)
 if (is.null(schema)) schema <- data.frame()
-print(head(schema))
+write.csv(schema, stdout(), row.names = FALSE)
 `;
 
 export const SAS_TEMPLATE = `
@@ -86,7 +86,9 @@ export const PYTHON_TEMPLATE = `
 # Algorithm: {{algorithm}}
 import numpy as np
 import pandas as pd
-mt19937 = np.random.MT19937({{seedHash}})
+_rs = np.random.RandomState({{seedHash}})
+mt19937 = np.random.MT19937()
+mt19937.state = _rs.get_state()
 rng = np.random.Generator(mt19937)
 # Arms: {{arms}}
 # Ratios: {{ratios}}
@@ -100,7 +102,7 @@ PRECISION_EPSILON = {{precisionEpsilon}}
 {{minimizationParam}}
 {{algorithmicLogic}}
 df = pd.DataFrame(schema)
-print(df.head())
+print(df.to_csv(index=False))
 `;
 
 export const STATA_TEMPLATE = `

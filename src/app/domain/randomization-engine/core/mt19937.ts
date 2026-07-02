@@ -72,7 +72,7 @@ export class MT19937 {
     for (this.mti = 1; this.mti < 624; this.mti++) {
       const prev = this.mt[this.mti - 1];
       this.mt[this.mti] =
-        (1812433253 * (prev ^ (prev >>> 30)) + this.mti) >>> 0;
+        (Math.imul(1812433253, prev ^ (prev >>> 30)) + this.mti) >>> 0;
     }
   }
 
