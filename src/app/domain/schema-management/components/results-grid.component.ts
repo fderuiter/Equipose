@@ -12,7 +12,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
 import { DateUtil } from '../../../core/utils/date.util';
-import { ExcelExportService } from '../services/excel-export.service';
+import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
@@ -77,7 +77,7 @@ export class ResultsGridComponent {
   public readonly domainTheme = inject(DomainThemeService);
   private readonly toast = inject(ToastService);
   private readonly methodologySpec = inject(MethodologySpecificationService);
-  private readonly excelExport = inject(ExcelExportService);
+  private readonly exportService = inject(ExportService);
   private readonly destroyRef = inject(DestroyRef);
   /**
    * Tracks the row whose kebab menu is currently open so the shared menu
@@ -446,55 +446,7 @@ export class ResultsGridComponent {
       return;
     }
 
-    const strataHeaders = data.metadata.strata?.map(s => s.name || s.id) || [];
-    const headers = ['Subject ID', 'Site', ...strataHeaders, 'Block Number', 'Block Size', 'Treatment Arm']
-      .map(h => this.sanitizeCsvValue(h));
-
-    const rows = data.schema.map(r => {
-      const strataValues = data.metadata.strata?.map(s => r.stratum[s.id] || '') || [];
-      return [
-        r.subjectId,
-        r.site,
-        ...strataValues,
-        r.blockNumber.toString(),
-        r.blockSize.toString(),
-        this.isUnblinded() ? r.treatmentArm : '*** BLINDED ***'
-      ].map(val => this.sanitizeCsvValue(val));
-    });
-
-    const watermark = "DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema for RTSM/IRT implementation.";
-    const timestamp = DateUtil.getIsoTimestamp(new Date(data.metadata.generatedAt));
-    const methodologyComments = this.methodologySpec.formatForCsv(
-      this.methodologySpec.generateNarrative(data.metadata.config)
-    );
-    const csvContent = [
-      `"${watermark}"`,
-      `# Protocol ID: ${data.metadata.protocolId}`,
-      `# Study Name: ${data.metadata.studyName}`,
-      `# App Version: ${APP_VERSION}`,
-      `# Generated At: ${timestamp}`,
-      `# PRNG Algorithm: Mersenne Twister (MT19937)`,
-      `# PRNG Seed: ${data.metadata.seed}`,
-      `# SHA-256 Audit Hash: ${data.metadata.auditHash}`,
-      methodologyComments,
-      headers.join(','),
-      ...rows.map(e => e.join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    const safeProtocol = this.sanitizeFilename(data.metadata.protocolId);
-    const dateStamp = DateUtil.getFileDatestamp();
-    link.setAttribute('href', url);
-    link.setAttribute('download', `randomization_${dateStamp}_${safeProtocol}_${this.isUnblinded() ? 'unblinded' : 'blinded'}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }, 100);
+    this.exportService.exportCsv(data, this.isUnblinded());
   }
 
   async exportXlsx(): Promise<void> {
@@ -507,7 +459,7 @@ export class ResultsGridComponent {
     }
 
     try {
-      await this.excelExport.exportXlsx(data, this.isUnblinded());
+      await this.exportService.exportXlsx(data, this.isUnblinded());
     } catch {
       this.toast.showError('Failed to generate Excel file. Please try again.');
     }
