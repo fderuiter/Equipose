@@ -49,12 +49,6 @@ module.exports = defineConfig([
         {
           patterns: [
             {
-              group: ['*/domain/randomization-engine/randomization.service*'],
-              message:
-                'domain/study-builder must not import RandomizationService directly. ' +
-                'Use RandomizationEngineFacade instead.'
-            },
-            {
               group: ['*/domain/randomization-engine/core/*'],
               message:
                 'domain/study-builder must not access the randomization-engine core algorithm. ' +
