@@ -132,6 +132,33 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
               <div class="h-56 w-full">
                 <app-echart [option]="chart.option" (chartClick)="chart.clickHandler($event)"></app-echart>
               </div>
+
+              <!-- Accessible Filter Legend -->
+              @if (!chart.isBlinded && chart.categories && chart.categories.length > 0) {
+                <ul
+                  class="flex flex-wrap gap-2 mt-4"
+                  role="listbox"
+                  [attr.aria-label]="'Filter by ' + chart.label"
+                >
+                  @for (category of chart.categories; track category.name; let idx = $index) {
+                    <li
+                      role="option"
+                      [attr.aria-selected]="viewState.activeFilter()?.variableId === chart.id && viewState.activeFilter()?.value === category.name"
+                      [tabindex]="getTabIndex(chart.id, category.name, idx)"
+                      [id]="'legend-item-' + chart.id + '-' + idx"
+                      (click)="chart.clickHandler({ name: category.name })"
+                      (keydown)="handleKeydown($event, chart, category, idx)"
+                      class="flex items-center gap-1.5 px-2 py-1 text-sm rounded-md border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                      [class]="viewState.activeFilter()?.variableId === chart.id && viewState.activeFilter()?.value === category.name
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium'
+                        : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'"
+                    >
+                      <span class="w-3 h-3 rounded-full inline-block" [style.background-color]="category.color"></span>
+                      {{ category.name }}
+                    </li>
+                  }
+                </ul>
+              }
             </div>
           }
         </div>
@@ -161,6 +188,34 @@ export class SchemaAnalyticsDashboardComponent {
     return v ? v.label : id;
   }
 
+  getTabIndex(chartId: string, categoryName: string, idx: number): number {
+    const activeFilter = this.viewState.activeFilter();
+    if (activeFilter?.variableId === chartId) {
+      return activeFilter.value === categoryName ? 0 : -1;
+    }
+    return idx === 0 ? 0 : -1;
+  }
+
+  handleKeydown(event: KeyboardEvent, chart: { id: string; clickHandler: (p: { name: string }) => void; categories: any[] }, category: { name: string }, idx: number) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      chart.clickHandler({ name: category.name });
+    } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.focusItem(chart.id, (idx + 1) % chart.categories.length);
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.focusItem(chart.id, (idx - 1 + chart.categories.length) % chart.categories.length);
+    }
+  }
+
+  private focusItem(chartId: string, idx: number) {
+    if (typeof document !== 'undefined') {
+      const el = document.getElementById(`legend-item-${chartId}-${idx}`);
+      el?.focus();
+    }
+  }
+
   readonly chartConfigs = computed(() => {
     const dataset = this.viewState.adamDataset();
     const filteredDataset = this.viewState.filteredAdamDataset();
@@ -185,6 +240,7 @@ export class SchemaAnalyticsDashboardComponent {
       }
 
       let option: any;
+      const categories: { name: string, color: string }[] = [];
 
       if (isBlindedGroup) {
         option = {
@@ -202,16 +258,20 @@ export class SchemaAnalyticsDashboardComponent {
       } else {
         // Alternate between pie and bar charts for variety (or based on metadata)
         if (i % 2 === 0 || v.metadataTags.includes('Group')) {
-          const data = Array.from(counts.entries()).map(([name, value], idx) => ({
-            name,
-            value,
-            itemStyle: { color: palette[idx % palette.length] },
-          }));
+          const data = Array.from(counts.entries()).map(([name, value], idx) => {
+            const color = palette[idx % palette.length];
+            categories.push({ name, color });
+            return {
+              name,
+              value,
+              itemStyle: { color },
+            };
+          });
 
           option = {
             aria: { enabled: true, decal: { show: true } },
             tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-            legend: { orient: 'horizontal', bottom: 0, textStyle: { fontSize: 11 } },
+            legend: { show: false },
             series: [{
               type: 'pie',
               radius: ['45%', '70%'],
@@ -223,10 +283,14 @@ export class SchemaAnalyticsDashboardComponent {
         } else {
           // Bar chart
           const names = Array.from(counts.keys()).sort();
-          const data = names.map((name, idx) => ({
-            value: counts.get(name) || 0,
-            itemStyle: { color: palette[idx % palette.length] }
-          }));
+          const data = names.map((name, idx) => {
+            const color = palette[idx % palette.length];
+            categories.push({ name, color });
+            return {
+              value: counts.get(name) || 0,
+              itemStyle: { color }
+            };
+          });
 
           option = {
             aria: { enabled: true, decal: { show: true } },
@@ -256,7 +320,8 @@ export class SchemaAnalyticsDashboardComponent {
         label: v.label,
         isBlinded: isBlindedGroup,
         option,
-        clickHandler
+        clickHandler,
+        categories
       });
     }
 
