@@ -143,6 +143,7 @@ export class CodeTranspiler {
          });
       });
     } else if (lang === 'Python') {
+      schemaRows += `schema = [\n`;
       for (const row of schema) {
          schemaRows += `  {"SubjectID": "${FormattingUtil.escapeString(row.subjectId)}", "Site": "${FormattingUtil.escapeString(row.site)}", "Treatment": "${FormattingUtil.escapeString(row.treatmentArm)}", "BlockNumber": ${row.blockNumber}, "BlockSize": ${row.blockSize}, "StratumCode": "${FormattingUtil.escapeString(row.stratumCode)}"`;
          for (const s of config.strata || []) {
@@ -150,6 +151,7 @@ export class CodeTranspiler {
          }
          schemaRows += `},\n`;
       }
+      schemaRows += `]\n`;
     } else if (lang === 'R') {
       schema.forEach((row, i) => {
          schemaRows += `schema_list[[${i+1}]] <- data.frame("SubjectID"="${FormattingUtil.escapeString(row.subjectId)}", "Site"="${FormattingUtil.escapeString(row.site)}", "Treatment"="${FormattingUtil.escapeString(row.treatmentArm)}", "BlockNumber"=${row.blockNumber}, "BlockSize"=${row.blockSize}, "StratumCode"="${FormattingUtil.escapeString(row.stratumCode)}"`;

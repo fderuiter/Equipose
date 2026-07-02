@@ -51,7 +51,7 @@ export const STATA_CONFIG: LanguageConfig = {
       logic += `seq_count = 0\n`;
       return logic;
     },
-    fisherYates: `string rowvector build_block(real scalar size) {\n    string rowvector block\n    real scalar multiplier, i, j, arm_idx, k\n    string scalar temp\n    block = J(1, 0, "")\n    multiplier = size / total_ratio\n    for (arm_idx=1; arm_idx<=cols(arms); arm_idx++) {\n        for (k=1; k<=arm_ratios[arm_idx] * multiplier; k++) {\n            block = block, arms[arm_idx]\n        }\n    }\n    for (i=cols(block); i>=2; i--) {\n        j = trunc((random_int() / 4294967296) * i) + 1\n        temp = block[i]; block[i] = block[j]; block[j] = temp\n    }\n    return(block)\n}\n`,
+    fisherYates: () => `string rowvector build_block(real scalar size) {\n    string rowvector block\n    real scalar multiplier, i, j, arm_idx, k\n    string scalar temp\n    block = J(1, 0, "")\n    multiplier = size / total_ratio\n    for (arm_idx=1; arm_idx<=cols(arms); arm_idx++) {\n        for (k=1; k<=arm_ratios[arm_idx] * multiplier; k++) {\n            block = block, arms[arm_idx]\n        }\n    }\n    for (i=cols(block); i>=2; i--) {\n        j = trunc((random_int() / 4294967296) * i) + 1\n        temp = block[i]; block[i] = block[j]; block[j] = temp\n    }\n    return(block)\n}\n`,
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = '';
       algorithmicLogic += `block_sizes = (${ir.blockSizes.join(',')})
