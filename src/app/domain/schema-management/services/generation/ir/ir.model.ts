@@ -13,6 +13,11 @@ export interface LogicIRTask {
   cap: number;
 }
 
+export type LogicIRTemplates = Record<string, {
+  fisherYates: string;
+  buildBlock: string;
+}>;
+
 export interface LogicIR {
   seedHash: number;
   totalRatio: number;
@@ -22,4 +27,5 @@ export interface LogicIR {
   method: 'BLOCK' | 'MINIMIZATION';
   minimizationP: number;
   subjectIdTokens: SubjectIdToken[];
+  templates?: LogicIRTemplates;
 }

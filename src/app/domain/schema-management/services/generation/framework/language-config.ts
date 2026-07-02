@@ -6,7 +6,8 @@ export interface LanguageConfig {
   indexStart: number;
   template: string;
   components: {
-    fisherYates: string;
+    fisherYates: (ir: LogicIR) => string;
+    buildBlock?: (ir: LogicIR) => string;
     luhn: string;
     initialization: (ir: LogicIR, config: RandomizationConfig) => string;
     taskLoop: (task: LogicIRTask, taskLogic: string, config: RandomizationConfig) => string;

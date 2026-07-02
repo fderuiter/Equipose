@@ -28,14 +28,14 @@ export const SAS_CONFIG: LanguageConfig = {
     data['strataLength'] = strataLength;
   },
   components: {
-    initialization: (ir) => {
+    initialization: () => {
       let logic = `  array blk[1000] $50 _temporary_;\n`;
       logic += `  length ALPHANUMERIC $ 36;\n`;
       logic += `  ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";\n`;
       logic += `  seq_count = 0;\n`;
       return logic;
     },
-    fisherYates: ``, // SAS Fisher-Yates is implemented inside the task loop due to macro constraints
+    fisherYates: () => ``, // SAS Fisher-Yates is implemented inside the task loop due to macro constraints
     luhn: `        if index(SubjectID, "{CHECKSUM}") > 0 then do;\n          base_for_luhn = tranwrd(SubjectID, "{CHECKSUM}", "");\n          digits = prxchange('s/\\D//', -1, trim(base_for_luhn));\n          chk = "0";\n          if length(trim(digits)) > 0 then do;\n            s = 0;\n            is_even = 0;\n            do _i = length(trim(digits)) to 1 by -1;\n              d = input(substr(trim(digits), _i, 1), 1.);\n              if is_even then do;\n                d = d * 2;\n                if d > 9 then d = d - 9;\n              end;\n              s = s + d;\n              if is_even = 1 then is_even = 0; else is_even = 1;\n            end;\n            chk = put(mod(10 - mod(s, 10), 10), 1.);\n          end;\n          SubjectID = tranwrd(SubjectID, "{CHECKSUM}", trim(left(chk)));\n        end;`,
     subjectIdBuilder: (tokens, task) => {
       let baseBuilder = '';

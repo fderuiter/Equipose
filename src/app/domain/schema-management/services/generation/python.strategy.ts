@@ -26,7 +26,8 @@ export const PYTHON_CONFIG: LanguageConfig = {
       logic += `arms = [${ir.arms.map((a: any) => `{"name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
       return logic;
     },
-    fisherYates: `def build_block(size):\n    block = []\n    multiplier = size / total_ratio\n    for arm in arms:\n        block.extend([arm["name"]] * int(arm["ratio"] * multiplier))\n    for i in range(len(block) - 1, 0, -1):\n        rand_int = int(rng.bit_generator.random_raw())\n        j = rand_int % (i + 1)\n        block[i], block[j] = block[j], block[i]\n    return block\n`,
+    fisherYates: (ir) => ir.templates['Python'].fisherYates,
+    buildBlock: (ir) => ir.templates['Python'].buildBlock,
     luhn: `        base_for_luhn = subj_id.replace("{CHECKSUM}", "")\n        digits = re.sub(r'\\D', '', base_for_luhn)\n        chk = "0"\n        if digits:\n            s = 0\n            is_even = False\n            for i in range(len(digits) - 1, -1, -1):\n                d = int(digits[i])\n                if is_even:\n                    d *= 2\n                    if d > 9: d -= 9\n                s += d\n                is_even = not is_even\n            chk = str((10 - (s % 10)) % 10)\n        subj_id = subj_id.replace("{CHECKSUM}", chk)`,
     subjectIdBuilder: (tokens, task) => {
       let baseBuilder = '';
@@ -43,6 +44,7 @@ export const PYTHON_CONFIG: LanguageConfig = {
           baseBuilder += `''.join(ALPHANUMERIC[int(rng.bit_generator.random_raw()) % len(ALPHANUMERIC)] for _ in range(${token.length})) + `;
         } else if (token.type === 'checksum') {
           baseBuilder += `"{CHECKSUM}" + `;
+
         }
       }
       baseBuilder = baseBuilder.slice(0, -3) || '""';
@@ -58,7 +60,7 @@ export const PYTHON_CONFIG: LanguageConfig = {
     taskLoop: (task, taskLogic, config) => {
       let logic = `count = 0\nblock_num = 1\nwhile count < ${task.cap}:\n`;
       logic += `    size = block_sizes[int(rng.bit_generator.random_raw()) % len(block_sizes)]\n`;
-      logic += `    block = build_block(size)\n`;
+      logic += `    block = build_block(size, total_ratio, arms)\n`;
       logic += `    for trt in block:\n`;
       logic += `        seq_count += 1\n`;
       logic += taskLogic;

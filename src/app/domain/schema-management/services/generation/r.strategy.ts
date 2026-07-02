@@ -25,7 +25,8 @@ export const R_CONFIG: LanguageConfig = {
       logic += `arms <- list(${armsR})\n\nseq_count <- 0\n`;
       return logic;
     },
-    fisherYates: `build_block <- function(size) {\n  block <- character(0)\n  multiplier <- size / total_ratio\n  for (arm in arms) {\n    block <- c(block, rep(arm$name, as.integer(arm$ratio * multiplier)))\n  }\n  if (length(block) > 1) {\n    for (i in length(block):2) {\n      j <- (random_int() %% i) + 1\n      temp <- block[i]; block[i] <- block[j]; block[j] <- temp\n    }\n  }\n  return(block)\n}\n`,
+    fisherYates: (ir) => ir.templates['R'].fisherYates,
+    buildBlock: (ir) => ir.templates['R'].buildBlock,
     luhn: `    if (grepl("{CHECKSUM}", subj_id, fixed=TRUE)) {\n      base_for_luhn <- gsub("{CHECKSUM}", "", subj_id, fixed=TRUE)\n      digits <- gsub("\\\\D", "", base_for_luhn)\n      chk <- "0"\n      if (nchar(digits) > 0) {\n        s <- 0\n        is_even <- FALSE\n        chars <- strsplit(digits, "")[[1]]\n        for (i in length(chars):1) {\n          d <- as.integer(chars[i])\n          if (is_even) {\n            d <- d * 2\n            if (d > 9) d <- d - 9\n          }\n          s <- s + d\n          is_even <- !is_even\n        }\n        chk <- as.character((10 - (s %% 10)) %% 10)\n      }\n      subj_id <- sub("{CHECKSUM}", chk, subj_id, fixed=TRUE)\n    }`,
     subjectIdBuilder: (tokens, task) => {
       let baseBuilder = 'paste0(';
@@ -43,6 +44,7 @@ export const R_CONFIG: LanguageConfig = {
           args.push(`paste0(ALPHANUMERIC[(replicate(${token.length}, random_int()) %% length(ALPHANUMERIC)) + 1], collapse="")`);
         } else if (token.type === 'checksum') {
           args.push(`"{CHECKSUM}"`);
+
         }
       }
       baseBuilder += args.join(', ') + ')';
@@ -58,7 +60,7 @@ export const R_CONFIG: LanguageConfig = {
     taskLoop: (task, taskLogic, config) => {
       let logic = `count <- 0\nblock_num <- 1\nwhile (count < ${task.cap}) {\n`;
       logic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
-      logic += `  block <- build_block(size)\n`;
+      logic += `  block <- build_block(size, total_ratio, arms)\n`;
       logic += `  for (trt in block) {\n`;
       logic += `    seq_count <- seq_count + 1\n`;
       logic += taskLogic;

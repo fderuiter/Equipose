@@ -10,21 +10,24 @@ export class AlgorithmRegistry {
     // 1. Initialization logic
     logic += configObj.components.initialization(ir, config);
     
-    // 2. Fisher-Yates Component
+    // 2. Fisher-Yates and Build Block Components
     if (configObj.components.fisherYates) {
-       logic += configObj.components.fisherYates + '\n';
+       logic += configObj.components.fisherYates(ir) + '\n';
+    }
+    if (configObj.components.buildBlock) {
+       logic += configObj.components.buildBlock(ir) + '\n';
     }
     
     // 3. Task Iteration logic
     logic += IrIterationHelper.generateForTasksAndStrata(
       config,
       ir.tasks,
-      (stratumId, stratumValue) => '', // We handle formatting in recordAppend / taskLoop
-      (task, _) => {
+      () => '', // We handle formatting in recordAppend / taskLoop
+      (task) => {
         let loopBody = '';
         
         // Subject ID Logic
-        let hasChecksum = ir.subjectIdTokens.some(t => t.type === 'checksum');
+        const hasChecksum = ir.subjectIdTokens.some(t => t.type === 'checksum');
         loopBody += configObj.components.subjectIdBuilder(ir.subjectIdTokens, task) + '\n';
         
         if (hasChecksum) {
