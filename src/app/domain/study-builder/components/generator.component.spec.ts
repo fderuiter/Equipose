@@ -265,7 +265,7 @@ describe('GeneratorComponent (domain)', () => {
     // config just needs to be truthy for the @if condition
     (mockFacade.config as ReturnType<typeof signal<unknown>>).set({
       protocolId: 'X', studyName: 'X', phase: 'I',
-      arms: [], sites: [], strata: [], blockSizes: [], stratumCaps: [],
+      arms: [{ id: 'A', name: 'Drug', ratio: 1 }], sites: [], strata: [], blockSizes: [], stratumCaps: [],
       seed: '', subjectIdMask: ''
     });
     const fixture = TestBed.createComponent(GeneratorComponent);

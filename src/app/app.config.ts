@@ -7,19 +7,20 @@ import {
 import {provideHttpClient, withFetch} from '@angular/common/http';
 
 import { CODE_GENERATION_STRATEGIES } from './domain/schema-management/services/code-generator.service';
-import { RStrategy } from './domain/schema-management/services/generation/r.strategy';
-import { PythonStrategy } from './domain/schema-management/services/generation/python.strategy';
-import { SasStrategy } from './domain/schema-management/services/generation/sas.strategy';
-import { StataStrategy } from './domain/schema-management/services/generation/stata.strategy';
+import { R_CONFIG } from './domain/schema-management/services/generation/r.strategy';
+import { PYTHON_CONFIG } from './domain/schema-management/services/generation/python.strategy';
+import { SAS_CONFIG } from './domain/schema-management/services/generation/sas.strategy';
+import { STATA_CONFIG } from './domain/schema-management/services/generation/stata.strategy';
+import { BaseOrchestrator } from './domain/schema-management/services/generation/base.strategy';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withFetch()),
-    { provide: CODE_GENERATION_STRATEGIES, useClass: RStrategy, multi: true },
-    { provide: CODE_GENERATION_STRATEGIES, useClass: PythonStrategy, multi: true },
-    { provide: CODE_GENERATION_STRATEGIES, useClass: SasStrategy, multi: true },
-    { provide: CODE_GENERATION_STRATEGIES, useClass: StataStrategy, multi: true },
+    { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(R_CONFIG), multi: true },
+    { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(PYTHON_CONFIG), multi: true },
+    { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(SAS_CONFIG), multi: true },
+    { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(STATA_CONFIG), multi: true },
   ],
 };

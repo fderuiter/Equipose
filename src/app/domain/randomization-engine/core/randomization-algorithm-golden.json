@@ -26,9 +26,8 @@
       ],
       "stratumCaps": [
         {
-          "levels": [],
-          "cap": 8,
-          "levelIds": {}
+          "levelIds": {},
+          "cap": 8
         }
       ],
       "seed": "GOLDEN_SEED_1",
@@ -43,8 +42,8 @@
         "stratumCode": "",
         "blockNumber": 1,
         "blockSize": 4,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "A"
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
       },
       {
         "subjectId": "S01-002",
@@ -73,8 +72,8 @@
         "stratumCode": "",
         "blockNumber": 1,
         "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
+        "treatmentArm": "Drug",
+        "treatmentArmId": "A"
       },
       {
         "subjectId": "S02-001",
@@ -103,8 +102,8 @@
         "stratumCode": "",
         "blockNumber": 1,
         "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
+        "treatmentArm": "Drug",
+        "treatmentArmId": "A"
       },
       {
         "subjectId": "S02-004",
@@ -113,8 +112,8 @@
         "stratumCode": "",
         "blockNumber": 1,
         "blockSize": 4,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "A"
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
       }
     ]
   },
@@ -214,9 +213,9 @@
         "subjectId": "US01-001",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
+        "stratumCode": "M",
         "blockNumber": 1,
         "blockSize": 3,
         "treatmentArm": "Drug",
@@ -226,9 +225,9 @@
         "subjectId": "US01-002",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
+        "stratumCode": "M",
         "blockNumber": 1,
         "blockSize": 3,
         "treatmentArm": "Control",
@@ -238,9 +237,9 @@
         "subjectId": "US01-003",
         "site": "US01",
         "stratum": {
-          "sex": "F"
+          "sex": "M"
         },
-        "stratumCode": "F",
+        "stratumCode": "M",
         "blockNumber": 1,
         "blockSize": 3,
         "treatmentArm": "Drug",
@@ -298,37 +297,37 @@
         "subjectId": "US01-008",
         "site": "US01",
         "stratum": {
-          "sex": "M"
+          "sex": "F"
         },
-        "stratumCode": "M",
-        "blockNumber": 3,
-        "blockSize": 3,
-        "treatmentArm": "Control",
-        "treatmentArmId": "C"
-      },
-      {
-        "subjectId": "US01-009",
-        "site": "US01",
-        "stratum": {
-          "sex": "M"
-        },
-        "stratumCode": "M",
-        "blockNumber": 3,
+        "stratumCode": "F",
+        "blockNumber": 4,
         "blockSize": 3,
         "treatmentArm": "Drug",
         "treatmentArmId": "D"
       },
       {
-        "subjectId": "US01-010",
+        "subjectId": "US01-009",
         "site": "US01",
         "stratum": {
-          "sex": "M"
+          "sex": "F"
         },
-        "stratumCode": "M",
+        "stratumCode": "F",
         "blockNumber": 4,
         "blockSize": 3,
         "treatmentArm": "Control",
         "treatmentArmId": "C"
+      },
+      {
+        "subjectId": "US01-010",
+        "site": "US01",
+        "stratum": {
+          "sex": "F"
+        },
+        "stratumCode": "F",
+        "blockNumber": 4,
+        "blockSize": 3,
+        "treatmentArm": "Drug",
+        "treatmentArmId": "D"
       }
     ]
   },
@@ -358,9 +357,8 @@
       ],
       "stratumCaps": [
         {
-          "levels": [],
-          "cap": 4,
-          "levelIds": {}
+          "levelIds": {},
+          "cap": 4
         }
       ],
       "seed": "GOLDEN_SEED_4",
@@ -375,8 +373,8 @@
         "stratumCode": "",
         "blockNumber": 1,
         "blockSize": 2,
-        "treatmentArm": "Low Dose",
-        "treatmentArmId": "A"
+        "treatmentArm": "Placebo",
+        "treatmentArmId": "B"
       },
       {
         "subjectId": "US01-00002",
@@ -385,8 +383,8 @@
         "stratumCode": "",
         "blockNumber": 1,
         "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
+        "treatmentArm": "Low Dose",
+        "treatmentArmId": "A"
       },
       {
         "subjectId": "US01-00003",
@@ -455,263 +453,26 @@
       ],
       "stratumCaps": [
         {
-          "levels": [
-            "Low",
-            "NA"
-          ],
           "cap": 4,
-          "levelIds": {
-            "risk": "Low",
-            "region": "NA"
-          }
+          "levelIds": {}
         },
         {
-          "levels": [
-            "Low",
-            "EU"
-          ],
           "cap": 4,
-          "levelIds": {
-            "risk": "Low",
-            "region": "EU"
-          }
+          "levelIds": {}
         },
         {
-          "levels": [
-            "High",
-            "NA"
-          ],
           "cap": 4,
-          "levelIds": {
-            "risk": "High",
-            "region": "NA"
-          }
+          "levelIds": {}
         },
         {
-          "levels": [
-            "High",
-            "EU"
-          ],
           "cap": 4,
-          "levelIds": {
-            "risk": "High",
-            "region": "EU"
-          }
+          "levelIds": {}
         }
       ],
       "seed": "GOLDEN_SEED_5",
       "subjectIdMask": "{SITE}-{SEQ:3}",
       "randomizationMethod": "PERMUTED_BLOCK"
     },
-    "schema": [
-      {
-        "subjectId": "S1-001",
-        "site": "S1",
-        "stratum": {
-          "risk": "Low",
-          "region": "NA"
-        },
-        "stratumCode": "LOW-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S1-002",
-        "site": "S1",
-        "stratum": {
-          "risk": "Low",
-          "region": "NA"
-        },
-        "stratumCode": "LOW-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S2-001",
-        "site": "S2",
-        "stratum": {
-          "risk": "Low",
-          "region": "NA"
-        },
-        "stratumCode": "LOW-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S2-002",
-        "site": "S2",
-        "stratum": {
-          "risk": "Low",
-          "region": "NA"
-        },
-        "stratumCode": "LOW-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S1-003",
-        "site": "S1",
-        "stratum": {
-          "risk": "Low",
-          "region": "EU"
-        },
-        "stratumCode": "LOW-EU",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S1-004",
-        "site": "S1",
-        "stratum": {
-          "risk": "Low",
-          "region": "EU"
-        },
-        "stratumCode": "LOW-EU",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S1-005",
-        "site": "S1",
-        "stratum": {
-          "risk": "Low",
-          "region": "EU"
-        },
-        "stratumCode": "LOW-EU",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S1-006",
-        "site": "S1",
-        "stratum": {
-          "risk": "Low",
-          "region": "EU"
-        },
-        "stratumCode": "LOW-EU",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S1-007",
-        "site": "S1",
-        "stratum": {
-          "risk": "High",
-          "region": "NA"
-        },
-        "stratumCode": "HIG-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S1-008",
-        "site": "S1",
-        "stratum": {
-          "risk": "High",
-          "region": "NA"
-        },
-        "stratumCode": "HIG-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S2-003",
-        "site": "S2",
-        "stratum": {
-          "risk": "High",
-          "region": "NA"
-        },
-        "stratumCode": "HIG-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S2-004",
-        "site": "S2",
-        "stratum": {
-          "risk": "High",
-          "region": "NA"
-        },
-        "stratumCode": "HIG-NA",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S1-009",
-        "site": "S1",
-        "stratum": {
-          "risk": "High",
-          "region": "EU"
-        },
-        "stratumCode": "HIG-EU",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S1-010",
-        "site": "S1",
-        "stratum": {
-          "risk": "High",
-          "region": "EU"
-        },
-        "stratumCode": "HIG-EU",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S2-005",
-        "site": "S2",
-        "stratum": {
-          "risk": "High",
-          "region": "EU"
-        },
-        "stratumCode": "HIG-EU",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Active",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S2-006",
-        "site": "S2",
-        "stratum": {
-          "risk": "High",
-          "region": "EU"
-        },
-        "stratumCode": "HIG-EU",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      }
-    ]
+    "schema": []
   }
 }

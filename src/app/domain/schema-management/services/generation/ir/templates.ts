@@ -86,7 +86,9 @@ export const PYTHON_TEMPLATE = `
 # Algorithm: {{algorithm}}
 import numpy as np
 import pandas as pd
-mt19937 = np.random.MT19937({{seedHash}})
+_rs = np.random.RandomState({{seedHash}})
+mt19937 = np.random.MT19937()
+mt19937.state = _rs.get_state()
 rng = np.random.Generator(mt19937)
 # Arms: {{arms}}
 # Ratios: {{ratios}}
