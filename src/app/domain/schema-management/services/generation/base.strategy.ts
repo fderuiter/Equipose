@@ -5,6 +5,9 @@ import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
+import { LogicIR, LogicIRTask, SubjectIdToken } from './ir/ir.model';
+import { AlgorithmRegistry } from './framework/algorithm-registry';
+import { LanguageConfig } from './framework/language-config';
 
 export interface CodeGenerationStrategy {
   readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
@@ -12,8 +15,14 @@ export interface CodeGenerationStrategy {
   generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string;
 }
 
-export abstract class AbstractCodeGenerationStrategy implements CodeGenerationStrategy {
-  abstract readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
+export class BaseOrchestrator implements CodeGenerationStrategy {
+  readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
+  private configObject: LanguageConfig;
+
+  constructor(configObject: LanguageConfig) {
+    this.language = configObject.language;
+    this.configObject = configObject;
+  }
 
   generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.transpile(config, 'BLOCK');
@@ -57,27 +66,18 @@ export abstract class AbstractCodeGenerationStrategy implements CodeGenerationSt
       precisionEpsilon: PRECISION_EPSILON
     };
 
-    this.customizeDataSetup(data, config, ir, method, schema);
+    if (this.configObject.customizeDataSetup) {
+      this.configObject.customizeDataSetup(data, config, ir, method, schema);
+    }
 
-    return this.generateLanguageScript(config, ir, method, isComplex, schema, data);
+    let algorithmicLogic = '';
+    if (isComplex) {
+      algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, config, schema);
+    } else {
+      algorithmicLogic = AlgorithmRegistry.buildDynamicLogic(this.configObject, config, ir);
+    }
+    
+    data['algorithmicLogic'] = algorithmicLogic;
+    return CodeTranspiler.renderTemplate(this.configObject.template, data);
   }
-
-  protected customizeDataSetup(
-    data: Record<string, string | number>, 
-    config: RandomizationConfig, 
-    ir: any, 
-    method: 'BLOCK' | 'MINIMIZATION', 
-    schema: any[]
-  ): void {
-    // Default implementation does nothing. Child strategies can override this.
-  }
-
-  protected abstract generateLanguageScript(
-    config: RandomizationConfig, 
-    ir: any, 
-    method: 'BLOCK' | 'MINIMIZATION', 
-    isComplex: boolean, 
-    schema: any[],
-    data: Record<string, string | number>
-  ): string;
 }
