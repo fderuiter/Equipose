@@ -95,6 +95,9 @@ export class ExportService {
 
   async exportXlsx(result: RandomizationResult, isUnblinded: boolean): Promise<void> {
     const writer = new OpenXmlWriter();
+    writer.creator = `Clinical Randomization Generator ${APP_VERSION}`;
+    writer.created = new Date(result.metadata.generatedAt);
+    
     this.buildSchemaSheet(writer, result, isUnblinded);
     this.buildAuditSheet(writer, result);
 
@@ -139,6 +142,8 @@ export class ExportService {
       'vertical="center" horizontal="center"'
     );
 
+    const textStyleId = writer.addStyle({}, {}, '', 49);
+
     const sheetRows: any[] = [];
     
     // Header row
@@ -165,14 +170,14 @@ export class ExportService {
           maxWidths[colIdx] = val.length;
         }
 
-        let styleId = 0; // Default text
+        let styleId = textStyleId; // Default explicit Text format (@)
         if (colIdx === rowValues.length - 1 && isUnblinded) {
           const armIndex = arms.findIndex(a => a.id === schema.treatmentArmId);
           if (armIndex !== -1) {
             const hex = this.domainTheme.getArmColor(armIndex).hex;
             const argb = 'FF' + hex.substring(1).toUpperCase();
             if (!armStyles.has(argb)) {
-              armStyles.set(argb, writer.addStyle({ bold: true, color: argb }, {}));
+              armStyles.set(argb, writer.addStyle({ bold: true, color: argb }, {}, '', 49));
             }
             styleId = armStyles.get(argb)!;
           }
@@ -200,7 +205,7 @@ export class ExportService {
     
     const headerStyle = writer.addStyle({ bold: true, sz: 12, color: 'FFFFFFFF' }, { fgColor: 'FF4F46E5' }, 'vertical="center"');
     const labelStyle = writer.addStyle({ bold: true }, { fgColor: 'FFEDE9FE' });
-    const valueStyle = writer.addStyle({}, {}, 'wrapText="1"');
+    const valueStyle = writer.addStyle({}, {}, 'wrapText="1"', 49); // explicitly format values as Text
     
     const watermarkStyle = writer.addStyle({ bold: true, color: 'FF991B1B' }, { fgColor: 'FFFEF2F2' }, 'wrapText="1"');
     
