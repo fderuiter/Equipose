@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { goBackToFirstStep, goToReviewStep, loadPreset, openGenerator } from './generator-helpers';
+import { FocusAuditor } from './a11y';
 
 // ---------------------------------------------------------------------------
 // Helper: navigate to the generator page and ensure the form is ready
@@ -214,32 +215,38 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   // ── Modal close behaviors ─────────────────────────────────────────────────
 
-  test('Close button should dismiss the modal after simulation completes', async ({ page }) => {
+  test('Close button should dismiss the modal after simulation completes and restore focus', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
 
-    const modal = page.locator('div[role="dialog"]');
-    await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
+    await FocusAuditor.assertFocusRestoration(page, async () => {
+      await mcBtn.click();
 
-    // Click Close button in footer
-    await modal.getByTestId('modal-close-footer').click();
+      const modal = page.locator('div[role="dialog"]');
+      await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
-    // Modal should be gone
-    await expect(modal).toBeHidden({ timeout: 5000 });
+      // Click Close button in footer
+      await modal.getByTestId('modal-close-footer').click();
+
+      // Modal should be gone
+      await expect(modal).toBeHidden({ timeout: 5000 });
+    }, mcBtn);
   });
 
-  test('X button in modal header should dismiss the modal after completion', async ({ page }) => {
+  test('X button in modal header should dismiss the modal after completion and restore focus', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
 
-    const modal = page.locator('div[role="dialog"]');
-    await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
+    await FocusAuditor.assertFocusRestoration(page, async () => {
+      await mcBtn.click();
 
-    // The X button aria-label="Close" in the header
-    const xBtn = modal.getByRole('button', { name: /^Close$/i });
-    await xBtn.first().click();
+      const modal = page.locator('div[role="dialog"]');
+      await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
-    await expect(modal).toBeHidden({ timeout: 5000 });
+      // The X button aria-label="Close" in the header
+      const xBtn = modal.getByRole('button', { name: /^Close$/i });
+      await xBtn.first().click();
+
+      await expect(modal).toBeHidden({ timeout: 5000 });
+    }, mcBtn);
   });
 
   // ── Works with different presets ──────────────────────────────────────────

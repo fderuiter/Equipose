@@ -1,5 +1,5 @@
 import { test, expect, Locator, Page } from '@playwright/test';
-import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin } from './a11y';
+import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin, FocusAuditor } from './a11y';
 import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator } from './generator-helpers';
 
 const screenshotOptions = { fullPage: true, maxDiffPixels: 200 } as const;
@@ -109,9 +109,11 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   // wait for it to be ready
   await page.waitForTimeout(100);
   await FocusTrapPlugin.verifyFocusContainment(page, dropdownMenu, 5);
-  await page.keyboard.press('Escape');
-  // check focus restored
-  await expect(generateCodeBtn).toBeFocused();
+  await FocusAuditor.assertFocusRestoration(
+    page,
+    async () => { await page.keyboard.press('Escape'); },
+    generateCodeBtn
+  );
 
   // Now open code generator modal and test it
   await generateCodeBtn.click();
@@ -141,10 +143,14 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await checkA11y(page, 'div[role="dialog"]');
   
   await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, screenshotOptions);
-  await modal.getByRole('button', { name: /Close/i }).first().click();
-  await expect(modal).toBeHidden();
-  // check focus restored
-  await expect(generateCodeBtn).toBeFocused();
+  await FocusAuditor.assertFocusRestoration(
+    page,
+    async () => {
+      await modal.getByRole('button', { name: /Close/i }).first().click();
+      await expect(modal).toBeHidden();
+    },
+    generateCodeBtn
+  );
 
   await page.getByRole('button', { name: /Generate Schema/i }).click();
   const resultsSection = page.locator('#results-section');
@@ -163,7 +169,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
 }
 
 async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
-  await page.goto('http://localhost:4200');
+  await page.goto('http://127.0.0.1:4200');
   if (mode === 'dark') await applyDarkMode(page);
   await assertLandingVisible(page);
   await checkA11y(page);
@@ -176,11 +182,16 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(themeMenu).toBeVisible();
   await page.waitForTimeout(100);
   await FocusTrapPlugin.verifyFocusContainment(page, themeMenu, 5);
-  await page.keyboard.press('Escape');
-  await expect(themeMenu).toBeHidden();
-  await expect(themeToggleBtn).toBeFocused();
+  await FocusAuditor.assertFocusRestoration(
+    page,
+    async () => {
+      await page.keyboard.press('Escape');
+      await expect(themeMenu).toBeHidden();
+    },
+    themeToggleBtn
+  );
 
-  await page.goto('http://localhost:4200/about');
+  await page.goto('http://127.0.0.1:4200/about');
   if (mode === 'dark') await applyDarkMode(page);
   await expect(page.getByRole('heading', { name: /About Equipose/i })).toBeVisible();
   await expect(page.getByTestId('feature-custom-ratios')).toBeVisible();

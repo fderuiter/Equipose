@@ -1,4 +1,4 @@
-import { Directive, Input, HostListener, inject, ElementRef, Renderer2, effect, OnInit, OnDestroy } from '@angular/core';
+import { Directive, Input, HostListener, inject, ElementRef, Renderer2, effect, OnInit, OnDestroy, HostBinding } from '@angular/core';
 import { SignalRouter } from './signal-router.service';
 
 @Directive({
@@ -10,6 +10,11 @@ export class RouterLinkDirective {
   @Input() queryParams?: Record<string, string>;
   
   private router = inject(SignalRouter);
+  
+  @HostBinding('attr.href')
+  get href() {
+    return this.routerLink;
+  }
   
   @HostListener('click', ['$event'])
   onClick(event: MouseEvent) {
