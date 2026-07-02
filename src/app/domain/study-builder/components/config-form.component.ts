@@ -10,7 +10,7 @@ import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.stor
 import { TagInputComponent } from './tag-input.component';
 import { previewSubjectIdMask, validateSubjectIdMask } from '../../randomization-engine/core/subject-id-engine';
 import { BlockPreviewComponent, ArmInput } from './block-preview.component';
-import { computeProportionalCaps, validateProportionalPercentages } from '../../randomization-engine/core/cap-strategy';
+import { computeProportionalCaps, validateProportionalPercentages } from '../../shared/statistical/largest-remainder';
 import { CapStrategy } from '../../core/models/randomization.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';

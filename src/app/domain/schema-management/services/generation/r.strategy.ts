@@ -46,20 +46,8 @@ export class RStrategy extends AbstractCodeGenerationStrategy {
       let armsR = ir.arms.map((a: any) => `list(name="${FormattingUtil.escapeString(a.name)}", ratio=${a.ratio})`).join(', ');
       algorithmicLogic += `arms <- list(${armsR})\n\n`;
 
-      algorithmicLogic += `build_block <- function(size) {\n`;
-      algorithmicLogic += `  block <- character(0)\n`;
-      algorithmicLogic += `  multiplier <- size / total_ratio\n`;
-      algorithmicLogic += `  for (arm in arms) {\n`;
-      algorithmicLogic += `    block <- c(block, rep(arm$name, as.integer(arm$ratio * multiplier)))\n`;
-      algorithmicLogic += `  }\n`;
-      algorithmicLogic += `  if (length(block) > 1) {\n`;
-      algorithmicLogic += `    for (i in length(block):2) {\n`;
-      algorithmicLogic += `      j <- (random_int() %% i) + 1\n`;
-      algorithmicLogic += `      temp <- block[i]; block[i] <- block[j]; block[j] <- temp\n`;
-      algorithmicLogic += `    }\n`;
-      algorithmicLogic += `  }\n`;
-      algorithmicLogic += `  return(block)\n`;
-      algorithmicLogic += `}\n\n`;
+      algorithmicLogic += `${ir.templates['R'].fisherYates}\n\n`;
+      algorithmicLogic += `${ir.templates['R'].buildBlock}\n\n`;
 
       algorithmicLogic += `seq_count <- 0\n`;
       
@@ -72,7 +60,7 @@ export class RStrategy extends AbstractCodeGenerationStrategy {
           taskLogic += `block_num <- 1\n`;
           taskLogic += `while (count < ${task.cap}) {\n`;
           taskLogic += `  size <- block_sizes[(random_int() %% length(block_sizes)) + 1]\n`;
-          taskLogic += `  block <- build_block(size)\n`;
+          taskLogic += `  block <- build_block(size, total_ratio, arms)\n`;
           taskLogic += `  for (trt in block) {\n`;
           taskLogic += `    seq_count <- seq_count + 1\n`;
 

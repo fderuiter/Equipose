@@ -45,16 +45,8 @@ export class PythonStrategy extends AbstractCodeGenerationStrategy {
       algorithmicLogic += `total_ratio = ${ir.totalRatio}\n`;
       algorithmicLogic += `arms = [${ir.arms.map((a: any) => `{"name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
       
-      algorithmicLogic += `def build_block(size):\n`;
-      algorithmicLogic += `    block = []\n`;
-      algorithmicLogic += `    multiplier = size / total_ratio\n`;
-      algorithmicLogic += `    for arm in arms:\n`;
-      algorithmicLogic += `        block.extend([arm["name"]] * int(arm["ratio"] * multiplier))\n`;
-      algorithmicLogic += `    for i in range(len(block) - 1, 0, -1):\n`;
-      algorithmicLogic += `        rand_int = int(rng.bit_generator.random_raw())\n`;
-      algorithmicLogic += `        j = rand_int % (i + 1)\n`;
-      algorithmicLogic += `        block[i], block[j] = block[j], block[i]\n`;
-      algorithmicLogic += `    return block\n\n`;
+      algorithmicLogic += `${ir.templates['Python'].fisherYates}\n\n`;
+      algorithmicLogic += `${ir.templates['Python'].buildBlock}\n\n`;
 
       algorithmicLogic += IrIterationHelper.generateForTasksAndStrata(
         config,
@@ -65,7 +57,7 @@ export class PythonStrategy extends AbstractCodeGenerationStrategy {
           taskLogic += `block_num = 1\n`;
           taskLogic += `while count < ${task.cap}:\n`;
           taskLogic += `    size = block_sizes[int(rng.bit_generator.random_raw()) % len(block_sizes)]\n`;
-          taskLogic += `    block = build_block(size)\n`;
+          taskLogic += `    block = build_block(size, total_ratio, arms)\n`;
           taskLogic += `    for trt in block:\n`;
           taskLogic += `        seq_count += 1\n`;
 

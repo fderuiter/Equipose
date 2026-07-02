@@ -7,6 +7,10 @@ import { LogicIR, LogicIRTask, SubjectIdToken } from './ir.model';
 import { APP_VERSION } from '../../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
 
+import { simplifyRatios } from '../../../../shared/statistical/ratio-simplification';
+import { formatStratumCode } from '../../../../shared/statistical/stratum-format';
+import { ALGORITHM_TEMPLATES } from '../../../../shared/templates/algorithm-templates';
+
 export class CodeTranspiler {
   
   public static renderTemplate(template: string, data: Record<string, string | number>): string {
@@ -54,7 +58,8 @@ export class CodeTranspiler {
 
   public static buildIR(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): LogicIR {
     const seedHash = ReproducibilityUtil.hashCode(config.seed);
-    const totalRatio = config.arms.reduce((sum, a) => sum + a.ratio, 0);
+    const simplifiedArms = simplifyRatios(config.arms);
+    const totalRatio = simplifiedArms.reduce((sum, a) => sum + a.ratio, 0);
 
     const capsDict: Record<string, number> = {};
     if (config.stratumCaps) {
@@ -81,7 +86,7 @@ export class CodeTranspiler {
         const sortedKeys = Object.keys(stratum).sort();
         const comboKey = sortedKeys.map(k => `${k}:${stratum[k]}`).join('|');
         const cap = capsDict[comboKey] || 0;
-        const stratumCode = (config.strata || []).map(s => (stratum[s.id] || '').substring(0, 3).toUpperCase()).join('-');
+        const stratumCode = formatStratumCode(config.strata || [], stratum);
         
         if (cap > 0) {
           tasks.push({
@@ -99,12 +104,13 @@ export class CodeTranspiler {
     return {
       seedHash,
       totalRatio,
-      arms: config.arms,
+      arms: simplifiedArms,
       blockSizes: config.blockSizes || [],
       tasks,
       method,
       minimizationP: config.minimizationConfig?.p || 0.8,
-      subjectIdTokens
+      subjectIdTokens,
+      templates: ALGORITHM_TEMPLATES
     };
   }
 
