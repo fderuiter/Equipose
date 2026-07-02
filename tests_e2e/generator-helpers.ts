@@ -1,20 +1,23 @@
 import { expect, Page } from '@playwright/test';
+import { FocusAuditor } from './a11y';
 
 const FIRST_WIZARD_STEP = 1;
 const REVIEW_WIZARD_STEP = 6;
 
 export async function openGenerator(page: Page): Promise<void> {
-  await page.goto('http://localhost:4200/generator');
+  await page.goto('http://127.0.0.1:4200/generator');
   await expect(page.getByTestId('generator-page')).toBeVisible();
   await expect(page.locator('form')).toBeVisible();
   
   const ackCheckbox = page.locator('#acknowledge');
   if (await ackCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await ackCheckbox.check();
-    await page.getByRole('button', { name: /^Next$/i }).click();
-    // Wait for step 1 to be active
-    await expect(page.locator('#step-header-1')).toHaveClass(/bg-indigo-50/);
-    await page.waitForTimeout(300); // give animation a moment to finish
+    await ackCheckbox.click();
+    await FocusAuditor.assertFocusTransition(page, async () => {
+      await page.getByRole('button', { name: /^Next$/i }).click();
+      // Wait for step 1 to be active
+      await expect(page.locator('#step-header-1')).toHaveClass(/bg-indigo-50/);
+      await page.waitForTimeout(300); // give animation a moment to finish
+    });
   }
 }
 
@@ -28,7 +31,10 @@ export async function loadPreset(page: Page, preset: 'Simple' | 'Standard' | 'Co
  */
 export async function goToStep(page: Page, step: number): Promise<void> {
   for (let i = 0; i < Math.max(0, step - FIRST_WIZARD_STEP); i++) {
-    await page.locator("button:has-text('Next'):visible").first().click();
+    await FocusAuditor.assertFocusTransition(page, async () => {
+      await page.locator("button:has-text('Next'):visible").first().click();
+      await page.waitForTimeout(300);
+    });
   }
 }
 
@@ -39,7 +45,10 @@ export async function goToReviewStep(page: Page): Promise<void> {
 
 export async function goBackToFirstStep(page: Page): Promise<void> {
   for (let i = 0; i < Math.max(0, REVIEW_WIZARD_STEP - FIRST_WIZARD_STEP); i++) {
-    await page.getByRole('button', { name: /^Previous$/i }).click();
+    await FocusAuditor.assertFocusTransition(page, async () => {
+      await page.getByRole('button', { name: /^Previous$/i }).click();
+      await page.waitForTimeout(300);
+    });
   }
 }
 
@@ -47,6 +56,8 @@ export async function generateSchemaFromPreset(page: Page, preset: 'Simple' | 'S
   await openGenerator(page);
   await loadPreset(page, preset);
   await goToReviewStep(page);
-  await page.getByRole('button', { name: /Generate Schema/i }).click();
-  await expect(page.locator('#results-section')).toBeVisible({ timeout: 15000 });
+  await FocusAuditor.assertFocusTransition(page, async () => {
+    await page.getByRole('button', { name: /Generate Schema/i }).click();
+    await expect(page.locator('#results-section')).toBeVisible({ timeout: 15000 });
+  });
 }
