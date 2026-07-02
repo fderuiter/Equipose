@@ -40,7 +40,7 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
         (keydown)="onKeydown($event)"
         (blur)="onBlur()"
         [placeholder]="tags.length === 0 ? placeholder : ''"
-        [attr.aria-label]="placeholder"
+        [attr.aria-label]="ariaLabel || placeholder"
         class="flex-1 min-w-[80px] outline-none focus:ring-0 border-none text-sm bg-transparent py-0.5 text-main placeholder-disabled"
       />
     </div>
@@ -53,8 +53,10 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
 export class TagInputComponent implements OnInit {
   @Input() control!: AbstractControl;
   @Input() placeholder = 'Type and press Enter…';
+  @Input() ariaLabel?: string;
 
   @ViewChild('tagInput') tagInput!: ElementRef<HTMLInputElement>;
+
 
   tags: string[] = [];
   inputValue = '';

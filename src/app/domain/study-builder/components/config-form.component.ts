@@ -672,7 +672,7 @@ export class ConfigFormComponent implements OnInit {
         this.markCapsStale();
         
         const stratumName = control.get('name')?.value || 'Unnamed Factor';
-        
+        this.announcementService.announce(`${stratumName} moved to position ${newIndex + 1} of ${this.strata.length}`, 'polite');
 
         // Set focus back to the moved element
         setTimeout(() => {

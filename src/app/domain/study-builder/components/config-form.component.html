@@ -161,18 +161,19 @@
           <div class="flex justify-between items-center mb-2">
             <div>
               <h2 class="text-lg font-semibold">Stratification Factors</h2>
-              <p class="text-xs text-gray-500">Drag cards to reorder factors.</p>
+              <p class="text-xs text-gray-500" aria-hidden="true">Drag cards to reorder factors.</p>
+              <p class="sr-only">Use the Up and Down arrow keys on a factor's drag handle to reorder it.</p>
             </div>
             <button type="button" (click)="addStratum()" class="text-sm px-3 py-1 rounded-lg bg-indigo-50">+ Add Factor</button>
           </div>
-          <div formArrayName="strata" class="space-y-3">
+          <div formArrayName="strata" class="space-y-3" role="list">
             @if (strata.length === 0) {
               <p class="text-sm italic text-gray-500">No stratification factors defined.</p>
             }
             @for (stratum of strata.controls; track stratum; let stratumIndex = $index) {
-              <div [formGroupName]="$index" draggable="true" (dragstart)="onDragStart($event, $index)" (dragover)="onDragOver($event, $index)" (drop)="onDrop($event, $index)" (dragend)="onDragEnd()" class="rounded-xl border p-4 space-y-3">
+              <div [formGroupName]="$index" role="listitem" draggable="true" (dragstart)="onDragStart($event, $index)" (dragover)="onDragOver($event, $index)" (drop)="onDrop($event, $index)" (dragend)="onDragEnd()" class="rounded-xl border p-4 space-y-3">
                 <div class="flex items-start gap-2">
-                  <button type="button"  aria-label="Drag to reorder factor" appTooltip="Drag to reorder" class="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)">
+                  <button type="button" aria-label="Reorder factor" aria-description="Press Up or Down arrow to reorder" appTooltip="Drag or use Up/Down arrows to reorder" class="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 9h8M8 15h8" />
                       </svg>
@@ -193,7 +194,7 @@
                 </div>
                 <div class="pl-6">
                   <span class="block text-xs uppercase tracking-wide mb-1">Levels</span>
-                  <app-tag-input [control]="stratum.get('levelsStr')!" placeholder="e.g., <65 then press Enter" />
+                  <app-tag-input [control]="stratum.get('levelsStr')!" [ariaLabel]="'Levels for ' + (stratum.get('name')?.value || 'Factor')" placeholder="e.g., <65 then press Enter" />
                 </div>
 
                 @if (randomizationMethod === 'MINIMIZATION') {
