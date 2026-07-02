@@ -45,6 +45,64 @@ export async function checkA11y(page: Page, includeSelector?: string) {
 }
 
 /**
+ * FocusAuditor provides utilities for tracking focus changes, enforcing
+ * focus restoration after interacting with modals/dialogs, and verifying
+ * focus is managed during asynchronous content transitions.
+ */
+export class FocusAuditor {
+  /**
+   * Asserts that focus is restored to the expected element after an action
+   * (e.g., closing a modal or dismissing a menu).
+   * 
+   * @param page - Playwright Page object.
+   * @param triggerAction - Function containing the interaction to perform.
+   * @param expectedRestoredLocator - Locator of the element expected to receive focus.
+   */
+  static async assertFocusRestoration(
+    page: Page,
+    triggerAction: () => Promise<void>,
+    expectedRestoredLocator: Locator
+  ): Promise<void> {
+    await triggerAction();
+
+    const isFocused = await expectedRestoredLocator.evaluate(
+      (node) => node === document.activeElement
+    );
+
+    if (!isFocused) {
+      const activeElementDetails = await page.evaluate(() => {
+        const active = document.activeElement;
+        if (!active) return 'null';
+        return `tag: <${active.tagName.toLowerCase()}>, id: ${active.id || 'none'}, class: ${active.className || 'none'}, HTML: ${active.outerHTML.substring(0, 100)}`;
+      });
+      throw new Error(`Accessibility audit failed: Focus was not restored to the expected element. Active element is: ${activeElementDetails}`);
+    }
+  }
+
+  /**
+   * Asserts that focus shifts to a valid content element and does not
+   * drop/strand the user on the document body during async transitions (e.g., wizard steps).
+   * 
+   * @param page - Playwright Page object.
+   * @param transitionAction - Function containing the transition to perform.
+   */
+  static async assertFocusTransition(
+    page: Page,
+    transitionAction: () => Promise<void>
+  ): Promise<void> {
+    await transitionAction();
+
+    const isBodyFocused = await page.evaluate(() => {
+      return document.activeElement === document.body;
+    });
+
+    if (isBodyFocused) {
+      throw new Error(`Accessibility audit failed: Focus was stranded on the document body after transition.`);
+    }
+  }
+}
+
+/**
  * FocusTrapPlugin simulates Tab-key loops to verify focus containment within transient overlays.
  */
 export class FocusTrapPlugin {
@@ -53,19 +111,31 @@ export class FocusTrapPlugin {
    * during forward and backward Tab cycles.
    */
   static async verifyFocusContainment(page: Page, container: Locator, maxTabs = 15): Promise<void> {
+    const getActiveElementDetails = async () => {
+      return await page.evaluate(() => {
+        const active = document.activeElement;
+        if (!active) return 'null';
+        const isBody = active === document.body;
+        const details = `tag: <${active.tagName.toLowerCase()}>, id: ${active.id || 'none'}, HTML: ${active.outerHTML.substring(0, 100)}`;
+        return isBody ? `Document Body (${details})` : details;
+      });
+    };
+
     // Forward Tab loop
     let focusEscaped = false;
+    let escapedDetails = '';
     for (let i = 0; i < maxTabs; i++) {
       await page.keyboard.press('Tab');
       const isContained = await container.evaluate(node => node.contains(document.activeElement) || node === document.activeElement);
       if (!isContained) {
         focusEscaped = true;
+        escapedDetails = await getActiveElementDetails();
         break;
       }
     }
     
     if (focusEscaped) {
-      throw new Error(`Accessibility audit failed: Overlay detected without an active focus trap. Focus escaped during forward Tab loop.`);
+      throw new Error(`Accessibility audit failed: Overlay detected without an active focus trap. Focus escaped during forward Tab loop. Active element: ${escapedDetails}`);
     }
 
     // Backward Shift+Tab loop
@@ -74,12 +144,13 @@ export class FocusTrapPlugin {
       const isContained = await container.evaluate(node => node.contains(document.activeElement) || node === document.activeElement);
       if (!isContained) {
         focusEscaped = true;
+        escapedDetails = await getActiveElementDetails();
         break;
       }
     }
 
     if (focusEscaped) {
-      throw new Error(`Accessibility audit failed: Overlay detected without an active focus trap. Focus escaped during backward Shift+Tab loop.`);
+      throw new Error(`Accessibility audit failed: Overlay detected without an active focus trap. Focus escaped during backward Shift+Tab loop. Active element: ${escapedDetails}`);
     }
   }
 }
