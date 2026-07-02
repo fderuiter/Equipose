@@ -102,7 +102,7 @@ export class ExportService {
     this.buildAuditSheet(writer, result);
 
     const buffer = writer.generate();
-    const blob = new Blob([buffer], {
+    const blob = new Blob([buffer as BlobPart], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
 
