@@ -126,8 +126,8 @@ clinical-randomization-generator/
 │           │   │   ├── randomization-engine.worker.ts      Web Worker entry point
 │           │   │   ├── attrition-prng.ts                   PRNG for monte-carlo attrition
 │           │   │   └── worker-protocol.ts                  Typed message 
-│           │   ├── randomization.service.ts                Worker-unavailable fallback Observable wrapper
-│           │   ├── randomization.service.spec.ts
+│           │   ├── RandomizationEngineFacade (or domain/core/models)                Worker-unavailable fallback Observable wrapper
+│           │   ├── randomization-engine-facade.spec.ts
 │           │   ├── randomization-engine.facade.ts          Single UI entry point
 │           │   ├── randomization-engine.facade.spec.ts
 │           │   └── randomization-engine-monte-carlo.facade.spec.ts
@@ -208,7 +208,7 @@ graph TD
     subgraph "Bounded Context 1 - Randomization Engine"
         ALGO["core/\nrandomization-algorithm.ts\nminimization-algorithm.ts\ncap-strategy.ts\nsubject-id-engine.ts\ncrypto-hash.ts\n(pure TS, zero Angular)"]
         WORKER["worker/\nrandomization-engine.worker.ts\nworker-protocol.ts\nattrition-prng.ts"]
-        SVC["randomization.service.ts\n(Observable wrapper)"]
+        SVC["RandomizationEngineFacade (or domain/core/models)\n(Observable wrapper)"]
         FACADE["randomization-engine.facade.ts\n★ sole public API ★"]
         ALGO --> WORKER
         ALGO --> SVC
@@ -246,8 +246,8 @@ graph TD
 
 | Consumer | Allowed | Forbidden |
 |---|---|---|
-| `study-builder/**` | `RandomizationEngineFacade`, `domain/core/models` | `randomization.service`, `core/**` (algorithm), `worker/**` |
-| `randomization-engine/core/**` | `domain/core/models`, `seedrandom` | Any `@angular/*` package |
+| `study-builder/**` | `RandomizationEngineFacade`, `domain/core/models` | `RandomizationEngineFacade`, `core/**` (algorithm), `worker/**` |
+| `randomization-engine/core/**` | `domain/core/models`, `MT19937 PRNG` | Any `@angular/*` package |
 
 ---
 
@@ -334,7 +334,7 @@ graph LR
 
     subgraph "Worker Thread"
         WORKER2["randomization-engine.worker.ts"]
-        ALGO2["generateRandomizationSchema()\npure TypeScript + seedrandom"]
+        ALGO2["generateRandomizationSchema()\npure TypeScript + MT19937 PRNG"]
         WORKER2 --> ALGO2
     end
 
@@ -363,7 +363,7 @@ The single exported function `generateRandomizationSchema(config)`:
 5. **`generateStandard()`** - for each _(site × stratum combo)_ pair, while
    `stratumSubjectCount < intersectionCap`, picks a random block size, fills the block
    with arms weighted by ratio, then applies a **Fisher-Yates shuffle** driven by the
-   `seedrandom` PRNG.
+   `MT19937 PRNG` PRNG.
 6. **`generateMarginalOnly()`** - maintains an *active pool* of all stratum combinations.
    On each iteration, picks a random active combo, generates a block using Fisher-Yates,
    and increments per-level counts. Any combo whose level counts would breach a marginal
@@ -679,31 +679,10 @@ re-declares these types.
 
 ```mermaid
 classDiagram
-    class RandomizationConfig {
-        +string protocolId
-        +string studyName
-        +string phase
-        +TreatmentArm[] arms
-        +string[] sites
-        +StratificationFactor[] strata
-        +number[] blockSizes
-        +StratumCap[] stratumCaps
-        +string seed
-        +string subjectIdMask
-        +CapStrategy? capStrategy
-        +number? globalCap
-        +BlockRule? globalBlockStrategy
-        +Record~string,BlockRule~? siteBlockOverrides
-        +Record~string,BlockRule~? stratumBlockOverrides
-        +RandomizationMethod? randomizationMethod
-        +MinimizationConfig? minimizationConfig
-    }
-
-    class CapStrategy {
-        <<type>>
-        MANUAL_MATRIX
-        PROPORTIONAL
-        MARGINAL_ONLY
+    class TreatmentArm {
+        +string id
+        +string name
+        +number ratio
     }
 
     class RandomizationMethod {
@@ -717,6 +696,32 @@ classDiagram
         +number totalSampleSize
     }
 
+    class StratificationLevel {
+        +string name
+        +number targetPercentage?
+        +number marginalCap?
+        +number expectedProbability?
+    }
+
+    class StratificationFactor {
+        +string id
+        +string name
+        +string[] levels
+        +StratificationLevel[] levelDetails?
+    }
+
+    class StratumCap {
+        +Record~string, string~ levelIds
+        +number cap
+    }
+
+    class CapStrategy {
+        <<type>>
+        MANUAL_MATRIX
+        PROPORTIONAL
+        MARGINAL_ONLY
+    }
+
     class BlockSelectionType {
         <<type>>
         RANDOM_POOL
@@ -726,54 +731,33 @@ classDiagram
     class BlockRule {
         +BlockSelectionType selectionType
         +number[] sizes
-        +Record~string,number~? limits
+        +Record~string, number~ limits?
     }
 
-    class TreatmentArm {
-        +string id
-        +string name
-        +number ratio
-    }
-
-    class StratificationFactor {
-        +string id
-        +string name
-        +string[] levels
-        +StratificationLevel[]? levelDetails
-    }
-
-    class StratificationLevel {
-        +string name
-        +number? targetPercentage
-        +number? marginalCap
-        +number? expectedProbability
-    }
-
-    class StratumCap {
-        +string[] levels
-        +number cap
-    }
-
-    class RandomizationResult {
-        +ResultMetadata metadata
-        +GeneratedSchema[] schema
-    }
-
-    class ResultMetadata {
+    class RandomizationConfig {
         +string protocolId
         +string studyName
         +string phase
-        +string seed
-        +string generatedAt
+        +TreatmentArm[] arms
+        +string[] sites
         +StratificationFactor[] strata
-        +RandomizationConfig config
-        +string auditHash
+        +number[] blockSizes
+        +StratumCap[] stratumCaps
+        +string seed
+        +string subjectIdMask
+        +CapStrategy capStrategy?
+        +number globalCap?
+        +BlockRule globalBlockStrategy?
+        +Record~string, BlockRule~ siteBlockOverrides?
+        +Record~string, BlockRule~ stratumBlockOverrides?
+        +RandomizationMethod randomizationMethod?
+        +MinimizationConfig minimizationConfig?
     }
 
     class GeneratedSchema {
         +string subjectId
         +string site
-        +Record~string,string~ stratum
+        +Record~string, string~ stratum
         +string stratumCode
         +number blockNumber
         +number blockSize
@@ -781,19 +765,10 @@ classDiagram
         +string treatmentArmId
     }
 
-    RandomizationConfig "1" --> "*" TreatmentArm : arms
-    RandomizationConfig "1" --> "*" StratificationFactor : strata
-    RandomizationConfig "1" --> "*" StratumCap : stratumCaps
-    RandomizationConfig --> CapStrategy : capStrategy
-    RandomizationConfig --> RandomizationMethod : randomizationMethod
-    RandomizationConfig --> MinimizationConfig : minimizationConfig
-    RandomizationConfig --> BlockRule : globalBlockStrategy
-    BlockRule --> BlockSelectionType : selectionType
-    StratificationFactor "1" --> "*" StratificationLevel : levelDetails
-    RandomizationResult "1" --> "1" ResultMetadata : metadata
-    RandomizationResult "1" --> "*" GeneratedSchema : schema
-    ResultMetadata "1" --> "1" RandomizationConfig : config
-    ResultMetadata "1" --> "*" StratificationFactor : strata
+    class RandomizationResult {
+        +{ protocolId: string; studyName: string; phase: string; seed: string; generatedAt: string; strata: StratificationFactor[]; config: RandomizationConfig; auditHash: string; } metadata
+        +GeneratedSchema[] schema
+    }
 ```
 
 `StratificationLevel.targetPercentage` is used by `PROPORTIONAL` strategy;
@@ -875,17 +850,16 @@ flowchart TD
 
     MODAL_BTN --> FORM4 --> FACADE4 --> MODAL4 --> ENTRY
 
-    ENTRY --> CGS["hashCode(config.seed)\n→ integer N"]
+    ENTRY --> STRAT["InjectionToken<CodeGenerationStrategy[]>"]
 
-    CGS --> GR["generateR(config)\nreturns string"]
-    CGS --> GSAS["generateSas(config)\nreturns string"]
-    CGS --> GPY["generatePython(config)\nreturns string"]
-    CGS --> GSTATA["generateStata(config)\nreturns string"]
-
-    GR --> DISP["<pre><code>{{ currentCode }}</code></pre>"]
-    GSAS --> DISP
-    GPY --> DISP
-    GSTATA --> DISP
+    STRAT --> STRAT_0["BaseOrchestrator(R_CONFIG)"]
+    STRAT_0 --> DISP["<pre><code>{{ currentCode }}</code></pre>"]
+    STRAT --> STRAT_1["BaseOrchestrator(PYTHON_CONFIG)"]
+    STRAT_1 --> DISP["<pre><code>{{ currentCode }}</code></pre>"]
+    STRAT --> STRAT_2["BaseOrchestrator(SAS_CONFIG)"]
+    STRAT_2 --> DISP["<pre><code>{{ currentCode }}</code></pre>"]
+    STRAT --> STRAT_3["BaseOrchestrator(STATA_CONFIG)"]
+    STRAT_3 --> DISP["<pre><code>{{ currentCode }}</code></pre>"]
 
     DISP --> DL["downloadCode()\nBlob → <a download> click"]
     DISP --> CP["copyCode()\nnavigator.clipboard.writeText()"]
@@ -1153,23 +1127,17 @@ Boundaries are enforced at lint time using `no-restricted-imports` patterns in
 graph LR
     SB["domain/study-builder/**"]
     RE_FACADE["RandomizationEngineFacade ✅"]
-    RE_SVC["randomization.service ❌"]
-    RE_CORE["randomization-engine/core/** ❌"]
-    RE_WORKER["randomization-engine/worker/** ❌"]
     RE_MODELS["domain/core/models ✅"]
+    TARGET_0["*/domain/randomization-engine/core/* ❌"]
+    SB -. blocked .-> TARGET_0
+    TARGET_1["*/domain/randomization-engine/worker/* ❌"]
+    SB -. blocked .-> TARGET_1
+    ALGO_FILE["randomization-engine/core/**"]
+    TARGET_2["@angular/* ❌"]
+    ALGO_FILE -. blocked .-> TARGET_2
 
     SB --> RE_FACADE
-    SB -. blocked .-> RE_SVC
-    SB -. blocked .-> RE_CORE
-    SB -. blocked .-> RE_WORKER
     SB --> RE_MODELS
-
-    ALGO_FILE["randomization-engine/core/**"]
-    ANGULAR["@angular/* ❌"]
-    ALGO_FILE -. blocked .-> ANGULAR
-
-    NOTE1["Rule: study-builder sees only the\nFacade, never the engine internals"]
-    NOTE2["Rule: core algorithm is pure TS;\nno Angular = safe in Workers"]
 ```
 
 ---
@@ -1202,7 +1170,7 @@ graph BT
 | `randomization-algorithm-parity.spec.ts` | 8 | Output matches decommissioned legacy service |
 | `statistical-validation.spec.ts` | 17 | Validation checks |
 | `attrition-prng.spec.ts` | 6 | PRNG for Monte Carlo attrition |
-| `randomization.service.spec.ts` | 7 | Observable wrapper, error paths |
+| `randomization-engine-facade.spec.ts` | 7 | Observable wrapper, error paths |
 | `randomization-engine.facade.spec.ts` | 22 | Worker dispatch, fallback, signal updates |
 | `randomization-engine-monte-carlo.facade.spec.ts` | 9 | Monte Carlo progress/success signals |
 | `study-builder.store.spec.ts` | 25 | SignalStore: strata, Cartesian combinations, presets, buildConfig |
