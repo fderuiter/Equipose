@@ -26,8 +26,8 @@ export const R_CONFIG: LanguageConfig = {
       logic += `arms <- list(${armsR})\n\nseq_count <- 0\n`;
       return logic;
     },
-    fisherYates: (ir) => ir.templates['R'].fisherYates,
-    buildBlock: (ir) => ir.templates['R'].buildBlock,
+    fisherYates: (ir) => ir.templates!['R'].fisherYates,
+    buildBlock: (ir) => ir.templates!['R'].buildBlock,
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = `tasks <- list()\n`;
       for (const t of ir.tasks) {

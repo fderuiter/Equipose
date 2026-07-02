@@ -27,8 +27,8 @@ export const PYTHON_CONFIG: LanguageConfig = {
       logic += `arms = [${ir.arms.map((a: any) => `{"name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
       return logic;
     },
-    fisherYates: (ir) => ir.templates['Python'].fisherYates,
-    buildBlock: (ir) => ir.templates['Python'].buildBlock,
+    fisherYates: (ir) => ir.templates!['Python'].fisherYates,
+    buildBlock: (ir) => ir.templates!['Python'].buildBlock,
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = `tasks = [\n`;
       for (const t of ir.tasks) {

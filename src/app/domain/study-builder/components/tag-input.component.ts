@@ -1,6 +1,5 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, inject, ChangeDetectorRef, effect } from '@angular/core';
 import { AbstractControl } from '../../../core/forms/signal-forms';
-import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
@@ -14,7 +13,7 @@ import { TextInputComponent } from '../../../core/components/ui/text-input.compo
   selector: 'app-tag-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [A11yValidationDirective, AppTooltipDirective, RovingTabindexDirective, ButtonComponent, TextInputComponent],
+  imports: [AppTooltipDirective, RovingTabindexDirective, ButtonComponent, TextInputComponent],
   template: `
     <div
       appRovingTabindex="button, input"
