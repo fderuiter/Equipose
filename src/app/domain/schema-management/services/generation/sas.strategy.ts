@@ -36,7 +36,7 @@ export const SAS_CONFIG: LanguageConfig = {
       logic += `  seq_count = 0;\n`;
       return logic;
     },
-    fisherYates: ``,
+    fisherYates: (ir) => ``,
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = '';
       const numTasks = ir.tasks.length;
