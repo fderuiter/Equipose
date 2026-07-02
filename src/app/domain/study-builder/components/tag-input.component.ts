@@ -1,21 +1,12 @@
-import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy, inject, ChangeDetectorRef } from '@angular/core';
-import { AbstractControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Component, Input, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { AbstractControl } from '../../../core/forms/signal-forms';
 import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
 
 /**
  * TagInputComponent – an interactive chip/tag input that reads and writes
- * a comma-separated string to an Angular AbstractControl.
- *
- * Usage:
- *   <app-tag-input [control]="form.get('sitesStr')" placeholder="Type a site ID…" />
- */
-/**
- * ⚡ Bolt Performance Optimization:
- * Added ChangeDetectionStrategy.OnPush to minimize unnecessary re-renders.
- * View updates are now isolated to true input changes or explicit ChangeDetectorRef marks.
+ * a comma-separated string to an Angular SignalControl.
  */
 @Component({
   selector: 'app-tag-input',
@@ -59,7 +50,7 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
     </p>
   `
 })
-export class TagInputComponent implements OnInit, OnDestroy {
+export class TagInputComponent implements OnInit {
   @Input() control!: AbstractControl;
   @Input() placeholder = 'Type and press Enter…';
 
@@ -68,26 +59,23 @@ export class TagInputComponent implements OnInit, OnDestroy {
   tags: string[] = [];
   inputValue = '';
 
-  private sub: Subscription | null = null;
-
   // ChangeDetectorRef injected to support OnPush when external form updates occur.
   private readonly cdr = inject(ChangeDetectorRef);
 
-  ngOnInit(): void {
-    this.tags = this.parseValue(this.control.value);
-    this.sub = this.control.valueChanges.subscribe(v => {
-      // Only sync inward if the change came from outside (e.g. loadPreset)
-      if (v !== this.toStr()) {
-        this.tags = this.parseValue(v);
-        // Explicitly mark for check because this component uses OnPush
-        // and form control value changes are asynchronous/external.
-        this.cdr.markForCheck();
+  constructor() {
+    effect(() => {
+      if (this.control) {
+        const v = this.control.value;
+        if (v !== this.toStr()) {
+          this.tags = this.parseValue(v);
+          this.cdr.markForCheck();
+        }
       }
     });
   }
 
-  ngOnDestroy(): void {
-    this.sub?.unsubscribe();
+  ngOnInit(): void {
+    this.tags = this.parseValue(this.control.value);
   }
 
   parseValue(v: string | null | undefined): string[] {
@@ -137,6 +125,5 @@ export class TagInputComponent implements OnInit, OnDestroy {
 
   private update(): void {
     this.control.setValue(this.toStr());
-    this.control.markAsDirty();
   }
 }

@@ -1,6 +1,7 @@
 import { AppTooltipDirective } from './core/directives/tooltip.directive';
 import {ChangeDetectionStrategy, Component, HostListener, inject, signal, PLATFORM_ID} from '@angular/core';
-import {RouterOutlet, RouterLink, RouterLinkActive} from '@angular/router';
+import {RouterOutletComponent} from './core/router/router-outlet.component';
+import {RouterLinkDirective, RouterLinkActiveDirective} from './core/router/router-link.directive';
 import {isPlatformBrowser} from '@angular/common';
 import {DOCUMENT} from '@angular/common';
 import {ThemeService, ThemeMode} from './core/services/theme.service';
@@ -13,7 +14,7 @@ import { DateUtil } from './core/utils/date.util';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, UpdateBannerComponent, FocusManagerDirective, AppTooltipDirective],
+  imports: [RouterOutletComponent, RouterLinkDirective, RouterLinkActiveDirective, UpdateBannerComponent, FocusManagerDirective, AppTooltipDirective],
   template: `
     <!-- Skip to main content (accessibility) -->
     <a href="#main-content"

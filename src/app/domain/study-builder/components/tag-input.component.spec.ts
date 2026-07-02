@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { FormControl } from '@angular/forms';
+import { FormControl } from '../../../core/forms/signal-forms';
 import { vi } from 'vitest';
 import { TagInputComponent } from './tag-input.component';
 
@@ -62,8 +62,13 @@ describe('TagInputComponent', () => {
     });
 
     it('should update tags when the control value changes externally', () => {
-      component.control.setValue('x, y');
-      expect(component.tags).toEqual(['x', 'y']);
+      const fixture = TestBed.createComponent(TagInputComponent);
+      const comp = fixture.componentInstance;
+      comp.control = component.control;
+      fixture.detectChanges();
+      comp.control.setValue('x, y');
+      fixture.detectChanges();
+      expect(comp.tags).toEqual(['x', 'y']);
     });
   });
 

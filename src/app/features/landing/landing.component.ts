@@ -1,12 +1,12 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {RouterLink} from '@angular/router';
+import {RouterLinkDirective} from '../../core/router/router-link.directive';
 import {SeoService} from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLinkDirective],
   template: `
     <div class="bg-base">
 

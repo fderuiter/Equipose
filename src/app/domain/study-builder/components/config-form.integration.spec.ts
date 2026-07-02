@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '../../../core/forms/signal-forms';
 import { ConfigFormComponent } from './config-form.component';
+const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore } from '../store/study-builder.store';
 import { signal } from '@angular/core';
@@ -123,11 +124,12 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
     expect(component.stratumCaps.at(0).get('cap')?.value).toBe(20);
   });
 
-  it('should preserve existing cap values when reordering strata', () => {
+  it('should preserve existing cap values when reordering strata', async () => {
     // 1. Setup multiple strata and custom caps
     component.addStratum();
     component.strata.at(1).get('id')?.setValue('gender');
     component.strata.at(1).get('levelsStr')?.setValue('M, F');
+    await flushMicrotasks();
     component.setStep(component.capsStepIndex);
 
     // Set a specific cap
@@ -140,6 +142,7 @@ describe('ConfigFormComponent & StudyBuilderStore Integration', () => {
     // 2. Reorder strata (age, gender) -> (gender, age)
     component.draggedStratumIndex = 0;
     component.onDrop({ preventDefault: () => {} } as any, 1);
+    await flushMicrotasks();
     fixture.detectChanges();
 
     // 3. Navigate back to caps step to trigger sync

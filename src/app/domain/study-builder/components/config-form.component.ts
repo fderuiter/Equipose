@@ -1,7 +1,6 @@
-import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { map, startWith } from 'rxjs/operators';
+import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
+import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
@@ -28,7 +27,7 @@ import { RovingTabindexDirective } from '../../../core/directives/roving-tabinde
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
+  imports: [SIGNAL_FORM_DIRECTIVES, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {
@@ -146,78 +145,65 @@ export class ConfigFormComponent implements OnInit {
   );
 
   constructor() {
-    const maskCtrl = this.form.get('metadataGroup.subjectIdMask')!;
-    const mask$ = maskCtrl.valueChanges.pipe(
-      startWith(maskCtrl.value as string),
-      map((v: string) => v ?? '')
-    );
-    this.subjectIdPreview = toSignal(
-      mask$.pipe(map(mask => previewSubjectIdMask(mask))),
-      { initialValue: previewSubjectIdMask(maskCtrl.value as string) }
-    );
-    this.subjectIdMaskInvalid = toSignal(
-      mask$.pipe(map(mask => !validateSubjectIdMask(mask).valid)),
-      { initialValue: !validateSubjectIdMask(maskCtrl.value as string).valid }
-    );
+    this.subjectIdPreview = computed(() => {
+      const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
+      return previewSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '');
+    });
+    
+    this.subjectIdMaskInvalid = computed(() => {
+      const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
+      return !validateSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '').valid;
+    });
 
-    const armsCtrl = this.form.get('designGroup.arms')!;
-    this.armsSignal = toSignal(
-      armsCtrl.valueChanges.pipe(startWith(armsCtrl.value as ArmInput[])),
-      { initialValue: armsCtrl.value as ArmInput[] }
-    );
+    this.armsSignal = computed(() => {
+      const armsCtrl = this.form.get('designGroup.arms');
+      return armsCtrl ? armsCtrl.value as ArmInput[] : [];
+    });
 
-    const blockSizesCtrl = this.form.get('allocationGroup.blockSizesStr')!;
-    const parseBlockSizes = (v: string | null | undefined): number[] =>
-      (v ?? '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
-    this.blockSizesSignal = toSignal(
-      blockSizesCtrl.valueChanges.pipe(
-        startWith(blockSizesCtrl.value as string),
-        map((v: string) => parseBlockSizes(v))
-      ),
-      { initialValue: parseBlockSizes(blockSizesCtrl.value as string) }
-    );
-  }
-
-  ngOnInit(): void {
-    this.form.get('strataGroup.strata')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((s: StratumFormValue[]) => {
-        this.store.setStrata(s);
-        this.syncLevelDetails(s);
-        this.markCapsStale();
+    this.blockSizesSignal = computed(() => {
+      const blockSizesCtrl = this.form.get('allocationGroup.blockSizesStr');
+      const val = blockSizesCtrl ? blockSizesCtrl.value as string : '';
+      return (val ?? '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+    });
+    
+    // Wire effects for value changes instead of RxJS
+    effect(() => {
+      const s = this.form.get('strataGroup.strata')?.value as StratumFormValue[];
+      if (s) {
+        untracked(() => {
+          this.store.setStrata(s);
+          this.syncLevelDetails(s);
+          this.markCapsStale();
+        });
+      }
+    });
+    
+    effect(() => {
+      const val = this.form.value;
+      untracked(() => {
+        this.facade.clearResults();
       });
-    this.store.setStrata(this.strata.value as StratumFormValue[]);
-    this.syncLevelDetails(this.strata.value as StratumFormValue[]);
-    this.syncStratumCaps();
-    this.form.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.facade.clearResults());
-
-    // When the user manually edits a computed cap, switch strategy back to Manual Matrix.
-    // The `matrixComputed()` guard ensures this only fires AFTER the user has clicked
-    // "Compute Matrix" – not during ngOnInit initialization (which uses emitEvent: false)
-    // and not before the user has computed anything.
-    this.stratumCaps.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
+    });
+    
+    effect(() => {
+      const caps = this.form.get('capsGroup.stratumCaps')?.value;
+      untracked(() => {
         if (this.matrixComputed()) {
           this.form.get('capsGroup.capStrategy')?.setValue('MANUAL_MATRIX', { emitEvent: false });
           this.form.get('capsGroup.globalCap')?.disable({ emitEvent: false });
           this.matrixComputed.set(false);
         }
       });
-
-    // When the global cap changes, the computed matrix is stale - reset it.
-    this.form.get('capsGroup.globalCap')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.matrixComputed.set(false));
-
-    // Enable/disable globalCap validators based on the active cap strategy.
-    // When not in PROPORTIONAL mode the field is hidden and irrelevant, so we
-    // disable the control to prevent it from invalidating the form.
-    this.form.get('capsGroup.capStrategy')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((strategy: string) => {
+    });
+    
+    effect(() => {
+      const globalCap = this.form.get('capsGroup.globalCap')?.value;
+      untracked(() => this.matrixComputed.set(false));
+    });
+    
+    effect(() => {
+      const strategy = this.form.get('capsGroup.capStrategy')?.value as string;
+      untracked(() => {
         const globalCapCtrl = this.form.get('capsGroup.globalCap');
         if (strategy === 'PROPORTIONAL') {
           globalCapCtrl?.enable();
@@ -225,15 +211,11 @@ export class ConfigFormComponent implements OnInit {
           globalCapCtrl?.disable();
         }
       });
-    // Initialise: disable when not starting in PROPORTIONAL mode.
-    if (this.capStrategy !== 'PROPORTIONAL') {
-      this.form.get('capsGroup.globalCap')?.disable();
-    }
-
-    // Enable/disable mode-specific controls based on the randomization method.
-    this.form.get('designGroup.randomizationMethod')?.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((method: string) => {
+    });
+    
+    effect(() => {
+      const method = this.form.get('designGroup.randomizationMethod')?.value as string;
+      untracked(() => {
         const minimizationP = this.form.get('allocationGroup.minimizationP');
         const totalSampleSize = this.form.get('allocationGroup.totalSampleSize');
         const blockSizesStr = this.form.get('allocationGroup.blockSizesStr');
@@ -254,7 +236,18 @@ export class ConfigFormComponent implements OnInit {
         }
         this.form.updateValueAndValidity();
       });
-    // Initialise: disable controls that are irrelevant for the starting method.
+    });
+  }
+
+  ngOnInit(): void {
+    this.store.setStrata(this.strata.value as StratumFormValue[]);
+    this.syncLevelDetails(this.strata.value as StratumFormValue[]);
+    this.syncStratumCaps();
+    
+    if (this.capStrategy !== 'PROPORTIONAL') {
+      this.form.get('capsGroup.globalCap')?.disable();
+    }
+    
     if (this.randomizationMethod === 'MINIMIZATION') {
       this.form.get('allocationGroup.blockSizesStr')?.disable();
       this.form.get('allocationGroup.blockSelectionType')?.disable();

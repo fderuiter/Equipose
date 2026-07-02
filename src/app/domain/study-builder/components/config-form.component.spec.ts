@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '../../../core/forms/signal-forms';
 import { ConfigFormComponent } from './config-form.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore } from '../store/study-builder.store';
@@ -8,6 +8,8 @@ import { AnnouncementService } from '../../../core/services/announcement.service
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { By } from '@angular/platform-browser';
+
+const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
 
 describe('ConfigFormComponent (domain)', () => {
   let component: ConfigFormComponent;
@@ -54,7 +56,8 @@ describe('ConfigFormComponent (domain)', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should generate valid distinct stratum caps controls based on combinations', () => {
+  it('should generate valid distinct stratum caps controls based on combinations', async () => {
+    await flushMicrotasks();
     component.addStratum();
     const strataArray = component.strata;
 
@@ -64,6 +67,7 @@ describe('ConfigFormComponent (domain)', () => {
     strataArray.at(1).get('id')?.setValue('gender');
     strataArray.at(1).get('levelsStr')?.setValue('M, F');
 
+    await flushMicrotasks();
     component.syncStratumCaps();
 
     const capsArray = component.stratumCaps;
@@ -320,21 +324,24 @@ describe('ConfigFormComponent (domain)', () => {
       expect(component.strata.value).toEqual(snapshot);
     });
 
-    it('should defer cap recomputation until the caps step is entered', () => {
+    it('should defer cap recomputation until the caps step is entered', async () => {
       const initialCapsLength = component.stratumCaps.length;
       component.strata.at(0).get('levelsStr')?.setValue('<65, >=65, >=80');
 
       expect(component.stratumCaps.length).toBe(initialCapsLength);
 
+      await flushMicrotasks();
       component.setStep(component.capsStepIndex);
       expect(component.stratumCaps.length).toBe(3);
     });
 
-    it('should show reset warning when returning to caps after strata changes', () => {
+    it('should show reset warning when returning to caps after strata changes', async () => {
       component.setStep(component.capsStepIndex);
       expect(component.capsResetWarning()).toBe(false);
 
       component.strata.at(0).get('levelsStr')?.setValue('<65, >=65, >=80');
+      
+      await flushMicrotasks();
       component.setStep(component.capsStepIndex);
 
       expect(component.capsResetWarning()).toBe(true);
@@ -439,7 +446,7 @@ describe('ConfigFormComponent (domain)', () => {
   });
 
   describe('caps strategy state', () => {
-    it('should switch to MANUAL_MATRIX and disable global cap after editing a computed cap', () => {
+    it('should switch to MANUAL_MATRIX and disable global cap after editing a computed cap', async () => {
       component.form.get('capsGroup.capStrategy')?.setValue('PROPORTIONAL');
       component.setPercentage('age', '<65', 50);
       component.setPercentage('age', '>=65', 50);
@@ -448,6 +455,7 @@ describe('ConfigFormComponent (domain)', () => {
       expect(component.matrixComputed()).toBe(true);
 
       component.stratumCaps.at(0).get('cap')?.setValue(15);
+      await flushMicrotasks();
 
       expect(component.form.get('capsGroup.capStrategy')?.value).toBe('MANUAL_MATRIX');
       expect(component.form.get('capsGroup.globalCap')?.disabled).toBe(true);
@@ -493,7 +501,7 @@ describe('ConfigFormComponent (domain)', () => {
     });
   });
   describe('Algorithm-switch scenarios', () => {
-    it('should cleanly transition from BLOCK to MINIMIZATION (payload cleanliness and UI state)', () => {
+    it('should cleanly transition from BLOCK to MINIMIZATION (payload cleanliness and UI state)', async () => {
       // 1. Setup as BLOCK initially with some block specific values
       component.form.get('designGroup.randomizationMethod')?.setValue('BLOCK');
       component.form.get('allocationGroup.blockSizesStr')?.setValue('4, 8');
@@ -505,27 +513,26 @@ describe('ConfigFormComponent (domain)', () => {
         sizesStr: '2, 4',
         selectionType: 'RANDOM_POOL'
       });
+      await flushMicrotasks();
       component.form.updateValueAndValidity();
 
       // Ensure block controls are enabled initially
-      expect(component.form.get('allocationGroup.blockSizesStr')?.enabled).toBe(true);
-      expect(component.form.get('allocationGroup.blockSelectionType')?.enabled).toBe(true);
+      expect(component.form.get('allocationGroup.blockSizesStr')?.disabled).toBe(false);
+      expect(component.form.get('allocationGroup.blockSelectionType')?.disabled).toBe(false);
 
       // 2. Switch to MINIMIZATION
       component.form.get('designGroup.randomizationMethod')?.setValue('MINIMIZATION');
       component.setMinimizationProbability('age', '<65', 50);
       component.setMinimizationProbability('age', '>=65', 50);
 
-      // The bug #279 (#338 PR) fixes this payload so that the UI states updates without manual triggering
-      // We still updateValueAndValidity for testing flow if necessary, but the component has
-      // internal reactive subscriptions that disable the fields.
+      await flushMicrotasks();
       fixture.detectChanges();
 
       // UI state: Block fields disabled, Min fields enabled
       expect(component.form.get('allocationGroup.blockSizesStr')?.disabled).toBe(true);
       expect(component.form.get('allocationGroup.blockSelectionType')?.disabled).toBe(true);
-      expect(component.form.get('allocationGroup.minimizationP')?.enabled).toBe(true);
-      expect(component.form.get('allocationGroup.totalSampleSize')?.enabled).toBe(true);
+      expect(component.form.get('allocationGroup.minimizationP')?.disabled).toBe(false);
+      expect(component.form.get('allocationGroup.totalSampleSize')?.disabled).toBe(false);
 
       // Payload cleanliness: The generated config should not have block specific values
       component.onSubmit();
@@ -541,27 +548,29 @@ describe('ConfigFormComponent (domain)', () => {
       }
     });
 
-    it('should cleanly transition from MINIMIZATION to BLOCK (payload cleanliness and UI state)', () => {
+    it('should cleanly transition from MINIMIZATION to BLOCK (payload cleanliness and UI state)', async () => {
       // Setup as MINIMIZATION
       component.form.get('designGroup.randomizationMethod')?.setValue('MINIMIZATION');
       component.form.get('allocationGroup.minimizationP')?.setValue(0.9);
       component.form.get('allocationGroup.totalSampleSize')?.setValue(200);
       component.setMinimizationProbability('age', '<65', 50);
       component.setMinimizationProbability('age', '>=65', 50);
+      await flushMicrotasks();
       component.form.updateValueAndValidity();
 
-      expect(component.form.get('allocationGroup.minimizationP')?.enabled).toBe(true);
+      expect(component.form.get('allocationGroup.minimizationP')?.disabled).toBe(false);
 
       // Switch to BLOCK
       component.form.get('designGroup.randomizationMethod')?.setValue('BLOCK');
       component.form.get('allocationGroup.blockSizesStr')?.setValue('4');
       component.form.get('allocationGroup.blockSelectionType')?.setValue('RANDOM_POOL');
+      await flushMicrotasks();
       fixture.detectChanges();
 
       // UI State: Min fields disabled, block fields enabled
       expect(component.form.get('allocationGroup.minimizationP')?.disabled).toBe(true);
       expect(component.form.get('allocationGroup.totalSampleSize')?.disabled).toBe(true);
-      expect(component.form.get('allocationGroup.blockSizesStr')?.enabled).toBe(true);
+      expect(component.form.get('allocationGroup.blockSizesStr')?.disabled).toBe(false);
 
       // Payload cleanliness: Should not contain minimization config
       component.onSubmit();
