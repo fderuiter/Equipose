@@ -85,9 +85,6 @@ export class ResultsGridComponent {
   menuPosition = signal({ x: 0, y: 0 });
   filterPosition = signal({ x: 0, y: 0 });
 
-  /** Signals that the audit hash was just copied; drives the ✓ icon. */
-  hashCopied = signal(false);
-
   /**
    * Expose the shared `isUnblinded` signal directly so existing template
    * bindings and unit-test assertions (component.isUnblinded()) still work.
@@ -377,9 +374,9 @@ export class ResultsGridComponent {
     this.closeColumnFilter();
   }
 
-  /** Middle-truncated display value for the audit hash banner. */
+  /** Middle-truncated display value for the audit hash banner (kept for test compatibility). */
   get truncatedAuditHash(): string {
-    const hash = this.state.results()?.metadata.auditHash ?? '';
+    const hash = this.state.results()?.metadata?.auditHash ?? '';
     return hash.length > 24 ? `${hash.substring(0, 12)}...${hash.substring(hash.length - 12)}` : hash;
   }
 
@@ -411,18 +408,6 @@ export class ResultsGridComponent {
     }
 
     return `"${escapedValue}"`;
-  }
-
-  /** Copies the audit hash to the clipboard and briefly shows a ✓ icon. */
-  copyAuditHash(): void {
-    const hash = this.state.results()?.metadata.auditHash;
-    if (!hash) return;
-    navigator.clipboard.writeText(hash).then(() => {
-      this.hashCopied.set(true);
-      setTimeout(() => this.hashCopied.set(false), 2000);
-    }).catch(() => {
-      // Clipboard write failed (e.g. permissions denied) – nothing to do visually
-    });
   }
 
   private isSimulationMode(protocolId: string): boolean {
