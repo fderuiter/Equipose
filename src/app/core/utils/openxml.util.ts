@@ -5,20 +5,17 @@ export class OpenXmlWriter {
   private styles = {
     fonts: [{ sz: 11, color: 'FF000000', bold: false }], // 0: default
     fills: [{ type: 'none' }, { type: 'gray125' }],      // 0: none, 1: gray125
-    cellXfs: [{ fontId: 0, fillId: 0, alignment: '' }],  // 0: default
+    cellXfs: [{ fontId: 0, fillId: 0, alignment: '', numFmtId: 0 }],  // 0: default
   };
   private worksheets: { name: string; xml: string; autoFilter?: string; freezePanes?: boolean; cols?: number[] }[] = [];
 
+  public creator?: string;
+  public created?: Date;
+
   constructor() {
-    // Add default required files
-    const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>`;
-    this.zip.addFile('_rels/.rels', new TextEncoder().encode(rels));
   }
 
-  public addStyle(font: { sz?: number, color?: string, bold?: boolean }, fill: { fgColor?: string }, alignment: string = ''): number {
+  public addStyle(font: { sz?: number, color?: string, bold?: boolean }, fill: { fgColor?: string }, alignment: string = '', numFmtId: number = 0): number {
     let fontId = this.styles.fonts.findIndex(f => f.sz === (font.sz || 11) && f.color === (font.color || 'FF000000') && !!f.bold === !!font.bold);
     if (fontId === -1) {
       fontId = this.styles.fonts.length;
@@ -34,10 +31,10 @@ export class OpenXmlWriter {
       }
     }
 
-    let xfId = this.styles.cellXfs.findIndex(x => x.fontId === fontId && x.fillId === fillId && x.alignment === alignment);
+    let xfId = this.styles.cellXfs.findIndex(x => x.fontId === fontId && x.fillId === fillId && x.alignment === alignment && x.numFmtId === numFmtId);
     if (xfId === -1) {
       xfId = this.styles.cellXfs.length;
-      this.styles.cellXfs.push({ fontId, fillId, alignment });
+      this.styles.cellXfs.push({ fontId, fillId, alignment, numFmtId });
     }
 
     return xfId;
@@ -103,18 +100,37 @@ export class OpenXmlWriter {
   public generate(): Uint8Array {
     const enc = new TextEncoder();
 
-    // Workbook
-    let workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>`;
-    let workbookRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    let rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>`;
+
     let contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
   <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
   <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>`;
+
+    if (this.creator || this.created) {
+      let coreXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`;
+      if (this.creator) coreXml += `<dc:creator>${this.escapeXml(this.creator)}</dc:creator>`;
+      if (this.created) coreXml += `<dcterms:created xsi:type="dcterms:W3CDTF">${this.created.toISOString()}</dcterms:created>`;
+      coreXml += `</cp:coreProperties>`;
+      this.zip.addFile('docProps/core.xml', enc.encode(coreXml));
+      
+      rootRels += `\n  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>`;
+      contentTypes += `\n  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>`;
+    }
+
+    rootRels += `\n</Relationships>`;
+    this.zip.addFile('_rels/.rels', enc.encode(rootRels));
+
+    // Workbook
+    let workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>`;
+    let workbookRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
 
     this.worksheets.forEach((ws, i) => {
       const sheetId = i + 1;
@@ -155,7 +171,8 @@ export class OpenXmlWriter {
       const applyFont = x.fontId > 0 ? ' applyFont="1"' : '';
       const applyFill = x.fillId > 0 ? ' applyFill="1"' : '';
       const applyAlign = x.alignment ? ' applyAlignment="1"' : '';
-      cellXfsXml += `<xf numFmtId="0" fontId="${x.fontId}" fillId="${x.fillId}" borderId="0" xfId="0"${applyFont}${applyFill}${applyAlign}>`;
+      const applyNumFmt = x.numFmtId > 0 ? ' applyNumberFormat="1"' : '';
+      cellXfsXml += `<xf numFmtId="${x.numFmtId}" fontId="${x.fontId}" fillId="${x.fillId}" borderId="0" xfId="0"${applyNumFmt}${applyFont}${applyFill}${applyAlign}>`;
       if (x.alignment) {
         cellXfsXml += `<alignment ${x.alignment}/>`;
       }
