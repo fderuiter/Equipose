@@ -69,7 +69,7 @@ describe('Golden Regression Fixtures', () => {
   let codeGenerator: CodeGeneratorService;
   let hasPython = false;
   let hasR = false;
-  const pythonExecutable = process.env.PYTHON || 'python3';
+  const pythonExecutable = process.env['PYTHON'] || 'python3';
 
   beforeAll(async () => {
     TestBed.configureTestingModule({ providers: [CodeGeneratorService] });
@@ -118,7 +118,7 @@ describe('Golden Regression Fixtures', () => {
           compareOutputs(rCsv, fixture.schema, key, 'R');
         }
       } else {
-        if (process.env.GITHUB_ACTIONS === 'true') throw new Error('Rscript is required in CI');
+        if (process.env['GITHUB_ACTIONS'] === 'true') throw new Error('Rscript is required in CI');
       }
 
       // 3. Python script verification
@@ -139,7 +139,7 @@ describe('Golden Regression Fixtures', () => {
           compareOutputs(pyCsv, fixture.schema, key, 'Python');
         }
       } else {
-        if (process.env.GITHUB_ACTIONS === 'true') throw new Error('Python is required in CI');
+        if (process.env['GITHUB_ACTIONS'] === 'true') throw new Error('Python is required in CI');
       }
     });
   }
