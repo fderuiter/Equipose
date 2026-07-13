@@ -149,9 +149,10 @@ export class RandomizationEngineFacade {
         this.monteCarloProgress.set(100);
         this.announcementService.announce('Simulation complete. Results are available.', 'polite');
       },
-      onError: (e: any) => {
+      onError: (e: unknown) => {
         this.isMonteCarloRunning.set(false);
-        const errorMsg = e?.error?.error || 'Worker encountered an unexpected error.';
+        const errPayload = e as { error?: { error?: string } };
+        const errorMsg = errPayload?.error?.error || 'Worker encountered an unexpected error.';
         this.monteCarloError.set(errorMsg);
         this.toastService.showError(errorMsg);
         this.announcementService.announce(`Simulation failed: ${errorMsg}`, 'assertive');
