@@ -96,12 +96,13 @@ describe('Code Generation Errors', () => {
 
   describe('ConfigurationValidationError', () => {
     it('should initialize correctly', () => {
-      const detail = 'Missing protocol ID';
-      const error = new ConfigurationValidationError(detail, mockConfig);
+      const failures = [{ code: 'ERR_TEST', property: 'protocolId', message: 'Missing protocol ID' }];
+      const error = new ConfigurationValidationError(failures, mockConfig);
 
-      expect(error.message).toContain(`Configuration validation failed: ${detail}`);
+      expect(error.message).toContain(`Configuration validation failed: [ERR_TEST] protocolId: Missing protocol ID`);
       expect(error.name).toBe('ConfigurationValidationError');
       expect(error.context).toEqual(mockConfig);
+      expect(error.failures).toEqual(failures);
       expect(error).toBeInstanceOf(ConfigurationValidationError);
       expect(error).toBeInstanceOf(CodeGenerationError);
     });

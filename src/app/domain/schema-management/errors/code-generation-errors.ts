@@ -1,4 +1,5 @@
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { ValidationFailure } from '../../core/validation/unified-validator';
 
 /** Base error for all code-generation pipeline failures. */
 export class CodeGenerationError extends Error {
@@ -57,9 +58,13 @@ export class MissingSeedError extends CodeGenerationError {
 
 /** Thrown when the RandomizationConfig object fails pre-flight validation. */
 export class ConfigurationValidationError extends CodeGenerationError {
-  constructor(detail: string, context: Partial<RandomizationConfig> | null = null) {
+  readonly failures: ValidationFailure[];
+
+  constructor(failures: ValidationFailure[], context: Partial<RandomizationConfig> | null = null) {
+    const detail = failures.map(f => `[${f.code}] ${f.property}: ${f.message}`).join(', ');
     super(`Configuration validation failed: ${detail}`, context);
     this.name = 'ConfigurationValidationError';
+    this.failures = failures;
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }

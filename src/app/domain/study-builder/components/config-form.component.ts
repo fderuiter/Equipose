@@ -813,9 +813,9 @@ export class ConfigFormComponent implements OnInit {
 
     const errors = UnifiedValidationAuthority.validate(partialConfig);
     if (errors.length > 0) {
-      const blockError = errors.find(e => e.toLowerCase().includes('multiple of total ratio') || e.toLowerCase().includes('block size'));
+      const blockError = errors.find(e => e.code === 'ERR_BLOCK_SIZE_MULTIPLE' || e.code === 'ERR_BLOCK_SIZE_POSITIVE');
       if (blockError) {
-        return { invalidBlockSize: true, message: blockError };
+        return { invalidBlockSize: true, message: blockError.message };
       }
     }
     return null;
