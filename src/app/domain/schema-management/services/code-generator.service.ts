@@ -71,7 +71,7 @@ export class CodeGeneratorService {
   private validateConfig(config: RandomizationConfig): void {
     const errors = UnifiedValidationAuthority.validate(config);
     if (errors.length > 0) {
-      throw new ConfigurationValidationError(errors[0], config);
+      throw new ConfigurationValidationError(errors, config);
     }
   }
 

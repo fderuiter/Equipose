@@ -1,6 +1,6 @@
 import { MT19937 } from './mt19937';
 import { DeterminismProvider } from './determinism.provider';
-import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
+import { UnifiedValidationAuthority, ValidationFailure } from '../../core/validation/unified-validator';
 import {
   TreatmentArm,
   RandomizationConfig,
@@ -16,6 +16,15 @@ import { MathUtil } from '../../core/utils/math.util';
 // ---------------------------------------------------------------------------
 // Crypto seed helper (shared with the Web Worker)
 // ---------------------------------------------------------------------------
+
+export class SimulationValidationError extends Error {
+  constructor(public failures: ValidationFailure[]) {
+    const message = failures.map(f => `[${f.code}] ${f.message}`).join(', ');
+    super(`Simulation validation failed: ${message}`);
+    this.name = 'SimulationValidationError';
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
 
 export function generateCryptoSeed(): string {
   const array = new Uint32Array(4);
@@ -312,7 +321,7 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
 
   const validationErrors = UnifiedValidationAuthority.validate(resolvedConfig);
   if (validationErrors.length > 0) {
-    throw new Error(validationErrors[0]);
+    throw new SimulationValidationError(validationErrors);
   }
 
   // 2. Simplify ratios and calculate total ratio sum
