@@ -2,19 +2,17 @@ import { Injectable, signal, computed } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class SignalRouter {
-  private currentUrl = signal<string>(window.location.pathname + window.location.search);
+  private currentUrl = signal<string>(window.location.href);
   
   public path = computed(() => {
-    const url = this.currentUrl();
-    return url.split('?')[0] || '/';
+    const parsed = new URL(this.currentUrl(), window.location.origin || 'http://localhost');
+    return parsed.pathname;
   });
 
   public queryParams = computed(() => {
-    const url = this.currentUrl();
-    const search = url.split('?')[1] || '';
-    const params = new URLSearchParams(search);
+    const parsed = new URL(this.currentUrl(), window.location.origin || 'http://localhost');
     const result: Record<string, string> = {};
-    params.forEach((value, key) => {
+    parsed.searchParams.forEach((value, key) => {
       result[key] = value;
     });
     return result;
@@ -22,27 +20,28 @@ export class SignalRouter {
 
   constructor() {
     window.addEventListener('popstate', () => {
-      this.currentUrl.set(window.location.pathname + window.location.search);
+      this.currentUrl.set(window.location.href);
     });
   }
 
   navigate(path: string, queryParams?: Record<string, string>): void {
-    let url = path;
+    const parsed = new URL(path, window.location.origin || 'http://localhost');
+    
     if (queryParams && Object.keys(queryParams).length > 0) {
-      const params = new URLSearchParams();
       Object.entries(queryParams).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          params.set(key, value);
+          parsed.searchParams.set(key, value);
         }
       });
-      const qs = params.toString();
-      if (qs) {
-        url += '?' + qs;
-      }
     }
-    if (url !== this.currentUrl()) {
-      window.history.pushState(null, '', url);
-      this.currentUrl.set(window.location.pathname + window.location.search);
+    
+    const targetUrl = parsed.pathname + parsed.search + parsed.hash;
+    const currentParsed = new URL(this.currentUrl(), window.location.origin || 'http://localhost');
+    const currentUrlRelative = currentParsed.pathname + currentParsed.search + currentParsed.hash;
+    
+    if (targetUrl !== currentUrlRelative) {
+      window.history.pushState(null, '', targetUrl);
+      this.currentUrl.set(window.location.href);
     }
   }
 }
