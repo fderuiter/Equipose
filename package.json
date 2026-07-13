@@ -69,7 +69,7 @@
     "typescript": "~5.9.2",
     "typescript-eslint": "8.59.3",
     "vitest": "^4.1.10",
-    "wrangler": "^4.90.1"
+    "wrangler": "^4.110.0"
   },
   "packageManager": "pnpm@11.1.3",
   "license": "AGPL-3.0-or-later"
