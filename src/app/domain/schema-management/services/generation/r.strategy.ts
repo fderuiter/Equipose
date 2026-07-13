@@ -21,7 +21,10 @@ export const R_CONFIG: LanguageConfig = {
   components: {
     initialization: (ir) => {
       let logic = `block_sizes <- c(${ir.blockSizes.join(', ')})\ntotal_ratio <- ${ir.totalRatio}\n`;
-      logic += `ALPHANUMERIC <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9")\n`;
+      const hasRnd = ir.subjectIdTokens.some(t => t.type === 'rnd');
+      if (hasRnd) {
+        logic += `ALPHANUMERIC <- c("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9")\n`;
+      }
       let armsR = ir.arms.map((a: any) => `list(name="${FormattingUtil.escapeString(a.name)}", ratio=${a.ratio})`).join(', ');
       logic += `arms <- list(${armsR})\n\nseq_count <- 0\n`;
       return logic;

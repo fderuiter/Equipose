@@ -8,6 +8,7 @@ export interface LanguageConfig {
   components: {
     fisherYates: (ir: LogicIR) => string;
     buildBlock?: (ir: LogicIR) => string;
+    utilityBlocks?: (ir: LogicIR) => string;
     initialization: (ir: LogicIR, config: RandomizationConfig) => string;
     roundRobinLoop: (ir: LogicIR, config: RandomizationConfig) => string;
     postLoop?: (ir: LogicIR, config: RandomizationConfig) => string;
