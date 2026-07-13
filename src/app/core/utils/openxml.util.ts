@@ -97,7 +97,7 @@ export class OpenXmlWriter {
     this.worksheets.push({ name, xml });
   }
 
-  public generate(): Uint8Array {
+  public async generateAsync(): Promise<Uint8Array> {
     const enc = new TextEncoder();
 
     let rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -191,7 +191,7 @@ export class OpenXmlWriter {
 
     this.zip.addFile('xl/styles.xml', enc.encode(stylesXml));
 
-    return this.zip.generate();
+    return this.zip.generateAsync();
   }
 
   private getColLetter(colIndex: number): string {

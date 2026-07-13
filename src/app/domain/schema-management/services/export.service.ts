@@ -101,7 +101,7 @@ export class ExportService {
     this.buildSchemaSheet(writer, result, isUnblinded);
     this.buildAuditSheet(writer, result);
 
-    const buffer = writer.generate();
+    const buffer = await writer.generateAsync();
     const blob = new Blob([buffer as BlobPart], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });

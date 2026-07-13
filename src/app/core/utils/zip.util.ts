@@ -1,5 +1,5 @@
 export class ZipWriter {
-  private files: { name: string; data: Uint8Array; crc32: number; headerOffset: number; nameBuf: Uint8Array }[] = [];
+  private files: { name: string; data: Uint8Array; crc32: number; headerOffset: number; nameBuf: Uint8Array; compressedData?: Uint8Array }[] = [];
 
   public addFile(name: string, uint8array: Uint8Array): void {
     this.files.push({
@@ -11,17 +11,32 @@ export class ZipWriter {
     });
   }
 
-  public generate(): Uint8Array {
+  public async generateAsync(): Promise<Uint8Array> {
+    for (const f of this.files) {
+      f.nameBuf = new TextEncoder().encode(f.name);
+      f.crc32 = this.crc32(f.data);
+      
+      try {
+        if (typeof CompressionStream !== 'undefined') {
+          const stream = new Response(f.data as any).body!.pipeThrough(new CompressionStream('deflate-raw'));
+          const compressedBuffer = await new Response(stream).arrayBuffer();
+          f.compressedData = new Uint8Array(compressedBuffer);
+        } else {
+          f.compressedData = f.data;
+        }
+      } catch (e) {
+        f.compressedData = f.data;
+      }
+    }
+
     let offset = 0;
     let totalSize = 0;
 
     for (const f of this.files) {
-      const nameBuf = new TextEncoder().encode(f.name);
-      f.nameBuf = nameBuf;
       // Local header: 30 bytes + name length + extra field (0)
-      totalSize += 30 + nameBuf.length + f.data.length;
+      totalSize += 30 + f.nameBuf.length + f.compressedData!.length;
       // Central header: 46 bytes + name length + extra field (0) + file comment (0)
-      totalSize += 46 + nameBuf.length;
+      totalSize += 46 + f.nameBuf.length;
     }
     // End of central dir: 22 bytes
     totalSize += 22;
@@ -31,40 +46,45 @@ export class ZipWriter {
 
     for (const f of this.files) {
       const headerStart = offset;
+      f.headerOffset = headerStart;
       
+      const isCompressed = f.compressedData !== f.data;
+      const compressionMethod = isCompressed ? 8 : 0;
+      const versionNeeded = isCompressed ? 20 : 10;
+
       view.setUint32(offset, 0x04034b50, true); offset += 4;
-      view.setUint16(offset, 10, true); offset += 2; // version needed to extract (1.0 = 10)
+      view.setUint16(offset, versionNeeded, true); offset += 2; // version needed to extract
       view.setUint16(offset, 0, true); offset += 2; // general purpose bit flag
-      view.setUint16(offset, 0, true); offset += 2; // compression method (0 = store)
+      view.setUint16(offset, compressionMethod, true); offset += 2; // compression method
       view.setUint16(offset, 0, true); offset += 2; // last mod file time
       view.setUint16(offset, 0, true); offset += 2; // last mod file date
       
-      const crc = this.crc32(f.data);
-      f.crc32 = crc;
-      f.headerOffset = headerStart;
-
-      view.setUint32(offset, crc, true); offset += 4;
-      view.setUint32(offset, f.data.length, true); offset += 4;
+      view.setUint32(offset, f.crc32, true); offset += 4;
+      view.setUint32(offset, f.compressedData!.length, true); offset += 4;
       view.setUint32(offset, f.data.length, true); offset += 4;
       view.setUint16(offset, f.nameBuf.length, true); offset += 2;
       view.setUint16(offset, 0, true); offset += 2;
       
       out.set(f.nameBuf, offset); offset += f.nameBuf.length;
-      out.set(f.data, offset); offset += f.data.length;
+      out.set(f.compressedData!, offset); offset += f.compressedData!.length;
     }
     
     const centralDirStart = offset;
     for (const f of this.files) {
+      const isCompressed = f.compressedData !== f.data;
+      const compressionMethod = isCompressed ? 8 : 0;
+      const versionNeeded = isCompressed ? 20 : 10;
+
       view.setUint32(offset, 0x02014b50, true); offset += 4;
-      view.setUint16(offset, 10, true); offset += 2;
-      view.setUint16(offset, 10, true); offset += 2;
+      view.setUint16(offset, 20, true); offset += 2; // version made by
+      view.setUint16(offset, versionNeeded, true); offset += 2; // version needed to extract
       view.setUint16(offset, 0, true); offset += 2;
-      view.setUint16(offset, 0, true); offset += 2;
+      view.setUint16(offset, compressionMethod, true); offset += 2;
       view.setUint16(offset, 0, true); offset += 2;
       view.setUint16(offset, 0, true); offset += 2;
       
       view.setUint32(offset, f.crc32, true); offset += 4;
-      view.setUint32(offset, f.data.length, true); offset += 4;
+      view.setUint32(offset, f.compressedData!.length, true); offset += 4;
       view.setUint32(offset, f.data.length, true); offset += 4;
       view.setUint16(offset, f.nameBuf.length, true); offset += 2;
       view.setUint16(offset, 0, true); offset += 2;
