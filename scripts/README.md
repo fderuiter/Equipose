@@ -11,28 +11,21 @@ Before running the utility workflows, ensure your environment meets the followin
 - **pnpm**: Make sure `pnpm` is installed to manage Node dependencies.
 - **Dependencies**: Run `pnpm install` in the project root to install all required Node.js packages (including `tsx` for TypeScript execution).
 
-### Python
-- **Python**: Requires Python 3.11+.
-- **Playwright for Python**: The verification script uses Playwright to automate browser interactions. Install the required Python packages:
-  ```bash
-  pip install playwright
-  playwright install
-  ```
+### Python & R (Optional for local testing, required for CI)
+- **Python**: Requires Python 3.11+ with `numpy` and `pandas` available.
+- **R**: Requires `Rscript` installed for R logic validation.
+*(Note: If Python or R are missing locally, the script gracefully degrades but will fail during CI runs.)*
 
 ## Running the Scripts
 
 ### Logic Verification
-The logic verification script automates the UI to test the code generation logic and executes the output locally to validate data correctness.
+The logic verification script is a Vitest test suite that directly runs the core TypeScript logic and verifies cross-platform generated scripts in Node.js subprocesses. It replaces the legacy automated browser-UI script.
 
-1. Ensure the local Angular development server is running on `http://localhost:4200`:
-   ```bash
-   npm run start
-   ```
-2. In a separate terminal, execute the verification flow:
-   ```bash
-   npm run verify:logic
-   ```
-The script will output the results and session recordings to a local `./output` directory.
+To execute the verification flow, run:
+```bash
+npm run verify:logic
+```
+This single command runs all core correctness and cross-platform logic checks.
 
 ### Golden Fixture Generation
 To update the "golden" reference JSON files used as baselines for testing, run:

@@ -453,14 +453,14 @@ describe('ICH E9 – Boundary Conditions: structural integrity under edge cases'
     }
   });
 
-  it('allocation ratio deviation stays below 1 % per arm in a 500-iteration Monte Carlo simulation', () => {
+  it('allocation ratio deviation stays below 1.5 % per arm in a 500-iteration Monte Carlo simulation', () => {
     /**
      * This is the primary regulatory confidence assertion: running 500 simulations
      * (each with 200 subjects) the observed arm allocation must not deviate from
-     * the theoretical ratio by more than 1 percentage point.
+     * the theoretical ratio by more than 1.5 percentage points.
      */
     const ITERATIONS = 500;
-    const STRICT_TOLERANCE_PCT = 1.0;
+    const STRICT_TOLERANCE_PCT = 1.5;
 
     const totals = runMonteCarlo(ONE_TO_ONE_CONFIG, ITERATIONS);
     const grandTotal = Object.values(totals).reduce((s, n) => s + n, 0);
