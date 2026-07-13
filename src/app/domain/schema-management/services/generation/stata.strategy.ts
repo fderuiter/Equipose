@@ -46,12 +46,55 @@ export const STATA_CONFIG: LanguageConfig = {
       logic += `total_ratio = ${ir.totalRatio}\n`;
       logic += `arms = (${ir.arms.map((a: any) => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})\n`;
       logic += `arm_ratios = (${ir.arms.map((a: any) => a.ratio).join(',')})\n\n`;
-      logic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n\n`;
+      const hasRnd = ir.subjectIdTokens.some(t => t.type === 'rnd');
+      if (hasRnd) {
+        logic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n\n`;
+      }
       logic += `schema_out = J(0, ${6 + (ir.tasks[0] ? Object.keys(ir.tasks[0].stratumDetails).length : 0)}, "")\n`;
       logic += `seq_count = 0\n`;
       return logic;
     },
-    fisherYates: () => `string rowvector build_block(real scalar size) {\n    string rowvector block\n    real scalar multiplier, i, j, arm_idx, k\n    string scalar temp\n    block = J(1, 0, "")\n    multiplier = size / total_ratio\n    for (arm_idx=1; arm_idx<=cols(arms); arm_idx++) {\n        for (k=1; k<=arm_ratios[arm_idx] * multiplier; k++) {\n            block = block, arms[arm_idx]\n        }\n    }\n    for (i=cols(block); i>=2; i--) {\n        j = trunc((random_int() / 4294967296) * i) + 1\n        temp = block[i]; block[i] = block[j]; block[j] = temp\n    }\n    return(block)\n}\n`,
+    utilityBlocks: (ir) => {
+      let utils = `string rowvector build_block(real scalar size) {\n`;
+      utils += `    string rowvector block\n`;
+      utils += `    real scalar multiplier, i, j, arm_idx, k\n`;
+      utils += `    string scalar temp\n`;
+      utils += `    block = J(1, 0, "")\n`;
+      utils += `    multiplier = size / total_ratio\n`;
+      utils += `    for (arm_idx=1; arm_idx<=cols(arms); arm_idx++) {\n`;
+      utils += `        for (k=1; k<=arm_ratios[arm_idx] * multiplier; k++) {\n`;
+      utils += `            block = block, arms[arm_idx]\n`;
+      utils += `        }\n`;
+      utils += `    }\n`;
+      utils += `    for (i=cols(block); i>=2; i--) {\n`;
+      utils += `        j = trunc((random_int() / 4294967296) * i) + 1\n`;
+      utils += `        temp = block[i]; block[i] = block[j]; block[j] = temp\n`;
+      utils += `    }\n`;
+      utils += `    return(block)\n`;
+      utils += `}\n\n`;
+
+      utils += `string scalar stata_rnd_str(real scalar len) {\n`;
+      utils += `    string scalar res; res = "";\n`;
+      utils += `    real scalar k;\n`;
+      utils += `    for (k=1; k<=len; k++) { res = res + substr("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", trunc((random_int() / 4294967296) * 36) + 1, 1); }\n`;
+      utils += `    return(res);\n`;
+      utils += `}\n\n`;
+
+      utils += `string scalar luhn_checksum(string scalar val) {\n`;
+      utils += `    string scalar base_for_luhn, digits, chk\n`;
+      utils += `    real rowvector c_codes\n`;
+      utils += `    real scalar _i, s, is_even, d\n`;
+      utils += `    base_for_luhn = subinstr(val, "{CHECKSUM}", ""); digits = ""; c_codes = ascii(base_for_luhn);\n`;
+      utils += `    for (_i=1; _i<=cols(c_codes); _i++) { if (c_codes[_i] >= 48 & c_codes[_i] <= 57) digits = digits + char(c_codes[_i]); }\n`;
+      utils += `    chk = "0";\n`;
+      utils += `    if (strlen(digits) > 0) { s = 0; is_even = 0;\n`;
+      utils += `        for (_i=strlen(digits); _i>=1; _i--) { d = strtoreal(substr(digits, _i, 1)); if (is_even) { d = d * 2; if (d > 9) d = d - 9; } s = s + d; is_even = !is_even; }\n`;
+      utils += `        chk = strofreal(mod(10 - mod(s, 10), 10)); }\n`;
+      utils += `    return(subinstr(val, "{CHECKSUM}", chk));\n`;
+      utils += `}\n`;
+      return utils;
+    },
+    fisherYates: () => ``,
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = '';
       algorithmicLogic += `block_sizes = (${ir.blockSizes.join(',')})
@@ -61,90 +104,13 @@ export const STATA_CONFIG: LanguageConfig = {
       algorithmicLogic += `arms = (${ir.arms.map((a: any) => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})
 `;
       algorithmicLogic += `arm_ratios = (${ir.arms.map((a: any) => a.ratio).join(',')})
+\n`;
+      const hasRnd = ir.subjectIdTokens.some((t: any) => t.type === 'rnd');
+      if (hasRnd) {
+        algorithmicLogic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n\n`;
+      }
 
-`;
-      algorithmicLogic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-`;
-
-      algorithmicLogic += `string rowvector build_block(real scalar size) {
-`;
-      algorithmicLogic += `    string rowvector block
-`;
-      algorithmicLogic += `    real scalar multiplier, i, j, arm_idx, k
-`;
-      algorithmicLogic += `    string scalar temp
-`;
-      algorithmicLogic += `    block = J(1, 0, "")
-`;
-      algorithmicLogic += `    multiplier = size / total_ratio
-`;
-      algorithmicLogic += `    for (arm_idx=1; arm_idx<=cols(arms); arm_idx++) {
-`;
-      algorithmicLogic += `        for (k=1; k<=arm_ratios[arm_idx] * multiplier; k++) {
-`;
-      algorithmicLogic += `            block = block, arms[arm_idx]
-`;
-      algorithmicLogic += `        }
-`;
-      algorithmicLogic += `    }
-`;
-      algorithmicLogic += `    for (i=cols(block); i>=2; i--) {
-`;
-      algorithmicLogic += `        j = trunc((random_int() / 4294967296) * i) + 1
-`;
-      algorithmicLogic += `        temp = block[i]; block[i] = block[j]; block[j] = temp
-`;
-      algorithmicLogic += `    }
-`;
-      algorithmicLogic += `    return(block)
-`;
-      algorithmicLogic += `}
-
-`;
-
-      algorithmicLogic += `string scalar stata_rnd_str(real scalar len) {
-`;
-      algorithmicLogic += `    string scalar res; res = "";
-`;
-      algorithmicLogic += `    real scalar k;
-`;
-      algorithmicLogic += `    for (k=1; k<=len; k++) { res = res + substr("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", trunc((random_int() / 4294967296) * 36) + 1, 1); }
-`;
-      algorithmicLogic += `    return(res);
-`;
-      algorithmicLogic += `}
-
-`;
-      
-      algorithmicLogic += `string scalar luhn_checksum(string scalar val) {
-`;
-      algorithmicLogic += `    string scalar base_for_luhn, digits, chk
-`;
-      algorithmicLogic += `    real rowvector c_codes
-`;
-      algorithmicLogic += `    real scalar _i, s, is_even, d
-`;
-      algorithmicLogic += `    base_for_luhn = subinstr(val, "{CHECKSUM}", ""); digits = ""; c_codes = ascii(base_for_luhn);
-`;
-      algorithmicLogic += `    for (_i=1; _i<=cols(c_codes); _i++) { if (c_codes[_i] >= 48 & c_codes[_i] <= 57) digits = digits + char(c_codes[_i]); }
-`;
-      algorithmicLogic += `    chk = "0";
-`;
-      algorithmicLogic += `    if (strlen(digits) > 0) { s = 0; is_even = 0;
-`;
-      algorithmicLogic += `        for (_i=strlen(digits); _i>=1; _i--) { d = strtoreal(substr(digits, _i, 1)); if (is_even) { d = d * 2; if (d > 9) d = d - 9; } s = s + d; is_even = !is_even; }
-`;
-      algorithmicLogic += `        chk = strofreal(mod(10 - mod(s, 10), 10)); }
-`;
-      algorithmicLogic += `    return(subinstr(val, "{CHECKSUM}", chk));
-`;
-      algorithmicLogic += `}
-
-`;
-
-      algorithmicLogic += `schema_out = J(0, ${6 + (config.strata?.length || 0)}, "")
-`;
+      algorithmicLogic += `schema_out = J(0, ${6 + (config.strata?.length || 0)}, "")\n`;
       
       const numTasks = ir.tasks.length;
       algorithmicLogic += `task_caps = (${ir.tasks.map((t: any) => t.cap).join(',')})

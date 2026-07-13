@@ -21,7 +21,10 @@ export const PYTHON_CONFIG: LanguageConfig = {
   components: {
     initialization: (ir) => {
       let logic = `import re\nschema = []\nseq_count = 0\n`;
-      logic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n`;
+      const hasRnd = ir.subjectIdTokens.some(t => t.type === 'rnd');
+      if (hasRnd) {
+        logic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n`;
+      }
       logic += `block_sizes = [${ir.blockSizes.join(', ')}]\n`;
       logic += `total_ratio = ${ir.totalRatio}\n`;
       logic += `arms = [${ir.arms.map((a: any) => `{"name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}`).join(', ')}]\n\n`;
