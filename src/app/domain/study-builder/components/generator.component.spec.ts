@@ -23,6 +23,7 @@ function buildMockFacade() {
     isMonteCarloRunning: signal(false),
     monteCarloProgress: signal(0),
     monteCarloResults: signal(null),
+    monteCarloError: signal<string | null>(null),
     generateSchema: vi.fn(),
     openCodeGenerator: vi.fn(),
     closeCodeGenerator: vi.fn(),

@@ -81,6 +81,21 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
               </div>
             }
 
+            <!-- Error state -->
+            @if (facade.monteCarloError(); as errorMsg) {
+              <div #errorAlert tabindex="-1" class="outline-none {{ domainTheme.getSemanticColor('error').bgLightClass }} {{ domainTheme.getSemanticColor('error').borderClass }} rounded-lg p-6 flex flex-col items-center justify-center text-center gap-4 min-h-[200px]" data-testid="mc-error-state">
+                <div class="w-12 h-12 rounded-full {{ domainTheme.getSemanticColor('error').bgLightClass }} flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ domainTheme.getSemanticColor('error').textClass }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-lg font-semibold {{ domainTheme.getSemanticColor('error').textClass }} mb-2">Simulation Failed</h4>
+                  <p class="text-sm {{ domainTheme.getSemanticColor('error').textClass }}">{{ errorMsg }}</p>
+                </div>
+              </div>
+            }
+
             <!-- Results state -->
             @if (facade.monteCarloResults(); as results) {
               <h4 #resultsHeader tabindex="-1" class="sr-only outline-none">Simulation Results</h4>
@@ -262,13 +277,15 @@ export class MonteCarloModalComponent {
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
   @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;
   @ViewChild('completionAlert') completionAlert?: ElementRef<HTMLElement>;
+  @ViewChild('errorAlert') errorAlert?: ElementRef<HTMLElement>;
 
   constructor() {
     effect(() => {
       const isRunning = this.facade.isMonteCarloRunning();
       const results = this.facade.monteCarloResults();
+      const error = this.facade.monteCarloError();
 
-      if (isRunning || results) {
+      if (isRunning || results || error) {
         if (this.modalDialog?.nativeElement && !this.modalDialog.nativeElement.open) {
           this.modalDialog.nativeElement.showModal();
         }
@@ -281,9 +298,12 @@ export class MonteCarloModalComponent {
 
     effect(() => {
       const results = this.facade.monteCarloResults();
-      if (results) {
+      const error = this.facade.monteCarloError();
+      if (results || error) {
         setTimeout(() => {
-          if (this.completionAlert?.nativeElement) {
+          if (error && this.errorAlert?.nativeElement) {
+            this.errorAlert.nativeElement.focus();
+          } else if (this.completionAlert?.nativeElement) {
             this.completionAlert.nativeElement.focus();
           } else if (this.warningBanner?.nativeElement) {
             this.warningBanner.nativeElement.focus();

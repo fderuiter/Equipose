@@ -54,6 +54,7 @@ export class RandomizationEngineFacade {
   readonly isMonteCarloRunning = signal(false);
   readonly monteCarloProgress = signal(0);
   readonly monteCarloResults = signal<MonteCarloSuccessPayload | null>(null);
+  readonly monteCarloError = signal<string | null>(null);
   
   constructor() {
     if (this.isBrowser) {
@@ -124,6 +125,7 @@ export class RandomizationEngineFacade {
     this.isMonteCarloRunning.set(true);
     this.monteCarloProgress.set(0);
     this.monteCarloResults.set(null);
+    this.monteCarloError.set(null);
 
     if (!this.worker) {
       this.isMonteCarloRunning.set(false);
@@ -147,9 +149,12 @@ export class RandomizationEngineFacade {
         this.monteCarloProgress.set(100);
         this.announcementService.announce('Simulation complete. Results are available.', 'polite');
       },
-      onError: () => {
+      onError: (e: any) => {
         this.isMonteCarloRunning.set(false);
-        this.closeMonteCarloModal();
+        const errorMsg = e?.error?.error || 'Worker encountered an unexpected error.';
+        this.monteCarloError.set(errorMsg);
+        this.toastService.showError(errorMsg);
+        this.announcementService.announce(`Simulation failed: ${errorMsg}`, 'assertive');
       }
     });
 
@@ -163,6 +168,7 @@ export class RandomizationEngineFacade {
       this.isMonteCarloRunning.set(false);
       this.monteCarloProgress.set(0);
       this.monteCarloResults.set(null);
+      this.monteCarloError.set(null);
       this.announcementService.announce('Simulation stopped by user.', 'polite');
       
       // Stop the worker somehow if possible. If not, just clear the callbacks.
@@ -176,6 +182,7 @@ export class RandomizationEngineFacade {
     this.monteCarloResults.set(null);
     this.monteCarloProgress.set(0);
     this.isMonteCarloRunning.set(false);
+    this.monteCarloError.set(null);
   }
 
   // -------------------------------------------------------------------------
