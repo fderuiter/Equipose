@@ -20,6 +20,15 @@ const commandExists = async (command: string): Promise<boolean> => {
   }
 };
 
+const checkPythonEnv = async (command: string): Promise<boolean> => {
+  try {
+    await execFileAsync(command, ['-c', 'import numpy, pandas']);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 // Helper function to parse CSV robustly (handling basic quoted strings without internal commas)
 const parseCsv = (csv: string) => {
   const lines = csv.trim().split('\n').filter(l => l.trim().length > 0);
@@ -74,7 +83,7 @@ describe('Golden Regression Fixtures', () => {
   beforeAll(async () => {
     TestBed.configureTestingModule({ providers: [CodeGeneratorService] });
     codeGenerator = TestBed.inject(CodeGeneratorService);
-    hasPython = await commandExists(pythonExecutable);
+    hasPython = await commandExists(pythonExecutable) && await checkPythonEnv(pythonExecutable);
     hasR = await commandExists('Rscript');
   });
 
