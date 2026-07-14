@@ -12,7 +12,6 @@
     "test": "ng test",
     "test:unit": "vitest run --exclude 'tests_e2e/**'",
     "test:e2e:a11y": "playwright test tests_e2e/a11y.spec.ts",
-    "precommit": "pnpm run lint && pnpm run build && pnpm run test:unit && pnpm run test:e2e:a11y",
     "lint": "ng lint",
     "prestart": "node generate-version.js",
     "prebuild": "node generate-version.js",
