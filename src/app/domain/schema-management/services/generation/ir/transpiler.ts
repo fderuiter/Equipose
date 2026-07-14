@@ -23,6 +23,9 @@ export class CodeTranspiler {
   }
 
   private static parseSubjectIdMask(mask: string): SubjectIdToken[] {
+    if (/\[SiteID\]|\[StratumCode\]|\[0+1\]/.test(mask)) {
+      console.warn(`Deprecated legacy bracket token found in mask: ${mask}. Please migrate to curly-brace tokens.`);
+    }
     const tokens: SubjectIdToken[] = [];
     const regex = /(\{SITE\}|\{STRATUM\}|\{SEQ:\d+\}|\{RND:\d+\}|\{CHECKSUM\}|\[SiteID\]|\[StratumCode\]|\[0+1\])/g;
     let lastIndex = 0;
