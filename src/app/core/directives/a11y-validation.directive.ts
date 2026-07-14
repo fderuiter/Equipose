@@ -1,7 +1,7 @@
 import { Directive, ElementRef, AfterViewChecked, Renderer2, inject } from '@angular/core';
 
 @Directive({
-  selector: 'input:not([type="checkbox"]):not([type="radio"]), select, textarea',
+  selector: 'input:not([type="checkbox"]):not([type="radio"]), select, textarea, app-text-input, app-tag-input',
   standalone: true
 })
 export class A11yValidationDirective implements AfterViewChecked {
@@ -16,19 +16,24 @@ export class A11yValidationDirective implements AfterViewChecked {
     // Check if the control is currently invalid based on ng-invalid or border-red-500 classes.
     const isInvalid = el.classList.contains('ng-invalid') || el.classList.contains('border-red-500');
 
+    let targetEl = el;
+    if (el.tagName !== 'INPUT' && el.tagName !== 'SELECT' && el.tagName !== 'TEXTAREA') {
+      targetEl = el.querySelector('input:not([type="checkbox"]):not([type="radio"]), select, textarea') || el;
+    }
+
     if (isInvalid) {
-      this.renderer.setAttribute(el, 'aria-invalid', 'true');
-      this.linkErrorMessage();
+      this.renderer.setAttribute(targetEl, 'aria-invalid', 'true');
+      this.linkErrorMessage(targetEl);
     } else {
-      this.renderer.removeAttribute(el, 'aria-invalid');
+      this.renderer.removeAttribute(targetEl, 'aria-invalid');
       if (this.linkedErrorId) {
-        this.renderer.removeAttribute(el, 'aria-describedby');
+        this.renderer.removeAttribute(targetEl, 'aria-describedby');
         this.linkedErrorId = '';
       }
     }
   }
 
-  private linkErrorMessage() {
+  private linkErrorMessage(targetEl: HTMLElement) {
     let errorEl: Element | null = null;
     let current = this.el.nativeElement.parentElement;
     
@@ -48,16 +53,15 @@ export class A11yValidationDirective implements AfterViewChecked {
         errorEl.id = 'a11y-err-' + Math.random().toString(36).substring(2, 9);
       }
       
-      const el = this.el.nativeElement;
-      const currentDescribedBy = el.getAttribute('aria-describedby');
+      const currentDescribedBy = targetEl.getAttribute('aria-describedby');
       
       if (currentDescribedBy !== errorEl.id) {
-        this.renderer.setAttribute(el, 'aria-describedby', errorEl.id);
+        this.renderer.setAttribute(targetEl, 'aria-describedby', errorEl.id);
         this.linkedErrorId = errorEl.id;
       }
     } else {
       if (this.linkedErrorId) {
-        this.renderer.removeAttribute(this.el.nativeElement, 'aria-describedby');
+        this.renderer.removeAttribute(targetEl, 'aria-describedby');
         this.linkedErrorId = '';
       }
     }
