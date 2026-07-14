@@ -21,16 +21,38 @@ test.describe('Application Navigation', () => {
 
   test('should navigate to the About page via the header nav link', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    // Use the nav in the header (not the footer or elsewhere)
-    await page.locator('header').getByRole('link', { name: /About/i }).click();
+    
+    const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
+    if (isMobile) {
+      const menu = page.locator('#mobile-menu');
+      if (!(await menu.isVisible())) {
+        await page.getByRole('button', { name: 'Toggle navigation menu' }).click();
+        await expect(menu).toBeVisible();
+      }
+      await menu.getByRole('link', { name: /About/i }).click();
+    } else {
+      await page.locator('header').getByRole('link', { name: /About/i }).click();
+    }
+    
     await expect(page).toHaveURL(/\/about/);
     await expect(page.getByRole('heading', { name: /About Equipose/i })).toBeVisible();
   });
 
   test('should navigate to the Generator page via the header nav link', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    // Use exact: true to avoid matching the logo link "Clinical Randomization Generator"
-    await page.locator('header').getByRole('link', { name: 'Generator', exact: true }).click();
+    
+    const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
+    if (isMobile) {
+      const menu = page.locator('#mobile-menu');
+      if (!(await menu.isVisible())) {
+        await page.getByRole('button', { name: 'Toggle navigation menu' }).click();
+        await expect(menu).toBeVisible();
+      }
+      await menu.getByRole('link', { name: 'Generator', exact: true }).click();
+    } else {
+      await page.locator('header').getByRole('link', { name: 'Generator', exact: true }).click();
+    }
+    
     await expect(page).toHaveURL(/\/generator/);
     await expect(page.getByTestId('generator-page')).toBeVisible();
   });
