@@ -57,6 +57,7 @@ playwright-results.json
 artifacts/
 test-results/
 __screenshots__/
+output/
 
 # System files
 .DS_Store
