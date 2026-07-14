@@ -18,7 +18,12 @@ export class ZipWriter {
       
       try {
         if (typeof CompressionStream !== 'undefined') {
-          const stream = new Response(f.data as any).body!.pipeThrough(new CompressionStream('deflate-raw'));
+          const stream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(f.data);
+              controller.close();
+            }
+          }).pipeThrough(new CompressionStream('deflate-raw'));
           const compressedBuffer = await new Response(stream).arrayBuffer();
           f.compressedData = new Uint8Array(compressedBuffer);
         } else {
