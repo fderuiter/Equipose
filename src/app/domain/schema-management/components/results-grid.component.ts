@@ -8,8 +8,6 @@ import { GeneratedSchema } from '../../core/models/randomization.model';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { MethodologySpecificationService } from '../services/methodology-specification.service';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { APP_VERSION } from '../../../../environments/version';
 import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
@@ -516,115 +514,6 @@ export class ResultsGridComponent {
       return;
     }
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const timestamp = DateUtil.getIsoTimestamp(new Date(data.metadata.generatedAt));
-    const auditHash = data.metadata.auditHash;
-    const truncatedHash = auditHash ? `${auditHash.substring(0, 16)}…${auditHash.substring(48, 64)}` : 'N/A';
-
-    // ── Certificate Header ──────────────────────────────────────────────────
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(40, 40, 40);
-    doc.text('RTSM/IRT RANDOMIZATION GENERATION CERTIFICATE', pageWidth / 2, 18, { align: 'center' });
-
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    const statement =
-      'This document certifies the algorithmic generation of the RTSM/IRT randomization schema detailed ' +
-      'below. The integrity of this dataset is mathematically verified by the attached cryptographic hash.';
-    const splitStatement = doc.splitTextToSize(statement, pageWidth - 28);
-    doc.text(splitStatement, 14, 26);
-
-    // ── Metadata Block ─────────────────────────────────────────────────────
-    const metaStartY = 26 + splitStatement.length * 5 + 4;
-    const metaRows: [string, string][] = [
-      ['Protocol ID', data.metadata.protocolId],
-      ['Study Name', data.metadata.studyName],
-      ['Phase', data.metadata.phase],
-      ['App Version', APP_VERSION],
-      ['PRNG Algorithm', 'Mersenne Twister (MT19937)'],
-      ['PRNG Seed', data.metadata.seed],
-      ['Generated At (ISO 8601)', timestamp],
-      ['SHA-256 Audit Hash', auditHash],
-    ];
-
-    autoTable(doc, {
-      startY: metaStartY,
-      head: [['Field', 'Value']],
-      body: metaRows,
-      theme: 'grid',
-      headStyles: { fillColor: [79, 70, 229], fontSize: 9 },
-      styles: { fontSize: 8, cellPadding: 2 },
-      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 55 }, 1: { cellWidth: 'auto', font: 'courier' } },
-      didParseCell: (hookData) => {
-        // Highlight the SHA-256 row
-        if (hookData.row.index === metaRows.length - 1 && hookData.section === 'body') {
-          hookData.cell.styles.fillColor = [235, 232, 255];
-          hookData.cell.styles.fontStyle = 'bold';
-        }
-      }
-    });
-
-    // ── Randomization Plan & Specifications ────────────────────────────────
-    const planStartY = (doc as any).lastAutoTable?.finalY + 8 || metaStartY + 60;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(40, 40, 40);
-    doc.text('Randomization Plan & Specifications', 14, planStartY);
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
-
-    const narrative = this.methodologySpec.generateNarrative(data.metadata.config);
-    const narrativeLines = doc.splitTextToSize(narrative, pageWidth - 28);
-    doc.text(narrativeLines, 14, planStartY + 6);
-
-    const planEndY = planStartY + 6 + narrativeLines.length * 4.5;
-
-    // ── Data Table ─────────────────────────────────────────────────────────
-    const tableStartY = planEndY + 6;
-
-    const strataHeaders = data.metadata.strata?.map(s => s.name || s.id) || [];
-    const headers = [['Subject ID', 'Site', ...strataHeaders, 'Block', 'Treatment Arm']];
-
-    const rows = data.schema.map(r => {
-      const strataValues = data.metadata.strata?.map(s => r.stratum[s.id] || '') || [];
-      return [
-        r.subjectId,
-        r.site,
-        ...strataValues,
-        `${r.blockNumber} (n=${r.blockSize})`,
-        this.isUnblinded() ? r.treatmentArm : '*** BLINDED ***'
-      ];
-    });
-
-    autoTable(doc, {
-      startY: tableStartY,
-      head: headers,
-      body: rows,
-      theme: 'grid',
-      headStyles: { fillColor: [79, 70, 229] },
-      styles: { fontSize: 9, cellPadding: 3 },
-      // Footer on every page
-      didDrawPage: (hookData) => {
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        const footerY = doc.internal.pageSize.getHeight() - 8;
-        doc.setFontSize(7);
-        doc.setTextColor(130);
-        doc.text(
-          `Protocol: ${data.metadata.protocolId}  |  Page ${hookData.pageNumber} of ${pageCount}  |  Hash: ${truncatedHash}`,
-          pageWidth / 2,
-          footerY,
-          { align: 'center' }
-        );
-      }
-    });
-
-    const safeProtocol = this.sanitizeFilename(data.metadata.protocolId);
-    doc.save(`randomization_${safeProtocol}_${this.isUnblinded() ? 'unblinded' : 'blinded'}.pdf`);
+    this.exportService.exportPdf(data, this.isUnblinded());
   }
 }
