@@ -2,92 +2,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
-  ElementRef,
-  inject,
-  OnDestroy,
-  viewChild,
-  Input,
-  Output,
-  EventEmitter,
-  OnInit,
-  SimpleChanges,
-  OnChanges
+  inject
 } from '@angular/core';
-import * as echarts from 'echarts/core';
-import { PieChart, BarChart } from 'echarts/charts';
-import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, AriaComponent } from 'echarts/components';
-import { SVGRenderer } from 'echarts/renderers';
-import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { AdamLiteDataset, AdamLiteVariable } from '../../core/models/adam-lite.model';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
-
-// Register only the ECharts modules we need (tree-shakeable).
-echarts.use([PieChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, SVGRenderer, AriaComponent]);
-
-@Component({
-  selector: 'app-echart',
-  standalone: true,
-  template: `<div class="w-full h-full" #container></div>`
-})
-export class EchartComponent implements OnDestroy, OnInit, OnChanges {
-  @Input() option: any;
-  @Output() chartClick = new EventEmitter<any>();
-  private readonly containerRef = viewChild<ElementRef<HTMLDivElement>>('container');
-  private chart: echarts.ECharts | null = null;
-
-  ngOnInit() {
-    this.initChart();
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['option'] && this.chart) {
-      try {
-        this.chart.setOption(this.option, { notMerge: true });
-      } catch {}
-    }
-  }
-
-  ngAfterViewInit() {
-    this.initChart();
-  }
-
-  private initChart() {
-    const el = this.containerRef()?.nativeElement;
-    if (!el || !this.option || this.chart) return;
-
-    try {
-      this.chart = echarts.init(el, undefined, { renderer: 'svg' });
-      this.chart.on('click', (params: echarts.ECElementEvent) => {
-        this.chartClick.emit(params);
-      });
-      this.chart.setOption(this.option, { notMerge: true });
-    } catch {
-      return;
-    }
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', this.onResize);
-    }
-  }
-
-  ngOnDestroy() {
-    try { this.chart?.dispose(); } catch {}
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.onResize);
-    }
-  }
-
-  private readonly onResize = () => {
-    this.chart?.resize();
-  };
-}
 
 @Component({
   selector: 'app-schema-analytics-dashboard',
   standalone: true,
-  imports: [EchartComponent],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (viewState.adamDataset()) {
@@ -129,18 +52,55 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
                   <span class="ml-1 text-amber-700 dark:text-amber-400">(blinded)</span>
                 }
               </p>
-              <div class="h-56 w-full">
-                <app-echart [option]="chart.option" (chartClick)="chart.clickHandler($event)"></app-echart>
+              
+              <div class="h-56 w-full flex items-center justify-center">
+                @if (chart.type === 'pie') {
+                  <div 
+                    class="relative w-48 h-48 rounded-full" 
+                    [style.background]="chart.conicStyle"
+                    [attr.aria-label]="'Donut chart for ' + chart.label"
+                    role="graphics-document"
+                  >
+                    <!-- Inner circle for donut effect -->
+                    <div class="absolute inset-0 m-auto w-3/4 h-3/4 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+                      @if (chart.isBlinded) {
+                        <span class="text-sm font-bold text-muted">Blinded</span>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="w-full h-full flex flex-col justify-center gap-3 overflow-y-auto pr-2"
+                       [attr.aria-label]="'Bar chart for ' + chart.label" role="graphics-document">
+                    @for (item of chart.data; track item.name) {
+                      <div class="flex flex-col gap-1 w-full cursor-pointer group"
+                           role="button"
+                           tabindex="0"
+                           [attr.aria-label]="'Filter by ' + item.name"
+                           (click)="chart.clickHandler({ name: item.name })"
+                           (keydown)="handleKeydown($event, chart, item, 0)">
+                        <div class="flex justify-between text-xs text-main group-hover:text-indigo-600 transition-colors">
+                          <span>{{ item.name }}</span>
+                          <span class="text-muted">{{ item.value }} ({{ item.percentageLabel }})</span>
+                        </div>
+                        <div class="w-full bg-gray-100 dark:bg-slate-800 h-4 rounded-sm overflow-hidden">
+                          <div class="h-full transition-all duration-300" 
+                               [style.width.%]="item.percentage" 
+                               [style.background-color]="item.color"></div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
 
               <!-- Accessible Filter Legend -->
-              @if (!chart.isBlinded && chart.categories && chart.categories.length > 0) {
+              @if (!chart.isBlinded && chart.data && chart.data.length > 0) {
                 <ul
                   class="flex flex-wrap gap-2 mt-4"
                   role="listbox"
                   [attr.aria-label]="'Filter by ' + chart.label"
                 >
-                  @for (category of chart.categories; track category.name; let idx = $index) {
+                  @for (category of chart.data; track category.name; let idx = $index) {
                     <li
                       role="option"
                       [attr.aria-selected]="viewState.activeFilter()?.variableId === chart.id && viewState.activeFilter()?.value === category.name"
@@ -196,16 +156,16 @@ export class SchemaAnalyticsDashboardComponent {
     return idx === 0 ? 0 : -1;
   }
 
-  handleKeydown(event: KeyboardEvent, chart: { id: string; clickHandler: (p: { name: string }) => void; categories: any[] }, category: { name: string }, idx: number) {
+  handleKeydown(event: KeyboardEvent, chart: { id: string; clickHandler: (p: { name: string }) => void; data: any[] }, category: { name: string }, idx: number) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       chart.clickHandler({ name: category.name });
     } else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
       event.preventDefault();
-      this.focusItem(chart.id, (idx + 1) % chart.categories.length);
+      this.focusItem(chart.id, (idx + 1) % chart.data.length);
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
       event.preventDefault();
-      this.focusItem(chart.id, (idx - 1 + chart.categories.length) % chart.categories.length);
+      this.focusItem(chart.id, (idx - 1 + chart.data.length) % chart.data.length);
     }
   }
 
@@ -226,7 +186,7 @@ export class SchemaAnalyticsDashboardComponent {
     const palette = this.domainTheme.getArmColorHexPalette();
 
     const categoricalVars = dataset.variables.filter(v => v.type === 'categorical');
-    const charts = [];
+    const charts: any[] = [];
 
     for (let i = 0; i < categoricalVars.length; i++) {
       const v = categoricalVars[i];
@@ -239,72 +199,41 @@ export class SchemaAnalyticsDashboardComponent {
         counts.set(val, (counts.get(val) || 0) + 1);
       }
 
-      let option: any;
-      const categories: { name: string, color: string }[] = [];
+      const total = Array.from(counts.values()).reduce((a, b) => a + b, 0);
+      const names = Array.from(counts.keys()).sort();
+      const type = (i % 2 === 0 || v.metadataTags.includes('Group')) ? 'pie' : 'bar';
+
+      let data: any[] = [];
+      let conicStyle = '';
 
       if (isBlindedGroup) {
-        option = {
-          aria: { enabled: true, decal: { show: true } },
-          tooltip: { show: false },
-          legend: { show: false },
-          series: [{
-            type: 'pie',
-            radius: ['45%', '70%'],
-            label: { show: true, formatter: 'Blinded', position: 'center', fontSize: 13, color: blindedColour, fontWeight: 'bold' },
-            emphasis: { disabled: true },
-            data: [{ value: 1, name: 'Blinded', itemStyle: { color: blindedColour } }],
-          }],
-        };
+        conicStyle = `conic-gradient(${blindedColour} 0% 100%)`;
       } else {
-        // Alternate between pie and bar charts for variety (or based on metadata)
-        if (i % 2 === 0 || v.metadataTags.includes('Group')) {
-          const data = Array.from(counts.entries()).map(([name, value], idx) => {
-            const color = palette[idx % palette.length];
-            categories.push({ name, color });
-            return {
-              name,
-              value,
-              itemStyle: { color },
-            };
-          });
+        let currentPercent = 0;
+        data = names.map((name, idx) => {
+          const value = counts.get(name) || 0;
+          const color = palette[idx % palette.length];
+          const percentage = total > 0 ? (value / total) * 100 : 0;
+          const percentageLabel = percentage.toFixed(1) + '%';
+          return { name, value, color, percentage, percentageLabel };
+        });
 
-          option = {
-            aria: { enabled: true, decal: { show: true } },
-            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-            legend: { show: false },
-            series: [{
-              type: 'pie',
-              radius: ['45%', '70%'],
-              label: { show: false },
-              emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.3)' } },
-              data,
-            }],
-          };
-        } else {
-          // Bar chart
-          const names = Array.from(counts.keys()).sort();
-          const data = names.map((name, idx) => {
-            const color = palette[idx % palette.length];
-            categories.push({ name, color });
-            return {
-              value: counts.get(name) || 0,
-              itemStyle: { color }
-            };
+        if (type === 'pie') {
+          const slices = data.map(item => {
+            const start = currentPercent;
+            const end = currentPercent + item.percentage;
+            currentPercent = end;
+            return `${item.color} ${start}% ${end}%`;
           });
-
-          option = {
-            aria: { enabled: true, decal: { show: true } },
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { show: false },
-            grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
-            xAxis: { type: 'category', data: names, axisLabel: { rotate: names.length > 5 ? 30 : 0, fontSize: 11 } },
-            yAxis: { type: 'value', minInterval: 1 },
-            series: [{ type: 'bar', data }]
-          };
+          if (slices.length > 0) {
+            conicStyle = `conic-gradient(${slices.join(', ')})`;
+          } else {
+            conicStyle = 'conic-gradient(transparent 0% 100%)';
+          }
         }
       }
 
-      const clickHandler = (params: any) => {
+      const clickHandler = (params: { name: string }) => {
         if (isBlindedGroup) return;
         const current = this.viewState.activeFilter();
         const clickedValue = String(params.name);
@@ -318,10 +247,11 @@ export class SchemaAnalyticsDashboardComponent {
       charts.push({
         id: v.id,
         label: v.label,
+        type,
         isBlinded: isBlindedGroup,
-        option,
-        clickHandler,
-        categories
+        conicStyle,
+        data,
+        clickHandler
       });
     }
 

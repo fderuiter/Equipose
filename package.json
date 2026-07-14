@@ -30,7 +30,6 @@
     "@angular/platform-browser": "21.2.7",
     "@fontsource-variable/inter": "^5.2.8",
     "@ngrx/signals": "^21.1.0",
-    "echarts": "^6.1.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "tslib": "^2.3.0"
