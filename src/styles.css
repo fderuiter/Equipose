@@ -39,6 +39,11 @@
     --invalid-bg: #1e293b;
     --focus-ring: #818cf8;
     --focus-offset: #0f172a;
+
+    & select option {
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+    }
   }
 
   html,
