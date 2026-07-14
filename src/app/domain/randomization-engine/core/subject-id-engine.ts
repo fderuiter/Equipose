@@ -45,6 +45,10 @@ export function validateSubjectIdMask(mask: string): MaskValidationResult {
     }
   }
 
+  if (/\[SiteID\]|\[StratumCode\]|\[0+1\]/.test(mask)) {
+    console.warn(`Deprecated legacy bracket token found in mask: ${mask}. Please migrate to curly-brace tokens.`);
+  }
+
   return { valid: true };
 }
 
