@@ -40,15 +40,12 @@
 
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
 
-          <button type="button" role="switch" [attr.aria-checked]="isUnblinded()" (click)="toggleBlinding()" class="flex items-center cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset rounded px-1 -ml-1">
-            <div class="relative">
-              <div class="block bg-gray-200 dark:bg-slate-600 w-10 h-6 rounded-full transition-colors" [class.bg-indigo-500]="isUnblinded()" [class.dark:bg-indigo-500]="isUnblinded()"></div>
-              <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" [class.translate-x-4]="isUnblinded()"></div>
-            </div>
-            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300">
+          <div class="flex items-center px-1 -ml-1">
+            <app-toggle [checked]="isUnblinded()" (checkedChange)="toggleBlinding()"></app-toggle>
+            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" (click)="toggleBlinding()">
               {{ isUnblinded() ? 'Unblinded' : 'Blinded' }}
             </span>
-          </button>
+          </div>
           
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
           
@@ -478,7 +475,7 @@
   popover="auto"
   (toggle)="onRowMenuToggle($event)"
   [style.position-anchor]="'--row-anchor-' + (activeMenuRow()?.subjectId || '')"
-  class="fixed m-0 min-w-40 rounded-xl bg-surface shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-border-subtle py-1 backdrop-blur-sm z-50"
+  class="top-[calc(anchor(bottom)+4px)] right-[anchor(right)] fixed m-0 min-w-40 rounded-xl bg-surface shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-border-subtle py-1 backdrop-blur-sm z-50"
 >
   @if (isRowMenuOpen()) {
   <div role="menu" appFocusManager>
@@ -515,7 +512,7 @@
      popover="auto"
      (toggle)="onFilterMenuToggle($event)"
      [style.position-anchor]="'--filter-anchor-' + (activeFilterColumn() || '')"
-     class="fixed m-0 min-w-52 rounded-xl bg-surface shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-border-subtle p-3 backdrop-blur-sm z-50">
+     class="top-[calc(anchor(bottom)+4px)] left-[anchor(left)] fixed m-0 min-w-52 rounded-xl bg-surface shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-border-subtle p-3 backdrop-blur-sm z-50">
   @if (isFilterMenuOpen()) {
   <div appFocusManager>
     <p class="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
