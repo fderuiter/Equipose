@@ -1,7 +1,4 @@
-import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, OnDestroy, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
 import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
@@ -36,7 +33,7 @@ import { createStepper, StepperState, StepConfig } from "../../../core/utils/ste
   imports: [SIGNAL_FORM_DIRECTIVES, ButtonComponent, TextInputComponent, CheckboxComponent, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
   templateUrl: './config-form.component.html'
 })
-export class ConfigFormComponent implements OnInit {
+export class ConfigFormComponent implements OnInit, OnDestroy {
   @Input() isSimulationMode = false;
   @Output() promoteToStudy = new EventEmitter<void>();
 
@@ -51,9 +48,15 @@ export class ConfigFormComponent implements OnInit {
   private readonly announcementService = inject(AnnouncementService);
   private readonly platformId = inject(PLATFORM_ID);
 
-  private readonly autoSave$ = new Subject<void>();
+  private autoSaveTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly DRAFT_KEY = 'draft-trial-config';
   private readonly SCHEMA_VERSION = 'v1';
+
+  ngOnDestroy(): void {
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+  }
 
   dropdownOpen = false;
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
@@ -312,23 +315,20 @@ export class ConfigFormComponent implements OnInit {
       this.matrixComputed();
       this.attritionRate();
       untracked(() => {
-        this.autoSave$.next();
+        this.triggerAutoSave();
+      });
+    });
+
+    effect(() => {
+      // Track whole form value changes
+      const _val = this.form.value;
+      untracked(() => {
+        this.triggerAutoSave();
       });
     });
   }
 
   ngOnInit(): void {
-    this.autoSave$.pipe(
-      debounceTime(750),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => this.saveDraft());
-
-    this.form.valueChanges.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.autoSave$.next();
-    });
-
     this.store.setStrata(this.strata.value as StratumFormValue[]);
     this.syncLevelDetails(this.strata.value as StratumFormValue[]);
     this.syncStratumCaps();
@@ -899,6 +899,13 @@ export class ConfigFormComponent implements OnInit {
   }
 
   // ── Auto-Save and Hydration Helpers ────────────────────────────────────────
+
+  private triggerAutoSave(): void {
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+    this.autoSaveTimeout = setTimeout(() => this.saveDraft(), 750);
+  }
 
   private saveDraft(): void {
     if (!isPlatformBrowser(this.platformId)) return;
