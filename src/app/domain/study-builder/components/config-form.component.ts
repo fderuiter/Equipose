@@ -1,10 +1,13 @@
-import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
 import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 import { CheckboxComponent } from '../../../core/components/ui/checkbox.component';
-import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
@@ -46,6 +49,11 @@ export class ConfigFormComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly announcementService = inject(AnnouncementService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  private readonly autoSave$ = new Subject<void>();
+  private readonly DRAFT_KEY = 'draft-trial-config';
+  private readonly SCHEMA_VERSION = 'v1';
 
   dropdownOpen = false;
   @ViewChild('dropdownContainer') dropdownContainer!: ElementRef;
@@ -205,11 +213,20 @@ export class ConfigFormComponent implements OnInit {
       return (val ?? '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
     });
     
+    if (isPlatformBrowser(this.platformId)) {
+      this.hydrateDraft();
+    }
+
     // Wire effects for value changes instead of RxJS
+    let lastStrataValueStr = JSON.stringify(this.form.get('strataGroup.strata')?.value);
     effect(() => {
       const s = this.form.get('strataGroup.strata')?.value as StratumFormValue[];
       if (s) {
         untracked(() => {
+          const sStr = JSON.stringify(s);
+          if (lastStrataValueStr === sStr) return;
+          lastStrataValueStr = sStr;
+
           this.store.setStrata(s);
           this.syncLevelDetails(s);
           this.markCapsStale();
@@ -224,9 +241,14 @@ export class ConfigFormComponent implements OnInit {
       });
     });
     
+    let lastCapsValueStr = JSON.stringify(this.form.get('capsGroup.stratumCaps')?.value);
     effect(() => {
       const caps = this.form.get('capsGroup.stratumCaps')?.value;
       untracked(() => {
+        const capsStr = JSON.stringify(caps);
+        if (lastCapsValueStr === capsStr) return;
+        lastCapsValueStr = capsStr;
+
         if (this.matrixComputed()) {
           this.form.get('capsGroup.capStrategy')?.setValue('MANUAL_MATRIX', { emitEvent: false });
           this.form.get('capsGroup.globalCap')?.disable({ emitEvent: false });
@@ -235,9 +257,14 @@ export class ConfigFormComponent implements OnInit {
       });
     });
     
+    let lastGlobalCap: any = this.form.get('capsGroup.globalCap')?.value;
     effect(() => {
       const globalCap = this.form.get('capsGroup.globalCap')?.value;
-      untracked(() => this.matrixComputed.set(false));
+      untracked(() => {
+        if (lastGlobalCap === globalCap) return;
+        lastGlobalCap = globalCap;
+        this.matrixComputed.set(false);
+      });
     });
     
     effect(() => {
@@ -276,9 +303,32 @@ export class ConfigFormComponent implements OnInit {
         this.form.updateValueAndValidity();
       });
     });
+
+    effect(() => {
+      this.proportionalPercentages();
+      this.marginalCaps();
+      this.minimizationProbabilities();
+      this.minimizationTouched();
+      this.matrixComputed();
+      this.attritionRate();
+      untracked(() => {
+        this.autoSave$.next();
+      });
+    });
   }
 
   ngOnInit(): void {
+    this.autoSave$.pipe(
+      debounceTime(750),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => this.saveDraft());
+
+    this.form.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
+      this.autoSave$.next();
+    });
+
     this.store.setStrata(this.strata.value as StratumFormValue[]);
     this.syncLevelDetails(this.strata.value as StratumFormValue[]);
     this.syncStratumCaps();
@@ -717,7 +767,10 @@ export class ConfigFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.valid) {
-      try { this.facade.generateSchema(this.store.buildConfig(this.buildFormValue())); }
+      try { 
+        this.facade.generateSchema(this.store.buildConfig(this.buildFormValue())); 
+        this.clearDraft();
+      }
       catch (e) { console.error('Error generating schema config:', e); this.toastService.showError('Error generating schema. Please check your configuration.'); }
     }
   }
@@ -843,6 +896,125 @@ export class ConfigFormComponent implements OnInit {
       if (Math.abs(total - 100) > 0.01) return { minimizationProbabilitiesInvalid: true };
     }
     return null;
+  }
+
+  // ── Auto-Save and Hydration Helpers ────────────────────────────────────────
+
+  private saveDraft(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    const state = {
+      form: this.form.getRawValue(),
+      signals: {
+        proportionalPercentages: this.proportionalPercentages(),
+        marginalCaps: this.marginalCaps(),
+        minimizationProbabilities: this.minimizationProbabilities(),
+        minimizationTouched: this.minimizationTouched(),
+        matrixComputed: this.matrixComputed(),
+        attritionRate: this.attritionRate(),
+        currentStepIndex: this.currentStepIndex()
+      }
+    };
+    
+    const draft = {
+      schemaVersion: this.SCHEMA_VERSION,
+      state
+    };
+    
+    try {
+      localStorage.setItem(this.DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {
+      console.warn('Failed to save draft config', e);
+    }
+  }
+
+  private hydrateDraft(): void {
+    try {
+      const draftStr = localStorage.getItem(this.DRAFT_KEY);
+      if (!draftStr) return;
+      
+      const draft = JSON.parse(draftStr);
+      if (draft.schemaVersion !== this.SCHEMA_VERSION) {
+        this.clearDraft();
+        return;
+      }
+      
+      const state = draft.state;
+      if (!state) return;
+
+      // Restore signals first so that any synced computed/effects behave correctly
+      if (state.signals) {
+        if (state.signals.proportionalPercentages) this.proportionalPercentages.set(state.signals.proportionalPercentages);
+        if (state.signals.marginalCaps) this.marginalCaps.set(state.signals.marginalCaps);
+        if (state.signals.minimizationProbabilities) this.minimizationProbabilities.set(state.signals.minimizationProbabilities);
+        if (state.signals.minimizationTouched) this.minimizationTouched.set(state.signals.minimizationTouched);
+        if (state.signals.matrixComputed !== undefined) this.matrixComputed.set(state.signals.matrixComputed);
+        if (state.signals.attritionRate !== undefined) this.attritionRate.set(state.signals.attritionRate);
+        if (state.signals.currentStepIndex !== undefined) this.stepper.goTo(state.signals.currentStepIndex);
+      }
+      
+      // Restore dynamic arrays
+      if (state.form) {
+        this.arms.clear({ emitEvent: false });
+        if (state.form.designGroup?.arms) {
+          state.form.designGroup.arms.forEach((a: any) => {
+            this.arms.push(
+              this.fb.group({ id: [a.id], name: [a.name], ratio: [a.ratio, [Validators.required, Validators.min(1)]] }),
+              { emitEvent: false }
+            );
+          });
+        }
+        
+        this.strata.clear({ emitEvent: false });
+        if (state.form.strataGroup?.strata) {
+          state.form.strataGroup.strata.forEach((s: any) => {
+            this.strata.push(
+              this.fb.group({ id: [s.id], name: [s.name], levelsStr: [s.levelsStr, Validators.required] }),
+              { emitEvent: false }
+            );
+          });
+        }
+        
+        this.blockOverrides.clear({ emitEvent: false });
+        if (state.form.allocationGroup?.blockOverrides) {
+          state.form.allocationGroup.blockOverrides.forEach((ov: any) => {
+            this.blockOverrides.push(
+              this.fb.group({
+                targetType: [ov.targetType],
+                targetId: [ov.targetId],
+                sizesStr: [ov.sizesStr],
+                selectionType: [ov.selectionType]
+              }),
+              { emitEvent: false }
+            );
+          });
+        }
+        
+        this.stratumCaps.clear({ emitEvent: false });
+        if (state.form.capsGroup?.stratumCaps) {
+          state.form.capsGroup.stratumCaps.forEach((c: any) => {
+            this.stratumCaps.push(
+              this.fb.group({ levelIds: [c.levelIds], cap: [c.cap, [Validators.required, Validators.min(0)]] }),
+              { emitEvent: false }
+            );
+          });
+        }
+        
+        this.form.patchValue(state.form, { emitEvent: false });
+      }
+      
+      // After patching, trigger a validity check
+      this.form.updateValueAndValidity({ emitEvent: false });
+      
+    } catch (e) {
+      console.warn('Failed to hydrate draft config, clearing it.', e);
+      this.clearDraft();
+    }
+  }
+
+  private clearDraft(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    localStorage.removeItem(this.DRAFT_KEY);
   }
 
   // ── Minimization helpers ──────────────────────────────────────────────────
