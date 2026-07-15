@@ -39,7 +39,6 @@ export class SignalControl<T = any> extends AbstractControl {
     subscribe: (fn: (val: T) => void) => {
       // Return a dummy subscription to avoid breaking code that expects it,
       // but don't use effect() here as it requires injection context.
-      // The goal is to move towards true Signal usage.
       return { unsubscribe: () => {} };
     },
     pipe: (...args: any[]) => {
