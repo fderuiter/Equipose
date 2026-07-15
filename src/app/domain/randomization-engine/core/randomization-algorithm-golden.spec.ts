@@ -29,6 +29,25 @@ const checkPythonEnv = async (command: string): Promise<boolean> => {
   }
 };
 
+const resolveExecutable = async (candidates: (string | undefined)[]): Promise<string | null> => {
+  for (const candidate of candidates) {
+    if (candidate && await commandExists(candidate)) return candidate;
+  }
+
+  return null;
+};
+
+const getRscriptCandidates = (): string[] => {
+  const rHome = process.env['R_HOME'];
+
+  return [
+    process.env['RSCRIPT'],
+    process.env['R_SCRIPT'],
+    rHome ? join(rHome, 'bin', 'Rscript') : undefined,
+    'Rscript',
+  ].filter((candidate): candidate is string => Boolean(candidate));
+};
+
 // Helper function to parse CSV robustly (handling basic quoted strings without internal commas)
 const parseCsv = (csv: string) => {
   const lines = csv.trim().split('\n').filter(l => l.trim().length > 0);
@@ -78,13 +97,15 @@ describe('Golden Regression Fixtures', () => {
   let codeGenerator: CodeGeneratorService;
   let hasPython = false;
   let hasR = false;
+  let rscriptExecutable: string | null = null;
   const pythonExecutable = process.env['PYTHON'] || 'python3';
 
   beforeAll(async () => {
     TestBed.configureTestingModule({ providers: [CodeGeneratorService] });
     codeGenerator = TestBed.inject(CodeGeneratorService);
     hasPython = await commandExists(pythonExecutable) && await checkPythonEnv(pythonExecutable);
-    hasR = await commandExists('Rscript');
+    rscriptExecutable = await resolveExecutable(getRscriptCandidates());
+    hasR = rscriptExecutable !== null;
   });
 
   for (const [key, fixture] of Object.entries(goldenFixtures)) {
@@ -114,7 +135,7 @@ describe('Golden Regression Fixtures', () => {
         const rCode = codeGenerator.generateR(config, result.metadata);
         const rPath = join('/tmp', `test-${key}.R`);
         await writeFile(rPath, rCode);
-        const { stdout: rStdout } = await execFileAsync('Rscript', [rPath], { cwd: runtimesDir });
+        const { stdout: rStdout } = await execFileAsync(rscriptExecutable!, [rPath], { cwd: runtimesDir });
         
         if (fixture.schema.length === 0) {
           // If expected schema is empty, script output might just be an empty string or missing headers
