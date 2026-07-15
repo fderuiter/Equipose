@@ -1,23 +1,15 @@
-import { Injectable, OnDestroy, Inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { Injectable, inject, OnDestroy } from '@angular/core';
+import { AnnouncementService } from './announcement.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProgressAnnouncerService implements OnDestroy {
-  private liveRegion: HTMLElement;
+  private announcementService = inject(AnnouncementService);
   private taskStates = new Map<string, { lastMilestone: number, lastAnnouncedTime: number, timerId?: any }>();
   
   private readonly MILESTONES = [0, 25, 50, 75, 100];
   private readonly THROTTLE_MS = 5000;
-
-  constructor(@Inject(DOCUMENT) private document: Document) {
-    this.liveRegion = this.document.createElement('div');
-    this.liveRegion.setAttribute('aria-live', 'polite');
-    this.liveRegion.setAttribute('aria-atomic', 'true');
-    this.liveRegion.className = 'sr-only';
-    this.document.body.appendChild(this.liveRegion);
-  }
 
   /**
    * Broadcasts a progress update for a background task.
@@ -62,12 +54,8 @@ export class ProgressAnnouncerService implements OnDestroy {
     state.lastAnnouncedTime = Date.now();
     this.taskStates.set(taskName, state);
     
-    // Clear and reset to ensure screen reader detects the change even if the text is identical
-    this.liveRegion.textContent = '';
-    // Small delay to allow DOM to register the empty state before updating
-    setTimeout(() => {
-      this.liveRegion.textContent = `${taskName} progress: ${milestone}%`;
-    }, 50);
+    // Delegate to AnnouncementService which handles signals, politeness, and auto-clearing
+    this.announcementService.announce(`${taskName} progress: ${milestone}%`, 'polite');
   }
 
   /**
@@ -82,8 +70,12 @@ export class ProgressAnnouncerService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.liveRegion && this.liveRegion.parentNode) {
-      this.liveRegion.parentNode.removeChild(this.liveRegion);
+    // Clear all pending timeouts
+    for (const state of this.taskStates.values()) {
+      if (state.timerId) {
+        clearTimeout(state.timerId);
+      }
     }
+    this.taskStates.clear();
   }
 }
