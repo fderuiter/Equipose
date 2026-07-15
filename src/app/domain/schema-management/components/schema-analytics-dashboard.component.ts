@@ -2,92 +2,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
-  ElementRef,
   inject,
-  OnDestroy,
-  viewChild,
-  Input,
-  Output,
-  EventEmitter,
-  OnInit,
-  SimpleChanges,
-  OnChanges
 } from '@angular/core';
-import * as echarts from 'echarts/core';
-import { PieChart, BarChart } from 'echarts/charts';
-import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, AriaComponent } from 'echarts/components';
-import { SVGRenderer } from 'echarts/renderers';
-import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
+import { DecimalPipe } from '@angular/common';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { AdamLiteDataset, AdamLiteVariable } from '../../core/models/adam-lite.model';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
-
-// Register only the ECharts modules we need (tree-shakeable).
-echarts.use([PieChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, SVGRenderer, AriaComponent]);
-
-@Component({
-  selector: 'app-echart',
-  standalone: true,
-  template: `<div class="w-full h-full" #container></div>`
-})
-export class EchartComponent implements OnDestroy, OnInit, OnChanges {
-  @Input() option: any;
-  @Output() chartClick = new EventEmitter<any>();
-  private readonly containerRef = viewChild<ElementRef<HTMLDivElement>>('container');
-  private chart: echarts.ECharts | null = null;
-
-  ngOnInit() {
-    this.initChart();
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['option'] && this.chart) {
-      try {
-        this.chart.setOption(this.option, { notMerge: true });
-      } catch {}
-    }
-  }
-
-  ngAfterViewInit() {
-    this.initChart();
-  }
-
-  private initChart() {
-    const el = this.containerRef()?.nativeElement;
-    if (!el || !this.option || this.chart) return;
-
-    try {
-      this.chart = echarts.init(el, undefined, { renderer: 'svg' });
-      this.chart.on('click', (params: echarts.ECElementEvent) => {
-        this.chartClick.emit(params);
-      });
-      this.chart.setOption(this.option, { notMerge: true });
-    } catch {
-      return;
-    }
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', this.onResize);
-    }
-  }
-
-  ngOnDestroy() {
-    try { this.chart?.dispose(); } catch {}
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', this.onResize);
-    }
-  }
-
-  private readonly onResize = () => {
-    this.chart?.resize();
-  };
-}
 
 @Component({
   selector: 'app-schema-analytics-dashboard',
   standalone: true,
-  imports: [EchartComponent],
+  imports: [DecimalPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (viewState.adamDataset()) {
@@ -129,8 +53,43 @@ export class EchartComponent implements OnDestroy, OnInit, OnChanges {
                   <span class="ml-1 text-amber-700 dark:text-amber-400">(blinded)</span>
                 }
               </p>
-              <div class="h-56 w-full">
-                <app-echart [option]="chart.option" (chartClick)="chart.clickHandler($event)"></app-echart>
+              <div class="h-56 w-full flex items-center justify-center">
+                @if (chart.isBlinded) {
+                  <div class="relative w-40 h-40 rounded-full flex items-center justify-center shadow-inner" style="background: {{chart.conicGradient}};">
+                    <div class="absolute inset-0 m-auto w-24 h-24 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+                      <span class="font-bold text-muted text-sm">Blinded</span>
+                    </div>
+                  </div>
+                } @else if (chart.type === 'pie') {
+                  <div 
+                    class="relative w-40 h-40 rounded-full flex items-center justify-center cursor-pointer shadow-sm hover:shadow-md transition-shadow" 
+                    [style.background]="chart.conicGradient"
+                    (click)="onDonutClick($event, chart)"
+                    role="img"
+                    [attr.aria-label]="'Donut chart for ' + chart.label"
+                  >
+                    <div class="absolute inset-0 m-auto w-24 h-24 bg-white dark:bg-slate-900 rounded-full"></div>
+                  </div>
+                } @else {
+                  <div class="w-full flex flex-col justify-center h-full gap-3 overflow-y-auto pr-2" role="list" [attr.aria-label]="'Bar chart for ' + chart.label">
+                    @for (category of chart.categories; track category.name) {
+                      <div class="w-full">
+                        <div class="flex justify-between text-xs mb-1">
+                          <span class="truncate max-w-[70%] font-medium" [title]="category.name">{{ category.name }}</span>
+                          <span class="text-muted">{{ category.value }} ({{ category.percentage | number:'1.0-0' }}%)</span>
+                        </div>
+                        <div 
+                          class="h-4 bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          (click)="chart.clickHandler({ name: category.name })"
+                          role="button"
+                          [attr.aria-label]="'Filter by ' + category.name"
+                        >
+                          <div class="h-full rounded-sm" [style.width.%]="category.percentage" [style.background-color]="category.color"></div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
 
               <!-- Accessible Filter Legend -->
@@ -216,6 +175,29 @@ export class SchemaAnalyticsDashboardComponent {
     }
   }
 
+  onDonutClick(event: MouseEvent, chart: any) {
+    if (chart.isBlinded) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = event.clientX - rect.left - rect.width / 2;
+    const y = event.clientY - rect.top - rect.height / 2;
+    
+    // Calculate angle in radians, then convert to degrees
+    let angle = Math.atan2(y, x) * 180 / Math.PI;
+    // Offset so 0 degrees is at the top (12 o'clock) moving clockwise
+    let degrees = (angle + 90 + 360) % 360;
+    const clickPercent = (degrees / 360) * 100;
+
+    let cumulative = 0;
+    for (const cat of chart.categories) {
+      const nextCumulative = cumulative + cat.percentage;
+      if (clickPercent >= cumulative && clickPercent <= nextCumulative) {
+        chart.clickHandler({ name: cat.name });
+        break;
+      }
+      cumulative = nextCumulative;
+    }
+  }
+
   readonly chartConfigs = computed(() => {
     const dataset = this.viewState.adamDataset();
     const filteredDataset = this.viewState.filteredAdamDataset();
@@ -239,68 +221,36 @@ export class SchemaAnalyticsDashboardComponent {
         counts.set(val, (counts.get(val) || 0) + 1);
       }
 
-      let option: any;
-      const categories: { name: string, color: string }[] = [];
+      const total = Array.from(counts.values()).reduce((sum, val) => sum + val, 0);
+
+      const type: 'pie' | 'bar' = (i % 2 === 0 || v.metadataTags.includes('Group')) ? 'pie' : 'bar';
+      const categories: { name: string, color: string, value: number, percentage: number }[] = [];
+      let conicGradient = '';
 
       if (isBlindedGroup) {
-        option = {
-          aria: { enabled: true, decal: { show: true } },
-          tooltip: { show: false },
-          legend: { show: false },
-          series: [{
-            type: 'pie',
-            radius: ['45%', '70%'],
-            label: { show: true, formatter: 'Blinded', position: 'center', fontSize: 13, color: blindedColour, fontWeight: 'bold' },
-            emphasis: { disabled: true },
-            data: [{ value: 1, name: 'Blinded', itemStyle: { color: blindedColour } }],
-          }],
-        };
+        categories.push({ name: 'Blinded', color: blindedColour, value: 1, percentage: 100 });
+        conicGradient = `${blindedColour} 0% 100%`;
       } else {
-        // Alternate between pie and bar charts for variety (or based on metadata)
-        if (i % 2 === 0 || v.metadataTags.includes('Group')) {
-          const data = Array.from(counts.entries()).map(([name, value], idx) => {
-            const color = palette[idx % palette.length];
-            categories.push({ name, color });
-            return {
-              name,
-              value,
-              itemStyle: { color },
-            };
-          });
+        const names = Array.from(counts.keys()).sort();
+        let cumulativePercent = 0;
+        const gradientStops: string[] = [];
 
-          option = {
-            aria: { enabled: true, decal: { show: true } },
-            tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-            legend: { show: false },
-            series: [{
-              type: 'pie',
-              radius: ['45%', '70%'],
-              label: { show: false },
-              emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.3)' } },
-              data,
-            }],
-          };
-        } else {
-          // Bar chart
-          const names = Array.from(counts.keys()).sort();
-          const data = names.map((name, idx) => {
-            const color = palette[idx % palette.length];
-            categories.push({ name, color });
-            return {
-              value: counts.get(name) || 0,
-              itemStyle: { color }
-            };
-          });
+        names.forEach((name, idx) => {
+          const value = counts.get(name) || 0;
+          const percentage = total > 0 ? (value / total) * 100 : 0;
+          const color = palette[idx % palette.length];
+          
+          categories.push({ name, color, value, percentage });
 
-          option = {
-            aria: { enabled: true, decal: { show: true } },
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { show: false },
-            grid: { left: '3%', right: '4%', bottom: '10%', containLabel: true },
-            xAxis: { type: 'category', data: names, axisLabel: { rotate: names.length > 5 ? 30 : 0, fontSize: 11 } },
-            yAxis: { type: 'value', minInterval: 1 },
-            series: [{ type: 'bar', data }]
-          };
+          if (type === 'pie') {
+            const nextCumulative = cumulativePercent + percentage;
+            gradientStops.push(`${color} ${cumulativePercent}% ${nextCumulative}%`);
+            cumulativePercent = nextCumulative;
+          }
+        });
+
+        if (type === 'pie') {
+          conicGradient = gradientStops.length > 0 ? `conic-gradient(${gradientStops.join(', ')})` : '';
         }
       }
 
@@ -319,7 +269,8 @@ export class SchemaAnalyticsDashboardComponent {
         id: v.id,
         label: v.label,
         isBlinded: isBlindedGroup,
-        option,
+        type,
+        conicGradient,
         clickHandler,
         categories
       });
