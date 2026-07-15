@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, inject, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, inject, ChangeDetectorRef, effect, ElementRef } from '@angular/core';
 import { AbstractControl } from '../../../core/forms/signal-forms';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
@@ -17,18 +17,21 @@ import { TextInputComponent } from '../../../core/components/ui/text-input.compo
   template: `
     <div
       appRovingTabindex="button, input"
-      role="list"
       class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2 focus-within:ring-offset-focus-offset cursor-text transition-colors"
       (click)="tagInput.focus()" (keydown.enter)="tagInput.focus()"
     >
-      @for (tag of tags; track tag) {
-        <span role="listitem" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 select-none">
-          {{ tag }}
-          <app-button type="button"
-            (click)="removeTag(tag); $event.stopPropagation()" customClass="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"[attr.aria-label]="'Remove ' + tag"
-            [appTooltip]="'Remove ' + tag"
-           variant="bare">×</app-button>
-        </span>
+      @if (tags.length > 0) {
+        <ul role="list" class="flex flex-wrap gap-1.5 items-center list-none p-0 m-0">
+          @for (tag of tags; track tag) {
+            <li role="listitem" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 select-none">
+              {{ tag }}
+              <app-button type="button"
+                (click)="removeTag(tag); $event.stopPropagation()" customClass="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"[attr.aria-label]="'Remove ' + tag"
+                [appTooltip]="'Remove ' + tag"
+               variant="bare">×</app-button>
+            </li>
+          }
+        </ul>
       }
       <app-text-input #tagInput type="text"
         [value]="inputValue"
@@ -50,13 +53,14 @@ export class TagInputComponent implements OnInit {
   @Input() ariaLabel?: string;
 
   @ViewChild('tagInput') tagInput!: any;
-
+  @ViewChild(RovingTabindexDirective) rovingTabindex?: RovingTabindexDirective;
 
   tags: string[] = [];
   inputValue = '';
 
   // ChangeDetectorRef injected to support OnPush when external form updates occur.
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly elementRef = inject(ElementRef);
 
   constructor() {
     effect(() => {
@@ -88,8 +92,15 @@ export class TagInputComponent implements OnInit {
       event.preventDefault();
       this.commitInput();
     } else if (event.key === 'Backspace' && !this.inputValue && this.tags.length > 0) {
-      this.tags = this.tags.slice(0, -1);
-      this.update();
+      event.preventDefault();
+      const buttons = this.elementRef.nativeElement.querySelectorAll('button');
+      if (buttons.length > 0) {
+        const lastButton = buttons[buttons.length - 1] as HTMLButtonElement;
+        lastButton.focus();
+        if (this.rovingTabindex) {
+          (this.rovingTabindex as any).initItems();
+        }
+      }
     }
   }
 
