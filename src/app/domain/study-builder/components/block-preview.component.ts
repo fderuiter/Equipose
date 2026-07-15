@@ -137,12 +137,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
 
       <!-- Per-block-size previews -->
       <!-- Shared tooltip popover -->
-      <div id="block-preview-tooltip" popover="manual" class="fixed m-0 z-50 bg-gray-900 text-white text-xs rounded py-1 px-2 pointer-events-none" [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
-        {{ tooltipText() }}
-      </div>
-
-      <!-- Shared tooltip popover -->
-      <div id="block-preview-tooltip" popover="manual" class="fixed m-0 z-50 bg-gray-900 text-white text-xs rounded py-1 px-2 pointer-events-none" [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
+      <div id="block-preview-tooltip" popover="manual" class="app-tooltip fixed m-0 z-50 pointer-events-none" [style.top.px]="tooltipY()" [style.left.px]="tooltipX()">
         {{ tooltipText() }}
       </div>
 

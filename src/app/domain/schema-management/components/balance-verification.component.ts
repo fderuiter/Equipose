@@ -90,9 +90,18 @@ export interface MarginalBalanceRow {
                         [class]="cellClass(ab.status)"
                         [appTooltip]="tooltipText(ab)">
                       {{ ab.actual }}&nbsp;/&nbsp;{{ ab.target | number:'1.0-2' }}
-                      @if (ab.status === 0) { <span class="ml-1">✓</span> }
-                      @if (ab.status === 1) { <span class="ml-1">⚠</span> }
-                      @if (ab.status === 2) { <span class="ml-1" appTooltip="Critical error">✕</span> }
+                      @if (ab.status === 0) {
+                        <span class="ml-1" aria-hidden="true">✓</span>
+                        <span class="sr-only">Perfect Balance</span>
+                      }
+                      @if (ab.status === 1) {
+                        <span class="ml-1" aria-hidden="true">⚠</span>
+                        <span class="sr-only">Expected Deviation</span>
+                      }
+                      @if (ab.status === 2) {
+                        <span class="ml-1" appTooltip="Critical error" aria-hidden="true">✕</span>
+                        <span class="sr-only">Critical Error</span>
+                      }
                     </td>
                   }
                 </tr>
@@ -131,9 +140,18 @@ export interface MarginalBalanceRow {
                             [class]="cellClass(ab.status)"
                             [appTooltip]="tooltipText(ab)">
                           {{ ab.actual }}&nbsp;/&nbsp;{{ ab.target | number:'1.0-2' }}
-                          @if (ab.status === 0) { <span class="ml-1">✓</span> }
-                          @if (ab.status === 1) { <span class="ml-1">⚠</span> }
-                          @if (ab.status === 2) { <span class="ml-1" appTooltip="Critical error">✕</span> }
+                          @if (ab.status === 0) {
+                            <span class="ml-1" aria-hidden="true">✓</span>
+                            <span class="sr-only">Perfect Balance</span>
+                          }
+                          @if (ab.status === 1) {
+                            <span class="ml-1" aria-hidden="true">⚠</span>
+                            <span class="sr-only">Expected Deviation</span>
+                          }
+                          @if (ab.status === 2) {
+                            <span class="ml-1" appTooltip="Critical error" aria-hidden="true">✕</span>
+                            <span class="sr-only">Critical Error</span>
+                          }
                         </td>
                       }
                     </tr>
@@ -216,9 +234,18 @@ export interface MarginalBalanceRow {
                             [class]="cellClass(ab.status)"
                             [appTooltip]="tooltipText(ab)">
                           {{ ab.actual }}&nbsp;/&nbsp;{{ ab.target | number:'1.0-2' }}
-                          @if (ab.status === 0) { <span class="ml-1">✓</span> }
-                          @if (ab.status === 1) { <span class="ml-1">⚠</span> }
-                          @if (ab.status === 2) { <span class="ml-1" appTooltip="Critical error">✕</span> }
+                          @if (ab.status === 0) {
+                            <span class="ml-1" aria-hidden="true">✓</span>
+                            <span class="sr-only">Perfect Balance</span>
+                          }
+                          @if (ab.status === 1) {
+                            <span class="ml-1" aria-hidden="true">⚠</span>
+                            <span class="sr-only">Expected Deviation</span>
+                          }
+                          @if (ab.status === 2) {
+                            <span class="ml-1" appTooltip="Critical error" aria-hidden="true">✕</span>
+                            <span class="sr-only">Critical Error</span>
+                          }
                         </td>
                       }
                     </tr>
