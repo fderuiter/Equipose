@@ -926,11 +926,13 @@ jobs:
           objects.githubusercontent.com:443
           raw.githubusercontent.com:443
           github-releases.githubusercontent.com:443
+          release-assets.githubusercontent.com:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Run actionlint
       run: |
-        bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        curl -sL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz -o actionlint.tar.gz
+        tar xf actionlint.tar.gz actionlint
         ./actionlint -color
     - name: Check for mutable tags
       run: |
