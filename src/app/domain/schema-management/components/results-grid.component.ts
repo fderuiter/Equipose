@@ -12,6 +12,7 @@ import { APP_VERSION } from '../../../../environments/version';
 import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ButtonComponent } from '../../../core/components/ui/button.component';
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 
@@ -60,7 +61,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective],
+  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ButtonComponent],
   templateUrl: './results-grid.component.html',
   styles: [`
     .dot { transition: transform 0.2s ease-in-out; }
