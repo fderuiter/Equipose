@@ -14,6 +14,7 @@ import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { ToggleComponent } from '../../../core/components/ui/toggle.component';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
 
@@ -60,13 +61,8 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective],
-  templateUrl: './results-grid.component.html',
-  styles: [`
-    .dot { transition: transform 0.2s ease-in-out; }
-    [popover] { margin: 0; border: none; padding: 0; background: transparent; overflow: visible; }
-    [popover]:popover-open { display: block; }
-  `]
+  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent],
+  templateUrl: './results-grid.component.html'
 })
 export class ResultsGridComponent {
   public state = inject(RandomizationEngineFacade);

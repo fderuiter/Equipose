@@ -110,11 +110,6 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
-  styles: [`
-    .invalid-slot {
-      background: repeating-linear-gradient(45deg, var(--invalid-stripe), var(--invalid-stripe) 4px, var(--invalid-bg) 4px, var(--invalid-bg) 10px);
-    }
-  `],
   template: `
     <div class="space-y-4">
       <h3 class="text-sm font-semibold text-muted flex items-center gap-1.5">
@@ -134,7 +129,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
             </span>
           }
           <span class="inline-flex items-center gap-1 text-xs text-muted">
-            <span class="inline-block h-3 w-3 rounded-sm border-2 border-dashed border-red-400 bg-red-50 dark:bg-red-900/20"></span>
+            <span class="inline-block h-3 w-3 rounded-sm border-2 border-dashed border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-950/40"></span>
             Unallocatable
           </span>
         </div>
@@ -192,7 +187,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
               @for (slot of preview.slots; track $index) {
                 @if (slot.isInvalid) {
                   <div
-                    class="rounded-md h-8 w-8 border-2 border-dashed border-red-400 invalid-slot"
+                    class="rounded-md h-8 w-8 border-2 border-dashed border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-950/40"
                     (mouseenter)="showTooltip($event, slot.tooltip)" (mouseleave)="hideTooltip()"
                     role="img"
                     aria-label="Unallocatable subject slot"
