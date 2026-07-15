@@ -184,7 +184,7 @@ export class CodeTranspiler {
          } else if (token.type === 'seq') {
            baseBuilder += `sprintf("%0${token.length}d", ${seqVar}), `;
          } else if (token.type === 'rnd') {
-           baseBuilder += `paste0(ALPHANUMERIC[floor((mt19937_int() / 4294967296) * 36) + 1][1:${token.length}], collapse=""), `;
+           baseBuilder += `paste0(ALPHANUMERIC[floor((random_int() / 4294967296) * 36) + 1][1:${token.length}], collapse=""), `;
          } else if (token.type === 'checksum') {
            hasChecksum = true;
            baseBuilder += `"{CHECKSUM}", `;
