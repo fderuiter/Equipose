@@ -44,6 +44,17 @@
       background-color: var(--bg-surface);
       color: var(--text-main);
     }
+
+    & select option:hover,
+    & select option:focus {
+      background-color: var(--bg-hover);
+      color: var(--text-main);
+    }
+
+    & select option:checked {
+      background-color: var(--focus-ring);
+      color: var(--focus-offset);
+    }
   }
 
   html,
