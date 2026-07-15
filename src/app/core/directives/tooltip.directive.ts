@@ -73,19 +73,10 @@ export class AppTooltipDirective implements OnInit, OnDestroy, OnChanges {
     if (!AppTooltipDirective.tooltipElement) {
       AppTooltipDirective.tooltipElement = this.renderer.createElement('div');
       const tooltip = AppTooltipDirective.tooltipElement!;
+      this.renderer.addClass(tooltip, 'app-tooltip');
       this.renderer.addClass(tooltip, 'fixed');
       this.renderer.addClass(tooltip, 'z-[9999]');
-      this.renderer.addClass(tooltip, 'bg-gray-900');
-      this.renderer.addClass(tooltip, 'dark:bg-slate-800');
-      this.renderer.addClass(tooltip, 'text-white');
-      this.renderer.addClass(tooltip, 'text-xs');
-      this.renderer.addClass(tooltip, 'rounded');
-      this.renderer.addClass(tooltip, 'py-1');
-      this.renderer.addClass(tooltip, 'px-2');
       this.renderer.addClass(tooltip, 'pointer-events-none');
-      this.renderer.addClass(tooltip, 'whitespace-pre-wrap');
-      this.renderer.addClass(tooltip, 'max-w-xs');
-      this.renderer.addClass(tooltip, 'shadow-lg');
       // ARIA role for tooltip
       this.renderer.setAttribute(tooltip, 'role', 'tooltip');
       this.renderer.appendChild(document.body, tooltip);
