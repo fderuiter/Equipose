@@ -7,7 +7,7 @@
   },
   "assets": {
     "directory": "dist/app/browser",
-    "not_found_handling": "none"
+    "not_found_handling": "single-page-application"
   },
   "compatibility_flags": [
     "nodejs_compat"

@@ -46,21 +46,6 @@ while ((match = routeRegex.exec(routesContent)) !== null) {
   validRoutes.push(routePath);
 }
 
-// Generate Cloudflare Pages _redirects file
-const redirectsRules = [];
-for (const routePath of validRoutes) {
-  if (routePath === '') continue; // Skip root route to prevent Cloudflare infinite loop
-  
-  let baseRoute = `/${routePath}`;
-  // Convert dynamic parameters to standard wildcard fallback rules
-  baseRoute = baseRoute.replace(/:[a-zA-Z0-9_]+/g, '*');
-  
-  redirectsRules.push(`${baseRoute} /index.html 200`);
-  redirectsRules.push(`${baseRoute}/ /index.html 200`);
-}
-const redirectsContent = redirectsRules.join('\n');
-fs.writeFileSync(path.join(buildDir, '_redirects'), redirectsContent);
-console.log(`Generated _redirects with ${redirectsRules.length} rules.`);
 
 // Prepare Regex strings for the Service Worker
 const swRegexes = validRoutes.map(routePath => {
