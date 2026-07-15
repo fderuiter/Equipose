@@ -15,7 +15,6 @@ import { CapStrategy } from '../../core/models/randomization.model';
 import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
 import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
-import { A11yValidationDirective } from '../../../core/directives/a11y-validation.directive';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
@@ -31,7 +30,7 @@ import { createStepper, StepperState, StepConfig } from "../../../core/utils/ste
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SIGNAL_FORM_DIRECTIVES, ButtonComponent, TextInputComponent, CheckboxComponent, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, A11yValidationDirective, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
+  imports: [SIGNAL_FORM_DIRECTIVES, ButtonComponent, TextInputComponent, CheckboxComponent, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit {

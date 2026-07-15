@@ -376,10 +376,11 @@ describe('ResultsGridComponent (domain)', () => {
       fixture.detectChanges();
 
       const spy = vi.spyOn(component, 'exportJson').mockImplementation(() => { /* no-op */ });
-      const jsonButton = fixture.debugElement.query(By.css('[data-testid="export-json-btn"]'));
-      expect(jsonButton).toBeTruthy();
-      expect(jsonButton.nativeElement.disabled).toBe(false);
-      jsonButton?.triggerEventHandler('click', null);
+      const jsonAppButton = fixture.debugElement.query(By.css('[data-testid="export-json-btn"]'));
+      expect(jsonAppButton).toBeTruthy();
+      const innerButton = jsonAppButton.query(By.css('button'));
+      expect(innerButton.nativeElement.disabled).toBe(false);
+      innerButton?.triggerEventHandler('click', null);
       expect(spy).toHaveBeenCalled();
     });
 
@@ -389,9 +390,10 @@ describe('ResultsGridComponent (domain)', () => {
       fixture.detectChanges();
 
       const spy = vi.spyOn(component, 'exportXlsx').mockResolvedValue(undefined);
-      const xlsxButton = fixture.debugElement.query(By.css('[data-testid="export-xlsx-btn"]'));
-      expect(xlsxButton).toBeTruthy();
-      xlsxButton?.triggerEventHandler('click', null);
+      const xlsxAppButton = fixture.debugElement.query(By.css('[data-testid="export-xlsx-btn"]'));
+      expect(xlsxAppButton).toBeTruthy();
+      const innerButton = xlsxAppButton.query(By.css('button'));
+      innerButton?.triggerEventHandler('click', null);
       expect(spy).toHaveBeenCalled();
     });
 

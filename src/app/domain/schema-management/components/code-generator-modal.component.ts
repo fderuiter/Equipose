@@ -1,5 +1,6 @@
 import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { JsonPipe } from '@angular/common';
+import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
@@ -17,7 +18,7 @@ import { AnnouncementService } from '../../../core/services/announcement.service
   selector: 'app-code-generator-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [JsonPipe, FocusManagerDirective, AppTooltipDirective],
+  imports: [JsonPipe, FocusManagerDirective, ButtonComponent, AppTooltipDirective],
   templateUrl: './code-generator-modal.component.html'
 })
 export class CodeGeneratorModalComponent implements OnInit {
