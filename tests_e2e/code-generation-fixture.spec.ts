@@ -4,6 +4,7 @@ import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { join, resolve } from 'path';
 import { promisify } from 'util';
 import { goToStep, loadPreset, openGenerator } from './generator-helpers';
+import { commandExists, getRscriptCandidates, resolveExecutable } from '../src/testing/runtime-command.util';
 
 type Language = 'R' | 'Python' | 'SAS' | 'Stata';
 
@@ -109,37 +110,6 @@ test.describe('Code generation fixtures for script execution checks', () => {
         `error: ${failure.message}`,
       );
     }
-  };
-
-  const commandExists = async (command: string): Promise<boolean> => {
-    try {
-      await execFileAsync(command, ['--version'], {
-        cwd: process.cwd(),
-        maxBuffer: 1024 * 1024,
-      });
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const resolveExecutable = async (candidates: (string | undefined)[]): Promise<string | null> => {
-    for (const candidate of candidates) {
-      if (candidate && await commandExists(candidate)) return candidate;
-    }
-
-    return null;
-  };
-
-  const getRscriptCandidates = (): string[] => {
-    const rHome = process.env.R_HOME;
-
-    return [
-      process.env.RSCRIPT,
-      process.env.R_SCRIPT,
-      rHome ? join(rHome, 'bin', 'Rscript') : undefined,
-      'Rscript',
-    ].filter((candidate): candidate is string => Boolean(candidate));
   };
 
   test.beforeAll(async () => {
@@ -381,7 +351,10 @@ test.describe('Code generation fixtures for script execution checks', () => {
     const pythonExecutable = process.env.PYTHON || 'python3';
 
     const pythonScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.py`));
-    const hasPython = await commandExists(pythonExecutable);
+    const hasPython = await commandExists(pythonExecutable, {
+      cwd: process.cwd(),
+      maxBuffer: 1024 * 1024,
+    });
     expect(hasPython).toBe(true);
 
     await assertSubprocessSuccess(
@@ -400,7 +373,10 @@ test.describe('Code generation fixtures for script execution checks', () => {
     }
 
     const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
-    const rscriptExecutable = await resolveExecutable(getRscriptCandidates());
+    const rscriptExecutable = await resolveExecutable(getRscriptCandidates(), {
+      cwd: process.cwd(),
+      maxBuffer: 1024 * 1024,
+    });
     if (rscriptExecutable) {
       for (const scriptPath of rScripts) {
         await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);

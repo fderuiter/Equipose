@@ -7,18 +7,9 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { commandExists, getRscriptCandidates, resolveExecutable } from '../../../../testing/runtime-command.util';
 
 const execFileAsync = promisify(execFile);
-
-// Helper function to check if a command exists
-const commandExists = async (command: string): Promise<boolean> => {
-  try {
-    await execFileAsync(command, ['--version']);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 const checkPythonEnv = async (command: string): Promise<boolean> => {
   try {
@@ -27,25 +18,6 @@ const checkPythonEnv = async (command: string): Promise<boolean> => {
   } catch {
     return false;
   }
-};
-
-const resolveExecutable = async (candidates: (string | undefined)[]): Promise<string | null> => {
-  for (const candidate of candidates) {
-    if (candidate && await commandExists(candidate)) return candidate;
-  }
-
-  return null;
-};
-
-const getRscriptCandidates = (): string[] => {
-  const rHome = process.env['R_HOME'];
-
-  return [
-    process.env['RSCRIPT'],
-    process.env['R_SCRIPT'],
-    rHome ? join(rHome, 'bin', 'Rscript') : undefined,
-    'Rscript',
-  ].filter((candidate): candidate is string => Boolean(candidate));
 };
 
 // Helper function to parse CSV robustly (handling basic quoted strings without internal commas)
