@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@0080882f6c36860b6ba35c610c98ce87d4e2f26f
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
       with:
         egress-policy: audit
         allowed-endpoints: |-
@@ -35,16 +35,16 @@ jobs:
           archive.ubuntu.com:80
           security.ubuntu.com:80
     - name: Checkout Code
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
     - name: Install pnpm
-      uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
       with:
           # Automatically picks up the appropriate version or defaults to latest stable
         run_install: false
 
     - name: Set up Node.js
-      uses: actions/setup-node@1a4442cacd436585916779262731d5b162bc6ec7
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: "22"   # Aligns with modern environment typings specified in the repository
         cache: "pnpm"        # Leverages pnpm's global store cache topology for performance
