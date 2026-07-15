@@ -79,7 +79,7 @@ exported by the `code_generation_fixtures` job and verifies:
 - Every `proc <name>` step is closed by `run;` or `quit;`
 - Every `%macro` definition is closed by a matching `%mend`
 
-See `docs/adr/0001-sas-static-validation-strategy.md` for the full decision
+See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the full decision
 record explaining the choice of approach.
 
 **Layer 3 — Unit tests (`CodeGeneratorService`):**
@@ -178,7 +178,7 @@ This exception will be re-evaluated if any of the following occur:
 - ICH E9 – Statistical Principles for Clinical Trials (1998)
 - ICH E6(R2) – Good Clinical Practice (2016)
 - GAMP 5 – Risk-Based Approach to Compliant GxP Computerised Systems (ISPE, 2008)
-- Equipose `docs/ARCHITECTURE.md` §12 – Code Generation Service
-- Equipose `docs/adr/0001-sas-static-validation-strategy.md` – SAS Validation Strategy ADR
+- Equipose `docs/reference/ARCHITECTURE_REFERENCE.md` §12 – Code Generation Service
+- Equipose `docs/explanation/adr/0001-sas-static-validation-strategy.md` – SAS Validation Strategy ADR
 - Equipose `scripts/validate-sas-syntax.mjs` – Static SAS Syntax Validator
 - Equipose `Validation_Traceability_Matrix.md` – Requirements Traceability Matrix

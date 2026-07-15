@@ -73,7 +73,7 @@ const LANGUAGES = [
     ciResult: sasResult,
     ciJobName: 'sas_static_validation',
     checkKind: 'Static syntax validation (no SAS runtime required)',
-    note:     'Full execution deferred to end-user environment — see `docs/SAS_Stata_Exception_Report.md`.',
+    note:     'Full execution deferred to end-user environment — see `docs/explanation/SAS_Stata_Exception_Report.md`.',
   },
   {
     name:     'Stata',
@@ -81,7 +81,7 @@ const LANGUAGES = [
     ciResult: stataResult,
     ciJobName: 'stata_static_validation',
     checkKind: 'Static syntax validation (no Stata runtime required)',
-    note:     'Full execution deferred to end-user environment — see `docs/SAS_Stata_Exception_Report.md`.',
+    note:     'Full execution deferred to end-user environment — see `docs/explanation/SAS_Stata_Exception_Report.md`.',
   },
 ];
 
@@ -257,7 +257,7 @@ lines.push('---');
 lines.push('');
 lines.push('> **Regulatory note:** SAS and Stata execution validation is deferred to the');
 lines.push('> end-user environment per the formal Exception Report.');
-lines.push('> See `docs/SAS_Stata_Exception_Report.md` for details.');
+lines.push('> See `docs/explanation/SAS_Stata_Exception_Report.md` for details.');
 lines.push('');
 
 const markdown = lines.join('\n');

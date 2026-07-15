@@ -1,6 +1,8 @@
 ## Verification Checklist
 <!-- Check all that apply -->
-- [ ] **Documentation**: Any new or modified technical documentation adheres to standard [Diátaxis](https://diataxis.fr/) structural patterns (Tutorials, How-To Guides, Reference, or Explanations).
+- [ ] **Documentation Structure**: All new or modified documentation is physically categorized under the new Diátaxis taxonomy folders (`docs/tutorials`, `docs/how-to`, `docs/reference`, `docs/explanation`).
+- [ ] **Documentation Links**: Verified that all relative document links are valid and the automated link-checking CI step passes.
+- [ ] **Compliance**: Verified that existing regulatory compliance, exception reporting, and accessibility checklists are preserved and passing.
 
 ## Linked Issue
 <!-- Please link the issue this PR resolves (e.g. `Fixes #123`) -->

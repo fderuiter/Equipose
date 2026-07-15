@@ -9,7 +9,7 @@ const repoRoot = path.join(__dirname, '..');
 function run() {
   const statValPath = path.join(repoRoot, 'src/app/domain/randomization-engine/core/statistical-validation.spec.ts');
   const precisionPath = path.join(repoRoot, 'src/app/core/constants/precision.config.ts');
-  const reportPath = path.join(repoRoot, 'docs/SAS_Stata_Exception_Report.md');
+  const reportPath = path.join(repoRoot, 'docs/explanation/SAS_Stata_Exception_Report.md');
 
   // 1. Extract Validation Vector
   const statValContent = fs.readFileSync(statValPath, 'utf-8');

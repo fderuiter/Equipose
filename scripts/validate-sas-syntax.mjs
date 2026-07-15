@@ -8,7 +8,7 @@
  * lightweight structural analysis on every .sas file found under
  *   artifacts/code-generation-fixtures/
  *
- * Checks performed (see docs/adr/0001-sas-static-validation-strategy.md):
+ * Checks performed (see docs/explanation/adr/0001-sas-static-validation-strategy.md):
  *   1. Required header comment fields are present
  *   2. ISO 8601 timestamp is present in the "Generated At" field
  *   3. %let seed = <number>; statement is present

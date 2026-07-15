@@ -246,7 +246,7 @@ the Facade after the worker returns. It changes whenever the seed, config, or an
 schema row changes, providing a tamper-evident fingerprint.
 
 > **Parity guarantee:** The golden-master tests in
-> [`randomization-parity.spec.ts`](../src/app/domain/randomization-engine/randomization-parity.spec.ts) assert that `generateRandomizationSchema`
+> [`randomization-parity.spec.ts`](../../src/app/domain/randomization-engine/randomization-parity.spec.ts) assert that `generateRandomizationSchema`
 > produces the exact same field-by-field output as the decommissioned legacy
 > `RandomizationService` for five diverse configurations. Any change to the PRNG
 > consumption order will break these tests and must be rejected.
@@ -270,7 +270,7 @@ summary table.
 
 ## 7. Cap Strategy Engine
 
-[`largest-remainder.ts`](../src/app/domain/shared/statistical/largest-remainder.ts) contains the **Largest Remainder Method (LRM)** used by the
+[`largest-remainder.ts`](../../src/app/domain/shared/statistical/largest-remainder.ts) contains the **Largest Remainder Method (LRM)** used by the
 Proportional strategy and shared validation utilities.
 
 ### Three cap strategies
@@ -526,12 +526,12 @@ graph BT
 | `theme.service.spec.ts` | 11 | Dark-mode toggle, system preference detection |
 | `toast.service.spec.ts` | 13 | Toast queue, auto-dismiss, CDK overlay |
 | `viewport.service.spec.ts` | 9 | BreakpointObserver → viewportSize signal |
-| [`largest-remainder.spec.ts`](../src/app/domain/shared/statistical/largest-remainder.spec.ts) | 15 | LRM correctness, rounding guarantees, NaN/Infinity validation |
+| [`largest-remainder.spec.ts`](../../src/app/domain/shared/statistical/largest-remainder.spec.ts) | 15 | LRM correctness, rounding guarantees, NaN/Infinity validation |
 | `crypto-hash.spec.ts` | 11 | SHA-256 determinism, known-value test |
 | `subject-id-engine.spec.ts` | 42 | All mask tokens, collision avoidance, Luhn checksum |
 | `minimization-algorithm.spec.ts` | 14 | Pocock-Simon minimization execution |
 | `randomization-algorithm.spec.ts` | 52 | Algorithm correctness, MARGINAL_ONLY cap enforcement, minimization, throws |
-| [`randomization-parity.spec.ts`](../src/app/domain/randomization-engine/randomization-parity.spec.ts) | 8 | Output matches decommissioned legacy service |
+| [`randomization-parity.spec.ts`](../../src/app/domain/randomization-engine/randomization-parity.spec.ts) | 8 | Output matches decommissioned legacy service |
 | `statistical-validation.spec.ts` | 17 | Validation checks |
 | `attrition-prng.spec.ts` | 6 | PRNG for Monte Carlo attrition |
 | `randomization-engine-facade.spec.ts` | 7 | Observable wrapper, error paths |
@@ -542,7 +542,7 @@ graph BT
 | `tag-input.component.spec.ts` | 22 | Tag-input keyboard/pointer, duplicate rejection |
 | `config-form.component.spec.ts` | 45 | Reactive form init, preset loading, add/remove arms & strata, cap strategy, validation |
 | `generator.component.spec.ts` | 23 | Error/loading/results conditional rendering, Monte Carlo |
-| [`export.service.spec.ts`](../src/app/domain/schema-management/services/export.service.spec.ts) | 20 | Logic mapping to xlsx format |
+| [`export.service.spec.ts`](../../src/app/domain/schema-management/services/export.service.spec.ts) | 20 | Logic mapping to xlsx format |
 | `methodology-specification.service.spec.ts` | 37 | Testing logic creating randomization plan narratives |
 | `schema-view-state.service.spec.ts` | 12 | filteredSchema projection, cross-filter, blinding toggle |
 | `balance-verification.component.spec.ts` | 20 | Global/site/stratum aggregation, status computation |
@@ -550,7 +550,7 @@ graph BT
 | `schema-verification.component.spec.ts` | 23 | Audit hash display, verification status |
 | `results-grid.component.spec.ts` | 42 | Virtual scroll, grouped view, blinding, CSV/PDF export |
 | `code-generator-modal.component.spec.ts` | 15 | Tab switching, download, copy, error state |
-| [`code-generator.service.spec.ts`](../src/app/domain/schema-management/services/code-generator.service.spec.ts) | 160 | All 3 cap strategies × 4 languages, seed hashing, error hierarchy, MARGINAL_ONLY guard |
+| [`code-generator.service.spec.ts`](../../src/app/domain/schema-management/services/code-generator.service.spec.ts) | 160 | All 3 cap strategies × 4 languages, seed hashing, error hierarchy, MARGINAL_ONLY guard |
 
 ### E2E test files
 
