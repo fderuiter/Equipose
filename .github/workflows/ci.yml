@@ -983,8 +983,8 @@ jobs:
     - name: Sync Architecture Documentation
       run: |
         node scripts/sync-architecture.mjs
-        echo "=== Updated ARCHITECTURE.md (preview) ==="
-        head -40 docs/ARCHITECTURE.md
+        echo "=== Updated ARCHITECTURE_REFERENCE.md (preview) ==="
+        head -40 docs/ARCHITECTURE_REFERENCE.md
 
     - name: Generate Exception Report
       run: |
