@@ -466,7 +466,8 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   /** Parse a raw input string into a marginal cap number or undefined (uncapped). */
-  parseMarginalCapInput(raw: string): number | undefined {
+  parseMarginalCapInput(raw: any): number | undefined {
+    if (typeof raw === "number") return raw;
     const trimmed = raw.trim();
     if (trimmed === '') return undefined;
     const n = Number(trimmed);
