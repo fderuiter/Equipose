@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
+import { StudyPresets } from '../core/presets/study-presets';
 import { generateRandomizationSchema } from './core/randomization-algorithm';
 import { vi } from 'vitest';
 import { ToastService } from '../../core/services/toast.service';
@@ -9,7 +10,7 @@ import { ToastService } from '../../core/services/toast.service';
 /** Flush all pending microtasks so async signals settle. */
 const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
 
-const mockConfig: RandomizationConfig = {
+const mockConfig: RandomizationConfig = StudyPresets.extend(StudyPresets.Standard, {
   protocolId: 'PARITY-TEST',
   studyName: 'Parity Study',
   phase: 'Phase III',
@@ -27,8 +28,8 @@ const mockConfig: RandomizationConfig = {
     { levelIds: { age: 'Elderly' }, cap: 8 }
   ],
   seed: 'parity_seed_123',
-  subjectIdMask: '[SiteID]-[001]'
-};
+  subjectIdMask: '{SITE}-{SEQ:3}'
+});
 
 /**
  * Simulated Worker that executes the actual algorithm logic.
@@ -147,12 +148,12 @@ describe('RandomizationEngine Parity (Worker vs Fallback)', () => {
   });
 
   it('should produce identical results for Minimization method', async () => {
-    const minimizationConfig: RandomizationConfig = {
+    const minimizationConfig = StudyPresets.extend(StudyPresets.Minimization, {
       ...mockConfig,
       randomizationMethod: 'MINIMIZATION',
       blockSizes: [], // Minimization doesn't use block sizes
       stratumCaps: []
-    };
+    });
 
     workerFacade.generateSchema(minimizationConfig);
     fallbackFacade.generateSchema(minimizationConfig);
