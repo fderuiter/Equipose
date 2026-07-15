@@ -21,14 +21,15 @@
 12. [Code Generation Service](#12-code-generation-service)
     - [12.1 Why code generation exists](#121-why-code-generation-exists)
     - [12.2 Cap strategy code generation paths](#122-cap-strategy-code-generation-paths)
-    - [12.3 Seed translation - hashCode](#123-seed-translation--hashcodeseed)
+    - [12.3 Seed translation - hashCode](#123-seed-translation---hashcodeseed)
     - [12.4 Overall pipeline](#124-overall-pipeline)
-    - [12.5 Generated script structure](#125-generated-script-structure--section-by-section)
+    - [12.5 Generated script structure - section by section](#125-generated-script-structure---section-by-section)
     - [12.6 R script](#126-r-script-generater)
     - [12.7 Python script](#127-python-script-generatepython)
-    - [12.8 SAS script](#128-sas-script-generatesass)
-    - [12.9 PRNG comparison](#129-prng-comparison)
-    - [12.10 Code generation error hierarchy](#1210-code-generation-error-hierarchy)
+    - [12.8 SAS script](#128-sas-script-generatesas)
+    - [12.9 STATA script](#129-stata-script-generatestata)
+    - [12.10 PRNG comparison](#1210-prng-comparison)
+    - [12.11 Code generation error hierarchy](#1211-code-generation-error-hierarchy)
 13. [Core Services](#13-core-services)
 14. [ESLint Architectural Boundaries](#14-eslint-architectural-boundaries)
 15. [Testing Strategy](#15-testing-strategy)
@@ -110,11 +111,11 @@ clinical-randomization-generator/
 │           │   ├── core/
 │           │   │   ├── randomization-algorithm.ts          Pure function: standard + MARGINAL_ONLY paths
 │           │   │   ├── randomization-algorithm.spec.ts     Unit tests
-│           │   │   ├── randomization-algorithm-parity.spec.ts  Golden-master parity tests
+│           │   │   ├── [randomization-algorithm-golden.spec.ts](../src/app/domain/randomization-engine/core/randomization-algorithm-golden.spec.ts)  Golden-master parity tests
 │           │   │   ├── minimization-algorithm.ts           Pocock-Simon algorithm
 │           │   │   ├── minimization-algorithm.spec.ts      Unit tests
-│           │   │   ├── cap-strategy.ts                     LRM (proportional caps) + validation
-│           │   │   ├── cap-strategy.spec.ts                Unit tests
+│           │   │   ├── [largest-remainder.ts](../src/app/domain/shared/statistical/largest-remainder.ts)                     LRM (proportional caps) + validation
+│           │   │   ├── [largest-remainder.spec.ts](../src/app/domain/shared/statistical/largest-remainder.spec.ts)                Unit tests
 │           │   │   ├── subject-id-engine.ts                Token-based subject ID generator
 │           │   │   ├── subject-id-engine.spec.ts           Unit tests
 │           │   │   ├── crypto-hash.ts                      SHA-256 audit hash
@@ -153,9 +154,9 @@ clinical-randomization-generator/
 │               ├── errors/
 │               │   └── code-generation-errors.ts           Typed error hierarchy (6 classes)
 │               ├── services/
-│               │   ├── code-generator.service.ts           R / SAS / Python / STATA emitters (3 cap modes)
-│               │   ├── code-generator.service.spec.ts
-│               │   ├── excel-export.service.ts             Excel export logic
+│               │   ├── [code-generator.service.ts](../src/app/domain/schema-management/services/code-generator.service.ts)           R / SAS / Python / STATA emitters (3 cap modes)
+│               │   ├── [code-generator.service.spec.ts](../src/app/domain/schema-management/services/code-generator.service.spec.ts)
+│               │   ├── [export.service.ts](../src/app/domain/schema-management/services/export.service.ts)             Excel export logic
 │               │   ├── methodology-specification.service.ts Randomization Plan narrative
 │               │   ├── schema-view-state.service.ts        Shared unblinding + filter state
 │               │   └── schema-view-state.service.spec.ts
@@ -206,7 +207,7 @@ graph TD
     end
 
     subgraph "Bounded Context 1 - Randomization Engine"
-        ALGO["core/\nrandomization-algorithm.ts\nminimization-algorithm.ts\ncap-strategy.ts\nsubject-id-engine.ts\ncrypto-hash.ts\n(pure TS, zero Angular)"]
+        ALGO["core/\nrandomization-algorithm.ts\nminimization-algorithm.ts\nlargest-remainder.ts\nsubject-id-engine.ts\ncrypto-hash.ts\n(pure TS, zero Angular)"]
         WORKER["worker/\nrandomization-engine.worker.ts\nworker-protocol.ts\nattrition-prng.ts"]
         SVC["RandomizationEngineFacade (or domain/core/models)\n(Observable wrapper)"]
         FACADE["randomization-engine.facade.ts\n★ sole public API ★"]
@@ -225,7 +226,7 @@ graph TD
     subgraph "Bounded Context 3 - Schema Management"
         ERRORS["errors/\ncode-generation-errors.ts\nCodeGenerationError hierarchy"]
         VSSTATE["services/\nschema-view-state.service.ts\n(filteredSchema · isUnblinded · activeFilter)"]
-        CODEGEN["services/\ncode-generator.service.ts\n(3 cap strategies × 4 languages)\nexcel-export.service.ts\nmethodology-specification.service.ts"]
+        CODEGEN["services/\ncode-generator.service.ts\n(3 cap strategies × 4 languages)\nexport.service.ts\nmethodology-specification.service.ts"]
         GRID["components/\nresults-grid.component\nbalance-verification.component\nschema-analytics-dashboard.component\nschema-verification.component\ncode-generator-modal.component"]
         ERRORS --> CODEGEN
         CODEGEN --> GRID
@@ -411,7 +412,7 @@ the Facade after the worker returns. It changes whenever the seed, config, or an
 schema row changes, providing a tamper-evident fingerprint.
 
 > **Parity guarantee:** The golden-master tests in
-> `randomization-algorithm-parity.spec.ts` assert that `generateRandomizationSchema`
+> [`randomization-parity.spec.ts`](../src/app/domain/randomization-engine/randomization-parity.spec.ts) assert that `generateRandomizationSchema`
 > produces the exact same field-by-field output as the decommissioned legacy
 > `RandomizationService` for five diverse configurations. Any change to the PRNG
 > consumption order will break these tests and must be rejected.
@@ -435,7 +436,7 @@ summary table.
 
 ## 7. Cap Strategy Engine
 
-`cap-strategy.ts` contains the **Largest Remainder Method (LRM)** used by the
+[`largest-remainder.ts`](../src/app/domain/shared/statistical/largest-remainder.ts) contains the **Largest Remainder Method (LRM)** used by the
 Proportional strategy and shared validation utilities.
 
 ### Three cap strategies
@@ -647,7 +648,7 @@ flowchart TD
     STORE3 -- "strataCombinations()" --> CAPS["syncStratumCaps()\nRebuild stratumCaps FormArray\nfrom Cartesian product"]
     CAPS --> FORM3
 
-    FORM3 -- "cap strategy: PROPORTIONAL\nComputeMatrix button" --> LRM["computeProportionalCaps()\ncap-strategy.ts\n→ populate stratumCaps"]
+    FORM3 -- "cap strategy: PROPORTIONAL\nComputeMatrix button" --> LRM["computeProportionalCaps()\nlargest-remainder.ts\n→ populate stratumCaps"]
     LRM --> FORM3
 
     FORM3 -- "onSubmit()\nform.valid" --> BUILDCONFIG["store.buildConfig(form.getRawValue())\nparse comma-separated strings\nmerge levelDetails from signals\nmap to typed RandomizationConfig"]
@@ -1112,7 +1113,7 @@ Phase 2 is re-thrown as-is from Phase 3 rather than being double-wrapped.
 | `ToastService` | `core/services/toast.service.ts` | CDK Overlay (single bottom-right overlay). Exposes `toasts()` signal; auto-dismisses after a configurable timeout. |
 | `ViewportService` | `core/services/viewport.service.ts` | Wraps CDK `BreakpointObserver`. Exposes `viewportSize()` signal (`'mobile' \| 'tablet' \| 'desktop'`) and computed `isMobile()`, `isTablet()`, `isDesktop()` booleans. |
 | `SeoService` | `core/services/seo.service.ts` | Sets document metadata. |
-| `ExcelExportService` | `domain/schema-management/services/excel-export.service.ts` | Builds xlsx blobs for downloading randomizations |
+| `ExportService` | [`domain/schema-management/services/export.service.ts`](../src/app/domain/schema-management/services/export.service.ts) | Builds xlsx blobs for downloading randomizations |
 | `MethodologySpecificationService` | `domain/schema-management/services/methodology-specification.service.ts` | Generates randomization plans as narratives |
 | `SchemaViewStateService` | `domain/schema-management/services/schema-view-state.service.ts` | Shared `isUnblinded`, `activeFilter`, `filteredSchema` signals (see §9). |
 
@@ -1148,7 +1149,7 @@ graph LR
 graph BT
     E2E["E2E (Playwright)\ntests_e2e/ - 9 spec files\nChromium only\nRequires ng serve @ :4200"]
     UNIT["Unit (Vitest + Angular TestBed)\nsrc/**/*.spec.ts - 30 spec files\n~717 tests\nDirect class/signal testing"]
-    PARITY["Golden-Master Parity\nrandomization-algorithm-parity.spec.ts\n8 tests across 5 configs\nFixed seeds → deepEqual assertion"]
+    PARITY["Golden-Master Parity\nrandomization-parity.spec.ts\n8 tests across 5 configs\nFixed seeds → deepEqual assertion"]
 
     PARITY --> UNIT
     UNIT --> E2E
@@ -1162,12 +1163,12 @@ graph BT
 | `theme.service.spec.ts` | 11 | Dark-mode toggle, system preference detection |
 | `toast.service.spec.ts` | 13 | Toast queue, auto-dismiss, CDK overlay |
 | `viewport.service.spec.ts` | 9 | BreakpointObserver → viewportSize signal |
-| `cap-strategy.spec.ts` | 15 | LRM correctness, rounding guarantees, NaN/Infinity validation |
+| [`largest-remainder.spec.ts`](../src/app/domain/shared/statistical/largest-remainder.spec.ts) | 15 | LRM correctness, rounding guarantees, NaN/Infinity validation |
 | `crypto-hash.spec.ts` | 11 | SHA-256 determinism, known-value test |
 | `subject-id-engine.spec.ts` | 42 | All mask tokens, collision avoidance, Luhn checksum |
 | `minimization-algorithm.spec.ts` | 14 | Pocock-Simon minimization execution |
 | `randomization-algorithm.spec.ts` | 52 | Algorithm correctness, MARGINAL_ONLY cap enforcement, minimization, throws |
-| `randomization-algorithm-parity.spec.ts` | 8 | Output matches decommissioned legacy service |
+| [`randomization-parity.spec.ts`](../src/app/domain/randomization-engine/randomization-parity.spec.ts) | 8 | Output matches decommissioned legacy service |
 | `statistical-validation.spec.ts` | 17 | Validation checks |
 | `attrition-prng.spec.ts` | 6 | PRNG for Monte Carlo attrition |
 | `randomization-engine-facade.spec.ts` | 7 | Observable wrapper, error paths |
@@ -1178,7 +1179,7 @@ graph BT
 | `tag-input.component.spec.ts` | 22 | Tag-input keyboard/pointer, duplicate rejection |
 | `config-form.component.spec.ts` | 45 | Reactive form init, preset loading, add/remove arms & strata, cap strategy, validation |
 | `generator.component.spec.ts` | 23 | Error/loading/results conditional rendering, Monte Carlo |
-| `excel-export.service.spec.ts` | 20 | Logic mapping to xlsx format |
+| [`export.service.spec.ts`](../src/app/domain/schema-management/services/export.service.spec.ts) | 20 | Logic mapping to xlsx format |
 | `methodology-specification.service.spec.ts` | 37 | Testing logic creating randomization plan narratives |
 | `schema-view-state.service.spec.ts` | 12 | filteredSchema projection, cross-filter, blinding toggle |
 | `balance-verification.component.spec.ts` | 20 | Global/site/stratum aggregation, status computation |
@@ -1186,7 +1187,7 @@ graph BT
 | `schema-verification.component.spec.ts` | 23 | Audit hash display, verification status |
 | `results-grid.component.spec.ts` | 42 | Virtual scroll, grouped view, blinding, CSV/PDF export |
 | `code-generator-modal.component.spec.ts` | 15 | Tab switching, download, copy, error state |
-| `code-generator.service.spec.ts` | 160 | All 3 cap strategies × 4 languages, seed hashing, error hierarchy, MARGINAL_ONLY guard |
+| [`code-generator.service.spec.ts`](../src/app/domain/schema-management/services/code-generator.service.spec.ts) | 160 | All 3 cap strategies × 4 languages, seed hashing, error hierarchy, MARGINAL_ONLY guard |
 
 ### E2E test files
 

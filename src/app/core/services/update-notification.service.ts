@@ -45,6 +45,11 @@ export class UpdateNotificationService {
           document.location.reload();
         }
       });
+
+      // Trigger cache garbage collection completely out-of-band
+      setTimeout(() => {
+        this.cleanupOrphanedCaches();
+      }, 2000);
     }
   }
 
@@ -60,5 +65,73 @@ export class UpdateNotificationService {
   /** Dismiss the banner without reloading (user can reload manually later). */
   dismiss(): void {
     this.updateAvailable.set(false);
+  }
+
+  /**
+   * Silently scans and cleans up obsolete caches left behind by skipped updates.
+   * Runs in the background and catches all errors to prevent startup disruption.
+   */
+  private async cleanupOrphanedCaches(): Promise<void> {
+    try {
+      if (typeof window === 'undefined' || !('caches' in window)) return;
+
+      // 1. Identify Latest Cache (Waiting or Active)
+      const swResponse = await fetch('/sw.js');
+      if (!swResponse.ok) return;
+
+      const swContent = await swResponse.text();
+      const cacheNameMatch = swContent.match(/CACHE_NAME\s*=\s*['"`]([^'"`]+)['"`]/);
+      if (!cacheNameMatch) return;
+
+      const latestCacheName = cacheNameMatch[1];
+
+      // 2. Identify Active Cache
+      const cacheKeys = await window.caches.keys();
+      const loadedUrls = new Set<string>();
+
+      if (typeof document !== 'undefined') {
+        Array.from(document.scripts).forEach((script) => {
+          if (script.src && script.src.startsWith(window.location.origin)) {
+            loadedUrls.add(script.src);
+          }
+        });
+
+        const links = document.querySelectorAll('link[rel="stylesheet"]');
+        Array.from(links).forEach((link) => {
+          const href = (link as HTMLLinkElement).href;
+          if (href && href.startsWith(window.location.origin)) {
+            loadedUrls.add(href);
+          }
+        });
+      }
+
+      let activeCacheName: string | null = null;
+      for (const key of cacheKeys) {
+        if (!key.startsWith('app-cache-v')) continue;
+
+        const cache = await window.caches.open(key);
+        for (const url of loadedUrls) {
+          const match = await cache.match(url);
+          if (match) {
+            activeCacheName = key;
+            break;
+          }
+        }
+        if (activeCacheName) break;
+      }
+
+      // 3. Preservation & Safe Deletion
+      for (const key of cacheKeys) {
+        if (
+          key.startsWith('app-cache-v') &&
+          key !== latestCacheName &&
+          key !== activeCacheName
+        ) {
+          await window.caches.delete(key);
+        }
+      }
+    } catch (e) {
+      // Silent failures to avoid disrupting the user experience
+    }
   }
 }

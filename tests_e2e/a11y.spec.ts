@@ -2,8 +2,40 @@ import { test, expect, Locator, Page } from '@playwright/test';
 import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin, FocusAuditor } from './a11y';
 import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator } from './generator-helpers';
 
-const screenshotOptions = { fullPage: true, maxDiffPixels: 200 } as const;
-const resultsScreenshotOptions = { fullPage: true, maxDiffPixels: 5000 } as const;
+const fontSmoothingStyle = `
+  * {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-smoothing: antialiased !important;
+  }
+`;
+
+const screenshotOptions = { fullPage: true, maxDiffPixels: 200, style: fontSmoothingStyle } as const;
+const resultsScreenshotOptions = { fullPage: true, maxDiffPixels: 5000, style: fontSmoothingStyle } as const;
+
+function getMasks(page: Page) {
+  return [
+    page.locator('app-toast'),
+    page.locator('svg'),
+    page.locator('progress'),
+    page.locator('[data-testid="mc-progress-bar"]'),
+    page.locator('[data-testid="mc-progress-percentage"]'),
+    page.locator('[data-testid="mc-progress-iterations-text"]'),
+    page.locator('[data-testid="mc-chart"]'),
+    page.locator('[data-testid="simulations-run-value"]'),
+    page.locator('[data-testid="retained-subjects-value"]'),
+    page.locator('[data-testid="max-deviation-value"]'),
+    page.locator('[data-testid="mc-confidence-statement"]'),
+    page.locator('[data-testid="mc-attrition-warning"]'),
+    page.locator('table tbody'),
+    page.locator('#results-section [data-testid="result-row"]'),
+    page.locator('[data-testid="schema-seed-value"]'),
+    page.locator('[data-testid="audit-hash-value"]'),
+    page.locator('div[role="alert"]'),
+    page.locator('div[role="status"]'),
+    page.locator('[data-testid="seed-disclaimer-banner"]')
+  ];
+}
 
 async function applyDarkMode(page: Page): Promise<void> {
   await page.evaluate(() => document.documentElement.classList.add('dark'));
@@ -92,7 +124,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await page.locator('#blockSizesStr').press('Tab');
   await expect(page.getByText(/Block sizes must be multiples of total ratio/i)).toBeVisible();
   await checkA11y(page, '#blockSizesStr');
-  console.log("SKIPPED SCREENSHOT"); // await expect(page).toHaveScreenshot(`generator-validation-${mode}.png`, screenshotOptions);
+  await expect(page).toHaveScreenshot(`generator-validation-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
   await page.locator('#blockSizesStr').fill('4');
   await page.locator('#blockSizesStr').press('Tab');
   await expect(page.getByRole('button', { name: /^Next$/i })).toBeEnabled();
@@ -146,7 +178,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
       
-      console.log("SKIPPED SCREENSHOT"); // await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, screenshotOptions);
+      await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
       
       // Dismiss the modal so focus restores
       await modal.getByRole('button', { name: /Close/i }).first().click();
@@ -176,7 +208,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   if (mode === 'dark') await applyDarkMode(page);
   await assertLandingVisible(page);
   await checkA11y(page);
-  console.log("SKIPPED SCREENSHOT"); // await expect(page).toHaveScreenshot(`landing-${mode}.png`, screenshotOptions);
+  await expect(page).toHaveScreenshot(`landing-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
 
   const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
   if (isMobile) {
@@ -235,13 +267,13 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(page.getByTestId('feature-stratified-block')).toBeVisible();
   await expect(page.getByTestId('feature-code-generation')).toBeVisible();
   await checkA11y(page);
-  console.log("SKIPPED SCREENSHOT"); // await expect(page).toHaveScreenshot(`about-${mode}.png`, screenshotOptions);
+  await expect(page).toHaveScreenshot(`about-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
 
   await openGenerator(page);
   if (mode === 'dark') await applyDarkMode(page);
   await assertGeneratorVisible(page);
   await checkA11y(page);
-  console.log("SKIPPED SCREENSHOT"); // await expect(page).toHaveScreenshot(`generator-${mode}.png`, screenshotOptions);
+  await expect(page).toHaveScreenshot(`generator-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
 
   await generateSchemaFromPreset(page, 'Complex');
   if (mode === 'dark') await applyDarkMode(page);
@@ -254,7 +286,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(resultsSection.locator('[data-testid="audit-hash-value"]')).toBeVisible();
   await expect(resultsSection.locator('[data-testid="result-row"]').first()).toBeVisible();
   await checkA11y(page, '#results-section');
-  console.log("SKIPPED SCREENSHOT"); // await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, resultsScreenshotOptions);
+  await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, { ...resultsScreenshotOptions, mask: getMasks(page) });
 }
 
 test.describe('Accessibility and visual regression - light mode', () => {
