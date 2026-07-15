@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { goBackToFirstStep, goToReviewStep, loadPreset, openGenerator } from './generator-helpers';
-import { FocusAuditor } from './a11y';
+import { FocusAuditor, FocusTrapPlugin } from './a11y';
 
 // ---------------------------------------------------------------------------
 // Helper: navigate to the generator page and ensure the form is ready
@@ -25,7 +25,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('"Run Statistical QA" button should be disabled when form is invalid (Protocol ID cleared)', async ({ page }) => {
     await goBackToFirstStep(page);
-    await page.locator('#protocolId').clear();
+    await page.locator('#protocolId input').clear();
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeDisabled();
   });
 
@@ -73,9 +73,12 @@ test.describe('Monte Carlo Statistical Validation', () => {
     await expect(progressBar).toBeVisible({ timeout: 5000 });
   });
 
-  test('modal should show "Simulating trials" text during simulation', async ({ page }) => {
+  test('modal should show "Simulating trials" text and live-region announcements during simulation', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
     await mcBtn.click();
+
+    const liveRegion = page.locator('.sr-only[aria-live="polite"]');
+    await expect(liveRegion).toContainText(/Simulation progress:/i, { timeout: 10000 });
 
     const modal = page.locator('div[role="dialog"]');
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -95,9 +98,12 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   // ── Simulation completion ─────────────────────────────────────────────────
 
-  test('simulation should complete and show the validation report', async ({ page }) => {
+  test('simulation should complete and populate screen reader live regions', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
     await mcBtn.click();
+
+    const liveRegion = page.locator('.sr-only[aria-live="polite"]');
+    await expect(liveRegion).toContainText(/Simulation complete\. Results are available\./i, { timeout: 30000 });
 
     const modal = page.locator('div[role="dialog"]');
     await expect(modal).toBeVisible({ timeout: 5000 });
