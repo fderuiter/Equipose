@@ -466,8 +466,10 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   /** Parse a raw input string into a marginal cap number or undefined (uncapped). */
-  parseMarginalCapInput(raw: string): number | undefined {
-    const trimmed = raw.trim();
+  parseMarginalCapInput(raw: string | number | null | undefined): number | undefined {
+    if (typeof raw === 'number') return isNaN(raw) || raw < 0 ? undefined : Math.floor(raw);
+    if (raw === null || raw === undefined) return undefined;
+    const trimmed = String(raw).trim();
     if (trimmed === '') return undefined;
     const n = Number(trimmed);
     return Number.isInteger(n) && n >= 0 ? n : undefined;
@@ -1020,6 +1022,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   private clearDraft(): void {
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
     if (!isPlatformBrowser(this.platformId)) return;
     localStorage.removeItem(this.DRAFT_KEY);
   }
