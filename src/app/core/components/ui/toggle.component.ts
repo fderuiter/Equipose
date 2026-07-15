@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, booleanAttribute, forwardRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, booleanAttribute, forwardRef, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -23,7 +23,7 @@ import { CommonModule } from '@angular/common';
     </button>
   `
 })
-export class ToggleComponent {
+export class ToggleComponent implements OnChanges {
   @Input() inputId = '';
   @Input({ transform: booleanAttribute }) disabled = false;
   @Input() customClass = '';

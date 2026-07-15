@@ -5,7 +5,7 @@ import { Directive, ElementRef, HostListener, Input, OnDestroy, inject, Renderer
   standalone: true
 })
 export class AppTooltipDirective implements OnInit, OnDestroy, OnChanges {
-  @Input('appTooltip') tooltipText: string = '';
+  @Input('appTooltip') tooltipText = '';
   
   private el = inject(ElementRef);
   private renderer = inject(Renderer2);

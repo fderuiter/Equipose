@@ -77,7 +77,7 @@ export const SAS_CONFIG: LanguageConfig = {
          for (const s of config.strata || []) {
              strataStr += `${FormattingUtil.escapeSasString(s.id)}="${FormattingUtil.escapeSasString(task.stratumDetails[s.id])}"; `;
          }
-         let siteIdx = config.sites!.indexOf(task.site) + 1;
+         const siteIdx = config.sites!.indexOf(task.site) + 1;
          if (i === 0) {
              algorithmicLogic += `        if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}site_idx = ${siteIdx}; end;\n`;
          } else {
