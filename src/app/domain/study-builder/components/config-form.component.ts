@@ -2,12 +2,12 @@ import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostLis
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators,   } from '../../../core/forms/signal-forms';
 import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 import { CheckboxComponent } from '../../../core/components/ui/checkbox.component';
-import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { DOCUMENT,  isPlatformBrowser } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
@@ -23,7 +23,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
-import { createStepper, StepperState, StepConfig } from "../../../core/utils/stepper.util";
+import { createStepper,  StepConfig } from "../../../core/utils/stepper.util";
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -235,7 +235,7 @@ export class ConfigFormComponent implements OnInit {
     });
     
     effect(() => {
-      const val = this.form.value;
+      void this.form.value;
       untracked(() => {
         this.facade.clearResults();
       });
@@ -257,7 +257,7 @@ export class ConfigFormComponent implements OnInit {
       });
     });
     
-    let lastGlobalCap: any = this.form.get('capsGroup.globalCap')?.value;
+    let lastGlobalCap: unknown = this.form.get('capsGroup.globalCap')?.value;
     effect(() => {
       const globalCap = this.form.get('capsGroup.globalCap')?.value;
       untracked(() => {
@@ -842,8 +842,8 @@ export class ConfigFormComponent implements OnInit {
     const overridesArr = (group.get('allocationGroup.blockOverrides') as FormArray)?.value || [];
 
     const blockSizes = blockSizesStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
-    const siteBlockOverrides: Record<string, any> = {};
-    const stratumBlockOverrides: Record<string, any> = {};
+    const siteBlockOverrides: Record<string, Record<string, unknown>> = {};
+    const stratumBlockOverrides: Record<string, Record<string, unknown>> = {};
 
     for (const ov of overridesArr) {
       if (!ov.targetId?.trim()) continue;
@@ -856,7 +856,7 @@ export class ConfigFormComponent implements OnInit {
     }
 
     const partialConfig = {
-      randomizationMethod: method as any,
+      randomizationMethod: method as unknown,
       arms,
       blockSizes,
       siteBlockOverrides,
@@ -957,7 +957,7 @@ export class ConfigFormComponent implements OnInit {
       if (state.form) {
         this.arms.clear({ emitEvent: false });
         if (state.form.designGroup?.arms) {
-          state.form.designGroup.arms.forEach((a: any) => {
+          state.form.designGroup.arms.forEach((a: unknown) => {
             this.arms.push(
               this.fb.group({ id: [a.id], name: [a.name], ratio: [a.ratio, [Validators.required, Validators.min(1)]] }),
               { emitEvent: false }
@@ -967,7 +967,7 @@ export class ConfigFormComponent implements OnInit {
         
         this.strata.clear({ emitEvent: false });
         if (state.form.strataGroup?.strata) {
-          state.form.strataGroup.strata.forEach((s: any) => {
+          state.form.strataGroup.strata.forEach((s: unknown) => {
             this.strata.push(
               this.fb.group({ id: [s.id], name: [s.name], levelsStr: [s.levelsStr, Validators.required] }),
               { emitEvent: false }
@@ -977,7 +977,7 @@ export class ConfigFormComponent implements OnInit {
         
         this.blockOverrides.clear({ emitEvent: false });
         if (state.form.allocationGroup?.blockOverrides) {
-          state.form.allocationGroup.blockOverrides.forEach((ov: any) => {
+          state.form.allocationGroup.blockOverrides.forEach((ov: unknown) => {
             this.blockOverrides.push(
               this.fb.group({
                 targetType: [ov.targetType],
@@ -992,7 +992,7 @@ export class ConfigFormComponent implements OnInit {
         
         this.stratumCaps.clear({ emitEvent: false });
         if (state.form.capsGroup?.stratumCaps) {
-          state.form.capsGroup.stratumCaps.forEach((c: any) => {
+          state.form.capsGroup.stratumCaps.forEach((c: unknown) => {
             this.stratumCaps.push(
               this.fb.group({ levelIds: [c.levelIds], cap: [c.cap, [Validators.required, Validators.min(0)]] }),
               { emitEvent: false }
@@ -1100,8 +1100,8 @@ export class ConfigFormComponent implements OnInit {
     }
   }
 
-  onDragOver(event: DragEvent, index: number): void {
-    event.preventDefault();
+  onDragOver(event: DragEvent, event: number): void {
+    void event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
     }

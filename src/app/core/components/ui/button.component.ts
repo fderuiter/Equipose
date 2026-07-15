@@ -18,7 +18,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'segmented' | 
       [attr.role]="role"
       [attr.aria-checked]="ariaChecked"
       [attr.aria-label]="ariaLabel"
-      (click)="onClick.emit($event)">
+      (click)="clicked.emit($event)">
       <ng-content></ng-content>
     </button>
   `
@@ -36,7 +36,7 @@ export class ButtonComponent {
   @Input() ariaChecked?: string | null;
   @Input() ariaLabel?: string | null;
 
-  @Output() onClick = new EventEmitter<MouseEvent>();
+  @Output() clicked = new EventEmitter<MouseEvent>();
 
   get computedClasses(): string {
     const base = 'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset';
@@ -65,8 +65,7 @@ export class ButtonComponent {
         break;
     }
 
-    if (this.variant !== 'segmented') {
-    } else {
+    if (this.variant === 'segmented') {
       variantClass += ' px-3 py-2';
     }
 

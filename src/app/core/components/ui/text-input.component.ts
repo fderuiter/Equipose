@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, ChangeDetectionStrategy, booleanAttribute } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, ChangeDetectionStrategy, booleanAttribute } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -26,7 +26,7 @@ import { CommonModule } from '@angular/common';
 })
 export class TextInputComponent {
   @Input() variant: 'default' | 'bare' = 'default';
-  @Input('type') typeAttr: 'text' | 'number' | 'range' = 'text';
+  @Input() typeAttr: 'text' | 'number' | 'range' = 'text';
   @Input() inputId = '';
   @Input() min?: number | string;
   @Input() max?: number | string;
@@ -38,17 +38,17 @@ export class TextInputComponent {
 
   @ViewChild('inputEl') inputEl!: ElementRef<HTMLInputElement>;
 
-  internalValue: any = '';
+  internalValue: string | number = '';
 
   get type(): string {
     return this.typeAttr;
   }
 
-  get value(): any {
+  get value(): string | number {
     return this.internalValue;
   }
 
-  @Input() set value(val: any) {
+  @Input() set value(val: string | number | null | undefined) {
     this.internalValue = val === null || val === undefined ? '' : val;
     if (this.inputEl) {
       this.inputEl.nativeElement.value = this.internalValue;
@@ -73,7 +73,7 @@ export class TextInputComponent {
 
   onInput(event: Event) {
     const target = event.target as HTMLInputElement;
-    let val: any = target.value;
+    let val: string | number | null = target.value;
     
     if (this.typeAttr === 'number' || this.typeAttr === 'range') {
       val = val === '' ? null : Number(val);
@@ -84,6 +84,7 @@ export class TextInputComponent {
   }
 
   onBlur() {
+    // No-op
   }
 
   focus() {

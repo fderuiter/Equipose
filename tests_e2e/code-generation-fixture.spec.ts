@@ -7,15 +7,15 @@ import { goToStep, loadPreset, openGenerator } from './generator-helpers';
 
 type Language = 'R' | 'Python' | 'SAS' | 'Stata';
 
-type ScenarioDefinition = {
+interface ScenarioDefinition {
   id: string;
   protocolId: string;
   configure: (page: Page) => Promise<void>;
-};
+}
 
-type ScriptFixture = {
+interface ScriptFixture {
   exportScenarioScripts: (scenario: ScenarioDefinition) => Promise<void>;
-};
+}
 
 const artifactRoot = resolve(process.cwd(), 'artifacts', 'code-generation-fixtures');
 const execFileAsync = promisify(execFile);
@@ -294,7 +294,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
       scenarios.map(async scenario => {
         const manifestPath = join(artifactRoot, scenario.id, 'manifest.json');
         const raw = await readFile(manifestPath, 'utf-8');
-        return JSON.parse(raw) as { scenario: string; files: Array<{ file: string }> };
+        return JSON.parse(raw) as { scenario: string; files: { file: string }[] };
       }),
     );
 

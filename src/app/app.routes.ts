@@ -6,7 +6,7 @@ import { SchemaVerificationComponent } from './domain/schema-management/componen
 
 export interface Route {
   path: string;
-  component?: Type<any>;
+  component?: Type<unknown>;
   title?: string;
   redirectTo?: string;
 }

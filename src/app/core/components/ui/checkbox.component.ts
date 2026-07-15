@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ElementRef, ViewChild, booleanAttribute } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy, ElementRef, ViewChild, booleanAttribute } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -29,9 +29,7 @@ export class CheckboxComponent {
 
   internalValue = false;
 
-  get type(): string {
-    return 'checkbox';
-  }
+  readonly type = 'checkbox';
 
   get checked(): boolean {
     return this.internalValue;
@@ -56,5 +54,6 @@ export class CheckboxComponent {
   }
 
   onBlur() {
+    // No-op
   }
 }

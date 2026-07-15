@@ -106,7 +106,7 @@ type ResultsTab = 'grid' | 'balance';
             </span>
             <app-button
               variant="bare"
-              (onClick)="copyAuditHash()"
+              (clicked)="copyAuditHash()"
               customClass="shrink-0 p-1.5 rounded-md border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700"
               ariaLabel="Copy audit hash to clipboard"
               data-testid="copy-hash-btn">
