@@ -16,6 +16,7 @@
 
 import { generateRandomizationSchema } from './randomization-algorithm';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { StudyPresets } from '../../core/presets/study-presets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers
@@ -53,7 +54,7 @@ function runMonteCarlo(
 // Test fixtures
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ONE_TO_ONE_CONFIG: RandomizationConfig = {
+const ONE_TO_ONE_CONFIG: RandomizationConfig = StudyPresets.extend(StudyPresets.Simple, {
   protocolId: 'STAT-VAL-001',
   studyName: 'Statistical Validation Study',
   phase: 'Phase III',
@@ -63,16 +64,13 @@ const ONE_TO_ONE_CONFIG: RandomizationConfig = {
   ],
   sites: ['Site1', 'Site2'],
   strata: [],
-  // Block size 4, cap 101: 25 complete blocks (100 subjects) + 1-subject partial
-  // block ensures per-run arm counts are NOT always exactly 50/50, exercising
-  // PRNG variance and making the convergence assertion statistically meaningful.
   blockSizes: [4],
   stratumCaps: [{ levelIds: {}, cap: 101 }],
   seed: 'stat_val_seed',
-  subjectIdMask: '[SiteID]-[001]',
-};
+  subjectIdMask: '{SITE}-{SEQ:3}',
+});
 
-const TWO_TO_ONE_CONFIG: RandomizationConfig = {
+const TWO_TO_ONE_CONFIG: RandomizationConfig = StudyPresets.extend(StudyPresets.Simple, {
   protocolId: 'STAT-VAL-002',
   studyName: 'Statistical Validation 2:1',
   phase: 'Phase II',
@@ -82,15 +80,13 @@ const TWO_TO_ONE_CONFIG: RandomizationConfig = {
   ],
   sites: ['Site1'],
   strata: [],
-  // Block size 3, cap 91: 30 complete blocks (90 subjects) + 1-subject partial
-  // block, so per-run ratio is not always exactly 2:1.
   blockSizes: [3],
   stratumCaps: [{ levelIds: {}, cap: 91 }],
   seed: 'stat_val_2to1',
-  subjectIdMask: '[SiteID]-[001]',
-};
+  subjectIdMask: '{SITE}-{SEQ:3}',
+});
 
-const THREE_ARM_CONFIG: RandomizationConfig = {
+const THREE_ARM_CONFIG: RandomizationConfig = StudyPresets.extend(StudyPresets.Simple, {
   protocolId: 'STAT-VAL-003',
   studyName: 'Statistical Validation 3-arm',
   phase: 'Phase II',
@@ -101,14 +97,13 @@ const THREE_ARM_CONFIG: RandomizationConfig = {
   ],
   sites: ['Site1'],
   strata: [],
-  // Block size 3, cap 91: 30 complete blocks + 1-subject partial block.
   blockSizes: [3],
   stratumCaps: [{ levelIds: {}, cap: 91 }],
   seed: 'stat_val_3arm',
-  subjectIdMask: '[SiteID]-[001]',
-};
+  subjectIdMask: '{SITE}-{SEQ:3}',
+});
 
-const STRATIFIED_CONFIG: RandomizationConfig = {
+const STRATIFIED_CONFIG: RandomizationConfig = StudyPresets.extend(StudyPresets.Standard, {
   protocolId: 'STAT-VAL-004',
   studyName: 'Statistical Validation Stratified',
   phase: 'Phase III',
@@ -129,8 +124,8 @@ const STRATIFIED_CONFIG: RandomizationConfig = {
     { levelIds: { sex: 'F', age: '>=65' }, cap: 20 },
   ],
   seed: 'stat_val_strat',
-  subjectIdMask: '[SiteID]-[001]',
-};
+  subjectIdMask: '{SITE}-{SEQ:3}',
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Law of Large Numbers – allocation ratio convergence
@@ -379,7 +374,7 @@ describe('ICH E9 – Boundary Conditions: structural integrity under edge cases'
   });
 
   it('maximum strata factor count (4 factors × 2 levels = 16 combinations) never exceeds any cap', () => {
-    const config: RandomizationConfig = {
+    const config: RandomizationConfig = StudyPresets.extend(StudyPresets.Simple, {
       protocolId: 'STAT-BOUNDARY',
       studyName: 'Boundary Test',
       phase: 'Phase II',
@@ -408,8 +403,8 @@ describe('ICH E9 – Boundary Conditions: structural integrity under edge cases'
         };
       }),
       seed: 'boundary_test',
-      subjectIdMask: '[SiteID]-[001]',
-    };
+      subjectIdMask: '{SITE}-{SEQ:3}',
+    });
 
     for (let i = 0; i < 20; i++) {
       const result = generateRandomizationSchema({ ...config, seed: iterSeed(i) });

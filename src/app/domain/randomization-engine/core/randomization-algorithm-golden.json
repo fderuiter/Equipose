@@ -32,7 +32,7 @@
       ],
       "seed": "GOLDEN_SEED_1",
       "subjectIdMask": "{SITE}-{SEQ:3}",
-      "randomizationMethod": "PERMUTED_BLOCK"
+      "randomizationMethod": "BLOCK"
     },
     "schema": [
       {
@@ -206,7 +206,7 @@
       "capStrategy": "MARGINAL_ONLY",
       "seed": "GOLDEN_SEED_3",
       "subjectIdMask": "{SITE}-{SEQ:3}",
-      "randomizationMethod": "PERMUTED_BLOCK"
+      "randomizationMethod": "BLOCK"
     },
     "schema": [
       {
@@ -363,7 +363,7 @@
       ],
       "seed": "GOLDEN_SEED_4",
       "subjectIdMask": "{SITE}-{SEQ:5}",
-      "randomizationMethod": "PERMUTED_BLOCK"
+      "randomizationMethod": "BLOCK"
     },
     "schema": [
       {
@@ -471,7 +471,7 @@
       ],
       "seed": "GOLDEN_SEED_5",
       "subjectIdMask": "{SITE}-{SEQ:3}",
-      "randomizationMethod": "PERMUTED_BLOCK"
+      "randomizationMethod": "BLOCK"
     },
     "schema": []
   }
