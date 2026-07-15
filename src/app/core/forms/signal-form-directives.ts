@@ -6,7 +6,7 @@ import { SignalControl, FormGroup, FormArray } from './signal-forms';
   standalone: true
 })
 export class SignalFormGroupDirective {
-  @Input() formGroup!: FormGroup;
+  @Input('formGroup') @Input('appFormGroup') formGroup!: FormGroup;
 }
 
 @Directive({
@@ -14,11 +14,11 @@ export class SignalFormGroupDirective {
   standalone: true
 })
 export class SignalFormArrayNameDirective {
-  @Input() formArrayName!: string | number;
+  @Input('formArrayName') @Input('appFormArrayName') formArrayName!: string | number;
   private parent = inject(SignalFormGroupDirective, { optional: true });
 
   get array(): FormArray {
-    return this.parent?.formGroup.controls[this.formArrayName];
+    return this.parent?.formGroup?.controls?.[this.formArrayName] as FormArray;
   }
 }
 
@@ -27,15 +27,15 @@ export class SignalFormArrayNameDirective {
   standalone: true
 })
 export class SignalFormGroupNameDirective {
-  @Input() formGroupName!: string | number;
+  @Input('formGroupName') @Input('appFormGroupName') formGroupName!: string | number;
   private parent = inject(SignalFormGroupDirective, { optional: true });
   private arrayParent = inject(SignalFormArrayNameDirective, { optional: true });
 
   get group(): FormGroup {
     if (this.arrayParent) {
-      return this.arrayParent.array.at(Number(this.formGroupName));
+      return this.arrayParent.array?.at(Number(this.formGroupName));
     }
-    return this.parent?.formGroup.controls[this.formGroupName];
+    return this.parent?.formGroup?.controls?.[this.formGroupName] as FormGroup;
   }
 }
 
@@ -44,8 +44,8 @@ export class SignalFormGroupNameDirective {
   standalone: true
 })
 export class SignalFormControlDirective implements OnInit {
-  @Input() formControlName?: string | number;
-  @Input() formControl?: SignalControl;
+  @Input('formControlName') @Input('appFormControlName') formControlName?: string | number;
+  @Input('formControl') @Input('appFormControl') formControl?: SignalControl;
   
   private groupParent = inject(SignalFormGroupDirective, { optional: true });
   private groupNameParent = inject(SignalFormGroupNameDirective, { optional: true });
@@ -56,10 +56,11 @@ export class SignalFormControlDirective implements OnInit {
 
   get control(): SignalControl {
     if (this.formControl) return this.formControl;
+    const name = this.formControlName as string;
     if (this.groupNameParent) {
-      return this.groupNameParent.group.controls[this.formControlName as string];
+      return this.groupNameParent.group?.controls?.[name] as SignalControl;
     }
-    return this.groupParent?.formGroup.controls[this.formControlName as string];
+    return this.groupParent?.formGroup?.controls?.[name] as SignalControl;
   }
 
   ngOnInit() {

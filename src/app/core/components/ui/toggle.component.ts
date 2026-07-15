@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, booleanAttribute, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, booleanAttribute, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -33,8 +33,10 @@ export class ToggleComponent implements OnChanges {
 
   internalValue = false;
 
-  ngOnChanges() {
-    this.internalValue = this.checked;
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['checked']) {
+      this.internalValue = this.checked;
+    }
   }
 
   get computedClasses(): string {

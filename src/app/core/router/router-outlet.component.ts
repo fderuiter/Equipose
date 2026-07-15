@@ -1,10 +1,10 @@
-import { Component, inject, computed, ViewContainerRef, ViewChild, Type, OnDestroy, effect } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { SignalRouter } from './signal-router.service';
 import { routes } from '../../app.routes';
 import { NgComponentOutlet } from '@angular/common';
 
 @Component({
-  selector: 'router-outlet',
+  selector: 'router-outlet, app-router-outlet',
   standalone: true,
   imports: [NgComponentOutlet],
   template: `<ng-container *ngComponentOutlet="currentComponent()"></ng-container>`

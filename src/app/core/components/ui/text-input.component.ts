@@ -26,7 +26,7 @@ import { CommonModule } from '@angular/common';
 })
 export class TextInputComponent {
   @Input() variant: 'default' | 'bare' = 'default';
-  @Input() typeAttr: 'text' | 'number' | 'range' = 'text';
+  @Input('type') typeAttr: 'text' | 'number' | 'range' = 'text';
   @Input() inputId = '';
   @Input() min?: number | string;
   @Input() max?: number | string;

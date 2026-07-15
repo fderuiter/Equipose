@@ -1,19 +1,18 @@
 import { ZipWriter } from './zip.util';
 
+type StyleFill = { type: string; fgColor?: string };
+
 export class OpenXmlWriter {
   private zip = new ZipWriter();
   private styles = {
     fonts: [{ sz: 11, color: 'FF000000', bold: false }], // 0: default
-    fills: [{ type: 'none' }, { type: 'gray125' }],      // 0: none, 1: gray125
+    fills: [{ type: 'none' }, { type: 'gray125' }] as StyleFill[],      // 0: none, 1: gray125
     cellXfs: [{ fontId: 0, fillId: 0, alignment: '', numFmtId: 0 }],  // 0: default
   };
   private worksheets: { name: string; xml: string; autoFilter?: string; freezePanes?: boolean; cols?: number[] }[] = [];
 
   public creator?: string;
   public created?: Date;
-
-  constructor() {
-  }
 
   public addStyle(font: { sz?: number, color?: string, bold?: boolean }, fill: { fgColor?: string }, alignment = '', numFmtId = 0): number {
     let fontId = this.styles.fonts.findIndex(f => f.sz === (font.sz || 11) && f.color === (font.color || 'FF000000') && !!f.bold === !!font.bold);
@@ -24,10 +23,10 @@ export class OpenXmlWriter {
 
     let fillId = 0;
     if (fill.fgColor) {
-      fillId = this.styles.fills.findIndex(f => (f as any).fgColor === fill.fgColor);
+      fillId = this.styles.fills.findIndex(f => f.fgColor === fill.fgColor);
       if (fillId === -1) {
         fillId = this.styles.fills.length;
-        this.styles.fills.push({ type: 'solid', fgColor: fill.fgColor } as any);
+        this.styles.fills.push({ type: 'solid', fgColor: fill.fgColor });
       }
     }
 
@@ -161,7 +160,7 @@ export class OpenXmlWriter {
       if (f.type === 'none' || f.type === 'gray125') {
         fillsXml += `<fill><patternFill patternType="${f.type}"/></fill>`;
       } else {
-        fillsXml += `<fill><patternFill patternType="solid"><fgColor rgb="${(f as any).fgColor}"/></patternFill></fill>`;
+        fillsXml += `<fill><patternFill patternType="solid"><fgColor rgb="${f.fgColor}"/></patternFill></fill>`;
       }
     });
     fillsXml += `</fills>`;

@@ -1,11 +1,12 @@
 import { signal, WritableSignal } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 
 export type ValidationErrors = Record<string, unknown>;
 export type ValidatorFn = (control: AbstractControl) => ValidationErrors | null;
 
 export abstract class AbstractControl {
   abstract get value(): unknown;
-  abstract get valueChanges(): { subscribe: (fn: (val: unknown) => void) => { unsubscribe: () => void }, pipe: (...args: unknown[]) => { subscribe: (fn: (val: unknown) => void) => { unsubscribe: () => void }, pipe: (...args: unknown[]) => unknown } };
+  abstract get valueChanges(): Observable<unknown>;
   abstract setValue(value: unknown, options?: { emitEvent?: boolean }): void;
   abstract patchValue(value: unknown, options?: { emitEvent?: boolean }): void;
   abstract disable(options?: { emitEvent?: boolean }): void;
@@ -33,20 +34,11 @@ export class SignalControl<T = unknown> extends AbstractControl {
   private _value: WritableSignal<T>;
   private _validators: ValidatorFn[];
   private _disabled = signal(false);
+  private _valueChanges = new Subject<T>();
 
-  // We add a mock subscribe method to valueChanges so we don't have to change all code
-  public valueChanges = {
-    subscribe: (fn: (val: T) => void) => {
-      // Return a dummy subscription to avoid breaking code that expects it,
-      // but don't use effect() here as it requires injection context.
-      void fn;
-      return { unsubscribe: () => { /* No-op */ } };
-    },
-    pipe: (...args: unknown[]) => {
-       void args;
-       return this.valueChanges;
-    }
-  };
+  get valueChanges(): Observable<T> {
+    return this._valueChanges.asObservable();
+  }
 
   constructor(initialValue: T, validators: ValidatorFn[] = []) {
     super();
@@ -59,8 +51,10 @@ export class SignalControl<T = unknown> extends AbstractControl {
   }
 
   setValue(value: T, options?: { emitEvent?: boolean }): void {
-    void options;
     this._value.set(value);
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(value);
+    }
   }
 
   patchValue(value: T, options?: { emitEvent?: boolean }): void {
@@ -127,9 +121,19 @@ export class SignalControl<T = unknown> extends AbstractControl {
 
 export class FormGroup<T extends Record<string, AbstractControl> = Record<string, AbstractControl>> extends AbstractControl {
   private _disabled = signal(false);
+  private _valueChanges = new Subject<unknown>();
+
+  get valueChanges(): Observable<unknown> {
+    return this._valueChanges.asObservable();
+  }
   
   constructor(public controls: T, private _validators: ValidatorFn[] = []) {
     super();
+    for (const key in this.controls) {
+      this.controls[key].valueChanges.subscribe(() => {
+        this._valueChanges.next(this.value);
+      });
+    }
   }
 
   get value(): unknown {
@@ -139,17 +143,6 @@ export class FormGroup<T extends Record<string, AbstractControl> = Record<string
     }
     return result;
   }
-
-  public valueChanges = {
-    subscribe: (fn: (val: unknown) => void) => {
-      void fn;
-      return { unsubscribe: () => { /* No-op */ } };
-    },
-    pipe: (...args: unknown[]) => {
-       void args;
-       return this.valueChanges;
-    }
-  };
 
   get valid(): boolean {
     for (const key in this.controls) {
@@ -187,6 +180,9 @@ export class FormGroup<T extends Record<string, AbstractControl> = Record<string
           this.controls[key].patchValue(val[key], options);
         }
       }
+      if (options?.emitEvent !== false) {
+        this._valueChanges.next(this.value);
+      }
     }
   }
 
@@ -221,20 +217,17 @@ export class FormGroup<T extends Record<string, AbstractControl> = Record<string
   get(path: string | (string | number)[]): AbstractControl | null {
     if (!path) return null;
     const pathArray = Array.isArray(path) ? path : path.split('.');
-    let currentControlRef: AbstractControl | null = this;
-    for (const p of pathArray) {
-      if (!currentControlRef) return null;
-      if (currentControlRef instanceof FormGroup) {
-        const group = currentControlRef as FormGroup;
-        currentControlRef = group.controls[p as string] || null;
-      } else if (currentControlRef instanceof FormArray) {
-        const arr = currentControlRef as FormArray;
-        currentControlRef = arr.at(p as number);
-      } else {
-        return null;
+
+    return pathArray.reduce((acc: AbstractControl | null, key) => {
+      if (!acc) return null;
+      if (acc instanceof FormGroup) {
+        return acc.controls[key as string] || null;
       }
-    }
-    return currentControlRef;
+      if (acc instanceof FormArray) {
+        return acc.at(key as number);
+      }
+      return null;
+    }, this as AbstractControl);
   }
 
   setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void {
@@ -246,10 +239,22 @@ export class FormGroup<T extends Record<string, AbstractControl> = Record<string
 
 export class FormArray<T extends AbstractControl = AbstractControl> extends AbstractControl {
   private _controls = signal<T[]>([]);
+  private _valueChanges = new Subject<unknown[]>();
+
+  get valueChanges(): Observable<unknown[]> {
+    return this._valueChanges.asObservable();
+  }
 
   constructor(initialControls: T[] = []) {
     super();
     this._controls.set(initialControls);
+    initialControls.forEach(c => this._subscribeToControl(c));
+  }
+
+  private _subscribeToControl(control: T) {
+    control.valueChanges.subscribe(() => {
+      this._valueChanges.next(this.value);
+    });
   }
 
   get controls(): T[] {
@@ -260,43 +265,42 @@ export class FormArray<T extends AbstractControl = AbstractControl> extends Abst
     return this._controls().map(c => c.value);
   }
 
-  public valueChanges = {
-    subscribe: (fn: (val: unknown) => void) => {
-      void fn;
-      return { unsubscribe: () => { /* No-op */ } };
-    },
-    pipe: (...args: unknown[]) => {
-       void args;
-       return this.valueChanges;
-    }
-  };
-
   push(control: T, options?: { emitEvent?: boolean }): void {
-    void options;
     this._controls.update(arr => [...arr, control]);
+    this._subscribeToControl(control);
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(this.value);
+    }
   }
 
   removeAt(index: number, options?: { emitEvent?: boolean }): void {
-    void options;
     this._controls.update(arr => {
       const newArr = [...arr];
       newArr.splice(index, 1);
       return newArr;
     });
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(this.value);
+    }
   }
 
   clear(options?: { emitEvent?: boolean }): void {
-    void options;
     this._controls.set([]);
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(this.value);
+    }
   }
 
   insert(index: number, control: T, options?: { emitEvent?: boolean }): void {
-    void options;
     this._controls.update(arr => {
       const newArr = [...arr];
       newArr.splice(index, 0, control);
       return newArr;
     });
+    this._subscribeToControl(control);
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(this.value);
+    }
   }
 
   at(index: number): T {
@@ -327,14 +331,24 @@ export class FormArray<T extends AbstractControl = AbstractControl> extends Abst
   }
 
   setValue(value: unknown[], options?: { emitEvent?: boolean }): void {
-    void value;
-    void options;
-    /* No-op */
+    value.forEach((v, i) => {
+      if (this.controls[i]) {
+        this.controls[i].setValue(v, { emitEvent: false });
+      }
+    });
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(this.value);
+    }
   }
   patchValue(value: unknown[], options?: { emitEvent?: boolean }): void {
-    void value;
-    void options;
-    /* No-op */
+    value.forEach((v, i) => {
+      if (this.controls[i]) {
+        this.controls[i].patchValue(v, { emitEvent: false });
+      }
+    });
+    if (options?.emitEvent !== false) {
+      this._valueChanges.next(this.value);
+    }
   }
   disable(options?: { emitEvent?: boolean }): void {
     for (const c of this.controls) c.disable(options);
@@ -348,27 +362,26 @@ export class FormArray<T extends AbstractControl = AbstractControl> extends Abst
   get(path: string | (string | number)[]): AbstractControl | null {
     if (!path) return null;
     const pathArray = Array.isArray(path) ? path : path.split('.');
-    let currentControlRef: AbstractControl | null = this;
-    for (const p of pathArray) {
-      if (!currentControlRef) return null;
-      if (currentControlRef instanceof FormArray) {
-        const arr = currentControlRef as FormArray;
-        currentControlRef = arr.at(p as number);
-      } else if (currentControlRef instanceof FormGroup) {
-        const group = currentControlRef as FormGroup;
-        currentControlRef = group.controls[p as string];
-      } else {
-        return null;
+
+    return pathArray.reduce((acc: AbstractControl | null, key) => {
+      if (!acc) return null;
+      if (acc instanceof FormArray) {
+        return acc.at(key as number);
       }
-    }
-    return currentControlRef;
+      if (acc instanceof FormGroup) {
+        return acc.controls[key as string];
+      }
+      return null;
+    }, this as AbstractControl);
   }
   setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void {
     void newValidator;
     /* No-op */
   }
 
-  readonly type = 'array';
+  get type(): string {
+    return 'array';
+  }
 }
 
 export const Validators = {

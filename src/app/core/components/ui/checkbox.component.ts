@@ -29,7 +29,9 @@ export class CheckboxComponent {
 
   internalValue = false;
 
-  readonly type = 'checkbox';
+  get type(): string {
+    return 'checkbox';
+  }
 
   get checked(): boolean {
     return this.internalValue;

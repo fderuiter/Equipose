@@ -1100,8 +1100,8 @@ export class ConfigFormComponent implements OnInit {
     }
   }
 
-  onDragOver(event: DragEvent, event: number): void {
-    void event.preventDefault();
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
     }

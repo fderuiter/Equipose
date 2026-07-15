@@ -1,8 +1,8 @@
-import { Directive, Input, HostListener, inject, ElementRef, Renderer2, effect, OnInit, OnDestroy, HostBinding } from '@angular/core';
+import { Directive, Input, HostListener, inject, effect, HostBinding } from '@angular/core';
 import { SignalRouter } from './signal-router.service';
 
 @Directive({
-  selector: '[routerLink]',
+  selector: '[routerLink], [appRouterLink]',
   standalone: true
 })
 export class RouterLinkDirective {
@@ -26,7 +26,7 @@ export class RouterLinkDirective {
 }
 
 @Directive({
-  selector: '[routerLinkActive]',
+  selector: '[routerLinkActive], [appRouterLinkActive]',
   standalone: true,
   exportAs: 'routerLinkActive'
 })

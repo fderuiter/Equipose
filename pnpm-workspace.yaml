@@ -6,8 +6,5 @@ allowBuilds:
   msgpackr-extract: true
   sharp: true
   workerd: true
-minimumReleaseAgeExclude:
-  - miniflare
-  - wrangler
 packages:
   - '.'

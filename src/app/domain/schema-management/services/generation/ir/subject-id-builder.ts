@@ -20,8 +20,38 @@ export class SubjectIdBuilder {
     seqVar: string,
     adapters: SubjectIdLanguageAdapters
   ): string {
-    const result = '';
-    // Implement centralized logic builder...
+    let result = adapters.assign('subjectId', "''");
+
+    for (const token of tokens) {
+      let value = "''";
+      switch (token.type) {
+        case 'static':
+          value = `'${token.value}'`;
+          break;
+        case 'site_id':
+          value = siteVar;
+          break;
+        case 'stratum_id':
+          value = stratumVar;
+          break;
+        case 'sequence':
+          value = adapters.toStringWithZeroPadding(seqVar, token.padding || 0);
+          break;
+        case 'random_char':
+          value = adapters.randomCharIndexStr(token.length || 1);
+          break;
+      }
+      result = adapters.concat(result, value);
+    }
+
+    // Process post-generation logic if needed (e.g. Luhn check digit)
+    const hasLuhn = tokens.some(t => t.type === 'checksum_luhn');
+    if (hasLuhn) {
+      result += '\n' + adapters.regexRemoveNonDigits('subjectId', 'tempDigits');
+      result += '\n' + adapters.luhnLoop('tempDigits', 'luhnSum', 'luhnIsEven');
+      result = adapters.concat('subjectId', adapters.luhnResult('luhnSum'));
+    }
+
     return result;
   }
 }

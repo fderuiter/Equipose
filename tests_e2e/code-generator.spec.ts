@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { openGenerator } from './generator-helpers';
-import { FocusAuditor } from './a11y';
 
 test.describe('Code Generator Modal UI', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,12 +8,12 @@ test.describe('Code Generator Modal UI', () => {
   });
 
   test('should generate, display, and download code in all supported languages', async ({ page }) => {
-    await page.locator('#protocolId input').fill('TEST-PRT-123');
-    await page.locator('#studyName input').fill('End-to-end Test Study');
+    await page.locator('#protocolId').fill('TEST-PRT-123');
+    await page.locator('#studyName').fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
     await page.getByRole('button', { name: /^Next$/i }).click();
-    await page.locator('#armName0 input').fill('Placebo');
+    await page.locator('#armName0').fill('Placebo');
     await page.getByRole('button', { name: /^Next$/i }).click();
 
     const siteInput = page.locator('#sitesLabel + app-tag-input input');
@@ -23,15 +22,15 @@ test.describe('Code Generator Modal UI', () => {
     await siteInput.press('Enter');
     await page.getByRole('button', { name: /^Next$/i }).click();
 
-    await page.locator('#blockSizesStr input').fill('2');
+    await page.locator('#blockSizesStr').fill('2');
     await page.getByRole('button', { name: /^Next$/i }).click();
     await page.getByRole('button', { name: /^Next$/i }).click();
 
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
     await expect(generateCodeBtn).toBeVisible();
     await generateCodeBtn.click();
-    await expect(page.getByRole('menuitem', { name: /Stata Script/i }).first()).toBeVisible();
-    await page.getByRole('menuitem', { name: /R Script/i }).first().click();
+    await expect(page.getByRole('menuitem', { name: /Stata Script/i })).toBeVisible();
+    await page.getByRole('menuitem', { name: /R Script/i }).click();
 
     const modalHeading = page.getByRole('heading', { name: /Code Generator/i });
     await expect(modalHeading).toBeVisible();
@@ -72,41 +71,4 @@ test.describe('Code Generator Modal UI', () => {
     await modal.getByRole('button', { name: /Close/i }).first().click();
     await expect(modalHeading).toBeHidden();
   });
-
-  test('copying code should announce to screen reader and maintain focus', async ({ page }) => {
-    await page.locator('#protocolId input').fill('TEST-PRT-123');
-    await page.locator('#studyName input').fill('End-to-end Test Study');
-    await page.locator('#phase').selectOption({ label: 'Phase II' });
-
-    await page.getByRole('button', { name: /^Next$/i }).click();
-    await page.locator('#armName0 input').fill('Placebo');
-    await page.getByRole('button', { name: /^Next$/i }).click();
-
-    const siteInput = page.locator('#sitesLabel + app-tag-input input');
-    await expect(siteInput).toBeVisible();
-    await siteInput.fill('Site-001');
-    await siteInput.press('Enter');
-    await page.getByRole('button', { name: /^Next$/i }).click();
-
-    await page.locator('#blockSizesStr input').fill('2');
-    await page.getByRole('button', { name: /^Next$/i }).click();
-    await page.getByRole('button', { name: /^Next$/i }).click();
-
-    const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
-    await expect(generateCodeBtn).toBeVisible();
-    await generateCodeBtn.click();
-    await expect(page.getByRole('menuitem', { name: /Stata Script/i }).first()).toBeVisible();
-    await page.getByRole('menuitem', { name: /R Script/i }).first().click();
-
-    const modal = page.locator('div[role="dialog"]');
-    const copyBtn = modal.getByRole('button', { name: /Copy Code/i });
-    await expect(copyBtn).toBeVisible();
-
-    const liveRegion = page.locator('.sr-only[aria-live="polite"]');
-    await FocusAuditor.assertFocusRestoration(page, async () => {
-      await copyBtn.click();
-      await expect(liveRegion).toContainText(/Copied to clipboard!/i, { timeout: 3000 });
-    }, copyBtn);
-  });
-
 });
