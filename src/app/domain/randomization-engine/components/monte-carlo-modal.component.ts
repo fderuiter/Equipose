@@ -65,7 +65,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
           <div class="space-y-3">
             <div class="flex justify-between items-center">
               <span class="text-sm font-medium text-gray-700 dark:text-slate-300">Simulating trials…</span>
-              <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ facade.monteCarloProgress() }}%</span>
+              <span class="text-sm font-semibold text-indigo-600 dark:text-indigo-400" data-testid="mc-progress-percentage">{{ facade.monteCarloProgress() }}%</span>
             </div>
             <progress
               class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600 [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-indigo-600 dark:[&::-webkit-progress-value]:bg-indigo-500 [&::-moz-progress-bar]:bg-indigo-600 dark:[&::-moz-progress-bar]:bg-indigo-500 transition-all duration-300 ease-out"
@@ -75,7 +75,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
             >
               {{ facade.monteCarloProgress() }}%
             </progress>
-                <p class="text-xs text-muted text-center">
+                <p class="text-xs text-muted text-center" data-testid="mc-progress-iterations-text">
                   {{ progressIterations() | number }} / 10,000 iterations completed - running off the main UI thread via Web Worker
                 </p>
               </div>
@@ -116,7 +116,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
                   </div>
                 }
                 <div [class]="deviationCardClass(results.attritionRate)">
-                  <p class="text-2xl font-bold" [class]="maxDeviationClass()">{{ maxDeviation() | number:'1.4-4' }}%</p>
+                  <p class="text-2xl font-bold" [class]="maxDeviationClass()" data-testid="max-deviation-value">{{ maxDeviation() | number:'1.4-4' }}%</p>
                   <p class="text-xs text-muted mt-1">Max Arm Deviation</p>
                 </div>
               </div>
