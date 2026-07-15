@@ -6,6 +6,7 @@ import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 
 
@@ -17,7 +18,7 @@ import { AnnouncementService } from '../../../core/services/announcement.service
   selector: 'app-code-generator-modal',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [JsonPipe, FocusManagerDirective, ButtonComponent],
+  imports: [JsonPipe, FocusManagerDirective, ButtonComponent, AppTooltipDirective],
   templateUrl: './code-generator-modal.component.html'
 })
 export class CodeGeneratorModalComponent implements OnInit {
