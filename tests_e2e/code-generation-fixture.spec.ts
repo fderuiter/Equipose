@@ -123,6 +123,25 @@ test.describe('Code generation fixtures for script execution checks', () => {
     }
   };
 
+  const resolveExecutable = async (candidates: (string | undefined)[]): Promise<string | null> => {
+    for (const candidate of candidates) {
+      if (candidate && await commandExists(candidate)) return candidate;
+    }
+
+    return null;
+  };
+
+  const getRscriptCandidates = (): string[] => {
+    const rHome = process.env.R_HOME;
+
+    return [
+      process.env.RSCRIPT,
+      process.env.R_SCRIPT,
+      rHome ? join(rHome, 'bin', 'Rscript') : undefined,
+      'Rscript',
+    ].filter((candidate): candidate is string => Boolean(candidate));
+  };
+
   test.beforeAll(async () => {
     await rm(artifactRoot, { recursive: true, force: true });
     await mkdir(artifactRoot, { recursive: true });
@@ -381,10 +400,10 @@ test.describe('Code generation fixtures for script execution checks', () => {
     }
 
     const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
-    const hasRscript = await commandExists('Rscript');
-    if (hasRscript) {
+    const rscriptExecutable = await resolveExecutable(getRscriptCandidates());
+    if (rscriptExecutable) {
       for (const scriptPath of rScripts) {
-        await assertSubprocessSuccess('Rscript', [scriptPath], `Generated R script execution (${scriptPath})`);
+        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);
       }
     } else if (process.env.GITHUB_ACTIONS === 'true') {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
