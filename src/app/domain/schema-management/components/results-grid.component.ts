@@ -79,8 +79,6 @@ export class ResultsGridComponent {
    * template can reference the correct data payload.
    */
   activeMenuRow = signal<GeneratedSchema | null>(null);
-  menuPosition = signal({ x: 0, y: 0 });
-  filterPosition = signal({ x: 0, y: 0 });
 
   /**
    * Expose the shared `isUnblinded` signal directly so existing template
@@ -251,12 +249,6 @@ export class ResultsGridComponent {
   /** Opens the kebab context menu for a specific data row. */
   openRowMenu(row: GeneratedSchema, event: MouseEvent): void {
     this.activeMenuRow.set(row);
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    this.menuPosition.set({
-      x: rect.right - 160,
-      y: rect.bottom + 4
-    });
     const popover = document.getElementById('shared-row-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
       popover.showPopover();
@@ -336,12 +328,6 @@ export class ResultsGridComponent {
   /** Records which column's filter panel is currently active. */
   openColumnFilter(column: string, event: MouseEvent): void {
     this.activeFilterColumn.set(column);
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    this.filterPosition.set({
-      x: rect.left,
-      y: rect.bottom + 4
-    });
     const popover = document.getElementById('shared-filter-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
       popover.showPopover();
