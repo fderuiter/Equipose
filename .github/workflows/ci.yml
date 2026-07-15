@@ -131,6 +131,15 @@ jobs:
     - name: Extract shared environment
       run: tar -xf shared-env.tar
 
+    - name: Install Playwright WebKit runtime libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwoff2dec1
+        npx playwright install --with-deps webkit
+      env:
+        CI: true
+        PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
+
     - name: Run E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal 
         }})
       run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ 
@@ -199,6 +208,15 @@ jobs:
 
     - name: Extract shared environment
       run: tar -xf shared-env.tar
+
+    - name: Install Playwright WebKit runtime libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwoff2dec1
+        npx playwright install --with-deps webkit
+      env:
+        CI: true
+        PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
     - name: Export code-generation fixture scripts
       run: npx playwright test tests_e2e/code-generation-fixture.spec.ts
