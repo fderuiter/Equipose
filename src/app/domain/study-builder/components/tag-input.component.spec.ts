@@ -165,20 +165,32 @@ describe('TagInputComponent', () => {
       expect(spy).toHaveBeenCalled();
     });
 
-    it('should remove the last tag on Backspace when inputValue is empty', () => {
-      component.tags = ['101', '102'];
-      component.inputValue = '';
+    it('should focus the last tag button on Backspace when inputValue is empty', () => {
+      const fixture = TestBed.createComponent(TagInputComponent);
+      const comp = fixture.componentInstance;
+      comp.control = new FormControl('101, 102');
+      fixture.detectChanges();
+
+      comp.inputValue = '';
       const event = new KeyboardEvent('keydown', { key: 'Backspace' });
-      component.onKeydown(event);
-      expect(component.tags).toEqual(['101']);
+      comp.onKeydown(event);
+
+      const buttons = fixture.nativeElement.querySelectorAll('button');
+      expect(document.activeElement).toBe(buttons[1]);
     });
 
-    it('should NOT remove a tag on Backspace when inputValue is non-empty', () => {
-      component.tags = ['101', '102'];
-      component.inputValue = 'abc';
+    it('should NOT focus a tag button on Backspace when inputValue is non-empty', () => {
+      const fixture = TestBed.createComponent(TagInputComponent);
+      const comp = fixture.componentInstance;
+      comp.control = new FormControl('101, 102');
+      fixture.detectChanges();
+
+      comp.inputValue = 'abc';
       const event = new KeyboardEvent('keydown', { key: 'Backspace' });
-      component.onKeydown(event);
-      expect(component.tags.length).toBe(2);
+      comp.onKeydown(event);
+
+      const buttons = fixture.nativeElement.querySelectorAll('button');
+      expect(document.activeElement).not.toBe(buttons[1]);
     });
   });
 
