@@ -18,7 +18,7 @@ const armsArbitrary = fc.array(
   { minLength: 2, maxLength: 4 }
 );
 
-const strataArbitrary = fc.array(
+const strataArbitrary = fc.uniqueArray(
   fc.record({
     id: fc.string({ minLength: 1, maxLength: 5 }),
     name: fc.string({ minLength: 1, maxLength: 10 }),
@@ -54,7 +54,7 @@ const strataArbitrary = fc.array(
       })
     });
   }),
-  { minLength: 0, maxLength: 3 }
+  { minLength: 0, maxLength: 3, selector: factor => factor.id }
 );
 
 const minimizationConfigArbitrary = (arms: TreatmentArm[], strata: StratificationFactor[]) => {
