@@ -15,7 +15,7 @@ export class OpenXmlWriter {
   constructor() {
   }
 
-  public addStyle(font: { sz?: number, color?: string, bold?: boolean }, fill: { fgColor?: string }, alignment: string = '', numFmtId: number = 0): number {
+  public addStyle(font: { sz?: number, color?: string, bold?: boolean }, fill: { fgColor?: string }, alignment = '', numFmtId = 0): number {
     let fontId = this.styles.fonts.findIndex(f => f.sz === (font.sz || 11) && f.color === (font.color || 'FF000000') && !!f.bold === !!font.bold);
     if (fontId === -1) {
       fontId = this.styles.fonts.length;
@@ -197,7 +197,7 @@ export class OpenXmlWriter {
   private getColLetter(colIndex: number): string {
     let letter = '';
     while (colIndex > 0) {
-      let mod = (colIndex - 1) % 26;
+      const mod = (colIndex - 1) % 26;
       letter = String.fromCharCode(65 + mod) + letter;
       colIndex = Math.floor((colIndex - mod) / 26);
     }

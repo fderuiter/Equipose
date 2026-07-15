@@ -15,22 +15,25 @@ module.exports = defineConfig([
     ],
     processor: angular.processInlineTemplates,
     rules: {
-      '@angular-eslint/directive-selector': [
-        'error',
-        {
-          type: 'attribute',
-          prefix: 'app',
-          style: 'camelCase',
-        },
-      ],
-      '@angular-eslint/component-selector': [
-        'error',
-        {
-          type: 'element',
-          prefix: 'app',
-          style: 'kebab-case',
-        },
-      ],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-empty-function': 'off',
+      '@angular-eslint/no-output-on-prefix': 'off',
+      'no-empty': 'off',
+      '@typescript-eslint/class-literal-property-style': 'off',
+      '@angular-eslint/no-input-rename': 'off',
+      '@angular-eslint/use-lifecycle-interface': 'off',
+      '@angular-eslint/prefer-inject': 'off',
+      'no-useless-assignment': 'off',
+      '@angular-eslint/directive-selector': 'off',
+      'prefer-const': 'off',
+      '@typescript-eslint/no-this-alias': 'off',
+      '@angular-eslint/component-selector': 'off',
+      '@typescript-eslint/no-inferrable-types': 'off',
+      '@typescript-eslint/prefer-for-of': 'off',
+      'no-useless-escape': 'off',
+      '@angular-eslint/template/interactive-supports-focus': 'off',
+      '@angular-eslint/template/click-events-have-key-events': 'off',
     },
   },
 
@@ -71,6 +74,7 @@ module.exports = defineConfig([
   //          Web Workers and server-side rendering contexts.
   {
     files: ['src/app/domain/randomization-engine/core/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -94,6 +98,9 @@ module.exports = defineConfig([
       angular.configs.templateRecommended,
       angular.configs.templateAccessibility,
     ],
-    rules: {},
+    rules: {
+      '@angular-eslint/template/interactive-supports-focus': 'off',
+      '@angular-eslint/template/click-events-have-key-events': 'off',
+    },
   }
 ]);

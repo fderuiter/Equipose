@@ -20,7 +20,7 @@ export class SubjectIdBuilder {
     seqVar: string,
     adapters: SubjectIdLanguageAdapters
   ): string {
-    let result = '';
+    const result = '';
     // Implement centralized logic builder...
     return result;
   }

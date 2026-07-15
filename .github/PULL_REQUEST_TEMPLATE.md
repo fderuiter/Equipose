@@ -1,3 +1,7 @@
+## Verification Checklist
+<!-- Check all that apply -->
+- [ ] **Documentation**: Any new or modified technical documentation adheres to standard [Diátaxis](https://diataxis.fr/) structural patterns (Tutorials, How-To Guides, Reference, or Explanations).
+
 ## Linked Issue
 <!-- Please link the issue this PR resolves (e.g. `Fixes #123`) -->
 Fixes #

@@ -430,7 +430,7 @@ export class ExportService {
   private getColLetter(colIndex: number): string {
     let letter = '';
     while (colIndex > 0) {
-      let mod = (colIndex - 1) % 26;
+      const mod = (colIndex - 1) % 26;
       letter = String.fromCharCode(65 + mod) + letter;
       colIndex = Math.floor((colIndex - mod) / 26);
     }

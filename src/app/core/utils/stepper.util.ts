@@ -44,7 +44,7 @@ export function createStepper(totalStepsCount: number, configs: Record<number, S
     return status.every(s => s);
   });
 
-  const markStepComplete = (step: number, complete: boolean = true) => {
+  const markStepComplete = (step: number, complete = true) => {
     if (step >= 0 && step < totalSteps()) {
       stepCompletionStatus.update(status => {
         const newStatus = [...status];

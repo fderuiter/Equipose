@@ -183,9 +183,9 @@ export class SchemaAnalyticsDashboardComponent {
     const y = event.clientY - rect.top - rect.height / 2;
     
     // Calculate angle in radians, then convert to degrees
-    let angle = Math.atan2(y, x) * 180 / Math.PI;
+    const angle = Math.atan2(y, x) * 180 / Math.PI;
     // Offset so 0 degrees is at the top (12 o'clock) moving clockwise
-    let degrees = (angle + 90 + 360) % 360;
+    const degrees = (angle + 90 + 360) % 360;
     const clickPercent = (degrees / 360) * 100;
 
     let cumulative = 0;

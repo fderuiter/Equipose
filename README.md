@@ -65,7 +65,7 @@ ESLint `no-restricted-imports` rules enforce that the `study-builder` UI can onl
 talk to the engine through the facade, never through internal service or worker files.
 
 For the full architectural breakdown including Mermaid diagrams, see
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+[docs/ARCHITECTURE_CONCEPTS.md](docs/ARCHITECTURE_CONCEPTS.md) and [docs/ARCHITECTURE_REFERENCE.md](docs/ARCHITECTURE_REFERENCE.md).
 
 ---
 

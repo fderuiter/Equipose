@@ -236,7 +236,7 @@ describe('GeneratorComponent (domain)', () => {
   it('state machine transition: Zero -> Generating -> Results', () => {
     const fixture = TestBed.createComponent(GeneratorComponent);
     fixture.detectChanges();
-    let el: HTMLElement = fixture.nativeElement;
+    const el: HTMLElement = fixture.nativeElement;
 
     // 1. Initial State: Zero-state visible
     expect(el.querySelector('[data-testid="zero-state"]')).toBeTruthy();

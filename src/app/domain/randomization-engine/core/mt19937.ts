@@ -1,6 +1,6 @@
 class HashPRNG {
-  private i: number = 0;
-  private j: number = 0;
+  private i = 0;
+  private j = 0;
   private S: number[] = [];
 
   constructor(seed: string) {

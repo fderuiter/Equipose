@@ -92,7 +92,7 @@ export class SignalControl<T = any> extends AbstractControl {
   
   get errors(): ValidationErrors | null {
     if (this.disabled) return null;
-    let errs: ValidationErrors = {};
+    const errs: ValidationErrors = {};
     let hasError = false;
     for (const v of this._validators) {
       const err = v(this);
@@ -161,7 +161,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
   }
 
   get errors(): ValidationErrors | null {
-    let errs: ValidationErrors = {};
+    const errs: ValidationErrors = {};
     let hasError = false;
     for (const v of this._validators) {
       const err = v(this);
