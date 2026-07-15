@@ -18,7 +18,7 @@
               [attr.aria-checked]="viewMode() === 'flat'"
               (click)="viewMode.set('flat')"
               appTooltip="View as Flat List"
-              class="px-3 py-1.5 transition-colors"
+              class="px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
               [class]="viewMode() === 'flat'
                 ? 'bg-indigo-500 text-white'
                 : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-600'">
@@ -30,7 +30,7 @@
               [attr.aria-checked]="viewMode() === 'grouped'"
               (click)="viewMode.set('grouped')"
               appTooltip="Group by Block"
-              class="px-3 py-1.5 transition-colors border-l border-border-strong"
+              class="px-3 py-1.5 transition-colors border-l border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
               [class]="viewMode() === 'grouped'
                 ? 'bg-indigo-500 text-white'
                 : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-600'">
@@ -40,7 +40,7 @@
 
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
 
-          <button type="button" role="switch" [attr.aria-checked]="isUnblinded()" (click)="toggleBlinding()" class="flex items-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-800 rounded px-1 -ml-1">
+          <button type="button" role="switch" [attr.aria-checked]="isUnblinded()" (click)="toggleBlinding()" class="flex items-center cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset rounded px-1 -ml-1">
             <div class="relative">
               <div class="block bg-gray-200 dark:bg-slate-600 w-10 h-6 rounded-full transition-colors" [class.bg-indigo-500]="isUnblinded()" [class.dark:bg-indigo-500]="isUnblinded()"></div>
               <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" [class.translate-x-4]="isUnblinded()"></div>
@@ -52,41 +52,43 @@
           
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
           
-          <button (click)="exportCsv()" appTooltip="Export as CSV" aria-label="Export as CSV" class="min-h-[44px] text-sm bg-white dark:bg-slate-700 border border-border-strong text-gray-700 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 font-medium transition-colors flex items-center gap-1">
+          <app-button variant="secondary" (onClick)="exportCsv()" appTooltip="Export as CSV" ariaLabel="Export as CSV" customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             CSV
-          </button>
-          <button
-            (click)="exportXlsx()"
+          </app-button>
+          <app-button
+            variant="secondary"
+            (onClick)="exportXlsx()"
             data-testid="export-xlsx-btn"
             appTooltip="Export as Excel (.xlsx) – preserves leading zeros and provides two-sheet audit workbook"
-            aria-label="Export as Excel"
-            class="min-h-[44px] text-sm bg-white dark:bg-slate-700 border border-border-strong text-gray-700 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 font-medium transition-colors flex items-center gap-1">
+            ariaLabel="Export as Excel"
+            customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Excel
-          </button>
-          <button (click)="exportPdf()" appTooltip="Export as PDF" aria-label="Export as PDF" class="min-h-[44px] text-sm bg-white dark:bg-slate-700 border border-border-strong text-gray-700 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 font-medium transition-colors flex items-center gap-1">
+          </app-button>
+          <app-button variant="secondary" (onClick)="exportPdf()" appTooltip="Export as PDF" ariaLabel="Export as PDF" customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             PDF
-          </button>
-          <button
-            (click)="exportJson()"
+          </app-button>
+          <app-button
+            variant="secondary"
+            (onClick)="exportJson()"
             data-testid="export-json-btn"
             [disabled]="!isUnblinded()"
             [appTooltip]="isUnblinded() ? 'Download unblinded results as JSON for reproducibility verification' : 'Unblind the schema to enable JSON export'"
-            [attr.aria-label]="isUnblinded() ? 'Export JSON' : 'JSON export requires unblinded schema'"
-            class="min-h-[44px] text-sm bg-white dark:bg-slate-700 border border-border-strong text-gray-700 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-600 font-medium transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white dark:disabled:hover:bg-slate-700">
+            [ariaLabel]="isUnblinded() ? 'Export JSON' : 'JSON export requires unblinded schema'"
+            customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             JSON
-          </button>
+          </app-button>
         </div>
       </div>
 
@@ -149,7 +151,7 @@
             <div data-testid="results-empty-state" class="h-[600px] w-full flex items-center justify-center p-8 text-center text-muted">
               <div class="space-y-2">
                 <p>No subjects match the current filters.</p>
-                <button type="button" (click)="clearAllFilters()" class="text-indigo-600 dark:text-indigo-400 underline">Clear Filters</button>
+                <button type="button" (click)="clearAllFilters()" class="text-indigo-600 dark:text-indigo-400 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset">Clear Filters</button>
               </div>
             </div>
           } @else {
@@ -161,7 +163,7 @@
                   <!-- Subject ID – pinned column (intersection: z-30) -->
                   <th scope="col"
                       class="sticky left-0 z-30 bg-subtle/50 border-r border-border-base px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
-                    <button (click)="toggleSort('subjectId')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group" aria-label="Sort by Subject ID" appTooltip="Sort by Subject ID">
+                    <button (click)="toggleSort('subjectId')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset" aria-label="Sort by Subject ID" appTooltip="Sort by Subject ID">
                       Subject ID
                       <!-- Chevron sort indicator -->
                       <svg class="h-3 w-3 transition-transform"
@@ -177,7 +179,7 @@
                   <!-- Site column with sort + filter -->
                   <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
                     <div class="inline-flex items-center gap-1">
-                      <button (click)="toggleSort('site')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" aria-label="Sort by Site" appTooltip="Sort by Site">
+                      <button (click)="toggleSort('site')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset" aria-label="Sort by Site" appTooltip="Sort by Site">
                         Site
                         <svg class="h-3 w-3 transition-transform"
                              [class.text-indigo-500]="sortState().column === 'site'"
@@ -191,7 +193,7 @@
                       <button type="button"
                               popovertarget="shared-filter-menu"
                               (click)="openColumnFilter('site', $event)"
-                              class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                              class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
                               [class.text-indigo-500]="hasActiveFilter('site')"
                               [class.text-gray-400]="!hasActiveFilter('site')"
                               aria-label="Filter Site"
@@ -207,7 +209,7 @@
                   @for (stratum of data.metadata.strata; track stratum.id) {
                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
                       <div class="inline-flex items-center gap-1">
-                        <button (click)="toggleSort('stratum_' + stratum.id)" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" [attr.aria-label]="'Sort by ' + (stratum.name || stratum.id)" [appTooltip]="'Sort by ' + (stratum.name || stratum.id)">
+                        <button (click)="toggleSort('stratum_' + stratum.id)" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset" [attr.aria-label]="'Sort by ' + (stratum.name || stratum.id)" [appTooltip]="'Sort by ' + (stratum.name || stratum.id)">
                           {{stratum.name || stratum.id}}
                           <svg class="h-3 w-3 transition-transform"
                                [class.text-indigo-500]="sortState().column === 'stratum_' + stratum.id"
@@ -220,7 +222,7 @@
                         <button type="button"
                                 popovertarget="shared-filter-menu"
                                 (click)="openColumnFilter('stratum_' + stratum.id, $event)"
-                                class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                                class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
                                 [class.text-indigo-500]="hasActiveFilter('stratum_' + stratum.id)"
                                 [class.text-gray-400]="!hasActiveFilter('stratum_' + stratum.id)"
                                 [attr.aria-label]="'Filter ' + (stratum.name || stratum.id)"
@@ -235,7 +237,7 @@
 
                   <!-- Block column -->
                   <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
-                    <button (click)="toggleSort('blockNumber')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" aria-label="Sort by Block" appTooltip="Sort by Block">
+                    <button (click)="toggleSort('blockNumber')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset" aria-label="Sort by Block" appTooltip="Sort by Block">
                       Block
                       <svg class="h-3 w-3 transition-transform"
                            [class.text-indigo-500]="sortState().column === 'blockNumber'"
@@ -250,7 +252,7 @@
                   <!-- Treatment Arm column with sort + filter -->
                   <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
                     <div class="inline-flex items-center gap-1">
-                      <button (click)="toggleSort('treatmentArm')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" aria-label="Sort by Treatment Arm" appTooltip="Sort by Treatment Arm">
+                      <button (click)="toggleSort('treatmentArm')" class="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset" aria-label="Sort by Treatment Arm" appTooltip="Sort by Treatment Arm">
                         Treatment Arm
                         <svg class="h-3 w-3 transition-transform"
                              [class.text-indigo-500]="sortState().column === 'treatmentArm'"
@@ -263,7 +265,7 @@
                       <button type="button"
                               popovertarget="shared-filter-menu"
                               (click)="openColumnFilter('treatmentArm', $event)"
-                              class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                              class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
                               [class.text-indigo-500]="hasActiveFilter('treatmentArm')"
                               [class.text-gray-400]="!hasActiveFilter('treatmentArm')"
                               aria-label="Filter Treatment Arm"
@@ -478,7 +480,7 @@
     <button
       type="button"
       role="menuitem"
-      class="w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus:bg-gray-50 dark:focus:bg-slate-700 focus:outline-none transition-colors"
+      class="w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus:bg-gray-50 dark:focus:bg-slate-700 focus:outline-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
       (click)="viewStratumDetails(activeMenuRow())"
     >
       <svg class="h-4 w-4 text-gray-400 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -491,7 +493,7 @@
     <button
       type="button"
       role="menuitem"
-      class="w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 focus:bg-rose-50 dark:focus:bg-rose-900/20 focus:outline-none transition-colors"
+      class="w-full flex items-center gap-2 px-4 py-3 min-h-[44px] text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 focus:bg-rose-50 dark:focus:bg-rose-900/20 focus:outline-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
       (click)="markAsDropped(activeMenuRow())"
     >
       <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -521,7 +523,7 @@
       [value]="filterState()[activeFilterColumn() || ''] || ''"
       (input)="updateColumnFilter($any($event.target).value)"
       placeholder="Search…"
-      class="w-full text-sm border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-main placeholder-disabled focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+      class="w-full text-sm border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 text-main placeholder-disabled focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset focus:border-transparent"
     />
     @if (hasActiveFilter(activeFilterColumn() || '')) {
       <button
