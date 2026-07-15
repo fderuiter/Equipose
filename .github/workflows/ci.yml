@@ -134,7 +134,7 @@ jobs:
     - name: Install Playwright WebKit runtime libraries
       run: |
         sudo apt-get update
-        sudo apt-get install -y libwoff2dec1
+        sudo apt-get install -y libwoff1
         npx playwright install --with-deps webkit
       env:
         CI: true
@@ -212,7 +212,7 @@ jobs:
     - name: Install Playwright WebKit runtime libraries
       run: |
         sudo apt-get update
-        sudo apt-get install -y libwoff2dec1
+        sudo apt-get install -y libwoff1
         npx playwright install --with-deps webkit
       env:
         CI: true
