@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { buildHashPayload, sha256Hex, computeAuditHash } from './crypto-hash';
 import { RandomizationResult } from '../../core/models/randomization.model';
+import { StudyPresets } from '../../core/presets/study-presets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildHashPayload
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('buildHashPayload', () => {
-  const baseConfig = {
+  const baseConfig = StudyPresets.extend(StudyPresets.Simple, {
     protocolId: 'TEST-001',
     studyName: 'Test Study',
     phase: 'Phase II',
@@ -18,7 +19,7 @@ describe('buildHashPayload', () => {
     stratumCaps: [],
     seed: 'seed_abc',
     subjectIdMask: '{SITE}-{SEQ:3}'
-  };
+  });
 
   it('returns a valid JSON string', () => {
     const payload = buildHashPayload(baseConfig, [], '2024-01-01T00:00:00.000Z');
@@ -38,6 +39,7 @@ describe('buildHashPayload', () => {
       phase: baseConfig.phase,
       studyName: baseConfig.studyName,
       protocolId: baseConfig.protocolId,
+      randomizationMethod: baseConfig.randomizationMethod
     };
 
     const p1 = buildHashPayload(baseConfig as typeof baseConfig, [], '2024-01-01T00:00:00.000Z');
@@ -95,7 +97,7 @@ describe('computeAuditHash', () => {
       seed: 'fixed_seed',
       generatedAt: '2024-06-01T12:00:00.000Z',
       strata: [],
-      config: {
+      config: StudyPresets.extend(StudyPresets.Simple, {
         protocolId: 'AUDIT-001',
         studyName: 'Audit Test',
         phase: 'Phase III',
@@ -106,7 +108,7 @@ describe('computeAuditHash', () => {
         stratumCaps: [],
         seed: 'fixed_seed',
         subjectIdMask: '{SITE}-{SEQ:3}'
-      },
+      }),
       auditHash: '' // excluded from hash computation
     },
     schema: []

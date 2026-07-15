@@ -867,6 +867,10 @@ jobs:
         if [ -z "$URL" ]; then URL="Deployment URL not found in output"; fi
         echo "url=$URL" >> "$GITHUB_OUTPUT"
 
+    - name: Validate Cache Headers
+      if: steps.deploy.outputs.url != 'skipped' && steps.deploy.outputs.url != ''
+      run: npx tsx scripts/validate-headers.ts --url "${{ steps.deploy.outputs.url }}"
+
     - name: Comment on PR
       if: steps.deploy.outputs.url != 'skipped' && steps.deploy.outputs.url != ''
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea

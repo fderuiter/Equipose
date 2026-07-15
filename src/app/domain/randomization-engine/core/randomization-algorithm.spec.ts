@@ -1,13 +1,14 @@
 import * as fc from 'fast-check';
 import { generateRandomizationSchema } from './randomization-algorithm';
 import { RandomizationConfig, StratificationFactor } from '../../core/models/randomization.model';
+import { StudyPresets } from '../../core/presets/study-presets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Minimal valid config: 2 arms 1:1, 1 site, 4-block, 4-subject cap, fixed seed. */
-const BASE_CONFIG: RandomizationConfig = {
+const BASE_CONFIG: RandomizationConfig = StudyPresets.extend(StudyPresets.Simple, {
   protocolId: 'ALG-001',
   studyName: 'Algorithm Test',
   phase: 'Phase II',
@@ -20,8 +21,8 @@ const BASE_CONFIG: RandomizationConfig = {
   blockSizes: [4],
   stratumCaps: [{ levelIds: {}, cap: 4 }],
   seed: 'alg_seed',
-  subjectIdMask: '[SiteID]-[001]'
-};
+  subjectIdMask: '{SITE}-{SEQ:3}'
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Core behaviour
@@ -119,7 +120,7 @@ describe('generateRandomizationSchema – property tests', () => {
           { minLength: 1, maxLength: 3 }
         ),
         stratumCaps: fc.integer({ min: 1, max: 100 }).map(cap => [{ levelIds: {} as Record<string, string>, cap }]),
-        subjectIdMask: fc.constant('[SiteID]-[001]')
+        subjectIdMask: fc.constant('{SITE}-{SEQ:3}')
       });
     });
 
@@ -761,7 +762,7 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
     blockSizes: [4],
     stratumCaps: [{ levelIds: {}, cap: 12 }],
     seed: 'hbs_seed',
-    subjectIdMask: '[SiteID]-[001]'
+    subjectIdMask: '{SITE}-{SEQ:3}'
   };
 
   describe('FIXED_SEQUENCE – global strategy', () => {
@@ -883,7 +884,7 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
           { levelIds: { age: '>=65' }, cap: 8 }
         ],
         seed: 'strat_override',
-        subjectIdMask: '[SiteID]-[001]',
+        subjectIdMask: '{SITE}-{SEQ:3}',
         // computeStratumCode() uses the first 3 characters uppercased:
         //  '<65'  → substring(0,3).toUpperCase() = '<65'
         //  '>=65' → substring(0,3).toUpperCase() = '>=6'

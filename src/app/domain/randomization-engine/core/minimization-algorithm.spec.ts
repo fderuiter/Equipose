@@ -3,13 +3,14 @@ import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';
 import { MT19937 } from './mt19937';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { StudyPresets } from '../../core/presets/study-presets';
 
 const seedRng = (seed: string) => {
   const mt = new MT19937(MT19937.get31BitSeed(seed));
   return () => mt.random();
 };
 
-const baseConfig: RandomizationConfig = {
+const baseConfig: RandomizationConfig = StudyPresets.extend(StudyPresets.Minimization, {
   protocolId: 'TEST-001',
   studyName: 'Test Study',
   phase: 'II',
@@ -29,13 +30,13 @@ const baseConfig: RandomizationConfig = {
       ]
     }
   ],
-  blockSizes: [4],
+  blockSizes: [],
   stratumCaps: [{ levelIds: { sex: 'Male' }, cap: 100 }, { levelIds: { sex: 'Female' }, cap: 100 }],
   seed: 'test123',
   subjectIdMask: '{SITE}-{SEQ:3}',
   randomizationMethod: 'MINIMIZATION',
   minimizationConfig: { p: 0.8, totalSampleSize: 100 }
-};
+});
 
 describe('generateMinimization', () => {
   it('generates the correct number of subjects', () => {
@@ -118,7 +119,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
         ]
       }
     ],
-    blockSizes: [4],
+    blockSizes: [],
     stratumCaps: [{ levelIds: { sex: 'Male' }, cap: 100 }, { levelIds: { sex: 'Female' }, cap: 100 }],
     seed: 'test1234',
     subjectIdMask: '{SITE}-{SEQ:3}',
