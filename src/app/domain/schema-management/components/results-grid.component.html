@@ -111,6 +111,7 @@
                   type="button"
                   popovertarget="shared-row-menu"
                   (click)="openRowMenu(row, $event)"
+                  [style.anchor-name]="'--row-anchor-' + row.subjectId"
                   class="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus:ring-2 focus:ring-indigo-500"
                   [attr.aria-label]="'Actions for subject ' + row.subjectId"
                   [appTooltip]="'Actions for subject ' + row.subjectId"
@@ -193,6 +194,7 @@
                       <button type="button"
                               popovertarget="shared-filter-menu"
                               (click)="openColumnFilter('site', $event)"
+                              [style.anchor-name]="'--filter-anchor-site'"
                               class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
                               [class.text-indigo-500]="hasActiveFilter('site')"
                               [class.text-gray-400]="!hasActiveFilter('site')"
@@ -222,6 +224,7 @@
                         <button type="button"
                                 popovertarget="shared-filter-menu"
                                 (click)="openColumnFilter('stratum_' + stratum.id, $event)"
+                                [style.anchor-name]="'--filter-anchor-stratum_' + stratum.id"
                                 class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
                                 [class.text-indigo-500]="hasActiveFilter('stratum_' + stratum.id)"
                                 [class.text-gray-400]="!hasActiveFilter('stratum_' + stratum.id)"
@@ -265,6 +268,7 @@
                       <button type="button"
                               popovertarget="shared-filter-menu"
                               (click)="openColumnFilter('treatmentArm', $event)"
+                              [style.anchor-name]="'--filter-anchor-treatmentArm'"
                               class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
                               [class.text-indigo-500]="hasActiveFilter('treatmentArm')"
                               [class.text-gray-400]="!hasActiveFilter('treatmentArm')"
@@ -321,6 +325,7 @@
                       type="button"
                       popovertarget="shared-row-menu"
                       (click)="openRowMenu(row, $event)"
+                      [style.anchor-name]="'--row-anchor-' + row.subjectId"
                       class="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus:ring-2 focus:ring-indigo-500"
                       [attr.aria-label]="'Actions for subject ' + row.subjectId"
                             [appTooltip]="'Actions for subject ' + row.subjectId"
@@ -424,6 +429,7 @@
                             type="button"
                             popovertarget="shared-row-menu"
                             (click)="openRowMenu($any(item).data, $event)"
+                            [style.anchor-name]="'--row-anchor-' + $any(item).data.subjectId"
                             class="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus:ring-2 focus:ring-indigo-500"
                             [attr.aria-label]="'Actions for subject ' + $any(item).data.subjectId"
                             [appTooltip]="'Actions for subject ' + $any(item).data.subjectId"
@@ -471,8 +477,7 @@
   id="shared-row-menu"
   popover="auto"
   (toggle)="onRowMenuToggle($event)"
-  [style.top.px]="menuPosition().y"
-  [style.left.px]="menuPosition().x"
+  [style.position-anchor]="'--row-anchor-' + (activeMenuRow()?.subjectId || '')"
   class="fixed m-0 min-w-40 rounded-xl bg-surface shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-border-subtle py-1 backdrop-blur-sm z-50"
 >
   @if (isRowMenuOpen()) {
@@ -509,8 +514,7 @@
 <div id="shared-filter-menu"
      popover="auto"
      (toggle)="onFilterMenuToggle($event)"
-     [style.top.px]="filterPosition().y"
-     [style.left.px]="filterPosition().x"
+     [style.position-anchor]="'--filter-anchor-' + (activeFilterColumn() || '')"
      class="fixed m-0 min-w-52 rounded-xl bg-surface shadow-lg ring-1 ring-black/5 dark:ring-white/10 border border-border-subtle p-3 backdrop-blur-sm z-50">
   @if (isFilterMenuOpen()) {
   <div appFocusManager>
