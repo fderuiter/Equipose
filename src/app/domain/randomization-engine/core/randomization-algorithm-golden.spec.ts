@@ -7,18 +7,9 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { commandExists, getRscriptCandidates, resolveExecutable } from '../../../../testing/runtime-command.util';
 
 const execFileAsync = promisify(execFile);
-
-// Helper function to check if a command exists
-const commandExists = async (command: string): Promise<boolean> => {
-  try {
-    await execFileAsync(command, ['--version']);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 const checkPythonEnv = async (command: string): Promise<boolean> => {
   try {
@@ -78,13 +69,15 @@ describe('Golden Regression Fixtures', () => {
   let codeGenerator: CodeGeneratorService;
   let hasPython = false;
   let hasR = false;
+  let rscriptExecutable: string | null = null;
   const pythonExecutable = process.env['PYTHON'] || 'python3';
 
   beforeAll(async () => {
     TestBed.configureTestingModule({ providers: [CodeGeneratorService] });
     codeGenerator = TestBed.inject(CodeGeneratorService);
     hasPython = await commandExists(pythonExecutable) && await checkPythonEnv(pythonExecutable);
-    hasR = await commandExists('Rscript');
+    rscriptExecutable = await resolveExecutable(getRscriptCandidates());
+    hasR = rscriptExecutable !== null;
   });
 
   for (const [key, fixture] of Object.entries(goldenFixtures)) {
@@ -114,7 +107,7 @@ describe('Golden Regression Fixtures', () => {
         const rCode = codeGenerator.generateR(config, result.metadata);
         const rPath = join('/tmp', `test-${key}.R`);
         await writeFile(rPath, rCode);
-        const { stdout: rStdout } = await execFileAsync('Rscript', [rPath], { cwd: runtimesDir });
+        const { stdout: rStdout } = await execFileAsync(rscriptExecutable!, [rPath], { cwd: runtimesDir });
         
         if (fixture.schema.length === 0) {
           // If expected schema is empty, script output might just be an empty string or missing headers

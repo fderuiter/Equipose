@@ -4,6 +4,7 @@ import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { join, resolve } from 'path';
 import { promisify } from 'util';
 import { goToStep, loadPreset, openGenerator } from './generator-helpers';
+import { commandExists, getRscriptCandidates, resolveExecutable } from '../src/testing/runtime-command.util';
 
 type Language = 'R' | 'Python' | 'SAS' | 'Stata';
 
@@ -108,18 +109,6 @@ test.describe('Code generation fixtures for script execution checks', () => {
         `stderr:\n${failure.stderr ?? ''}\n` +
         `error: ${failure.message}`,
       );
-    }
-  };
-
-  const commandExists = async (command: string): Promise<boolean> => {
-    try {
-      await execFileAsync(command, ['--version'], {
-        cwd: process.cwd(),
-        maxBuffer: 1024 * 1024,
-      });
-      return true;
-    } catch {
-      return false;
     }
   };
 
@@ -362,7 +351,10 @@ test.describe('Code generation fixtures for script execution checks', () => {
     const pythonExecutable = process.env.PYTHON || 'python3';
 
     const pythonScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.py`));
-    const hasPython = await commandExists(pythonExecutable);
+    const hasPython = await commandExists(pythonExecutable, {
+      cwd: process.cwd(),
+      maxBuffer: 1024 * 1024,
+    });
     expect(hasPython).toBe(true);
 
     await assertSubprocessSuccess(
@@ -381,10 +373,13 @@ test.describe('Code generation fixtures for script execution checks', () => {
     }
 
     const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
-    const hasRscript = await commandExists('Rscript');
-    if (hasRscript) {
+    const rscriptExecutable = await resolveExecutable(getRscriptCandidates(), {
+      cwd: process.cwd(),
+      maxBuffer: 1024 * 1024,
+    });
+    if (rscriptExecutable) {
       for (const scriptPath of rScripts) {
-        await assertSubprocessSuccess('Rscript', [scriptPath], `Generated R script execution (${scriptPath})`);
+        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);
       }
     } else if (process.env.GITHUB_ACTIONS === 'true') {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
