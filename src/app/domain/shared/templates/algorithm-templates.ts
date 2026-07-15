@@ -17,7 +17,7 @@ export const ALGORITHM_TEMPLATES: Record<string, { fisherYates: string; buildBlo
     fisherYates: `fisher_yates_shuffle <- function(array) {
   if (length(array) > 1) {
     for (i in length(array):2) {
-      j <- floor((mt19937_int() / 4294967296) * i) + 1
+      j <- floor((random_int() / 4294967296) * i) + 1
       temp <- array[i]; array[i] <- array[j]; array[j] <- temp
     }
   }
