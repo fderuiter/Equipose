@@ -15,6 +15,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { ToggleComponent } from '../../../core/components/ui/toggle.component';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
 
@@ -61,13 +62,8 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ButtonComponent],
-  templateUrl: './results-grid.component.html',
-  styles: [`
-    .dot { transition: transform 0.2s ease-in-out; }
-    [popover] { margin: 0; border: none; padding: 0; background: transparent; overflow: visible; }
-    [popover]:popover-open { display: block; }
-  `]
+  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent],
+  templateUrl: './results-grid.component.html'
 })
 export class ResultsGridComponent {
   public state = inject(RandomizationEngineFacade);
@@ -83,8 +79,6 @@ export class ResultsGridComponent {
    * template can reference the correct data payload.
    */
   activeMenuRow = signal<GeneratedSchema | null>(null);
-  menuPosition = signal({ x: 0, y: 0 });
-  filterPosition = signal({ x: 0, y: 0 });
 
   /**
    * Expose the shared `isUnblinded` signal directly so existing template
@@ -255,12 +249,6 @@ export class ResultsGridComponent {
   /** Opens the kebab context menu for a specific data row. */
   openRowMenu(row: GeneratedSchema, event: MouseEvent): void {
     this.activeMenuRow.set(row);
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    this.menuPosition.set({
-      x: rect.right - 160,
-      y: rect.bottom + 4
-    });
     const popover = document.getElementById('shared-row-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
       popover.showPopover();
@@ -340,12 +328,6 @@ export class ResultsGridComponent {
   /** Records which column's filter panel is currently active. */
   openColumnFilter(column: string, event: MouseEvent): void {
     this.activeFilterColumn.set(column);
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    this.filterPosition.set({
-      x: rect.left,
-      y: rect.bottom + 4
-    });
     const popover = document.getElementById('shared-filter-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
       popover.showPopover();
