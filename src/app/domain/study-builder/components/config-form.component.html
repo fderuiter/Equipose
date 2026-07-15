@@ -58,11 +58,11 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label for="protocolId" class="block text-sm mb-1">Protocol ID</label>
-            <app-text-input id="protocolId" type="text" formControlName="protocolId" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
+            <app-text-input inputId="protocolId" type="text" formControlName="protocolId" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
           </div>
           <div>
             <label for="studyName" class="block text-sm mb-1">Study Name</label>
-            <app-text-input id="studyName" type="text" formControlName="studyName" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
+            <app-text-input inputId="studyName" type="text" formControlName="studyName" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
           </div>
           <div>
             <label for="phase" class="block text-sm mb-1">Phase</label>
@@ -78,7 +78,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label for="subjectIdMask" class="block text-sm mb-1">Subject ID Mask</label>
-            <app-text-input id="subjectIdMask" type="text" formControlName="subjectIdMask" class="w-full rounded-lg border px-3 py-2.5 font-mono"></app-text-input>
+            <app-text-input inputId="subjectIdMask" type="text" formControlName="subjectIdMask" class="w-full rounded-lg border px-3 py-2.5 font-mono"></app-text-input>
             @if (subjectIdMaskInvalid()) {
               <p class="mt-1 text-xs {{ domainTheme.getSemanticColor('error').textClass }}">{{ subjectIdPreview() }}</p>
             } @else {
@@ -87,7 +87,7 @@
           </div>
           <div>
             <label for="seed" class="block text-sm mb-1">PRNG Seed (Optional)</label>
-            <app-text-input id="seed" type="text" formControlName="seed" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
+            <app-text-input inputId="seed" type="text" formControlName="seed" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@
                       </svg>
                     </app-button>
                 </div>
-                <app-text-input [id]="'armName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
+                <app-text-input [inputId]="'armName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
                 <div class="flex items-center gap-2">
                   <app-button type="button" (click)="decrementRatio($index)" [disabled]="arm.get('ratio')?.value <= 1" customClass="w-10 h-10 rounded-full border" [attr.aria-label]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">-</app-button>
                   <span class="font-bold w-6 text-center">{{ arm.get('ratio')?.value }}</span>
@@ -181,7 +181,7 @@
                   <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label [for]="'factorName' + $index" class="block text-xs uppercase tracking-wide mb-1">Factor Name</label>
-                      <app-text-input [id]="'factorName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
+                      <app-text-input [inputId]="'factorName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
                     </div>
                     <div class="flex items-end justify-end">
                       <app-button type="button" (click)="removeStratum($index)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Factor" appTooltip="Remove Factor" variant="secondary">
@@ -203,7 +203,7 @@
                     @for (level of getStrataLevels(stratumIndex); track level) {
                       <div class="flex items-center gap-2 mb-1">
                         <label [for]="'levelDist' + getStrataId(stratumIndex) + '_' + level" class="text-xs flex-1">{{ level }}</label>
-                        <app-text-input #probInput [id]="'levelDist' + getStrataId(stratumIndex) + '_' + level" type="number" min="0" max="100" step="any"
+                        <app-text-input #probInput [inputId]="'levelDist' + getStrataId(stratumIndex) + '_' + level" type="number" min="0" max="100" step="any"
                                [value]="getMinimizationProbability(getStrataId(stratumIndex), level)"
                                (input)="setMinimizationProbability(getStrataId(stratumIndex), level, +probInput.value)"
                                (blur)="markMinimizationProbabilityTouched(getStrataId(stratumIndex))"
@@ -238,7 +238,7 @@
           <div class="space-y-4">
             <div>
               <label for="blockSizesStr" class="block text-sm mb-1">Block Sizes (comma-separated)</label>
-              <app-text-input id="blockSizesStr" type="text" formControlName="blockSizesStr" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
+              <app-text-input inputId="blockSizesStr" type="text" formControlName="blockSizesStr" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
               @if (form.errors?.['invalidBlockSize']) {
                 <p class="text-xs {{ domainTheme.getSemanticColor('error').textClass }} mt-1">Block sizes must be multiples of total ratio ({{ totalRatio }}).</p>
               }
@@ -312,7 +312,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label for="baseProbability" class="block text-sm mb-1">Base Probability (p)</label>
-                  <app-text-input id="baseProbability" type="number" formControlName="minimizationP" min="0.5" max="1.0" step="0.05"
+                  <app-text-input inputId="baseProbability" type="number" formControlName="minimizationP" min="0.5" max="1.0" step="0.05"
                          class="w-full rounded-lg border px-3 py-2.5"
                          [class.border-red-500]="allocationGroup.get('minimizationP')?.invalid && allocationGroup.get('minimizationP')?.touched"></app-text-input>
                   @if (allocationGroup.get('minimizationP')?.invalid && allocationGroup.get('minimizationP')?.touched) {
@@ -321,7 +321,7 @@
                 </div>
                 <div>
                   <label for="totalSampleSize" class="block text-sm mb-1">Total Sample Size (N)</label>
-                  <app-text-input id="totalSampleSize" type="number" formControlName="totalSampleSize" min="1"
+                  <app-text-input inputId="totalSampleSize" type="number" formControlName="totalSampleSize" min="1"
                          class="w-full rounded-lg border px-3 py-2.5"
                          [class.border-red-500]="allocationGroup.get('totalSampleSize')?.invalid && allocationGroup.get('totalSampleSize')?.touched"></app-text-input>
                   @if (allocationGroup.get('totalSampleSize')?.invalid && allocationGroup.get('totalSampleSize')?.touched) {
@@ -378,7 +378,7 @@
           <div class="space-y-4">
             <div>
               <label for="globalCap" class="block text-sm mb-1">Global Enrollment Cap (per site)</label>
-              <app-text-input id="globalCap" type="number" formControlName="globalCap" min="1" class="w-40 rounded-lg border px-3 py-2"></app-text-input>
+              <app-text-input inputId="globalCap" type="number" formControlName="globalCap" min="1" class="w-40 rounded-lg border px-3 py-2"></app-text-input>
             </div>
 
             @for (factor of strataWithLevels; track factor.id) {
@@ -392,7 +392,7 @@
                 @for (level of factor.levels; track level) {
                   <div class="flex items-center gap-2">
                     <label [for]="factor.id + '-pct-' + level" class="text-xs flex-1">{{ level }}</label>
-                    <app-text-input #pctInput [id]="factor.id + '-pct-' + level" type="number" min="0" max="100" [value]="getPercentage(factor.id, level)"
+                    <app-text-input #pctInput [inputId]="factor.id + '-pct-' + level" type="number" min="0" max="100" [value]="getPercentage(factor.id, level)"
                            (input)="setPercentage(factor.id, level, +pctInput.value)" class="w-20 rounded-lg border px-2 py-1 text-sm"></app-text-input>
                     <span class="text-xs">%</span>
                   </div>
@@ -425,7 +425,7 @@
                 @for (level of factor.levels; track level) {
                   <div class="flex items-center gap-2 mb-1">
                     <label [for]="factor.id + '-margcap-' + level" class="text-xs flex-1">{{ level }}</label>
-                    <app-text-input #margCapInput [id]="factor.id + '-margcap-' + level" type="number" min="0"
+                    <app-text-input #margCapInput [inputId]="factor.id + '-margcap-' + level" type="number" min="0"
                            [value]="getMarginalCap(factor.id, level) ?? ''"
                            (input)="setMarginalCap(factor.id, level, parseMarginalCapInput(margCapInput.value))"
                            class="w-24 rounded-lg border px-2 py-1 text-sm"></app-text-input>
@@ -453,9 +453,9 @@
         <section class="bg-purple-50/60 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/40 rounded-lg p-4 space-y-2">
           <label for="attritionRateInput" class="text-sm font-semibold">Expected Attrition / Dropout Rate</label>
           <div class="flex items-center gap-3">
-            <app-text-input #attritionSlider id="attritionRateSlider" type="range" variant="bare" min="0" max="50" step="1" [value]="attritionRate()"
+            <app-text-input #attritionSlider inputId="attritionRateSlider" type="range" variant="bare" min="0" max="50" step="1" [value]="attritionRate()"
                    (input)="attritionRate.set(+attritionSlider.value)" class="flex-1 h-2 accent-purple-600 cursor-pointer"></app-text-input>
-            <app-text-input #attritionInput id="attritionRateInput" type="number" min="0" max="50" step="1" [value]="attritionRate()"
+            <app-text-input #attritionInput inputId="attritionRateInput" type="number" min="0" max="50" step="1" [value]="attritionRate()"
                    (change)="attritionRate.set(clampAttritionRate(+attritionInput.value))" class="w-16 text-center rounded-md border py-1 px-2 text-sm"></app-text-input>
             <span class="text-sm font-medium w-4">%</span>
           </div>
@@ -483,7 +483,7 @@
               </div>
             }
           </div>
-          <app-button type="submit" [disabled]="!form.valid" customClass="bg-indigo-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 text-sm" variant="primary">Generate Schema</app-button>
+          <app-button type="submit" (onClick)="onSubmit()" [disabled]="!form.valid" customClass="bg-indigo-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 text-sm" variant="primary">Generate Schema</app-button>
         </div>
       </div>
     }

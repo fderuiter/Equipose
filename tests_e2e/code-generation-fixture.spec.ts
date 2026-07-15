@@ -45,15 +45,15 @@ const test = base.extend<ScriptFixture>({
       const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
       await expect(generateCodeBtn).toBeVisible();
       await generateCodeBtn.click();
-      await page.getByRole('menuitem', { name: /R Script/i }).click();
+      await page.getByRole('menuitem', { name: /R Script/i }).first().click();
 
-      const modal = page.locator('div[role="dialog"]');
+      const modal = page.getByRole('dialog', { name: 'Code Generator' });
       await expect(modal).toBeVisible({ timeout: 10_000 });
       const codeBlock = modal.getByTestId('generated-code');
       await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
       for (const { language, tabName, extension } of languageTabs) {
-        await modal.getByRole('button', { name: tabName }).click();
+        await modal.getByRole('tab', { name: tabName }).click();
         await page.waitForTimeout(200);
 
         await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
@@ -140,7 +140,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-MIN-ONLY-001');
           await currentPage.locator('#studyName').fill('Fixture Minimization Only Scenario');
           await goToStep(currentPage, 2);
-          await currentPage.getByRole('radio', { name: 'Minimization' }).click();
+          await currentPage.getByRole('radio', { name: 'Minimization' }).first().click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
@@ -155,7 +155,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await probabilityInputs.nth(1).fill('60');
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('radio', { name: 'Marginal Only' }).click();
+          await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().click();
           const margCapInputs = currentPage.locator('input[id*="-margcap-"]');
           await margCapInputs.nth(0).fill('100');
           await margCapInputs.nth(1).fill('100');
@@ -170,7 +170,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-ZERO-CAP-001');
           await currentPage.locator('#studyName').fill('Fixture Zero Cap Scenario');
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).click();
+          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().click();
           const capRows = currentPage.locator('[formArrayName="stratumCaps"] > div');
           const capCount = await capRows.count();
           for (let capIndex = 0; capIndex < capCount; capIndex++) {
@@ -197,7 +197,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-CAP-001');
           await currentPage.locator('#studyName').fill('Fixture Cap Strategy Scenario');
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Proportional' }).click();
+          await currentPage.getByRole('radio', { name: 'Proportional' }).first().click();
           await currentPage.locator('#globalCap').fill('120');
           await currentPage.evaluate(() => {
             const inputs = Array.from(document.querySelectorAll<HTMLInputElement>("input[id*='-pct-']"));
