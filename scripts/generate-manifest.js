@@ -42,8 +42,32 @@ const ASSETS_TO_CACHE = ${JSON.stringify(assetsToCache, null, 2)};
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of ASSETS_TO_CACHE) {
+        try {
+          const response = await fetch(asset);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error ${response.status} for ${asset}`);
+          }
+          
+          const contentType = response.headers.get('content-type') || '';
+          
+          // Reject static assets (JS/CSS) served with text/html MIME-type
+          if ((asset.endsWith('.js') || asset.endsWith('.css')) && contentType.includes('text/html')) {
+            throw new Error(`Invalid MIME type ${contentType} for ${asset}`);
+          }
+          
+          await cache.put(asset, response);
+        } catch (error) {
+          const isCritical = asset.endsWith('.html') || asset.endsWith('.js') || asset.endsWith('.css');
+          if (isCritical) {
+            throw error; // Fail installation safely
+          } else {
+            console.warn(`Non-critical asset failed to cache: ${asset}`, error);
+          }
+        }
+      }
     })
   );
 });
