@@ -123,7 +123,7 @@
   animation: slideDown 0.2s ease-out;
 }
 
-.app-tooltip.mdc-tooltip .mdc-tooltip__surface {
+.app-tooltip {
   background-color: var(--bg-surface);
   color: var(--text-main);
   border: 1px solid var(--border-subtle);
