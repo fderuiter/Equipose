@@ -33,12 +33,42 @@ for (const file of allFiles) {
   hash.update(content);
 }
 
+const appRoutesPath = path.join(__dirname, '..', 'src', 'app', 'app.routes.ts');
+const routesContent = fs.readFileSync(appRoutesPath, 'utf8');
+const routeRegex = /path:\s*['"]([^'"]*)['"]/g;
+let match;
+const validRoutes = [];
+
+while ((match = routeRegex.exec(routesContent)) !== null) {
+  const routePath = match[1];
+  // Filter out wildcard routes
+  if (routePath.includes('**')) continue;
+  validRoutes.push(routePath);
+}
+
+// Generate Cloudflare Pages _redirects file
+const redirectsContent = validRoutes.map(routePath => {
+  let edgeRoute = routePath === '' ? '/' : `/${routePath}`;
+  // Convert dynamic parameters to standard wildcard fallback rules
+  edgeRoute = edgeRoute.replace(/:[a-zA-Z0-9_]+/g, '*');
+  return `${edgeRoute} /index.html 200`;
+}).join('\n');
+fs.writeFileSync(path.join(buildDir, '_redirects'), redirectsContent);
+console.log(`Generated _redirects with ${validRoutes.length} rules.`);
+
+// Prepare Regex strings for the Service Worker
+const swRegexes = validRoutes.map(routePath => {
+  if (routePath === '') return '^/?$';
+  return '^/' + routePath.replace(/:[a-zA-Z0-9_]+/g, '[^/]+') + '/?$';
+});
+
 const cacheVersion = hash.digest('hex');
 const cacheName = `app-cache-v${cacheVersion}`;
 
 const swCode = `
 const CACHE_NAME = '${cacheName}';
 const ASSETS_TO_CACHE = ${JSON.stringify(assetsToCache, null, 2)};
+const VALID_ROUTES_REGEX = ${JSON.stringify(swRegexes, null, 2)};
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -48,14 +78,14 @@ self.addEventListener('install', (event) => {
           const response = await fetch(asset);
           
           if (!response.ok) {
-            throw new Error(`HTTP error ${response.status} for ${asset}`);
+            throw new Error(\`HTTP error \${response.status} for \${asset}\`);
           }
           
           const contentType = response.headers.get('content-type') || '';
           
           // Reject static assets (JS/CSS) served with text/html MIME-type
           if ((asset.endsWith('.js') || asset.endsWith('.css')) && contentType.includes('text/html')) {
-            throw new Error(`Invalid MIME type ${contentType} for ${asset}`);
+            throw new Error(\`Invalid MIME type \${contentType} for \${asset}\`);
           }
           
           await cache.put(asset, response);
@@ -64,7 +94,7 @@ self.addEventListener('install', (event) => {
           if (isCritical) {
             throw error; // Fail installation safely
           } else {
-            console.warn(`Non-critical asset failed to cache: ${asset}`, error);
+            console.warn(\`Non-critical asset failed to cache: \${asset}\`, error);
           }
         }
       }
@@ -101,18 +131,33 @@ self.addEventListener('fetch', (event) => {
         return cachedResponse;
       }
 
-      // If it's a navigation request, serve index.html for SPA routing
+      // If it's a navigation request, serve index.html for SPA routing (only if valid route)
       if (event.request.mode === 'navigate') {
-        return caches.match('/index.html').then((indexHtml) => {
-          return indexHtml || fetch(event.request);
-        });
+        const url = new URL(event.request.url);
+        const path = url.pathname;
+        const isValidRoute = VALID_ROUTES_REGEX.some(regex => new RegExp(regex).test(path));
+        
+        if (isValidRoute) {
+          return caches.match('/index.html').then((indexHtml) => {
+            return indexHtml || fetch(event.request);
+          });
+        }
+        
+        // Let it fall through to network if not a valid route (for 404s)
+        return fetch(event.request);
       }
 
       return fetch(event.request);
     }).catch(() => {
       // Offline fallback
       if (event.request.mode === 'navigate') {
-        return caches.match('/index.html');
+        const url = new URL(event.request.url);
+        const path = url.pathname;
+        const isValidRoute = VALID_ROUTES_REGEX.some(regex => new RegExp(regex).test(path));
+        
+        if (isValidRoute) {
+          return caches.match('/index.html');
+        }
       }
       return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
     })
