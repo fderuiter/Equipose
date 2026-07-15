@@ -6,7 +6,7 @@ import { DOCUMENT } from '@angular/common';
 })
 export class ProgressAnnouncerService implements OnDestroy {
   private liveRegion: HTMLElement;
-  private taskStates = new Map<string, { lastMilestone: number, lastAnnouncedTime: number }>();
+  private taskStates = new Map<string, { lastMilestone: number, lastAnnouncedTime: number, timerId?: any }>();
   
   private readonly MILESTONES = [0, 25, 50, 75, 100];
   private readonly THROTTLE_MS = 5000;
@@ -36,20 +36,48 @@ export class ProgressAnnouncerService implements OnDestroy {
 
     if (achievedMilestone > state.lastMilestone) {
       const now = Date.now();
-      if (now - state.lastAnnouncedTime >= this.THROTTLE_MS || state.lastMilestone === -1) {
-        state.lastMilestone = achievedMilestone;
-        state.lastAnnouncedTime = now;
-        this.taskStates.set(taskName, state);
+      const timeSinceLast = now - state.lastAnnouncedTime;
 
-        this.liveRegion.textContent = `${taskName} progress: ${Math.round(progressPct)}%`;
+      if (state.timerId) {
+        clearTimeout(state.timerId);
+        state.timerId = undefined;
       }
+
+      if (timeSinceLast >= this.THROTTLE_MS || state.lastMilestone === -1) {
+        this.doAnnounce(taskName, achievedMilestone, state);
+      } else {
+        const delay = this.THROTTLE_MS - timeSinceLast;
+        state.timerId = setTimeout(() => {
+          this.doAnnounce(taskName, achievedMilestone, state);
+          state.timerId = undefined;
+        }, delay);
+      }
+      
+      state.lastMilestone = achievedMilestone;
+      this.taskStates.set(taskName, state);
     }
+  }
+
+  private doAnnounce(taskName: string, milestone: number, state: any): void {
+    state.lastAnnouncedTime = Date.now();
+    this.taskStates.set(taskName, state);
+    
+    // Clear and reset to ensure screen reader detects the change even if the text is identical
+    this.liveRegion.textContent = '';
+    // Small delay to allow DOM to register the empty state before updating
+    setTimeout(() => {
+      this.liveRegion.textContent = `${taskName} progress: ${milestone}%`;
+    }, 50);
   }
 
   /**
    * Reset tracking for a task if it needs to be restarted.
    */
   resetTask(taskName: string = 'Simulation'): void {
+    const state = this.taskStates.get(taskName);
+    if (state?.timerId) {
+      clearTimeout(state.timerId);
+    }
     this.taskStates.delete(taskName);
   }
 

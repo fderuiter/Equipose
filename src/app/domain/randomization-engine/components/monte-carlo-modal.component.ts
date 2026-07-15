@@ -12,7 +12,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
   imports: [DecimalPipe, KeyboardScrollDirective],
   template: `
     <dialog #modalDialog (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
-      <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
+      <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title" [attr.aria-busy]="facade.isMonteCarloRunning() ? 'true' : 'false'">
 
       <!-- Header -->
       <div class="bg-overlay/80 px-6 pt-5 pb-4 flex-none">
@@ -71,6 +71,7 @@ import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scrol
               class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden border border-border-strong dark:border-slate-600 [&::-webkit-progress-bar]:bg-transparent [&::-webkit-progress-value]:bg-indigo-600 dark:[&::-webkit-progress-value]:bg-indigo-500 [&::-moz-progress-bar]:bg-indigo-600 dark:[&::-moz-progress-bar]:bg-indigo-500 transition-all duration-300 ease-out"
               [value]="facade.monteCarloProgress()"
               max="100"
+              aria-label="Monte Carlo simulation progress"
               data-testid="mc-progress-bar"
             >
               {{ facade.monteCarloProgress() }}%

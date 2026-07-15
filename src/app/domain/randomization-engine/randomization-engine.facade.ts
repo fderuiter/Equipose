@@ -5,6 +5,7 @@ import {
   RandomizationResult
 } from '../core/models/randomization.model';
 import { AnnouncementService } from '../../core/services/announcement.service';
+import { ProgressAnnouncerService } from '../../core/services/progress-announcer.service';
 import { ToastService } from '../../core/services/toast.service';
 import { computeAuditHash } from './core/crypto-hash';
 import { generateRandomizationSchema, generateCryptoSeed } from './core/randomization-algorithm';
@@ -21,6 +22,7 @@ export class RandomizationEngineFacade {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly toastService = inject(ToastService);
   private readonly announcementService = inject(AnnouncementService);
+  private readonly progressAnnouncer = inject(ProgressAnnouncerService);
 
   private worker: Worker | null = null;
   private pendingCallbacks = new Map<
@@ -139,15 +141,13 @@ export class RandomizationEngineFacade {
       onProgress: (p: MonteCarloProgressPayload) => {
         const pct = Math.round((p.iterationsCompleted / p.totalIterations) * 100);
         this.monteCarloProgress.set(pct);
-        if (pct > 0 && pct % 25 === 0) {
-          this.announcementService.announce(`Simulation progress: ${pct}%`, 'polite');
-        }
+        this.progressAnnouncer.announceProgress(pct, 'Simulation');
       },
       onSuccess: (r: MonteCarloSuccessPayload) => {
         this.monteCarloResults.set(r);
         this.isMonteCarloRunning.set(false);
         this.monteCarloProgress.set(100);
-        this.announcementService.announce('Simulation complete. Results are available.', 'polite');
+        this.announcementService.announce('Simulation complete. Results are available.', 'assertive');
       },
       onError: (e: unknown) => {
         this.isMonteCarloRunning.set(false);
@@ -170,6 +170,7 @@ export class RandomizationEngineFacade {
       this.monteCarloProgress.set(0);
       this.monteCarloResults.set(null);
       this.monteCarloError.set(null);
+      this.progressAnnouncer.resetTask('Simulation');
       this.announcementService.announce('Simulation stopped by user.', 'polite');
       
       // Stop the worker somehow if possible. If not, just clear the callbacks.

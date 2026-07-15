@@ -5,6 +5,7 @@ import { GeneratedSchema, RandomizationResult } from '../../core/models/randomiz
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
 import { SeoService } from '../../../core/services/seo.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { AnnouncementService } from '../../../core/services/announcement.service';
 
 // ---------------------------------------------------------------------------
 // Data model for the diff engine
@@ -194,6 +195,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
 })
 export class SchemaVerificationComponent {
   readonly stepper = createStepper(3);
+  private readonly announcementService = inject(AnnouncementService);
 
   // ── UI state signals ──────────────────────────────────────────────────────
 
@@ -302,9 +304,11 @@ export class SchemaVerificationComponent {
 
     if (diffs.length === 0) {
       this.status.set('pass');
+      this.announcementService.announce('Verification passed. The uploaded schema exactly matches the algorithmic baseline.', 'assertive');
     } else {
       this.discrepancies.set(diffs);
       this.status.set('fail');
+      this.announcementService.announce(`Verification failed. Found ${diffs.length} discrepancies.`, 'assertive');
     this.stepper.goTo(2);
     }
   }
@@ -368,5 +372,6 @@ export class SchemaVerificationComponent {
   private setError(message: string): void {
     this.errorMessage.set(message);
     this.status.set('error');
+    this.announcementService.announce(`Verification error: ${message}`, 'assertive');
   }
 }
