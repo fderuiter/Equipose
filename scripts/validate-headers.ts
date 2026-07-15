@@ -35,6 +35,32 @@ async function checkHeaders(path: string, expectedCacheControl: string) {
   return true;
 }
 
+async function checkMissingAsset(path: string) {
+  const fullUrl = `${baseUrl}${path}`;
+  console.log(`Checking missing asset ${fullUrl}...`);
+  const response = await fetch(fullUrl, { method: 'GET' });
+  
+  if (response.status !== 404) {
+    console.error(`❌ Routing mismatch on ${path}: expected 404, got ${response.status}`);
+    return false;
+  }
+  console.log(`✅ ${path} returned 404.`);
+  return true;
+}
+
+async function checkValidRoute(path: string) {
+  const fullUrl = `${baseUrl}${path}`;
+  console.log(`Checking valid route ${fullUrl}...`);
+  const response = await fetch(fullUrl, { method: 'GET' });
+  
+  if (response.status !== 200) {
+    console.error(`❌ Routing mismatch on ${path}: expected 200, got ${response.status}`);
+    return false;
+  }
+  console.log(`✅ ${path} returned 200.`);
+  return true;
+}
+
 async function main() {
   let allPass = true;
   
@@ -61,11 +87,21 @@ async function main() {
     allPass = false;
   }
 
+  // 5. Valid client paths
+  allPass = await checkValidRoute('/about') && allPass;
+  allPass = await checkValidRoute('/generator') && allPass;
+  allPass = await checkValidRoute('/verify') && allPass;
+
+  // 6. Missing static assets
+  allPass = await checkMissingAsset('/missing-chunk.js') && allPass;
+  allPass = await checkMissingAsset('/styles/non-existent.css') && allPass;
+  allPass = await checkMissingAsset('/media/not-here.png') && allPass;
+
   if (!allPass) {
     console.error('Validation failed.');
     process.exit(1);
   } else {
-    console.log('All headers validated successfully.');
+    console.log('All validations passed successfully.');
   }
 }
 
