@@ -169,26 +169,8 @@ type ResultsTab = 'grid' | 'balance';
           <!-- ── Schema Grid tab ─────────────────────────────────────── -->
           @if (activeTab() === 'grid') {
             <div class="space-y-6">
-              <!-- Schema Analytics Dashboard (heavy ECharts):
-                   Fully unmounted on mobile to save CPU/memory.
-                   A lightweight text summary is rendered instead. -->
-              @if (!viewport.isMobile()) {
-                <app-schema-analytics-dashboard></app-schema-analytics-dashboard>
-              } @else {
-                <!-- Mobile: text-based analytics summary -->
-                @if (state.results(); as data) {
-                  <div data-testid="mobile-analytics-summary" [class]="domainTheme.layout().cardBase + ' ' + domainTheme.layout().borderRadius + ' p-4 space-y-2'">
-                    <h3 class="text-sm font-semibold text-main">Schema Summary</h3>
-                    <ul class="text-sm text-gray-700 dark:text-slate-300 space-y-1">
-                      <li><span class="font-medium">Protocol:</span> {{data.metadata.protocolId}}</li>
-                      <li><span class="font-medium">Total subjects:</span> {{data.schema.length}}</li>
-                      <li><span class="font-medium">Strata factors:</span> {{data.metadata.strata.length}}</li>
-                      <li><span class="font-medium">Seed:</span> <code class="font-mono text-xs bg-subtle px-1 rounded">{{data.metadata.seed}}</code></li>
-                    </ul>
-                    <p class="text-xs text-muted">Switch to a larger screen to view interactive charts.</p>
-                  </div>
-                }
-              }
+              <!-- Schema Analytics Dashboard -->
+              <app-schema-analytics-dashboard></app-schema-analytics-dashboard>
 
               <!-- Results Grid -->
               <app-results-grid></app-results-grid>
