@@ -9,12 +9,12 @@ test.describe('Code Generator Modal UI', () => {
   });
 
   test('should generate, display, and download code in all supported languages', async ({ page }) => {
-    await page.locator('#protocolId input').fill('TEST-PRT-123');
-    await page.locator('#studyName input').fill('End-to-end Test Study');
+    await page.locator('#protocolId').fill('TEST-PRT-123');
+    await page.locator('#studyName').fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
     await page.getByRole('button', { name: /^Next$/i }).click();
-    await page.locator('#armName0 input').fill('Placebo');
+    await page.locator('#armName0').fill('Placebo');
     await page.getByRole('button', { name: /^Next$/i }).click();
 
     const siteInput = page.locator('#sitesLabel + app-tag-input input');
@@ -23,7 +23,7 @@ test.describe('Code Generator Modal UI', () => {
     await siteInput.press('Enter');
     await page.getByRole('button', { name: /^Next$/i }).click();
 
-    await page.locator('#blockSizesStr input').fill('2');
+    await page.locator('#blockSizesStr').fill('2');
     await page.getByRole('button', { name: /^Next$/i }).click();
     await page.getByRole('button', { name: /^Next$/i }).click();
 
@@ -74,12 +74,12 @@ test.describe('Code Generator Modal UI', () => {
   });
 
   test('copying code should announce to screen reader and maintain focus', async ({ page }) => {
-    await page.locator('#protocolId input').fill('TEST-PRT-123');
-    await page.locator('#studyName input').fill('End-to-end Test Study');
+    await page.locator('#protocolId').fill('TEST-PRT-123');
+    await page.locator('#studyName').fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
     await page.getByRole('button', { name: /^Next$/i }).click();
-    await page.locator('#armName0 input').fill('Placebo');
+    await page.locator('#armName0').fill('Placebo');
     await page.getByRole('button', { name: /^Next$/i }).click();
 
     const siteInput = page.locator('#sitesLabel + app-tag-input input');
@@ -88,7 +88,7 @@ test.describe('Code Generator Modal UI', () => {
     await siteInput.press('Enter');
     await page.getByRole('button', { name: /^Next$/i }).click();
 
-    await page.locator('#blockSizesStr input').fill('2');
+    await page.locator('#blockSizesStr').fill('2');
     await page.getByRole('button', { name: /^Next$/i }).click();
     await page.getByRole('button', { name: /^Next$/i }).click();
 

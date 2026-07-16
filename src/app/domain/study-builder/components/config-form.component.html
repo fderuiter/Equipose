@@ -206,7 +206,7 @@
                         <app-text-input #probInput [inputId]="'levelDist' + getStrataId(stratumIndex) + '_' + level" type="number" min="0" max="100" step="any"
                                [value]="getMinimizationProbability(getStrataId(stratumIndex), level)"
                                (input)="setMinimizationProbability(getStrataId(stratumIndex), level, +probInput.value)"
-                               (blur)="markMinimizationProbabilityTouched(getStrataId(stratumIndex))"
+                               (onBlur)="markMinimizationProbabilityTouched(getStrataId(stratumIndex))"
                                class="w-20 rounded-lg border px-2 py-1 text-sm"
                                [class.border-red-500]="isMinimizationProbabilityInvalid(getStrataId(stratumIndex)) && isMinimizationProbabilityTouched(getStrataId(stratumIndex))"></app-text-input>
                         <span class="text-xs">%</span>
