@@ -49,6 +49,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
 
   private autoSaveTimeout: ReturnType<typeof setTimeout> | null = null;
+  private draftCleared = false;
   private readonly DRAFT_KEY = 'draft-trial-config';
   private readonly SCHEMA_VERSION = 'v1';
 
@@ -770,6 +771,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.form.valid) {
       try { 
+        this.draftCleared = true;
         this.facade.generateSchema(this.store.buildConfig(this.buildFormValue())); 
         this.clearDraft();
       }
@@ -903,6 +905,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   // ── Auto-Save and Hydration Helpers ────────────────────────────────────────
 
   private triggerAutoSave(): void {
+    if (this.draftCleared) return;
     if (this.autoSaveTimeout) {
       clearTimeout(this.autoSaveTimeout);
     }

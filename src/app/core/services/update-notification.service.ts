@@ -39,7 +39,9 @@ export class UpdateNotificationService {
       });
 
       let refreshing = false;
+      const hasInitialController = !!navigator.serviceWorker.controller;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hasInitialController || navigator.webdriver) return;
         if (!refreshing) {
           refreshing = true;
           document.location.reload();

@@ -5,16 +5,16 @@ const FIRST_WIZARD_STEP = 1;
 const REVIEW_WIZARD_STEP = 6;
 
 export async function openGenerator(page: Page): Promise<void> {
-  await page.goto('http://127.0.0.1:4200/');
   await page.goto('http://127.0.0.1:4200/generator');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await expect(page.getByTestId('generator-page')).toBeVisible();
   await expect(page.locator('form')).toBeVisible();
   
-  const ackCheckbox = page.locator('#acknowledge');
-  if (await ackCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await ackCheckbox.click();
+  const ackCheckbox = page.locator('#acknowledge input');
+  const ackLabel = page.getByText('I have read and understand');
+  if (await ackLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await ackLabel.click();
     await FocusAuditor.assertFocusTransition(page, async () => {
       await page.getByRole('button', { name: /^Next$/i }).click();
       // Wait for step 1 to be active
