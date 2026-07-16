@@ -31,16 +31,16 @@
 
                 <div class="mb-4">
                   <nav role="tablist" class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium w-full sm:w-auto" aria-label="Tabs" (keydown)="onTabKeydown($event)">
-                    <app-button variant="segmented" (onClick)="setActiveTab('R')" [segmentedActive]="activeTab() === 'R'" segmentedPosition="first" role="tab" [ariaChecked]="activeTab() === 'R' ? 'true' : 'false'" [id]="'tab-' + 'R'">
+                    <app-button variant="segmented" (onClick)="setActiveTab('R')" [segmentedActive]="activeTab() === 'R'" segmentedPosition="first" role="tab" [attr.aria-selected]="activeTab() === 'R' ? 'true' : 'false'" [id]="'tab-' + 'R'">
                       R
                     </app-button>
-                    <app-button variant="segmented" (onClick)="setActiveTab('SAS')" [segmentedActive]="activeTab() === 'SAS'" segmentedPosition="middle" role="tab" [ariaChecked]="activeTab() === 'SAS' ? 'true' : 'false'" [id]="'tab-' + 'SAS'">
+                    <app-button variant="segmented" (onClick)="setActiveTab('SAS')" [segmentedActive]="activeTab() === 'SAS'" segmentedPosition="middle" role="tab" [attr.aria-selected]="activeTab() === 'SAS' ? 'true' : 'false'" [id]="'tab-' + 'SAS'">
                       SAS
                     </app-button>
-                    <app-button variant="segmented" (onClick)="setActiveTab('Python')" [segmentedActive]="activeTab() === 'Python'" segmentedPosition="middle" role="tab" [ariaChecked]="activeTab() === 'Python' ? 'true' : 'false'" [id]="'tab-' + 'Python'">
+                    <app-button variant="segmented" (onClick)="setActiveTab('Python')" [segmentedActive]="activeTab() === 'Python'" segmentedPosition="middle" role="tab" [attr.aria-selected]="activeTab() === 'Python' ? 'true' : 'false'" [id]="'tab-' + 'Python'">
                       Python
                     </app-button>
-                    <app-button variant="segmented" (onClick)="setActiveTab('STATA')" [segmentedActive]="activeTab() === 'STATA'" segmentedPosition="last" role="tab" [ariaChecked]="activeTab() === 'STATA' ? 'true' : 'false'" [id]="'tab-' + 'STATA'">
+                    <app-button variant="segmented" (onClick)="setActiveTab('STATA')" [segmentedActive]="activeTab() === 'STATA'" segmentedPosition="last" role="tab" [attr.aria-selected]="activeTab() === 'STATA' ? 'true' : 'false'" [id]="'tab-' + 'STATA'">
                       Stata
                     </app-button>
                   </nav>
