@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
       type="button"
       [id]="inputId"
       role="switch"
+      [attr.aria-label]="ariaLabel"
       [attr.aria-checked]="internalValue"
       [disabled]="disabled"
       [class]="computedClasses"
@@ -27,6 +28,7 @@ export class ToggleComponent implements OnChanges {
   @Input() inputId = '';
   @Input({ transform: booleanAttribute }) disabled = false;
   @Input() customClass = '';
+  @Input() ariaLabel?: string;
   
   @Input() checked = false;
   @Output() checkedChange = new EventEmitter<boolean>();

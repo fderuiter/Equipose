@@ -53,7 +53,7 @@ export class ButtonComponent {
         variantClass = 'bg-surface text-main border border-border-strong hover:bg-hover disabled:opacity-50';
         break;
       case 'outline':
-        variantClass = 'bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-50 disabled:opacity-50';
+        variantClass = 'bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:border-brand-400 dark:hover:bg-brand-900/50 disabled:opacity-50';
         break;
       case 'segmented':
         variantClass = 'flex-1 text-sm disabled:opacity-50 border-border-strong';

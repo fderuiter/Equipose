@@ -37,7 +37,7 @@
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
 
           <div class="flex items-center px-1 -ml-1">
-            <app-toggle [checked]="isUnblinded()" (checkedChange)="toggleBlinding()"></app-toggle>
+            <app-toggle ariaLabel="Toggle unblinded view" [checked]="isUnblinded()" (checkedChange)="toggleBlinding()"></app-toggle>
             <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" (click)="toggleBlinding()">
               {{ isUnblinded() ? 'Unblinded' : 'Blinded' }}
             </span>
