@@ -135,7 +135,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
           <!-- BibTeX -->
           <div class="mt-4">
             <p class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">BibTeX</p>
-            <div class="rounded-lg bg-gray-900 dark:bg-slate-950 border border-gray-700 dark:border-slate-600 px-4 py-3 overflow-x-auto">
+            <div class="rounded-lg bg-gray-900 dark:bg-slate-950 border border-gray-700 dark:border-slate-600 px-4 py-3 overflow-x-auto" tabindex="0">
               <pre class="text-xs text-green-400 dark:text-green-300 leading-relaxed font-mono whitespace-pre">{{ bibtex }}</pre>
             </div>
           </div>

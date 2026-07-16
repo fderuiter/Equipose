@@ -787,7 +787,11 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
   onGenerateCode(language: 'R' | 'SAS' | 'Python' | 'STATA'): void {
     if (this.form.valid) {
-      try { this.facade.openCodeGenerator(this.store.buildConfig(this.buildFormValue()), language); this.dropdownOpen = false; }
+      try { 
+        this.dropdownContainer.nativeElement.querySelector('button')?.focus();
+        this.facade.openCodeGenerator(this.store.buildConfig(this.buildFormValue()), language); 
+        this.dropdownOpen = false; 
+      }
       catch (e) { console.error('Error generating code config:', e); this.toastService.showError('Error generating code. Please check your configuration.'); }
     }
   }
