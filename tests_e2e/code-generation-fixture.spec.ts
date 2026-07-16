@@ -203,12 +203,10 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.getByRole('radio', { name: 'Proportional' }).first().click();
           await currentPage.locator('#globalCap').fill('120');
           await currentPage.evaluate(() => {
-            const wrappers = Array.from(document.querySelectorAll("app-text-input[id*='-pct-']"));
+            const inputs = Array.from(document.querySelectorAll("input[id*='-pct-']")) as HTMLInputElement[];
             const byFactor = new Map<string, HTMLInputElement[]>();
-            for (const wrapper of wrappers) {
-              const input = wrapper.querySelector('input');
-              if (!input) continue;
-              const factorId = wrapper.id.split('-pct-')[0];
+            for (const input of inputs) {
+              const factorId = input.id.split('-pct-')[0];
               const entries = byFactor.get(factorId) ?? [];
               entries.push(input);
               byFactor.set(factorId, entries);
