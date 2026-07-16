@@ -1,3 +1,4 @@
+import { NgStyle } from '@angular/common';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
@@ -62,7 +63,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent],
+  imports: [NgStyle, KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent],
   templateUrl: './results-grid.component.html'
 })
 export class ResultsGridComponent {

@@ -17,7 +17,7 @@ import { TextInputComponent } from '../../../core/components/ui/text-input.compo
   template: `
     <div
       appRovingTabindex="button, input"
-      class="flex flex-wrap gap-1.5 items-center min-h-[44px] border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2 focus-within:ring-offset-focus-offset cursor-text transition-colors"
+      class="flex flex-wrap gap-1.5 items-center min-h-11 border border-border-strong rounded-lg px-3 py-2 bg-white dark:bg-slate-700 focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2 focus-within:ring-offset-focus-offset cursor-text transition-colors"
       (click)="tagInput.focus()" (keydown.enter)="tagInput.focus()"
     >
       @if (tags.length > 0) {
@@ -26,7 +26,7 @@ import { TextInputComponent } from '../../../core/components/ui/text-input.compo
             <li role="listitem" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 select-none">
               {{ tag }}
               <app-button type="button"
-                (click)="removeTag(tag); $event.stopPropagation()" customClass="ml-0.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 rounded-sm leading-none font-bold"[attr.aria-label]="'Remove ' + tag"
+                (click)="removeTag(tag); $event.stopPropagation()"[attr.aria-label]="'Remove ' + tag"
                 [appTooltip]="'Remove ' + tag"
                variant="bare">×</app-button>
             </li>
@@ -39,7 +39,7 @@ import { TextInputComponent } from '../../../core/components/ui/text-input.compo
         (keydown)="onKeydown($event)"
         (blur)="onBlur()"
         [placeholder]="tags.length === 0 ? placeholder : ''"
-        [attr.aria-label]="ariaLabel || placeholder" customClass="flex-1 min-w-[80px] outline-none focus:ring-0 border-none text-sm bg-transparent py-0.5 text-main placeholder-disabled" variant="bare"></app-text-input>
+        [attr.aria-label]="ariaLabel || placeholder" variant="bare"></app-text-input>
     </div>
     <p class="text-xs text-muted mt-1">
       Press <kbd class="font-mono bg-gray-100 dark:bg-slate-600 dark:text-slate-300 border border-gray-200 dark:border-slate-500 rounded px-1">Enter</kbd>

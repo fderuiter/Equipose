@@ -22,7 +22,6 @@ import { CommonModule } from '@angular/common';
 export class CheckboxComponent {
   @Input() inputId = '';
   @Input({ transform: booleanAttribute }) disabled = false;
-  @Input() customClass = '';
 
   @Output() onBlur = new EventEmitter<void>();
 
@@ -47,7 +46,7 @@ export class CheckboxComponent {
 
   get computedClasses(): string {
     const base = 'w-4 h-4 rounded border-border-strong text-brand-600 focus:ring-focus-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset transition-colors disabled:opacity-50 cursor-pointer bg-surface';
-    return `${base} ${this.customClass}`.trim();
+    return `${base}`.trim();
   }
 
   onChange(event: Event) {

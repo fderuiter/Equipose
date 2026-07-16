@@ -25,7 +25,7 @@ import {SeoService} from '../../core/services/seo.service';
             <rect width="100%" height="100%" stroke-width="0" fill="url(#hero-grid)"/>
           </svg>
           <!-- Radial gradient blob -->
-          <div class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-[900px] h-[600px] rounded-full bg-gradient-to-br from-indigo-100/60 via-purple-50/40 to-transparent dark:from-indigo-950/30 dark:via-slate-900/20 dark:to-transparent blur-3xl"></div>
+          <div class="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/4 w-full max-w-4xl h-96 rounded-full bg-gradient-to-br from-indigo-100/60 via-purple-50/40 to-transparent dark:from-indigo-950/30 dark:via-slate-900/20 dark:to-transparent blur-3xl"></div>
         </div>
 
         <div class="mx-auto max-w-2xl py-28 sm:py-40 lg:py-52">

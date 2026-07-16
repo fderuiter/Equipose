@@ -31,7 +31,6 @@ export class ButtonComponent {
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
   @Input({ transform: booleanAttribute }) disabled = false;
   
-  @Input() customClass = '';
   @Input() segmentedActive = false;
   @Input() segmentedPosition: 'first' | 'middle' | 'last' | 'none' = 'none';
 
@@ -73,6 +72,6 @@ export class ButtonComponent {
       variantClass += ' px-3 py-2';
     }
 
-    return `${base} ${variantClass} ${this.customClass}`.trim();
+    return `${base} ${variantClass}`.trim();
   }
 }

@@ -18,7 +18,7 @@ import { DateUtil } from './core/utils/date.util';
   template: `
     <!-- Skip to main content (accessibility) -->
     <a href="#main-content"
-       class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-indigo-700 focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+       class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-indigo-700 focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
       Skip to main content
     </a>
 

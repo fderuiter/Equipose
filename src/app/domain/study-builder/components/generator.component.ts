@@ -78,7 +78,7 @@ type ResultsTab = 'grid' | 'balance';
           <h3 class="text-sm font-semibold text-main m-0">Simulation Status:</h3>
           @if (state.isGenerating()) {
             <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800" data-testid="status-generating">
-              <svg class="animate-[spin_1s_linear_infinite] h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg class="animate-pulse h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -107,7 +107,6 @@ type ResultsTab = 'grid' | 'balance';
             <app-button
               variant="bare"
               (onClick)="copyAuditHash()"
-              customClass="shrink-0 p-1.5 rounded-md border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700"
               ariaLabel="Copy audit hash to clipboard"
               data-testid="copy-hash-btn">
               @if (hashCopied()) {

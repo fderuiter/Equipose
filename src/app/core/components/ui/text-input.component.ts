@@ -32,7 +32,6 @@ export class TextInputComponent {
   @Input() step?: number | string;
   @Input() placeholder = '';
   @Input({ transform: booleanAttribute }) disabled = false;
-  @Input() customClass = '';
   @Input() hasError = false;
 
   @Output() onBlur = new EventEmitter<void>();
@@ -58,7 +57,7 @@ export class TextInputComponent {
 
   get computedClasses(): string {
     if (this.variant === 'bare') {
-      return `outline-none focus:ring-0 border-none bg-transparent placeholder-disabled ${this.customClass}`.trim();
+      return `outline-none focus:ring-0 border-none bg-transparent placeholder-disabled`.trim();
     }
     const base = 'w-full rounded-lg border px-3 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset transition-colors text-main bg-surface placeholder-disabled disabled:opacity-50';
     let borderClass = 'border-border-strong';
@@ -69,7 +68,7 @@ export class TextInputComponent {
       borderClass += ' focus-visible:border-focus-ring';
     }
 
-    return `${base} ${borderClass} ${this.customClass}`.trim();
+    return `${base} ${borderClass}`.trim();
   }
 
   onInput(event: Event) {

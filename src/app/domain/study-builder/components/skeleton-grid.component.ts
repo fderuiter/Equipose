@@ -1,3 +1,4 @@
+import { NgStyle } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 
@@ -43,11 +44,11 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
           <!-- Bar chart placeholder -->
           <div class="flex flex-col justify-end h-56 gap-2 px-4">
             <div class="flex items-end gap-3 h-40">
-              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" style="height: 55%"></div>
-              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" style="height: 80%"></div>
-              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" style="height: 65%"></div>
-              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" style="height: 90%"></div>
-              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" style="height: 45%"></div>
+              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'height': '55%'}"></div>
+              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'height': '80%'}"></div>
+              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'height': '65%'}"></div>
+              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'height': '90%'}"></div>
+              <div class="flex-1 rounded-t-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'height': '45%'}"></div>
             </div>
             <!-- x-axis stub -->
             <div class="h-px w-full bg-gray-200 dark:bg-slate-700"></div>
@@ -80,7 +81,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
             <tr class="border-b border-border-subtle">
               @for (col of headerCols; track col) {
                 <th class="px-4 py-3">
-                  <div class="h-3 rounded-md bg-gray-200 dark:bg-slate-700" [style.width]="col"></div>
+                  <div class="h-3 rounded-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'width': col}"></div>
                 </th>
               }
             </tr>
@@ -92,7 +93,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
               <tr class="border-b border-gray-50 dark:border-slate-700/50">
                 @for (cell of cellWidths; track cell) {
                   <td class="px-4 py-3">
-                    <div class="h-3 rounded-md bg-gray-200 dark:bg-slate-700" [style.width]="cell"></div>
+                    <div class="h-3 rounded-md bg-gray-200 dark:bg-slate-700" [ngStyle]="{'width': cell}"></div>
                   </td>
                 }
               </tr>

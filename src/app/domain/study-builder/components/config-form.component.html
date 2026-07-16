@@ -17,7 +17,7 @@
               [class.dark:border-slate-600]="currentStepIndex() < i"
               [class.dark:bg-slate-800]="currentStepIndex() < i"
               [class.dark:text-slate-200]="currentStepIndex() < i">
-            <span class="block text-[10px] uppercase tracking-wide">Step {{ i }}</span>
+            <span class="block text-xs uppercase tracking-wide">Step {{ i }}</span>
             <span>{{ label }}</span>
           </li>
         }
@@ -25,7 +25,7 @@
       @if (isSimulationMode) {
         <div class="ml-4 flex items-center gap-2">
           <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Simulation Mode</span>
-          <app-button type="button" (click)="onPromoteToStudy()" customClass="rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" variant="primary">Promote to Study</app-button>
+          <app-button type="button" (click)="onPromoteToStudy()" variant="primary">Promote to Study</app-button>
         </div>
       }
     </div>
@@ -39,7 +39,7 @@
         </div>
       </div>
       <div class="pt-4 border-t flex justify-end">
-        <app-button type="button" (click)="nextStep()" [disabled]="regulatoryGroup.invalid" customClass="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">Next</app-button>
+        <app-button type="button" (click)="nextStep()" [disabled]="regulatoryGroup.invalid" variant="primary">Next</app-button>
       </div>
     }
 
@@ -49,9 +49,9 @@
           <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">Study-Agnostic Randomization Presets</h3>
           <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">Load a preset to bootstrap your setup.</p>
           <div class="mt-3 flex flex-wrap items-center gap-2">
-            <app-button type="button" (click)="loadPreset('simple')" customClass="px-3 py-1.5 rounded-lg border text-xs" variant="outline">Simple</app-button>
-            <app-button type="button" (click)="loadPreset('standard')" customClass="px-3 py-1.5 rounded-lg border text-xs" variant="outline">Standard</app-button>
-            <app-button type="button" (click)="loadPreset('complex')" customClass="px-3 py-1.5 rounded-lg border text-xs" variant="outline">Complex</app-button>
+            <app-button type="button" (click)="loadPreset('simple')" variant="outline">Simple</app-button>
+            <app-button type="button" (click)="loadPreset('standard')" variant="outline">Standard</app-button>
+            <app-button type="button" (click)="loadPreset('complex')" variant="outline">Complex</app-button>
           </div>
         </div>
 
@@ -93,7 +93,7 @@
       </div>
 
       <div class="pt-4 border-t flex justify-end">
-        <app-button type="button" (click)="nextStep()" [disabled]="metadataGroup.invalid" customClass="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">Next</app-button>
+        <app-button type="button" (click)="nextStep()" [disabled]="metadataGroup.invalid" variant="primary">Next</app-button>
       </div>
     }
 
@@ -102,12 +102,12 @@
         <section>
           <h2 class="text-lg font-semibold mb-2">Randomization Algorithm</h2>
           <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Randomization algorithm" appRovingTabindex="[role='radio']">
-            <app-button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('BLOCK')" customClass="flex-1 px-3 py-2 text-sm"
+            <app-button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('BLOCK')"
                     role="radio" [attr.aria-checked]="randomizationMethod === 'BLOCK'"
                     [class.bg-indigo-600]="randomizationMethod === 'BLOCK'" [class.text-white]="randomizationMethod === 'BLOCK'" [segmentedActive]="randomizationMethod === 'BLOCK'" segmentedPosition="first" variant="segmented">
               Stratified Block
             </app-button>
-            <app-button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('MINIMIZATION')" customClass="flex-1 px-3 py-2 text-sm border-l"
+            <app-button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('MINIMIZATION')"
                     role="radio" [attr.aria-checked]="randomizationMethod === 'MINIMIZATION'"
                     [class.bg-indigo-600]="randomizationMethod === 'MINIMIZATION'" [class.text-white]="randomizationMethod === 'MINIMIZATION'" [segmentedActive]="randomizationMethod === 'MINIMIZATION'" segmentedPosition="middle" variant="segmented">
               Minimization
@@ -118,14 +118,14 @@
         <section>
           <div class="flex justify-between items-center mb-2">
             <h2 class="text-lg font-semibold">Treatment Arms</h2>
-            <app-button type="button" (click)="addArm()" customClass="text-sm px-3 py-1 rounded-lg bg-indigo-50" variant="secondary">+ Add Arm</app-button>
+            <app-button type="button" (click)="addArm()" variant="secondary">+ Add Arm</app-button>
           </div>
           <div formArrayName="arms" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             @for (arm of arms.controls; track arm) {
               <div [formGroupName]="$index" class="rounded-xl border p-4 space-y-3">
                 <div class="flex justify-between items-center">
                   <label [for]="'armName' + $index" class="text-xs uppercase tracking-wide">Arm Name</label>
-                  <app-button type="button" (click)="removeArm($index)" [disabled]="arms.length <= 2" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Arm" appTooltip="Remove Arm" variant="secondary">
+                  <app-button type="button" (click)="removeArm($index)" [disabled]="arms.length <= 2" aria-label="Remove Arm" appTooltip="Remove Arm" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-disabled:opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -133,9 +133,9 @@
                 </div>
                 <app-text-input [inputId]="'armName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
                 <div class="flex items-center gap-2">
-                  <app-button type="button" (click)="decrementRatio($index)" [disabled]="arm.get('ratio')?.value <= 1" customClass="w-10 h-10 rounded-full border" [attr.aria-label]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">-</app-button>
+                  <app-button type="button" (click)="decrementRatio($index)" [disabled]="arm.get('ratio')?.value <= 1" [attr.aria-label]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">-</app-button>
                   <span class="font-bold w-6 text-center">{{ arm.get('ratio')?.value }}</span>
-                  <app-button type="button" (click)="incrementRatio($index)" customClass="w-10 h-10 rounded-full border" [attr.aria-label]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">+</app-button>
+                  <app-button type="button" (click)="incrementRatio($index)" [attr.aria-label]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">+</app-button>
                   <span class="text-xs text-gray-500">of {{ totalRatio }}</span>
                 </div>
               </div>
@@ -145,8 +145,8 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <app-button type="button" (click)="previousStep()" customClass="px-4 py-2 rounded-lg border" variant="outline">Previous</app-button>
-        <app-button type="button" (click)="nextStep()" [disabled]="designGroup.invalid" customClass="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">Next</app-button>
+        <app-button type="button" (click)="previousStep()" variant="outline">Previous</app-button>
+        <app-button type="button" (click)="nextStep()" [disabled]="designGroup.invalid" variant="primary">Next</app-button>
       </div>
     }
 
@@ -164,7 +164,7 @@
               <p class="text-xs text-gray-500" aria-hidden="true">Drag cards to reorder factors.</p>
               <p class="sr-only">Use the Up and Down arrow keys on a factor's drag handle to reorder it.</p>
             </div>
-            <app-button type="button" (click)="addStratum()" customClass="text-sm px-3 py-1 rounded-lg bg-indigo-50" variant="secondary">+ Add Factor</app-button>
+            <app-button type="button" (click)="addStratum()" variant="secondary">+ Add Factor</app-button>
           </div>
           <div formArrayName="strata" class="space-y-3" role="list">
             @if (strata.length === 0) {
@@ -173,7 +173,7 @@
             @for (stratum of strata.controls; track stratum; let stratumIndex = $index) {
               <div [formGroupName]="$index" role="listitem" draggable="true" (dragstart)="onDragStart($event, $index)" (dragover)="onDragOver($event, $index)" (drop)="onDrop($event, $index)" (dragend)="onDragEnd()" class="rounded-xl border p-4 space-y-3">
                 <div class="flex items-start gap-2">
-                  <app-button type="button" aria-label="Reorder factor" aria-description="Press Up or Down arrow to reorder" appTooltip="Drag or use Up/Down arrows to reorder" customClass="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)" variant="secondary">
+                  <app-button type="button" aria-label="Reorder factor" aria-description="Press Up or Down arrow to reorder" appTooltip="Drag or use Up/Down arrows to reorder" (keydown)="onStratumKeyDown($event, stratumIndex)" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 9h8M8 15h8" />
                       </svg>
@@ -184,7 +184,7 @@
                       <app-text-input [inputId]="'factorName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
                     </div>
                     <div class="flex items-end justify-end">
-                      <app-button type="button" (click)="removeStratum($index)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Factor" appTooltip="Remove Factor" variant="secondary">
+                      <app-button type="button" (click)="removeStratum($index)" aria-label="Remove Factor" appTooltip="Remove Factor" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -227,8 +227,8 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <app-button type="button" (click)="previousStep()" customClass="px-4 py-2 rounded-lg border" variant="outline">Previous</app-button>
-        <app-button type="button" (click)="nextStep()" [disabled]="isStrataStepNextDisabled" customClass="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">Next</app-button>
+        <app-button type="button" (click)="previousStep()" variant="outline">Previous</app-button>
+        <app-button type="button" (click)="nextStep()" [disabled]="isStrataStepNextDisabled" variant="primary">Next</app-button>
       </div>
     }
 
@@ -247,10 +247,10 @@
             <div>
               <span class="block text-sm mb-2">Block Selection Mode</span>
               <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Block selection mode" appRovingTabindex="[role='radio']">
-                <app-button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('RANDOM_POOL')" customClass="flex-1 px-3 py-2 text-sm"
+                <app-button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('RANDOM_POOL')"
                         role="radio" [attr.aria-checked]="blockSelectionType === 'RANDOM_POOL'"
                         [class.bg-indigo-600]="blockSelectionType === 'RANDOM_POOL'" [class.text-white]="blockSelectionType === 'RANDOM_POOL'" [segmentedActive]="blockSelectionType === 'RANDOM_POOL'" segmentedPosition="first" variant="segmented">Random</app-button>
-                <app-button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('FIXED_SEQUENCE')" customClass="flex-1 px-3 py-2 text-sm border-l"
+                <app-button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('FIXED_SEQUENCE')"
                         role="radio" [attr.aria-checked]="blockSelectionType === 'FIXED_SEQUENCE'"
                         [class.bg-indigo-600]="blockSelectionType === 'FIXED_SEQUENCE'" [class.text-white]="blockSelectionType === 'FIXED_SEQUENCE'" [segmentedActive]="blockSelectionType === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
               </div>
@@ -259,7 +259,7 @@
             <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm font-medium">Block Size Overrides</span>
-                <app-button type="button" (click)="addBlockOverride()" customClass="text-xs px-3 py-1.5 rounded-lg bg-indigo-50" variant="secondary">+ Add Override</app-button>
+                <app-button type="button" (click)="addBlockOverride()" variant="secondary">+ Add Override</app-button>
               </div>
               <div formArrayName="blockOverrides" class="space-y-3">
                 @for (override of blockOverrides.controls; track override; let i = $index) {
@@ -284,14 +284,14 @@
                     </div>
                     <app-text-input type="text" formControlName="sizesStr" class="w-full rounded-lg border px-3 py-1.5 text-sm" placeholder="e.g., 2, 4"></app-text-input>
                     <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Override block selection mode" appRovingTabindex="[role='radio']">
-                      <app-button type="button" (click)="override.get('selectionType')?.setValue('RANDOM_POOL')" customClass="flex-1 px-3 py-1.5 text-xs"
+                      <app-button type="button" (click)="override.get('selectionType')?.setValue('RANDOM_POOL')"
                               role="radio" [attr.aria-checked]="override.get('selectionType')?.value === 'RANDOM_POOL'"
                               [class.bg-indigo-600]="override.get('selectionType')?.value === 'RANDOM_POOL'" [class.text-white]="override.get('selectionType')?.value === 'RANDOM_POOL'" [segmentedActive]="override.get('selectionType')?.value === 'RANDOM_POOL'" segmentedPosition="first" variant="segmented">Random</app-button>
-                      <app-button type="button" (click)="override.get('selectionType')?.setValue('FIXED_SEQUENCE')" customClass="flex-1 px-3 py-1.5 text-xs border-l"
+                      <app-button type="button" (click)="override.get('selectionType')?.setValue('FIXED_SEQUENCE')"
                               role="radio" [attr.aria-checked]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'"
                               [class.bg-indigo-600]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [class.text-white]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [segmentedActive]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
                     </div>
-                    <app-button type="button" (click)="removeBlockOverride(i)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Override" appTooltip="Remove Override" variant="secondary">
+                    <app-button type="button" (click)="removeBlockOverride(i)" aria-label="Remove Override" appTooltip="Remove Override" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -335,8 +335,8 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <app-button type="button" (click)="previousStep()" customClass="px-4 py-2 rounded-lg border" variant="outline">Previous</app-button>
-        <app-button type="button" (click)="nextStep()" [disabled]="allocationGroup.invalid || form.errors?.['invalidBlockSize']" customClass="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">Next</app-button>
+        <app-button type="button" (click)="previousStep()" variant="outline">Previous</app-button>
+        <app-button type="button" (click)="nextStep()" [disabled]="allocationGroup.invalid || form.errors?.['invalidBlockSize']" variant="primary">Next</app-button>
       </div>
     }
 
@@ -351,13 +351,13 @@
         <div>
           <span class="block text-sm mb-2">Enrollment Cap Strategy</span>
           <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Enrollment cap strategy" appRovingTabindex="[role='radio']">
-            <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MANUAL_MATRIX')" customClass="flex-1 px-3 py-2 text-xs"
+            <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MANUAL_MATRIX')"
                     role="radio" [attr.aria-checked]="capStrategy === 'MANUAL_MATRIX'"
                     [class.bg-indigo-600]="capStrategy === 'MANUAL_MATRIX'" [class.text-white]="capStrategy === 'MANUAL_MATRIX'" [segmentedActive]="capStrategy === 'MANUAL_MATRIX'" segmentedPosition="first" variant="segmented">Manual Matrix</app-button>
-            <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('PROPORTIONAL')" customClass="flex-1 px-3 py-2 text-xs border-l"
+            <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('PROPORTIONAL')"
                     role="radio" [attr.aria-checked]="capStrategy === 'PROPORTIONAL'"
                     [class.bg-indigo-600]="capStrategy === 'PROPORTIONAL'" [class.text-white]="capStrategy === 'PROPORTIONAL'" [segmentedActive]="capStrategy === 'PROPORTIONAL'" segmentedPosition="middle" variant="segmented">Proportional</app-button>
-            <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MARGINAL_ONLY')" customClass="flex-1 px-3 py-2 text-xs border-l"
+            <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MARGINAL_ONLY')"
                     role="radio" [attr.aria-checked]="capStrategy === 'MARGINAL_ONLY'"
                     [class.bg-indigo-600]="capStrategy === 'MARGINAL_ONLY'" [class.text-white]="capStrategy === 'MARGINAL_ONLY'" [segmentedActive]="capStrategy === 'MARGINAL_ONLY'" segmentedPosition="middle" variant="segmented">Marginal Only</app-button>
           </div>
@@ -400,7 +400,7 @@
               </div>
             }
 
-            <app-button type="button" (click)="computeMatrix()" [disabled]="!canComputeMatrix" customClass="w-full px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">
+            <app-button type="button" (click)="computeMatrix()" [disabled]="!canComputeMatrix" variant="primary">
               Compute Matrix
             </app-button>
 
@@ -438,8 +438,8 @@
       </div>
 
       <div class="pt-4 border-t flex justify-between">
-        <app-button type="button" (click)="previousStep()" customClass="px-4 py-2 rounded-lg border" variant="outline">Previous</app-button>
-        <app-button type="button" (click)="nextStep()" [disabled]="capsGroup.invalid" customClass="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-50" variant="primary">Next</app-button>
+        <app-button type="button" (click)="previousStep()" variant="outline">Previous</app-button>
+        <app-button type="button" (click)="nextStep()" [disabled]="capsGroup.invalid" variant="primary">Next</app-button>
       </div>
     }
 
@@ -463,27 +463,27 @@
       </div>
 
       <div class="pt-4 border-t flex flex-wrap justify-between gap-2">
-        <app-button type="button" (click)="previousStep()" customClass="px-4 py-2 rounded-lg border" variant="outline">Previous</app-button>
+        <app-button type="button" (click)="previousStep()" variant="outline">Previous</app-button>
         <div class="flex flex-wrap justify-end gap-2">
-          <app-button type="button" (click)="onRunMonteCarlo()" [disabled]="!form.valid" customClass="bg-white border border-purple-200 text-purple-700 px-4 py-2 rounded-lg disabled:opacity-50 text-sm" variant="outline">
+          <app-button type="button" (click)="onRunMonteCarlo()" [disabled]="!form.valid" variant="outline">
             Run Statistical QA
           </app-button>
           <div class="relative inline-block text-left" #dropdownContainer>
-            <app-button type="button" (click)="dropdownOpen = !dropdownOpen" [disabled]="!form.valid" aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen" customClass="bg-white border border-indigo-200 text-indigo-700 px-4 py-2 rounded-lg disabled:opacity-50 text-sm" variant="outline">
+            <app-button type="button" (click)="dropdownOpen = !dropdownOpen" [disabled]="!form.valid" aria-haspopup="menu" [attr.aria-expanded]="dropdownOpen" variant="outline">
               Generate Code
             </app-button>
             @if (dropdownOpen) {
               <div class="origin-bottom-right absolute right-0 bottom-full mb-2 w-40 rounded-xl shadow-lg bg-white ring-1 ring-black/5 z-10 overflow-hidden" appFocusManager>
                 <div class="py-1" role="menu" aria-orientation="vertical">
-                  <app-button type="button" (click)="onGenerateCode('R')" customClass="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" variant="secondary">R Script</app-button>
-                  <app-button type="button" (click)="onGenerateCode('SAS')" customClass="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" variant="secondary">SAS Script</app-button>
-                  <app-button type="button" (click)="onGenerateCode('Python')" customClass="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" variant="secondary">Python Script</app-button>
-                  <app-button type="button" (click)="onGenerateCode('STATA')" customClass="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" variant="secondary">Stata Script</app-button>
+                  <app-button type="button" (click)="onGenerateCode('R')" role="menuitem" variant="secondary">R Script</app-button>
+                  <app-button type="button" (click)="onGenerateCode('SAS')" role="menuitem" variant="secondary">SAS Script</app-button>
+                  <app-button type="button" (click)="onGenerateCode('Python')" role="menuitem" variant="secondary">Python Script</app-button>
+                  <app-button type="button" (click)="onGenerateCode('STATA')" role="menuitem" variant="secondary">Stata Script</app-button>
                 </div>
               </div>
             }
           </div>
-          <app-button type="submit" (onClick)="onSubmit()" [disabled]="!form.valid" customClass="bg-indigo-600 text-white px-6 py-2 rounded-lg disabled:opacity-50 text-sm" variant="primary">Generate Schema</app-button>
+          <app-button type="submit" (onClick)="onSubmit()" [disabled]="!form.valid" variant="primary">Generate Schema</app-button>
         </div>
       </div>
     }

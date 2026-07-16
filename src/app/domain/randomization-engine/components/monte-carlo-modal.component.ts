@@ -1,3 +1,4 @@
+import { NgStyle } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, effect, ElementRef, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
@@ -10,9 +11,9 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-monte-carlo-modal',
   standalone: true,
-  imports: [DecimalPipe, KeyboardScrollDirective, FocusManagerDirective],
+  imports: [NgStyle, DecimalPipe, KeyboardScrollDirective, FocusManagerDirective],
   template: `
-    <dialog #modalDialog appFocusManager tabindex="-1" (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
+    <dialog #modalDialog appFocusManager tabindex="-1" (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-full">
       <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
 
       <!-- Header -->
@@ -84,7 +85,7 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
 
             <!-- Error state -->
             @if (facade.monteCarloError(); as errorMsg) {
-              <div #errorAlert tabindex="-1" class="outline-none {{ domainTheme.getSemanticColor('error').bgLightClass }} {{ domainTheme.getSemanticColor('error').borderClass }} rounded-lg p-6 flex flex-col items-center justify-center text-center gap-4 min-h-[200px]" data-testid="mc-error-state">
+              <div #errorAlert tabindex="-1" class="outline-none {{ domainTheme.getSemanticColor('error').bgLightClass }} {{ domainTheme.getSemanticColor('error').borderClass }} rounded-lg p-6 flex flex-col items-center justify-center text-center gap-4 min-h-48" data-testid="mc-error-state">
                 <div class="w-12 h-12 rounded-full {{ domainTheme.getSemanticColor('error').bgLightClass }} flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ domainTheme.getSemanticColor('error').textClass }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -138,7 +139,7 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
                         <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                           <div
                             class="bg-indigo-300 dark:bg-indigo-600/60 h-full rounded-full transition-all duration-500 border-r border-indigo-400 dark:border-indigo-400"
-                            [style.width.%]="barWidth(arm.expectedCount, results.totalSubjectsSimulated)"
+                            [ngStyle]="{'width': barWidth(arm.expectedCount, results.totalSubjectsSimulated) + '%'}"
                           ></div>
                         </div>
                         <span class="text-xs w-20 text-muted tabular-nums">{{ arm.expectedCount | number }}</span>
@@ -149,7 +150,7 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
                         <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                           <div
                             class="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all duration-500 border-r border-indigo-700 dark:border-indigo-200"
-                            [style.width.%]="barWidth(arm.actualCount, results.totalSubjectsSimulated)"
+                            [ngStyle]="{'width': barWidth(arm.actualCount, results.totalSubjectsSimulated) + '%'}"
                           ></div>
                         </div>
                         <span class="text-xs w-20 text-muted tabular-nums">{{ arm.actualCount | number }}</span>
@@ -161,7 +162,7 @@ import { FocusManagerDirective } from '../../../core/directives/focus-manager.di
                           <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                             <div
                               class="bg-purple-500 dark:bg-purple-400 h-full rounded-full transition-all duration-500 border-r border-purple-700 dark:border-purple-200"
-                              [style.width.%]="barWidth(arm.retainedCount, results.totalRetainedSubjects)"
+                              [ngStyle]="{'width': barWidth(arm.retainedCount, results.totalRetainedSubjects) + '%'}"
                               data-testid="mc-retained-bar"
                             ></div>
                           </div>

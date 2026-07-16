@@ -4,7 +4,60 @@ const {defineConfig} = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
 
+
+const customStylePlugin = {
+  rules: {
+    'no-arbitrary-tailwind': {
+      create(context) {
+        return {
+          TextAttribute(node) {
+            if (/-\[/.test(node.value)) context.report({ node, message: 'No arbitrary Tailwind class.' });
+          },
+          BoundAttribute(node) {
+            if (node.value && node.value.source && /-\[/.test(node.value.source)) {
+              context.report({ node, message: 'No arbitrary Tailwind class.' });
+            }
+          }
+        };
+      }
+    },
+    'no-inline-style': {
+      create(context) {
+        return {
+          TextAttribute(node) {
+            const attrName = node.name;
+            if (attrName === 'style' || attrName.startsWith('style.')) {
+              context.report({ node, message: 'No inline styles.' });
+            }
+          },
+          BoundAttribute(node) {
+            const attrName = node.keySpan && node.keySpan.details ? node.keySpan.details : node.name;
+            if (attrName === 'style' || attrName.startsWith('style.')) {
+              context.report({ node, message: 'No inline styles.' });
+            }
+          }
+        };
+      }
+    }
+  }
+};
+
 module.exports = defineConfig([
+  {
+    files: ['**/*.ts', '**/*.html'],
+    ignores: [
+      '**/*schema-analytics-dashboard.component*',
+      '**/*block-preview.component*'
+    ],
+    plugins: {
+      'custom-style': customStylePlugin
+    },
+    rules: {
+      'custom-style/no-arbitrary-tailwind': 'error',
+      'custom-style/no-inline-style': 'error'
+    }
+  },
+
   {
     files: ['**/*.ts'],
     extends: [
