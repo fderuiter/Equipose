@@ -788,7 +788,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   onGenerateCode(language: 'R' | 'SAS' | 'Python' | 'STATA'): void {
     if (this.form.valid) {
       try { 
-        this.dropdownContainer.nativeElement.querySelector('button')?.focus();
+        this.dropdownContainer?.nativeElement.querySelector('button')?.focus();
         this.facade.openCodeGenerator(this.store.buildConfig(this.buildFormValue()), language); 
         this.dropdownOpen = false; 
       }
