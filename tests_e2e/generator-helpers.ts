@@ -7,6 +7,8 @@ const REVIEW_WIZARD_STEP = 6;
 export async function openGenerator(page: Page): Promise<void> {
   await page.goto('http://127.0.0.1:4200/');
   await page.goto('http://127.0.0.1:4200/generator');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
   await expect(page.getByTestId('generator-page')).toBeVisible();
   await expect(page.locator('form')).toBeVisible();
   

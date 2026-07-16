@@ -24,10 +24,14 @@ let hash = crypto.createHash('md5');
 for (const file of allFiles) {
   const relativePath = file.substring(buildDir.length).replace(/\\/g, '/');
   
-  // Skip the service worker itself, source maps, and license text
-  if (relativePath === '/sw.js' || relativePath.endsWith('.map') || relativePath === '/3rdpartylicenses.txt') continue;
+  // Skip the service worker itself, source maps, license text, and Cloudflare config files
+  if (relativePath === '/sw.js' || relativePath.endsWith('.map') || relativePath === '/3rdpartylicenses.txt' || relativePath === '/_headers' || relativePath === '/_redirects') continue;
   
-  assetsToCache.push(relativePath);
+  if (relativePath === '/index.html') {
+    assetsToCache.push('/');
+  } else {
+    assetsToCache.push(relativePath);
+  }
   
   const content = fs.readFileSync(file);
   hash.update(content);
@@ -46,21 +50,6 @@ while ((match = routeRegex.exec(routesContent)) !== null) {
   validRoutes.push(routePath);
 }
 
-// Generate Cloudflare Pages _redirects file
-const redirectsRules = [];
-for (const routePath of validRoutes) {
-  if (routePath === '') continue; // Skip root route to prevent Cloudflare infinite loop
-  
-  let baseRoute = `/${routePath}`;
-  // Convert dynamic parameters to standard wildcard fallback rules
-  baseRoute = baseRoute.replace(/:[a-zA-Z0-9_]+/g, '*');
-  
-  redirectsRules.push(`${baseRoute} /index.html 200`);
-  redirectsRules.push(`${baseRoute}/ /index.html 200`);
-}
-const redirectsContent = redirectsRules.join('\n');
-fs.writeFileSync(path.join(buildDir, '_redirects'), redirectsContent);
-console.log(`Generated _redirects with ${redirectsRules.length} rules.`);
 
 // Prepare Regex strings for the Service Worker
 const swRegexes = validRoutes.map(routePath => {
@@ -144,7 +133,7 @@ self.addEventListener('fetch', (event) => {
         const isValidRoute = VALID_ROUTES_REGEX.some(regex => new RegExp(regex).test(path));
         
         if (isValidRoute) {
-          return caches.match('/index.html').then((indexHtml) => {
+          return caches.match('/').then((indexHtml) => {
             return indexHtml || fetch(event.request);
           });
         }
@@ -162,7 +151,7 @@ self.addEventListener('fetch', (event) => {
         const isValidRoute = VALID_ROUTES_REGEX.some(regex => new RegExp(regex).test(path));
         
         if (isValidRoute) {
-          return caches.match('/index.html');
+          return caches.match('/');
         }
       }
       return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });

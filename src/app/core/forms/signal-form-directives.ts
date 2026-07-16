@@ -6,6 +6,10 @@ import { SignalControl, FormGroup, FormArray } from './signal-forms';
   standalone: true
 })
 export class SignalFormGroupDirective {
+  @HostListener("submit", ["$event"])
+  onSubmit(event: Event) {
+    event.preventDefault();
+  }
   @Input() formGroup!: FormGroup;
 }
 
