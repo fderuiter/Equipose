@@ -49,7 +49,7 @@ async function assertLandingVisible(page: Page): Promise<void> {
 
 async function assertGeneratorVisible(page: Page): Promise<void> {
   await expect(page.getByTestId('generator-page')).toBeVisible();
-  await expect(page.locator('#protocolId input')).toBeVisible();
+  await expect(page.locator('#protocolId')).toBeVisible();
   await expect(page.getByRole('button', { name: /^Simple$/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Standard$/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Complex$/i })).toBeVisible();
@@ -107,9 +107,9 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   if (mode === 'dark') await applyDarkMode(page);
 
   await loadPreset(page, 'Simple');
-  await assertInputAndButtonReadable(page.locator('#protocolId input'), page.getByRole('button', { name: /^Next$/i }).first());
+  await assertInputAndButtonReadable(page.locator('#protocolId'), page.getByRole('button', { name: /^Next$/i }).first());
   await assertSelectReadableStyling(page.locator('#phase'));
-  await expect(page.locator('#protocolId input')).toHaveScreenshot(`input-protocol-${mode}.png`, { maxDiffPixels: 100 });
+  await expect(page.locator('#protocolId')).toHaveScreenshot(`input-protocol-${mode}.png`, { maxDiffPixels: 100 });
   await expect(page.getByRole('button', { name: /^Next$/i }).first()).toHaveScreenshot(`button-next-${mode}.png`, { maxDiffPixels: 100 });
   await goToStep(page, 4);
   await page.getByRole('button', { name: /\+ Add Override/i }).click();
@@ -119,14 +119,14 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await assertSelectReadableStyling(targetIdSelect);
   await expect(targetTypeSelect).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixels: 100 });
   await expect(targetIdSelect).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixels: 100 });
-  await expect(page.locator('#blockSizesStr input')).toBeVisible();
-  await page.locator('#blockSizesStr input').fill('3');
-  await page.locator('#blockSizesStr input').press('Tab');
+  await expect(page.locator('#blockSizesStr')).toBeVisible();
+  await page.locator('#blockSizesStr').fill('3');
+  await page.locator('#blockSizesStr').press('Tab');
   await expect(page.getByText(/Block sizes must be multiples of total ratio/i)).toBeVisible();
   await checkA11y(page, '#blockSizesStr');
   await expect(page).toHaveScreenshot(`generator-validation-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
-  await page.locator('#blockSizesStr input').fill('4');
-  await page.locator('#blockSizesStr input').press('Tab');
+  await page.locator('#blockSizesStr').fill('4');
+  await page.locator('#blockSizesStr').press('Tab');
   await expect(page.getByRole('button', { name: /^Next$/i })).toBeEnabled();
 
   await page.getByRole('button', { name: /^Next$/i }).first().click();
