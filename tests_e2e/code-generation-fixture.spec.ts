@@ -202,23 +202,31 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await goToStep(currentPage, 5);
           await currentPage.getByRole('radio', { name: 'Proportional' }).first().click();
           await currentPage.locator('#globalCap').fill('120');
-          await currentPage.evaluate(() => {
-            const inputs = Array.from(document.querySelectorAll("input[id*='-pct-']")) as HTMLInputElement[];
-            const byFactor = new Map<string, HTMLInputElement[]>();
-            for (const input of inputs) {
-              const factorId = input.id.split('-pct-')[0];
+
+          // Collect all percentage inputs to satisfy the 100% per-factor validation requirement
+          const pctInputs = await currentPage.locator("input[id*='-pct-']").all();
+          const byFactor = new Map<string, any[]>();
+          for (const input of pctInputs) {
+            const idAttr = await input.getAttribute('id');
+            if (idAttr) {
+              const factorId = idAttr.split('-pct-')[0];
               const entries = byFactor.get(factorId) ?? [];
               entries.push(input);
               byFactor.set(factorId, entries);
             }
-            for (const group of byFactor.values()) {
-              group.forEach((input, index) => {
-                input.value = index === 0 ? '100' : '0';
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-              });
+          }
+          
+          for (const factorInputs of byFactor.values()) {
+            if (factorInputs.length === 0) continue;
+            // First level gets 100%, others get 0%
+            for (let i = 0; i < factorInputs.length; i++) {
+              await factorInputs[i].fill(i === 0 ? '100' : '0');
             }
-          });
-          await currentPage.getByRole('button', { name: /Compute Matrix/i }).click();
+          }
+
+          const computeBtn = currentPage.getByRole('button', { name: /Compute Matrix/i });
+          await expect(computeBtn).toBeEnabled({ timeout: 10000 });
+          await computeBtn.click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
         },
       },

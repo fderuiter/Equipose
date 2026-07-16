@@ -8,30 +8,43 @@ bootstrapApplication(App, appConfig)
     if (isDevMode()) {
       // Integrated in-browser accessibility audit tool
       import('axe-core').then((axe) => {
-        setTimeout(() => {
+        let axeTimeout: any = null;
+        let isAxeRunning = false;
+
+        const runAxe = () => {
+          if (isAxeRunning) {
+            // Re-schedule if currently running
+            clearTimeout(axeTimeout);
+            axeTimeout = setTimeout(runAxe, 500);
+            return;
+          }
+          isAxeRunning = true;
           axe.default.run().then(results => {
             if (results.violations.length) {
               console.warn('Axe-core accessibility violations:', results.violations);
             }
+          }).catch(err => {
+            console.error('Axe-core error:', err);
+          }).finally(() => {
+            isAxeRunning = false;
           });
+        };
+
+        setTimeout(runAxe, 1000);
           
-          // Set up a MutationObserver to re-run on significant DOM changes
-          const observer = new MutationObserver((mutations) => {
-            const significant = mutations.some(m => 
-              m.addedNodes.length > 0 && 
-              m.target.nodeName !== 'A11Y-ANNOUNCER' &&
-              (m.target as Element).getAttribute?.('aria-live') !== 'polite'
-            );
-            if (significant) {
-              axe.default.run().then(results => {
-                if (results.violations.length) {
-                  console.warn('Axe-core accessibility violations (dynamic):', results.violations);
-                }
-              });
-            }
-          });
-          observer.observe(document.body, { childList: true, subtree: true });
-        }, 1000);
+        // Set up a MutationObserver to re-run on significant DOM changes
+        const observer = new MutationObserver((mutations) => {
+          const significant = mutations.some(m => 
+            m.addedNodes.length > 0 && 
+            m.target.nodeName !== 'A11Y-ANNOUNCER' &&
+            (m.target as Element).getAttribute?.('aria-live') !== 'polite'
+          );
+          if (significant) {
+            clearTimeout(axeTimeout);
+            axeTimeout = setTimeout(runAxe, 500);
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
       }).catch(err => console.error('Failed to load axe-core:', err));
     }
 
