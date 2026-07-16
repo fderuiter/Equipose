@@ -18,9 +18,8 @@ import { CommonModule } from '@angular/common';
       [placeholder]="placeholder"
       [disabled]="disabled"
       [class]="computedClasses"
-      [value]="internalValue"
       (input)="onInput($event)"
-      (blur)="onBlur()"
+      (blur)="onBlur.emit()"
     />
   `
 })
@@ -35,6 +34,8 @@ export class TextInputComponent {
   @Input({ transform: booleanAttribute }) disabled = false;
   @Input() customClass = '';
   @Input() hasError = false;
+
+  @Output() onBlur = new EventEmitter<void>();
 
   @ViewChild('inputEl') inputEl!: ElementRef<HTMLInputElement>;
 
@@ -81,9 +82,6 @@ export class TextInputComponent {
     
     this.internalValue = val;
     // Event naturally bubbles from the inner input to be caught by SignalFormControlDirective
-  }
-
-  onBlur() {
   }
 
   focus() {

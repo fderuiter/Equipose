@@ -12,7 +12,7 @@ test.describe('Form Validation and Configuration', () => {
   // ---------------------------------------------------------------------------
   test('should load the Simple (Unstratified) preset with the correct protocol ID', async ({ page }) => {
     await loadPreset(page, 'Simple');
-    await expect(page.locator('#protocolId')).toHaveValue('SIMP-001');
+    await expect(page.locator('#protocolId input')).toHaveValue('SIMP-001');
   });
 
   test('Simple preset should produce an unstratified form (no strata rows)', async ({ page }) => {
@@ -23,7 +23,7 @@ test.describe('Form Validation and Configuration', () => {
 
   test('should load the Standard (1 Stratum) preset with the correct protocol ID', async ({ page }) => {
     await loadPreset(page, 'Standard');
-    await expect(page.locator('#protocolId')).toHaveValue('STD-002');
+    await expect(page.locator('#protocolId input')).toHaveValue('STD-002');
   });
 
   test('Standard preset should add exactly one stratum row', async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('Form Validation and Configuration', () => {
 
   test('should load the Complex (Multi-strata) preset with the correct protocol ID', async ({ page }) => {
     await loadPreset(page, 'Complex');
-    await expect(page.locator('#protocolId')).toHaveValue('CMPX-003');
+    await expect(page.locator('#protocolId input')).toHaveValue('CMPX-003');
   });
 
   test('Complex preset should add exactly three strata rows', async ({ page }) => {
@@ -49,12 +49,12 @@ test.describe('Form Validation and Configuration', () => {
   // Button disabled states
   // ---------------------------------------------------------------------------
   test('"Generate Schema" should be disabled when Protocol ID is cleared', async ({ page }) => {
-    await page.locator('#protocolId').clear();
+    await page.locator('#protocolId input').clear();
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeDisabled();
   });
 
   test('"Generate Code" button should be disabled when Protocol ID is cleared', async ({ page }) => {
-    await page.locator('#protocolId').clear();
+    await page.locator('#protocolId input').clear();
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeDisabled();
   });
 
@@ -67,10 +67,10 @@ test.describe('Form Validation and Configuration', () => {
     await goToStep(page, 4);
 
     // 3 is not a multiple of 2 → should trigger the validator
-    await page.locator('#blockSizesStr').clear();
-    await page.locator('#blockSizesStr').fill('3');
+    await page.locator('#blockSizesStr input').clear();
+    await page.locator('#blockSizesStr input').fill('3');
 
-    await page.locator('#blockSizesStr').press('Tab');
+    await page.locator('#blockSizesStr input').press('Tab');
 
     await expect(page.getByText(/Block sizes must be multiples of total ratio/i)).toBeVisible();
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeDisabled();
@@ -80,14 +80,14 @@ test.describe('Form Validation and Configuration', () => {
     await loadPreset(page, 'Simple');
     await goToStep(page, 4);
 
-    await page.locator('#blockSizesStr').clear();
-    await page.locator('#blockSizesStr').fill('3');
-    await page.locator('#blockSizesStr').press('Tab');
+    await page.locator('#blockSizesStr input').clear();
+    await page.locator('#blockSizesStr input').fill('3');
+    await page.locator('#blockSizesStr input').press('Tab');
     await expect(page.getByText(/Block sizes must be multiples of total ratio/i)).toBeVisible();
 
-    await page.locator('#blockSizesStr').clear();
-    await page.locator('#blockSizesStr').fill('2');
-    await page.locator('#blockSizesStr').press('Tab');
+    await page.locator('#blockSizesStr input').clear();
+    await page.locator('#blockSizesStr input').fill('2');
+    await page.locator('#blockSizesStr input').press('Tab');
     await expect(page.getByText(/Block sizes must be multiples of total ratio/i)).toBeHidden();
   });
 

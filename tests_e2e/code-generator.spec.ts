@@ -45,7 +45,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadR = await downloadPromiseR;
     expect(downloadR.suggestedFilename()).toBe('randomization_schema.R');
 
-    const pythonTab = modal.getByRole('button', { name: /Python/i });
+    const pythonTab = modal.getByRole('tab', { name: /Python/i });
     await pythonTab.click();
     await expect(generatedCode).toContainText(/import numpy as np/i, { timeout: 10000 });
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
@@ -53,7 +53,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPy = await downloadPromisePy;
     expect(downloadPy.suggestedFilename()).toBe('randomization_schema.py');
 
-    const sasTab = modal.getByRole('button', { name: /SAS/i });
+    const sasTab = modal.getByRole('tab', { name: /SAS/i });
     await sasTab.click();
     await expect(generatedCode).toContainText(/Randomization Schema Generation in SAS/i, { timeout: 10000 });
     const downloadPromiseSas = page.waitForEvent('download', { timeout: 10000 });
@@ -61,7 +61,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadSas = await downloadPromiseSas;
     expect(downloadSas.suggestedFilename()).toBe('randomization_schema.sas');
 
-    const stataTab = modal.getByRole('button', { name: /Stata/i });
+    const stataTab = modal.getByRole('tab', { name: /Stata/i });
     await stataTab.click();
     await expect(generatedCode).toContainText(/set obs/i, { timeout: 10000 });
     const downloadPromiseStata = page.waitForEvent('download', { timeout: 10000 });

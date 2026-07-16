@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const repoRoot = path.join(__dirname, '..');
-const archPath = path.join(repoRoot, 'docs', 'ARCHITECTURE_REFERENCE.md');
+const archPath = path.join(repoRoot, 'docs', 'reference', 'ARCHITECTURE_REFERENCE.md');
 let archContent = fs.readFileSync(archPath, 'utf-8');
 
 // --- 1. Replace Data Model Diagram ---
@@ -166,4 +166,4 @@ archContent = archContent.replace(/randomization\.service/g, 'RandomizationEngin
 archContent = archContent.replace(/seedrandom/g, 'MT19937 PRNG');
 
 fs.writeFileSync(archPath, archContent, 'utf-8');
-console.log('[sync-architecture] Updated docs/ARCHITECTURE_REFERENCE.md');
+console.log('[sync-architecture] Updated docs/reference/ARCHITECTURE_REFERENCE.md');

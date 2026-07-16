@@ -11,9 +11,10 @@ export async function openGenerator(page: Page): Promise<void> {
   await expect(page.getByTestId('generator-page')).toBeVisible();
   await expect(page.locator('form')).toBeVisible();
   
-  const ackCheckbox = page.locator('#acknowledge');
-  if (await ackCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await ackCheckbox.click();
+  const ackCheckbox = page.locator('#acknowledge input');
+  const ackLabel = page.getByText('I have read and understand');
+  if (await ackLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await ackLabel.click();
     await FocusAuditor.assertFocusTransition(page, async () => {
       await page.getByRole('button', { name: /^Next$/i }).click();
       // Wait for step 1 to be active

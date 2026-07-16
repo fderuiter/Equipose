@@ -131,6 +131,15 @@ jobs:
     - name: Extract shared environment
       run: tar -xf shared-env.tar
 
+    - name: Install Playwright WebKit runtime libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwoff1
+        npx playwright install --with-deps webkit
+      env:
+        CI: true
+        PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
+
     - name: Run E2E Tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal 
         }})
       run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ 
@@ -199,6 +208,15 @@ jobs:
 
     - name: Extract shared environment
       run: tar -xf shared-env.tar
+
+    - name: Install Playwright WebKit runtime libraries
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwoff1
+        npx playwright install --with-deps webkit
+      env:
+        CI: true
+        PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
     - name: Export code-generation fixture scripts
       run: npx playwright test tests_e2e/code-generation-fixture.spec.ts
@@ -925,11 +943,14 @@ jobs:
           api.github.com:443
           objects.githubusercontent.com:443
           raw.githubusercontent.com:443
+          github-releases.githubusercontent.com:443
+          release-assets.githubusercontent.com:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - name: Run actionlint
       run: |
-        bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        curl -sL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz -o actionlint.tar.gz
+        tar xf actionlint.tar.gz actionlint
         ./actionlint -color
     - name: Check for mutable tags
       run: |
@@ -984,13 +1005,13 @@ jobs:
       run: |
         node scripts/sync-architecture.mjs
         echo "=== Updated ARCHITECTURE_REFERENCE.md (preview) ==="
-        head -40 docs/ARCHITECTURE_REFERENCE.md
+        head -40 docs/reference/ARCHITECTURE_REFERENCE.md
 
     - name: Generate Exception Report
       run: |
         node scripts/generate-exception-report.mjs
         echo "=== Updated SAS_Stata_Exception_Report.md (preview) ==="
-        head -40 docs/SAS_Stata_Exception_Report.md
+        head -40 docs/explanation/SAS_Stata_Exception_Report.md
 
     - name: Upload updated documentation artifact
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808

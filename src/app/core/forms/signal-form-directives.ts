@@ -71,33 +71,57 @@ export class SignalFormControlDirective implements OnInit {
       if (!this.control) return;
       
       const val = this.control.value;
-      const el = this.elementRef.nativeElement;
-      if (el.type === 'checkbox') {
-        el.checked = !!val;
-      } else {
-        if (el.value !== val) {
-          el.value = val === undefined || val === null ? '' : val;
+      const hostEl = this.elementRef.nativeElement;
+      
+      // Setup a retry loop since custom components might not render their inner inputs immediately
+      let retries = 0;
+      const syncValue = () => {
+        let targetEl = hostEl;
+        
+        // If the host is a custom element (has a tag name containing a dash),
+        // try to find the actual input element inside it.
+        if (hostEl.tagName.includes('-')) {
+          targetEl = hostEl.querySelector('input, select, textarea');
         }
-      }
+        
+        if (!targetEl) {
+          if (retries < 5) {
+            retries++;
+            setTimeout(syncValue, 10);
+          }
+          return;
+        }
+        
+        if (targetEl.type === 'checkbox') {
+          targetEl.checked = !!val;
+        } else {
+          if (targetEl.value !== val) {
+            targetEl.value = val === undefined || val === null ? '' : val;
+          }
+        }
+      };
+      
+      syncValue();
 
       // Accessibility Synchronization
-      if (el.type !== 'checkbox' && el.type !== 'radio') {
-        let targetEl = el;
-        if (el.tagName !== 'INPUT' && el.tagName !== 'SELECT' && el.tagName !== 'TEXTAREA') {
-          targetEl = el.querySelector('input:not([type="checkbox"]):not([type="radio"]), select, textarea') || el;
+      if (hostEl.type !== 'checkbox' && hostEl.type !== 'radio') {
+        let a11yTargetEl = hostEl;
+        if (hostEl.tagName !== 'INPUT' && hostEl.tagName !== 'SELECT' && hostEl.tagName !== 'TEXTAREA') {
+          a11yTargetEl = hostEl.querySelector('input:not([type="checkbox"]):not([type="radio"]), select, textarea') || hostEl;
         }
 
         // Wait for DOM to update with error elements if any
         setTimeout(() => {
+          if (!a11yTargetEl) return;
           const isInvalid = this.control.invalid;
 
           if (isInvalid) {
-            this.renderer.setAttribute(targetEl, 'aria-invalid', 'true');
-            this.linkErrorMessage(targetEl);
+            this.renderer.setAttribute(a11yTargetEl, 'aria-invalid', 'true');
+            this.linkErrorMessage(a11yTargetEl);
           } else {
-            this.renderer.removeAttribute(targetEl, 'aria-invalid');
+            this.renderer.removeAttribute(a11yTargetEl, 'aria-invalid');
             if (this.linkedErrorId) {
-              this.renderer.removeAttribute(targetEl, 'aria-describedby');
+              this.renderer.removeAttribute(a11yTargetEl, 'aria-describedby');
               this.linkedErrorId = '';
             }
           }

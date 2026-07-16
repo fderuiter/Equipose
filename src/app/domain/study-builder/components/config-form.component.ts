@@ -49,6 +49,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
 
   private autoSaveTimeout: ReturnType<typeof setTimeout> | null = null;
+  private draftCleared = false;
   private readonly DRAFT_KEY = 'draft-trial-config';
   private readonly SCHEMA_VERSION = 'v1';
 
@@ -466,9 +467,10 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   /** Parse a raw input string into a marginal cap number or undefined (uncapped). */
-  parseMarginalCapInput(raw: any): number | undefined {
-    if (typeof raw === "number") return raw;
-    const trimmed = raw.trim();
+  parseMarginalCapInput(raw: string | number | null | undefined): number | undefined {
+    if (typeof raw === 'number') return isNaN(raw) || raw < 0 ? undefined : Math.floor(raw);
+    if (raw === null || raw === undefined) return undefined;
+    const trimmed = String(raw).trim();
     if (trimmed === '') return undefined;
     const n = Number(trimmed);
     return Number.isInteger(n) && n >= 0 ? n : undefined;
@@ -769,6 +771,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.form.valid) {
       try { 
+        this.draftCleared = true;
         this.facade.generateSchema(this.store.buildConfig(this.buildFormValue())); 
         this.clearDraft();
       }
@@ -902,6 +905,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   // ── Auto-Save and Hydration Helpers ────────────────────────────────────────
 
   private triggerAutoSave(): void {
+    if (this.draftCleared) return;
     if (this.autoSaveTimeout) {
       clearTimeout(this.autoSaveTimeout);
     }
@@ -1021,6 +1025,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   private clearDraft(): void {
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
     if (!isPlatformBrowser(this.platformId)) return;
     localStorage.removeItem(this.DRAFT_KEY);
   }

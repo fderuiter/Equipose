@@ -10,7 +10,8 @@
 ```
 clinical-randomization-generator/
 ├── docs/
-│   └── ARCHITECTURE.md          ← you are here
+│   ├── explanation/ARCHITECTURE_CONCEPTS.md
+│   └── reference/ARCHITECTURE_REFERENCE.md      ← you are here
 │
 ├── src/
 │   ├── main.ts                  Bootstrap: bootstrapApplication(App, appConfig)
@@ -54,11 +55,11 @@ clinical-randomization-generator/
 │           │   ├── core/
 │           │   │   ├── randomization-algorithm.ts          Pure function: standard + MARGINAL_ONLY paths
 │           │   │   ├── randomization-algorithm.spec.ts     Unit tests
-│           │   │   ├── [randomization-algorithm-golden.spec.ts](../src/app/domain/randomization-engine/core/randomization-algorithm-golden.spec.ts)  Golden-master parity tests
+│           │   │   ├── [randomization-algorithm-golden.spec.ts](../../src/app/domain/randomization-engine/core/randomization-algorithm-golden.spec.ts)  Golden-master parity tests
 │           │   │   ├── minimization-algorithm.ts           Pocock-Simon algorithm
 │           │   │   ├── minimization-algorithm.spec.ts      Unit tests
-│           │   │   ├── [largest-remainder.ts](../src/app/domain/shared/statistical/largest-remainder.ts)                     LRM (proportional caps) + validation
-│           │   │   ├── [largest-remainder.spec.ts](../src/app/domain/shared/statistical/largest-remainder.spec.ts)                Unit tests
+│           │   │   ├── [largest-remainder.ts](../../src/app/domain/shared/statistical/largest-remainder.ts)                     LRM (proportional caps) + validation
+│           │   │   ├── [largest-remainder.spec.ts](../../src/app/domain/shared/statistical/largest-remainder.spec.ts)                Unit tests
 │           │   │   ├── subject-id-engine.ts                Token-based subject ID generator
 │           │   │   ├── subject-id-engine.spec.ts           Unit tests
 │           │   │   ├── crypto-hash.ts                      SHA-256 audit hash
@@ -97,9 +98,9 @@ clinical-randomization-generator/
 │               ├── errors/
 │               │   └── code-generation-errors.ts           Typed error hierarchy (6 classes)
 │               ├── services/
-│               │   ├── [code-generator.service.ts](../src/app/domain/schema-management/services/code-generator.service.ts)           R / SAS / Python / STATA emitters (3 cap modes)
-│               │   ├── [code-generator.service.spec.ts](../src/app/domain/schema-management/services/code-generator.service.spec.ts)
-│               │   ├── [export.service.ts](../src/app/domain/schema-management/services/export.service.ts)             Excel export logic
+│               │   ├── [code-generator.service.ts](../../src/app/domain/schema-management/services/code-generator.service.ts)           R / SAS / Python / STATA emitters (3 cap modes)
+│               │   ├── [code-generator.service.spec.ts](../../src/app/domain/schema-management/services/code-generator.service.spec.ts)
+│               │   ├── [export.service.ts](../../src/app/domain/schema-management/services/export.service.ts)             Excel export logic
 │               │   ├── methodology-specification.service.ts Randomization Plan narrative
 │               │   ├── schema-view-state.service.ts        Shared unblinding + filter state
 │               │   └── schema-view-state.service.spec.ts
@@ -580,7 +581,7 @@ Phase 2 is re-thrown as-is from Phase 3 rather than being double-wrapped.
 | `ToastService` | `core/services/toast.service.ts` | CDK Overlay (single bottom-right overlay). Exposes `toasts()` signal; auto-dismisses after a configurable timeout. |
 | `ViewportService` | `core/services/viewport.service.ts` | Wraps CDK `BreakpointObserver`. Exposes `viewportSize()` signal (`'mobile' \| 'tablet' \| 'desktop'`) and computed `isMobile()`, `isTablet()`, `isDesktop()` booleans. |
 | `SeoService` | `core/services/seo.service.ts` | Sets document metadata. |
-| `ExportService` | [`domain/schema-management/services/export.service.ts`](../src/app/domain/schema-management/services/export.service.ts) | Builds xlsx blobs for downloading randomizations |
+| `ExportService` | [`domain/schema-management/services/export.service.ts`](../../src/app/domain/schema-management/services/export.service.ts) | Builds xlsx blobs for downloading randomizations |
 | `MethodologySpecificationService` | `domain/schema-management/services/methodology-specification.service.ts` | Generates randomization plans as narratives |
 | `SchemaViewStateService` | `domain/schema-management/services/schema-view-state.service.ts` | Shared `isUnblinded`, `activeFilter`, `filteredSchema` signals (see §9). |
 

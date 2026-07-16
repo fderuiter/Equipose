@@ -240,7 +240,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
       // Modal should be gone
       await expect(modal).toBeHidden({ timeout: 5000 });
-    });
+    }, mcBtn);
   });
 
   test('X button in modal header should dismiss the modal after completion and restore focus', async ({ page }) => {
@@ -262,7 +262,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await xBtn.first().click();
 
       await expect(modal).toBeHidden({ timeout: 5000 });
-    });
+    }, mcBtn);
   });
 
   // ── Works with different presets ──────────────────────────────────────────

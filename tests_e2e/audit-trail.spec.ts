@@ -88,7 +88,7 @@ async function downloadCodeFile(
   await openGenerator(page);
 
   // Step 1 – fill in a recognisable protocol ID
-  await page.locator('#protocolId').fill(protocolId);
+  await page.locator('#protocolId input').fill(protocolId);
   await page.locator('#studyName').fill('Audit Trail Test Study');
   await page.locator('#phase').selectOption({ label: 'Phase III' });
 
@@ -103,7 +103,7 @@ async function downloadCodeFile(
   await siteInput.press('Enter');
   await nextBtn.click(); // → Blocks
 
-  await page.locator('#blockSizesStr').fill('4');
+  await page.locator('#blockSizesStr input').fill('4');
   await nextBtn.click(); // → Strata
   await nextBtn.click(); // → Review
 
@@ -328,7 +328,7 @@ async function downloadPdfTextWithProtocol(
 ): Promise<{ text: string; filename: string }> {
   await openGenerator(page);
 
-  await page.locator('#protocolId').fill(protocolId);
+  await page.locator('#protocolId input').fill(protocolId);
   await page.locator('#studyName').fill('PDF Audit Test Study');
   await page.locator('#phase').selectOption({ label: 'Phase III' });
 
@@ -342,7 +342,7 @@ async function downloadPdfTextWithProtocol(
   await siteInput.press('Enter');
   await nextBtn.click(); // → Blocks
 
-  await page.locator('#blockSizesStr').fill('4');
+  await page.locator('#blockSizesStr input').fill('4');
   await nextBtn.click(); // → Strata
   await nextBtn.click(); // → Review
 

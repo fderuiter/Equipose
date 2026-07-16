@@ -10,7 +10,7 @@ test.describe('Wizard Persistence', () => {
   test('should persist basic data and validity when navigating back from Step 2', async ({ page }) => {
     // Step 1: Setup & Metadata (openGenerator lands here)
     await loadPreset(page, 'Standard');
-    await expect(page.locator('#protocolId')).toHaveValue('STD-002');
+    await expect(page.locator('#protocolId input')).toHaveValue('STD-002');
 
     // Move to Step 2: Algorithm & Arms
     await page.getByRole('button', { name: /^Next$/i }).click();
@@ -21,7 +21,7 @@ test.describe('Wizard Persistence', () => {
     await expect(page.locator('#step-header-1')).toHaveClass(/bg-indigo-50/);
 
     // Assert data is preserved
-    await expect(page.locator('#protocolId')).toHaveValue('STD-002');
+    await expect(page.locator('#protocolId input')).toHaveValue('STD-002');
 
     // Assert validity is preserved (Next button should be enabled)
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeEnabled();

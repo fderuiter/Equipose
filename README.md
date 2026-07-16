@@ -65,70 +65,17 @@ ESLint `no-restricted-imports` rules enforce that the `study-builder` UI can onl
 talk to the engine through the facade, never through internal service or worker files.
 
 For the full architectural breakdown including Mermaid diagrams, see
-[docs/ARCHITECTURE_CONCEPTS.md](docs/ARCHITECTURE_CONCEPTS.md) and [docs/ARCHITECTURE_REFERENCE.md](docs/ARCHITECTURE_REFERENCE.md).
+[docs/explanation/ARCHITECTURE_CONCEPTS.md](docs/explanation/ARCHITECTURE_CONCEPTS.md) and [docs/reference/ARCHITECTURE_REFERENCE.md](docs/reference/ARCHITECTURE_REFERENCE.md).
 
 ---
 
-## Local Development
+## Developer Commands & Environment Setup
 
-**Prerequisites:** Node.js v20 or newer.
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/fderuiter/Clinical-Randomization-Generator.git
-   cd Clinical-Randomization-Generator
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pnpm install
-   ```
-
-3. **Run the development server:**
-   ```bash
-   pnpm start
-   # or on port 3000:
-   pnpm run dev
-   ```
-   Navigate to `http://localhost:4200/`. The application hot-reloads on file changes.
-
----
-
-## Testing
-
-### Unit tests (Vitest)
-
-```bash
-pnpm test -- --watch=false
-```
-
-Runs all 216 unit tests across 11 spec files using Vitest in a jsdom environment.
-
-### End-to-end tests (Playwright)
-
-```bash
-# Terminal 1 - start the dev server
-pnpm start
-
-# Terminal 2 - run all e2e specs
-pnpm exec playwright test
-```
-
-Playwright tests live in `tests_e2e/` and cover five areas:
-
-| Spec file | What it tests |
-|---|---|
-| `navigation.spec.ts` | Landing page, header nav, About page, unknown-route redirect |
-| `form-validation.spec.ts` | Preset loading, disabled-state buttons, block-size validator, arm/stratum management |
-| `schema-generation.spec.ts` | Full end-to-end: configure → generate → blinding toggle |
-| `results-operations.spec.ts` | Grid rendering, blinding, pagination, CSV & PDF downloads |
-| `code-generator.spec.ts` | R / SAS / Python tab switching, code content, file downloads |
-
-### Linting
-
-```bash
-ng lint
-```
+Please refer to the [Developer Command Reference](docs/reference/COMMANDS.md) for full details on:
+- Local environment setup and prerequisites (Node.js, Python, R)
+- Local development commands
+- Testing, linting, and verification commands
+- Logic verification and golden fixture generation
 
 ---
 
@@ -156,7 +103,3 @@ code script via `src/environments/version.ts`.
 ## License
 
 GNU Affero General Public License v3.0 - see [LICENSE](LICENSE) for details.
-
-
-### Testing & Verification
-**Deprecation Notice:** The legacy `verification.py` script has been deprecated. Cross-platform parity testing (guaranteeing exact sequence matches across TypeScript, Python, and R) is now fully integrated into our primary test runner using deterministic golden fixtures. Run `pnpm run verify:logic` to execute the ground-truth sequence verification.

@@ -6,7 +6,10 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'segmented' | 
 @Component({
   selector: 'app-button',
   standalone: true,
-  host: { class: 'contents' },
+  host: { 
+    class: 'contents',
+    '[attr.role]': 'null'
+  },
   
   
   imports: [CommonModule],
