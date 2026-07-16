@@ -214,7 +214,28 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     this.blockSizesSignal = computed(() => {
       const blockSizesCtrl = this.form.get('allocationGroup.blockSizesStr');
       const val = blockSizesCtrl ? blockSizesCtrl.value as string : '';
-      return (val ?? '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+      const parsed = this.parseBlockSizesStr(val ?? '');
+      if (parsed === null || parsed.length === 0) return [];
+      
+      const method = this.form.get('designGroup.randomizationMethod')?.value as string;
+      if (method === 'MINIMIZATION') return [];
+      
+      const armsCtrl = this.form.get('designGroup.arms');
+      const arms = armsCtrl ? armsCtrl.value as ArmInput[] : [];
+      
+      const partialConfig = {
+        randomizationMethod: method as any,
+        arms,
+        blockSizes: parsed,
+        siteBlockOverrides: {},
+        stratumBlockOverrides: {}
+      };
+
+      const errors = UnifiedValidationAuthority.validate(partialConfig as any);
+      const hasBlockError = errors.some(e => e.code === 'ERR_BLOCK_SIZE_MULTIPLE' || e.code === 'ERR_BLOCK_SIZE_POSITIVE');
+      
+      if (hasBlockError) return [];
+      return parsed;
     });
     
     if (isPlatformBrowser(this.platformId)) {
@@ -624,6 +645,20 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     return value.split(',').map(s => s.trim()).filter(s => s.length > 0);
   }
 
+  private parseBlockSizesStr(val: string): number[] | null {
+    if (!val) return [];
+    const tokens = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    if (tokens.length === 0) return [];
+    const sizes: number[] = [];
+    for (const token of tokens) {
+      if (!/^\d+$/.test(token)) return null;
+      const num = parseInt(token, 10);
+      if (isNaN(num) || num <= 0) return null;
+      sizes.push(num);
+    }
+    return sizes;
+  }
+
   addArm(): void {
     this.arms.push(this.fb.group({
       id: [String.fromCharCode(65 + this.arms.length)], name: [''], ratio: [1, [Validators.required, Validators.min(1)]]
@@ -845,7 +880,13 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     const blockSizesStr = group.get('allocationGroup.blockSizesStr')?.value as string || '';
     const overridesArr = (group.get('allocationGroup.blockOverrides') as FormArray)?.value || [];
 
-    const blockSizes = blockSizesStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    const parsedBlockSizes = this.parseBlockSizesStr(blockSizesStr);
+    if (parsedBlockSizes === null) {
+      return { invalidBlockSize: true, message: 'Block sizes must be positive integers.' };
+    }
+
+    const blockSizes = parsedBlockSizes;
+
     const siteBlockOverrides: Record<string, any> = {};
     const stratumBlockOverrides: Record<string, any> = {};
 
