@@ -11,7 +11,7 @@ export async function openGenerator(page: Page): Promise<void> {
   await expect(page.getByTestId('generator-page')).toBeVisible();
   await expect(page.locator('form')).toBeVisible();
   
-  const ackCheckbox = page.locator('#acknowledge input');
+  const ackCheckbox = page.locator('#acknowledge');
   const ackLabel = page.getByText('I have read and understand');
   if (await ackLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
     await ackLabel.click();

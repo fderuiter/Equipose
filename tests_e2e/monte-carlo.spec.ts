@@ -25,7 +25,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('"Run Statistical QA" button should be disabled when form is invalid (Protocol ID cleared)', async ({ page }) => {
     await goBackToFirstStep(page);
-    await page.locator('#protocolId input').clear();
+    await page.locator('#protocolId').clear();
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeDisabled();
   });
 
