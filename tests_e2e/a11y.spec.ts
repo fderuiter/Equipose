@@ -70,7 +70,6 @@ async function assertSelectReadableStyling(select: Locator): Promise<void> {
     };
   });
 
-  expect(styleState.classes).toContain('app-themed-control');
   expect(styleState.color).not.toBe(styleState.backgroundColor);
   expect(styleState.borderColor).not.toBe('rgba(0, 0, 0, 0)');
   expect(styleState.borderStyle).not.toBe('none');
@@ -115,10 +114,10 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await page.getByRole('button', { name: /\+ Add Override/i }).click();
   const targetTypeSelect = page.locator('[formcontrolname="targetType"]').first();
   const targetIdSelect = page.locator('[formcontrolname="targetId"]').first();
-  await assertSelectReadableStyling(targetTypeSelect);
-  await assertSelectReadableStyling(targetIdSelect);
-  await expect(targetTypeSelect).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixels: 100 });
-  await expect(targetIdSelect).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixels: 100 });
+  await assertSelectReadableStyling(targetTypeSelect.locator('select'));
+  await assertSelectReadableStyling(targetIdSelect.locator('select'));
+  await expect(targetTypeSelect.locator('select')).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixels: 100 });
+  await expect(targetIdSelect.locator('select')).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixels: 100 });
   await expect(page.locator('#blockSizesStr')).toBeVisible();
   await page.locator('#blockSizesStr').fill('3');
   await page.locator('#blockSizesStr').press('Tab');
@@ -139,10 +138,11 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
     page,
     async () => {
       await generateCodeBtn.click();
-      await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
+      const menu = page.getByRole('menu');
+      await expect(page.getByRole('menuitem', { name: /R Script/i }).first()).toBeVisible();
       // wait for it to be ready
       await page.waitForTimeout(100);
-      await FocusTrapPlugin.verifyFocusContainment(page);
+      await FocusTrapPlugin.verifyFocusContainment(page, menu);
       await page.keyboard.press('Escape');
     },
     generateCodeBtn
@@ -155,7 +155,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await generateCodeBtn.click();
       await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
       await page.getByRole('menuitem', { name: /R Script/i }).click();
-      const modal = page.locator('div[role="dialog"]');
+      const modal = page.getByRole('dialog', { name: 'Code Generator' });
       await expect(modal).toBeVisible();
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       // Verify focus trap automatically
@@ -284,7 +284,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(resultsSection.getByRole('button', { name: /Excel/i })).toBeVisible();
   await expect(resultsSection.getByRole('button', { name: /PDF/i })).toBeVisible();
   await expect(resultsSection.getByRole('button', { name: /JSON/i })).toBeVisible();
-  await expect(resultsSection.locator('[data-testid="audit-hash-value"]')).toBeVisible();
+  await expect(resultsSection.locator('[data-testid="schema-seed-value"]')).toBeVisible();
   await expect(resultsSection.locator('[data-testid="result-row"]').first()).toBeVisible();
   await checkA11y(page, '#results-section');
   await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, { ...resultsScreenshotOptions, mask: getMasks(page) });

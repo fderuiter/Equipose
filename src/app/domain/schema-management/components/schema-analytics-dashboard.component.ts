@@ -74,7 +74,7 @@ import { AppTooltipDirective } from '../../../core/directives/tooltip.directive'
                 } @else {
                   <div class="w-full flex flex-col justify-center h-full gap-3 overflow-y-auto pr-2" role="list" [attr.aria-label]="'Bar chart for ' + chart.label">
                     @for (category of chart.categories; track category.name) {
-                      <div class="w-full">
+                      <div class="w-full" role="listitem">
                         <div class="flex justify-between text-xs mb-1">
                           <span class="truncate max-w-[70%] font-medium" [title]="category.name">{{ category.name }}</span>
                           <span class="text-muted">{{ category.value }} ({{ category.percentage | number:'1.0-0' }}%)</span>
