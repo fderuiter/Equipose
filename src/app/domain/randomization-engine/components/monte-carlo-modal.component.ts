@@ -4,14 +4,15 @@ import { RandomizationEngineFacade } from '../randomization-engine.facade';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
+import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-monte-carlo-modal',
   standalone: true,
-  imports: [DecimalPipe, KeyboardScrollDirective],
+  imports: [DecimalPipe, KeyboardScrollDirective, FocusManagerDirective],
   template: `
-    <dialog #modalDialog (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
+    <dialog #modalDialog appFocusManager tabindex="-1" (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
       <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
 
       <!-- Header -->

@@ -136,6 +136,11 @@ export class FocusTrapPlugin {
       });
     }
 
+    // Wait for focus to settle inside the container (or at least wait for transition)
+    await page.waitForFunction((node) => {
+      return node.contains(document.activeElement) || node === document.activeElement;
+    }, await container.elementHandle());
+
     const getActiveElementDetails = async () => {
       return await page.evaluate(() => {
         const active = document.activeElement;

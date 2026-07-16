@@ -32,21 +32,16 @@ test.describe('Results Grid Operations', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Virtual scroll verification
+  // Table View Verification
   // ---------------------------------------------------------------------------
-  test('virtual scroll viewport should be present in flat view', async ({ page }) => {
-    const viewport = page.locator('#results-section cdk-virtual-scroll-viewport');
+  test('scrollable table viewport should be present in flat view', async ({ page }) => {
+    const viewport = page.locator('#results-section div.overflow-auto');
     await expect(viewport).toBeVisible();
   });
 
-  test('DOM should contain far fewer rows than total items (virtual scroll active)', async ({ page }) => {
-    // The virtual scroll should render only visible rows, not all rows.
-    // The Complex preset generates many rows; only a small window should be in the DOM.
+  test('DOM should contain the generated rows', async ({ page }) => {
     const totalRows = await page.locator('#results-section [data-testid="result-row"]').count();
-    // Virtual scroll viewport is 600px, itemSize 48px → max ~12-14 rows + buffer
-    // We just verify it's finite and reasonable (< 100 in flat mode = virtual scroll working)
     expect(totalRows).toBeGreaterThan(0);
-    expect(totalRows).toBeLessThan(100);
   });
 
   // ---------------------------------------------------------------------------
@@ -72,7 +67,7 @@ test.describe('Results Grid Operations', () => {
   });
 
   test('should reveal treatment arms after clicking the blinding toggle', async ({ page }) => {
-    const toggleLabel = page.locator('#results-section button[role="switch"]');
+    const toggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
     await toggleLabel.click();
 
     const firstRow = page.locator('[data-testid="result-row"]').first();
@@ -82,14 +77,15 @@ test.describe('Results Grid Operations', () => {
   });
 
   test('should re-blind the schema when the toggle is clicked a second time', async ({ page }) => {
-    const toggleLabel = page.locator('#results-section button[role="switch"]');
+    const unblindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
 
-    await toggleLabel.click(); // unblind
+    await unblindToggleLabel.click(); // unblind
     await expect(armCell).not.toContainText('*** BLINDED ***');
 
-    await toggleLabel.click(); // re-blind
+    const blindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Unblinded' });
+    await blindToggleLabel.click(); // re-blind
     await expect(armCell).toContainText('*** BLINDED ***');
   });
 

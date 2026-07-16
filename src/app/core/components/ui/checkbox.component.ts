@@ -14,9 +14,8 @@ import { CommonModule } from '@angular/common';
       [id]="inputId"
       [disabled]="disabled"
       [class]="computedClasses"
-      [checked]="internalValue"
       (change)="onChange($event)"
-      (blur)="onBlur()"
+      (blur)="onBlur.emit()"
     />
   `
 })
@@ -24,6 +23,8 @@ export class CheckboxComponent {
   @Input() inputId = '';
   @Input({ transform: booleanAttribute }) disabled = false;
   @Input() customClass = '';
+
+  @Output() onBlur = new EventEmitter<void>();
 
   @ViewChild('inputEl') inputEl!: ElementRef<HTMLInputElement>;
 
@@ -53,8 +54,5 @@ export class CheckboxComponent {
     const target = event.target as HTMLInputElement;
     this.internalValue = target.checked;
     // Event naturally bubbles from the inner input to be caught by SignalFormControlDirective
-  }
-
-  onBlur() {
   }
 }

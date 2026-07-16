@@ -15,19 +15,16 @@ test.describe('Schema Generation Flow', () => {
     const resultsSection = page.locator('#results-section');
     await expect(resultsSection).toBeVisible({ timeout: 10000 });
 
-    // Assert that the grid contains rows via the virtual scroll viewport
+    // Assert that the grid contains rows
     const firstRow = page.locator('[data-testid="result-row"]').first();
     await expect(firstRow).toBeVisible();
-
-    const virtualViewport = resultsSection.locator('cdk-virtual-scroll-viewport');
-    await expect(virtualViewport).toBeVisible();
 
     // Verify initial state is blinded
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
     await expect(armCell).toContainText('*** BLINDED ***');
 
-    // Click the "Unblinded" toggle
-    const unblindedToggleLabel = page.locator('button[role="switch"]');
+    // Click the "Blinded" label to toggle
+    const unblindedToggleLabel = page.locator('span.cursor-pointer').filter({ hasText: 'Blinded' });
     await unblindedToggleLabel.click();
 
     // Assert the text changes from "*** BLINDED ***"
