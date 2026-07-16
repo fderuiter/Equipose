@@ -3,6 +3,7 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, V
 import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
+import { SelectComponent } from '../../../core/components/ui/select.component';
 import { CheckboxComponent } from '../../../core/components/ui/checkbox.component';
 import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
@@ -30,7 +31,7 @@ import { createStepper, StepperState, StepConfig } from "../../../core/utils/ste
   selector: 'app-config-form',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SIGNAL_FORM_DIRECTIVES, ButtonComponent, TextInputComponent, CheckboxComponent, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
+  imports: [SIGNAL_FORM_DIRECTIVES, ButtonComponent, TextInputComponent, SelectComponent, CheckboxComponent, TagInputComponent, BlockPreviewComponent, RegulatoryNoticeComponent, FocusManagerDirective, AppTooltipDirective, RovingTabindexDirective],
   templateUrl: './config-form.component.html'
 })
 export class ConfigFormComponent implements OnInit, OnDestroy {

@@ -13,6 +13,7 @@ import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
+import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { ToggleComponent } from '../../../core/components/ui/toggle.component';
@@ -62,7 +63,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent],
+  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent, TextInputComponent],
   templateUrl: './results-grid.component.html'
 })
 export class ResultsGridComponent {

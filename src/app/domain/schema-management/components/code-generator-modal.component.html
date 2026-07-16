@@ -29,20 +29,20 @@
                   </div>
                 </div>
 
-                <div class="border-b border-border-base mb-4">
-                  <nav role="tablist" class="-mb-px flex space-x-8" aria-label="Tabs" (keydown)="onTabKeydown($event)">
-                    <button (click)="setActiveTab('R')" [class.border-indigo-500]="activeTab() === 'R'" [class.text-indigo-600]="activeTab() === 'R'" [class.dark:text-indigo-400]="activeTab() === 'R'" [class.border-transparent]="activeTab() !== 'R'" [class.text-gray-500]="activeTab() !== 'R'" [class.dark:text-slate-400]="activeTab() !== 'R'" role="tab" [attr.aria-selected]="activeTab() === 'R'" [tabIndex]="activeTab() === 'R' ? 0 : -1" [id]="'tab-' + 'R'" [attr.aria-controls]="'panel-' + 'R'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset">
+                <div class="mb-4">
+                  <nav role="tablist" class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium w-full sm:w-auto" aria-label="Tabs" (keydown)="onTabKeydown($event)">
+                    <app-button variant="segmented" (onClick)="setActiveTab('R')" [segmentedActive]="activeTab() === 'R'" segmentedPosition="first" role="tab" [ariaChecked]="activeTab() === 'R' ? 'true' : 'false'" [id]="'tab-' + 'R'">
                       R
-                    </button>
-                    <button (click)="setActiveTab('SAS')" [class.border-indigo-500]="activeTab() === 'SAS'" [class.text-indigo-600]="activeTab() === 'SAS'" [class.dark:text-indigo-400]="activeTab() === 'SAS'" [class.border-transparent]="activeTab() !== 'SAS'" [class.text-gray-500]="activeTab() !== 'SAS'" [class.dark:text-slate-400]="activeTab() !== 'SAS'" role="tab" [attr.aria-selected]="activeTab() === 'SAS'" [tabIndex]="activeTab() === 'SAS' ? 0 : -1" [id]="'tab-' + 'SAS'" [attr.aria-controls]="'panel-' + 'SAS'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset">
+                    </app-button>
+                    <app-button variant="segmented" (onClick)="setActiveTab('SAS')" [segmentedActive]="activeTab() === 'SAS'" segmentedPosition="middle" role="tab" [ariaChecked]="activeTab() === 'SAS' ? 'true' : 'false'" [id]="'tab-' + 'SAS'">
                       SAS
-                    </button>
-                    <button (click)="setActiveTab('Python')" [class.border-indigo-500]="activeTab() === 'Python'" [class.text-indigo-600]="activeTab() === 'Python'" [class.dark:text-indigo-400]="activeTab() === 'Python'" [class.border-transparent]="activeTab() !== 'Python'" [class.text-gray-500]="activeTab() !== 'Python'" [class.dark:text-slate-400]="activeTab() !== 'Python'" role="tab" [attr.aria-selected]="activeTab() === 'Python'" [tabIndex]="activeTab() === 'Python' ? 0 : -1" [id]="'tab-' + 'Python'" [attr.aria-controls]="'panel-' + 'Python'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset">
+                    </app-button>
+                    <app-button variant="segmented" (onClick)="setActiveTab('Python')" [segmentedActive]="activeTab() === 'Python'" segmentedPosition="middle" role="tab" [ariaChecked]="activeTab() === 'Python' ? 'true' : 'false'" [id]="'tab-' + 'Python'">
                       Python
-                    </button>
-                    <button (click)="setActiveTab('STATA')" [class.border-indigo-500]="activeTab() === 'STATA'" [class.text-indigo-600]="activeTab() === 'STATA'" [class.dark:text-indigo-400]="activeTab() === 'STATA'" [class.border-transparent]="activeTab() !== 'STATA'" [class.text-gray-500]="activeTab() !== 'STATA'" [class.dark:text-slate-400]="activeTab() !== 'STATA'" role="tab" [attr.aria-selected]="activeTab() === 'STATA'" [tabIndex]="activeTab() === 'STATA' ? 0 : -1" [id]="'tab-' + 'STATA'" [attr.aria-controls]="'panel-' + 'STATA'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset">
+                    </app-button>
+                    <app-button variant="segmented" (onClick)="setActiveTab('STATA')" [segmentedActive]="activeTab() === 'STATA'" segmentedPosition="last" role="tab" [ariaChecked]="activeTab() === 'STATA' ? 'true' : 'false'" [id]="'tab-' + 'STATA'">
                       Stata
-                    </button>
+                    </app-button>
                   </nav>
                 </div>
 
