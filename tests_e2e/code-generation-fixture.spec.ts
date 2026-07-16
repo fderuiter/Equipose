@@ -125,11 +125,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-BLOCK-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId input').fill('FXT-BLOCK-001');
-          await currentPage.locator('#studyName input').fill('Fixture Block Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-BLOCK-001');
+          await currentPage.locator('#studyName').fill('Fixture Block Scenario');
           await goToStep(currentPage, 4);
-          await currentPage.locator('#blockSizesStr input').fill('4, 6');
-          const val = await currentPage.locator('#blockSizesStr input').inputValue();
+          await currentPage.locator('#blockSizesStr').fill('4, 6');
+          const val = await currentPage.locator('#blockSizesStr').inputValue();
           console.log('blockSizesStr value after fill:', val);
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
@@ -140,14 +140,14 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-MIN-ONLY-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId input').fill('FXT-MIN-ONLY-001');
-          await currentPage.locator('#studyName input').fill('Fixture Minimization Only Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-MIN-ONLY-001');
+          await currentPage.locator('#studyName').fill('Fixture Minimization Only Scenario');
           await goToStep(currentPage, 2);
           await currentPage.getByRole('radio', { name: 'Minimization' }).first().click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
-          await firstStratum.locator('#factorName0 input').fill('Biomarker Group');
+          await firstStratum.locator('#factorName0').fill('Biomarker Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
           await levelsInput.fill('High');
           await levelsInput.press('Enter');
@@ -159,7 +159,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().click();
-          const margCapInputs = currentPage.locator('app-text-input[id*="-margcap-"] input');
+          const margCapInputs = currentPage.locator('input[id*="-margcap-"]');
           await margCapInputs.nth(0).fill('100');
           await margCapInputs.nth(1).fill('100');
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
@@ -170,8 +170,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-ZERO-CAP-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Standard');
-          await currentPage.locator('#protocolId input').fill('FXT-ZERO-CAP-001');
-          await currentPage.locator('#studyName input').fill('Fixture Zero Cap Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-ZERO-CAP-001');
+          await currentPage.locator('#studyName').fill('Fixture Zero Cap Scenario');
           await goToStep(currentPage, 5);
           await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().click();
           const capRows = currentPage.locator('[formArrayName="stratumCaps"] > div');
@@ -187,8 +187,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-MULTI-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Complex');
-          await currentPage.locator('#protocolId input').fill('FXT-MULTI-001');
-          await currentPage.locator('#studyName input').fill('Fixture Multi-Strata Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-MULTI-001');
+          await currentPage.locator('#studyName').fill('Fixture Multi-Strata Scenario');
           await goToStep(currentPage, 6);
         },
       },
@@ -197,18 +197,16 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-CAP-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Complex');
-          await currentPage.locator('#protocolId input').fill('FXT-CAP-001');
-          await currentPage.locator('#studyName input').fill('Fixture Cap Strategy Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-CAP-001');
+          await currentPage.locator('#studyName').fill('Fixture Cap Strategy Scenario');
           await goToStep(currentPage, 5);
           await currentPage.getByRole('radio', { name: 'Proportional' }).first().click();
-          await currentPage.locator('#globalCap input').fill('120');
+          await currentPage.locator('#globalCap').fill('120');
           await currentPage.evaluate(() => {
-            const wrappers = Array.from(document.querySelectorAll("app-text-input[id*='-pct-']"));
+            const inputs = Array.from(document.querySelectorAll("input[id*='-pct-']")) as HTMLInputElement[];
             const byFactor = new Map<string, HTMLInputElement[]>();
-            for (const wrapper of wrappers) {
-              const input = wrapper.querySelector('input');
-              if (!input) continue;
-              const factorId = wrapper.id.split('-pct-')[0];
+            for (const input of inputs) {
+              const factorId = input.id.split('-pct-')[0];
               const entries = byFactor.get(factorId) ?? [];
               entries.push(input);
               byFactor.set(factorId, entries);
@@ -229,18 +227,18 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-UNICODE-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId input').fill('FXT-UNICODE-001');
-          await currentPage.locator('#studyName input').fill('Fixture Unicode Labels Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-UNICODE-001');
+          await currentPage.locator('#studyName').fill('Fixture Unicode Labels Scenario');
           await goToStep(currentPage, 2);
-          await currentPage.locator('#armName0 input').fill('Dose α/β');
-          await currentPage.locator('#armName1 input').fill('Placebo™ & Control');
+          await currentPage.locator('#armName0').fill('Dose α/β');
+          await currentPage.locator('#armName1').fill('Placebo™ & Control');
           await currentPage.getByRole('button', { name: /^Next$/i }).click();
           const sitesInput = currentPage.locator('#sitesLabel + app-tag-input input');
           await sitesInput.fill('Site-Ω-01');
           await sitesInput.press('Enter');
           await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
-          await firstStratum.locator('#factorName0 input').fill('Éligibilité-Group');
+          await firstStratum.locator('#factorName0').fill('Éligibilité-Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
           await levelsInput.fill('≤50yrs');
           await levelsInput.press('Enter');
@@ -256,12 +254,12 @@ test.describe('Code generation fixtures for script execution checks', () => {
         protocolId: 'FXT-WEIRD-001',
         configure: async (currentPage: Page) => {
           await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId input').fill('FXT-WEIRD-001');
-          await currentPage.locator('#studyName input').fill('Fixture Weird Characters Scenario');
+          await currentPage.locator('#protocolId').fill('FXT-WEIRD-001');
+          await currentPage.locator('#studyName').fill('Fixture Weird Characters Scenario');
           await goToStep(currentPage, 3);
           await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
-          await firstStratum.locator('#factorName0 input').fill('Special Group');
+          await firstStratum.locator('#factorName0').fill('Special Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
           await levelsInput.fill("O'Brien");     // single quote
           await levelsInput.press('Enter');
