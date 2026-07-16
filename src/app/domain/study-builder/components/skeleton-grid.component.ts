@@ -14,6 +14,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-skeleton-grid',
   standalone: true,
+  imports: [NgStyle],
   template: `
     <div class="animate-pulse space-y-4" data-testid="skeleton-grid" aria-busy="true" aria-label="Generating schema…">
 
