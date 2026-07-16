@@ -66,12 +66,12 @@
           </div>
           <div>
             <label for="phase" class="block text-sm mb-1">Phase</label>
-            <select id="phase" formControlName="phase" class="app-themed-control w-full rounded-lg px-3 py-2.5">
+            <app-select inputId="phase" formControlName="phase">
               <option value="I">Phase I</option>
               <option value="II">Phase II</option>
               <option value="III">Phase III</option>
               <option value="IV">Phase IV</option>
-            </select>
+            </app-select>
           </div>
         </div>
 
@@ -267,19 +267,19 @@
                     <div class="grid grid-cols-2 gap-2">
                       <div>
                         <span class="block text-xs mb-1">Target Type</span>
-                        <select formControlName="targetType" class="app-themed-control w-full rounded-lg px-2 py-1.5 text-sm">
+                        <app-select formControlName="targetType" customClass="text-sm py-1.5">
                           <option value="site">Site</option>
                           <option value="stratum">Stratum</option>
-                        </select>
+                        </app-select>
                       </div>
                       <div>
                         <span class="block text-xs mb-1">Target ID</span>
-                        <select formControlName="targetId" class="app-themed-control w-full rounded-lg px-2 py-1.5 text-sm">
+                        <app-select formControlName="targetId" customClass="text-sm py-1.5">
                           <option value="">-- Select --</option>
                           @for (opt of getBlockOverrideTargetOptionItems(i); track opt.value) {
                             <option [value]="opt.value">{{ opt.label }}</option>
                           }
-                        </select>
+                        </app-select>
                       </div>
                     </div>
                     <app-text-input type="text" formControlName="sizesStr" class="w-full rounded-lg border px-3 py-1.5 text-sm" placeholder="e.g., 2, 4"></app-text-input>
