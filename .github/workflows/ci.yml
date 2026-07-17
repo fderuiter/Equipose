@@ -41,7 +41,6 @@ jobs:
       uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
-        cache: 'pnpm'
 
     - name: Set up Python
       uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
@@ -388,7 +387,6 @@ jobs:
       uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
       with:
         node-version: '22'
-        cache: 'pnpm'
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
