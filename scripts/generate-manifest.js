@@ -162,3 +162,35 @@ self.addEventListener('fetch', (event) => {
 
 fs.writeFileSync(path.join(buildDir, 'sw.js'), swCode);
 console.log(`Generated sw.js with ${assetsToCache.length} assets. Cache version: ${cacheVersion}`);
+
+// Generate CSP for _headers
+const indexHtmlPath = path.join(buildDir, 'index.html');
+if (fs.existsSync(indexHtmlPath)) {
+  const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
+  
+  // Extract all inline scripts
+  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+  const hashes = [];
+  
+  let scriptMatch;
+  while ((scriptMatch = scriptRegex.exec(indexHtml)) !== null) {
+    const scriptContent = scriptMatch[1];
+    // Only hash if there is actually content (ignore `<script src="..."></script>`)
+    if (scriptContent.trim().length > 0) {
+      const hashValue = crypto.createHash('sha256').update(scriptContent).digest('base64');
+      hashes.push(`'sha256-${hashValue}'`);
+    }
+  }
+  
+  // Update the _headers file
+  const headersPath = path.join(buildDir, '_headers');
+  if (fs.existsSync(headersPath)) {
+    let headersContent = fs.readFileSync(headersPath, 'utf8');
+    const hashesStr = hashes.length > 0 ? hashes.join(' ') : '';
+    headersContent = headersContent.replace(/CSP_HASHES/g, hashesStr);
+    fs.writeFileSync(headersPath, headersContent);
+    console.log(`Updated _headers with CSP hashes: ${hashesStr || '(none)'}`);
+  } else {
+    console.warn('_headers file not found in build directory. CSP could not be updated.');
+  }
+}
