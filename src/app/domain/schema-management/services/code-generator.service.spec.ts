@@ -2,6 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { CodeGeneratorService } from './code-generator.service';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
+import { execSync } from 'child_process';
+import { writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 describe('CodeGeneratorService Dual-Mode', () => {
   let service: CodeGeneratorService;
@@ -120,17 +125,95 @@ describe('CodeGeneratorService Dual-Mode', () => {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should throw an error when generating dynamic code for Minimization', () => {
-      expect(() => {
-        service.generateDynamic('R', minimizationConfig);
-      }).toThrow('Dynamic simulation engine is not supported for Pocock-Simon Minimization. Please use Static Manifest mode.');
+  describe('Dynamic Minimization (Mode 2)', () => {
+    it('should generate dynamic minimization code for R', () => {
+      const code = service.generateDynamic('R', minimizationConfig);
+      expect(code).toContain('p_minimization <- 0.8');
+      expect(code).toContain('total_sample_size <- 100');
+      expect(code).toContain('sample_level <- function');
+      expect(code).toContain('compute_imbalance_score <- function');
     });
 
-    it('should throw an error when generating dynamic code with marginal caps', () => {
+    it('should generate dynamic minimization code for Python', () => {
+      const code = service.generateDynamic('Python', minimizationConfig);
+      expect(code).toContain('p_minimization = 0.8');
+      expect(code).toContain('total_sample_size = 100');
+      expect(code).toContain('def sample_level');
+      expect(code).toContain('def compute_imbalance_score');
+    });
+
+    it('should generate dynamic minimization code for SAS', () => {
+      const code = service.generateDynamic('SAS', minimizationConfig);
+      expect(code).toContain('round(&p_minimization * &PRECISION_SCALE)');
+      expect(code).toContain('marginals[');
+      expect(code).toContain('intersection_counts[');
+    });
+
+    it('should generate dynamic minimization code for STATA', () => {
+      const code = service.generateDynamic('STATA', minimizationConfig);
+      expect(code).toContain('p_minimization = ');
+      expect(code).toContain('real scalar sample_level(');
+      expect(code).toContain('real scalar compute_imbalance_score(');
+    });
+
+    it('should maintain perfect behavioral parity between Python and TypeScript generated schemas', () => {
+      const config = {
+        ...minimizationConfig,
+        stratumCaps: [
+          { levelIds: { age: '<65' }, cap: 50 },
+          { levelIds: { age: '>=65' }, cap: 50 }
+        ]
+      };
+
+      const tsResult = generateRandomizationSchema(config);
+      const tsSchema = tsResult.schema;
+
+      const pyCode = service.generateDynamic('Python', config);
+
+      const tempFile = join(tmpdir(), `test_minimization_parity_${Date.now()}.py`);
+      writeFileSync(tempFile, pyCode, 'utf-8');
+
+      try {
+        const stdout = execSync(`python3 ${tempFile}`, { encoding: 'utf-8' });
+        const lines = stdout.trim().split('\n');
+        const headers = lines[0].split(',');
+        const pySchema = lines.slice(1).map(line => {
+          const vals = line.split(',');
+          const row: any = {};
+          headers.forEach((h, idx) => {
+            row[h] = vals[idx];
+          });
+          return row;
+        });
+
+        expect(pySchema.length).toBe(tsSchema.length);
+        for (let i = 0; i < tsSchema.length; i++) {
+          const tsRow = tsSchema[i];
+          const pyRow = pySchema[i];
+          expect(pyRow.SubjectID).toBe(tsRow.subjectId);
+          expect(pyRow.Site).toBe(tsRow.site);
+          expect(pyRow.Treatment).toBe(tsRow.treatmentArm);
+          expect(pyRow.StratumCode).toBe(tsRow.stratumCode);
+          expect(pyRow.age).toBe(tsRow.stratum.age);
+        }
+      } finally {
+        unlinkSync(tempFile);
+      }
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should throw an error when generating dynamic code with marginal caps for Block Randomization', () => {
       const marginalConfig = { ...standardBlockConfig, capStrategy: 'MARGINAL_ONLY' as const };
       expect(() => {
         service.generateDynamic('Python', marginalConfig);
+      }).toThrow('Dynamic simulation engine is not supported for MARGINAL_ONLY cap strategy. Please use Static Manifest mode.');
+    });
+
+    it('should throw an error when generating dynamic code with marginal caps for Minimization', () => {
+      const marginalMinConfig = { ...minimizationConfig, capStrategy: 'MARGINAL_ONLY' as const };
+      expect(() => {
+        service.generateDynamic('Python', marginalMinConfig);
       }).toThrow('Dynamic simulation engine is not supported for MARGINAL_ONLY cap strategy. Please use Static Manifest mode.');
     });
   });
