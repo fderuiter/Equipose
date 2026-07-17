@@ -23,10 +23,15 @@ bootstrapApplication(App, appConfig)
               (m.target as Element).getAttribute?.('aria-live') !== 'polite'
             );
             if (significant) {
+              observer.disconnect();
               axe.default.run().then(results => {
                 if (results.violations.length) {
                   console.warn('Axe-core accessibility violations (dynamic):', results.violations);
                 }
+                observer.observe(document.body, { childList: true, subtree: true });
+              }).catch((err) => {
+                console.error(err);
+                observer.observe(document.body, { childList: true, subtree: true });
               });
             }
           });

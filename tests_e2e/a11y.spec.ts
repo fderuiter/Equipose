@@ -152,6 +152,8 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await FocusAuditor.assertFocusRestoration(
     page,
     async () => {
+      // Mock the clock specifically before generating the code schema to ensure the timestamp matches the baseline
+      await page.clock.install({ time: new Date('2026-07-16T22:41:47.200Z') });
       await generateCodeBtn.click();
       await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
       await page.getByRole('menuitem', { name: /R Script/i }).click();
@@ -183,6 +185,9 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       // Dismiss the modal so focus restores
       await modal.getByRole('button', { name: /Close/i }).first().click();
       await expect(modal).toBeHidden();
+      
+      // Resume the real clock
+      await page.clock.resume();
     },
     generateCodeBtn
   );
