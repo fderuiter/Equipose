@@ -8,11 +8,12 @@ import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/p
 import { LogicIR, LogicIRTask, SubjectIdToken } from './ir/ir.model';
 import { AlgorithmRegistry } from './framework/algorithm-registry';
 import { LanguageConfig } from './framework/language-config';
+import { CodeGenerationError } from '../../errors/code-generation-errors';
 
 export interface CodeGenerationStrategy {
   readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string;
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string;
+  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode?: 'STATIC' | 'DYNAMIC'): string;
+  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode?: 'STATIC' | 'DYNAMIC'): string;
 }
 
 export class BaseOrchestrator implements CodeGenerationStrategy {
@@ -24,23 +25,34 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     this.configObject = configObject;
   }
 
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.transpile(config, 'BLOCK');
+  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+    return this.transpile(config, 'BLOCK', mode);
   }
 
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.transpile(config, 'MINIMIZATION');
+  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+    return this.transpile(config, 'MINIMIZATION', mode);
   }
 
-  protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): string {
-    const isComplex = Boolean(method === 'MINIMIZATION' || 
-                      config.capStrategy === 'MARGINAL_ONLY' || 
-                      (config.sites && config.sites.length > 1) ||
-                      (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') ||
-                      (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) ||
-                      (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
-                      (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0));
-    
+  protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION', mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+    if (mode === 'DYNAMIC' && method === 'MINIMIZATION') {
+      throw new CodeGenerationError("Dynamic simulation engine is not supported for Pocock-Simon Minimization. Please use Static Manifest mode.", config);
+    }
+    if (mode === 'DYNAMIC') {
+      if (config.capStrategy === 'MARGINAL_ONLY') {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for MARGINAL_ONLY cap strategy. Please use Static Manifest mode.", config);
+      }
+      if (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for non-RANDOM_POOL block selection. Please use Static Manifest mode.", config);
+      }
+      if (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for block size usage limits. Please use Static Manifest mode.", config);
+      }
+      if ((config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) ||
+          (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0)) {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for site or stratum block size overrides. Please use Static Manifest mode.", config);
+      }
+    }
+
     const result = generateRandomizationSchema(config);
     const schema = result.schema;
     const resolvedConfig = { ...config, seed: result.metadata.seed };
@@ -72,7 +84,7 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     }
 
     let algorithmicLogic = '';
-    if (isComplex) {
+    if (mode === 'STATIC') {
       algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, config, schema);
     } else {
       algorithmicLogic = AlgorithmRegistry.buildDynamicLogic(this.configObject, config, ir);
