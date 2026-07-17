@@ -48,7 +48,7 @@ test.describe('Download UX Smoke Tests', () => {
     await page.getByRole('menuitem', { name: /R Script/i }).click();
 
     // 3. Assert modal is visible
-    const modal = page.locator('div[role="dialog"]');
+    const modal = page.locator('div[role="dialog"]:visible');
     await expect(modal).toBeVisible();
     await expect(modal.getByRole('heading', { name: /Code Generator/i })).toBeVisible();
 

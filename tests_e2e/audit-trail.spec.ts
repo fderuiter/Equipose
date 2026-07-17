@@ -113,7 +113,7 @@ async function downloadCodeFile(
   await generateCodeBtn.click();
   await page.getByRole('menuitem', { name: new RegExp(language, 'i') }).click();
 
-  const modal = page.locator('div[role="dialog"]');
+  const modal = page.locator('div[role="dialog"]:visible');
   await expect(modal).toBeVisible({ timeout: 5_000 });
 
   // Wait for code to be rendered
