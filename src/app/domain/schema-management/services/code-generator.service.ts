@@ -35,7 +35,7 @@ export class CodeGeneratorService {
    * Phase 0 – Language dispatch entry point.
    * Runs pre-flight config validation, then delegates to the appropriate generator.
    */
-  generate(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
+  generate(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
     this.validateConfig(config);
     
     const strategy = this.strategies.find(s => s.language === language);
@@ -45,9 +45,9 @@ export class CodeGeneratorService {
 
     let output: string;
     if (config.randomizationMethod === 'MINIMIZATION') {
-      output = strategy.generateMinimization(config, metadata);
+      output = strategy.generateMinimization(config, metadata, mode);
     } else {
-      output = strategy.generate(config, metadata);
+      output = strategy.generate(config, metadata, mode);
     }
 
     let header = '';
@@ -75,19 +75,27 @@ export class CodeGeneratorService {
     }
   }
 
+  generateStatic(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
+    return this.generate(language, config, metadata, 'STATIC');
+  }
+
+  generateDynamic(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
+    return this.generate(language, config, metadata, 'DYNAMIC');
+  }
+
   generateR(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.generate('R', config, metadata);
+    return this.generate('R', config, metadata, 'STATIC');
   }
 
   generatePython(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.generate('Python', config, metadata);
+    return this.generate('Python', config, metadata, 'STATIC');
   }
 
   generateSas(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.generate('SAS', config, metadata);
+    return this.generate('SAS', config, metadata, 'STATIC');
   }
 
   generateStata(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
-    return this.generate('STATA', config, metadata);
+    return this.generate('STATA', config, metadata, 'STATIC');
   }
 }
