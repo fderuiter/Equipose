@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';
 import { SubjectRegistry } from './subject-registry';
 import { MT19937 } from './mt19937';
-import { RandomizationConfig, StratificationFactor, TreatmentArm } from '../../core/models/randomization.model';
+import {  StratificationFactor, TreatmentArm } from '../../core/models/randomization.model';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Arbitraries

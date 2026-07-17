@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, booleanAttribute, forwardRef, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, booleanAttribute, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({

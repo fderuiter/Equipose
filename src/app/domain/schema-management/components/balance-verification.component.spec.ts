@@ -29,7 +29,7 @@ function buildMockResult(overrides: Partial<{
 
   const totalRatio = arms.reduce((s, a) => s + a.ratio, 0);
 
-  const schema = Array.from({ length: totalSubjects }, (_, i) => {
+  const schema = Array.from({ length: totalSubjects }, (_, i) => { void _;
     const siteIdx = i % sites.length;
     // Assign treatments proportionally based on position within block
     const posInBlock = i % blockSizes[0];

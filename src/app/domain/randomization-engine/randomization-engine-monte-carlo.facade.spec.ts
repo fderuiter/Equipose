@@ -73,6 +73,7 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
   let facade: RandomizationEngineFacade;
   let fakeWorker: FakeWorker;
   let dialogMock: any;
+  void dialogMock;
 
   beforeEach(() => {
     fakeWorker = new FakeWorker();

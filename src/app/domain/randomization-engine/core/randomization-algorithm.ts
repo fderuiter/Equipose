@@ -128,18 +128,6 @@ function newBlockState(): BlockState {
   return { sequenceIndex: 0, usageCounts: new Map() };
 }
 
-/**
- * Collect every block size referenced across all block rules in the config so
- * they can be validated against the total treatment ratio.
- */
-function collectAllBlockSizes(config: RandomizationConfig): number[] {
-  const sizes = new Set<number>(config.blockSizes);
-  const addRule = (rule: BlockRule) => rule.sizes.forEach(s => sizes.add(s));
-  if (config.globalBlockStrategy) addRule(config.globalBlockStrategy);
-  if (config.siteBlockOverrides) Object.values(config.siteBlockOverrides).forEach(addRule);
-  if (config.stratumBlockOverrides) Object.values(config.stratumBlockOverrides).forEach(addRule);
-  return [...sizes];
-}
 
 // ---------------------------------------------------------------------------
 // Standard (MANUAL_MATRIX / PROPORTIONAL) generation path

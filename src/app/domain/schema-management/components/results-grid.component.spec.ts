@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ResultsGridComponent } from './results-grid.component';
@@ -19,7 +18,7 @@ vi.mock('jspdf', () => {
     }
   };
 });
-vi.mock('jspdf-autotable', () => ({ default: vi.fn() }));
+vi.mock('jspdf-autotable', () => (void _, { default: vi.fn() }));
 
 describe('ResultsGridComponent (domain)', () => {
   let component: ResultsGridComponent;
@@ -27,7 +26,7 @@ describe('ResultsGridComponent (domain)', () => {
   let mockFacade: unknown;
   let mockToastService: { showInfo: ReturnType<typeof vi.fn>; showError: ReturnType<typeof vi.fn>; showSuccess: ReturnType<typeof vi.fn> };
 
-  const generateMockData = (count: number): RandomizationResult => ({
+  const generateMockData = (count: number): RandomizationResult => (void _, {
     metadata: {
       protocolId: 'TEST-123',
       studyName: 'Test Study',
@@ -49,7 +48,7 @@ describe('ResultsGridComponent (domain)', () => {
         subjectIdMask: 'SUBJ-XXXX'
       }
     },
-    schema: Array.from({ length: count }, (_, i) => ({
+    schema: Array.from({ length: count }, (_, i) => (void _, {
       subjectId: `SUBJ-${i + 1}`,
       site: `Site ${i % 3 + 1}`,
       stratum: { site: `Site ${i % 3 + 1}` },
@@ -507,7 +506,7 @@ describe('ResultsGridComponent (domain)', () => {
           stratumCode: 'SC1', blockNumber: 1, blockSize: 4,
           treatmentArmId: 'a1', treatmentArm: 'Active'
         };
-        return overrides.map(o => ({ ...baseRow, ...o }));
+        return overrides.map(o => (void _, { ...baseRow, ...o }));
       };
 
       it('should produce header, data rows, and summary for a single block', () => {

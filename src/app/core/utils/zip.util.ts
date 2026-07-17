@@ -29,7 +29,7 @@ export class ZipWriter {
         } else {
           f.compressedData = f.data;
         }
-      } catch (e) {
+      } catch {
         f.compressedData = f.data;
       }
     }

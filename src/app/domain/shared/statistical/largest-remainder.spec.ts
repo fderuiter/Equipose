@@ -218,7 +218,7 @@ describe('computeProportionalCaps – property tests', () => {
           strata.forEach((factor, fIdx) => {
             const factorPercentages: Record<string, number> = Object.create(null);
             const weights = weightsPool[fIdx];
-            const sum = factor.levels.reduce((s, _, lIdx) => s + weights[lIdx], 0);
+            const sum = factor.levels.reduce((s, _, lIdx) => { void _; return s + weights[lIdx]; }, 0);
 
             let currentSum = 0;
             factor.levels.forEach((level, lIdx) => {

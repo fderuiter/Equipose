@@ -18,7 +18,7 @@ function buildMockResult(count: number): RandomizationResult {
       auditHash: 'aabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233',
       config: {} as never
     },
-    schema: Array.from({ length: count }, (_, i) => ({
+    schema: Array.from({ length: count }, (_, i) => (void _, {
       subjectId: `S-${i + 1}`,
       site: i % 3 === 0 ? 'Site 101' : (i % 3 === 1 ? 'Site 102' : 'Site 103'),
       stratum: {},

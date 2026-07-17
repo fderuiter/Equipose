@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import * as algo from './core/randomization-algorithm';
 
 /** Flush all pending microtasks so async signals settle. */
-const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
+const flushMicrotasks = async () => { void algo; return  await new Promise(r => setTimeout(r, 0)); }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared fixtures

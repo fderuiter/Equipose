@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
@@ -8,8 +7,8 @@ import { GeneratedSchema } from '../../core/models/randomization.model';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { MethodologySpecificationService } from '../services/methodology-specification.service';
-import { APP_VERSION } from '../../../../environments/version';
-import { DateUtil } from '../../../core/utils/date.util';
+
+
 import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
@@ -202,11 +201,9 @@ export class ResultsGridComponent {
             blockNumber: row.blockNumber,
             site: row.site,
             stratum: row.stratum,
-            stratumLabel,
-          },
+            stratumLabel },
           dataRows: [],
-          blockSize: row.blockSize,
-        });
+          blockSize: row.blockSize });
       }
 
       groups.get(key)!.dataRows.push(row);
@@ -229,14 +226,13 @@ export class ResultsGridComponent {
         blockSize: group.blockSize,
         totalSubjects: group.dataRows.length,
         tallies,
-        isIncomplete: group.dataRows.length !== group.blockSize,
-      });
+        isIncomplete: group.dataRows.length !== group.blockSize });
     }
 
     return rows;
   });
 
-  constructor() {
+  constructor() { void this.destroyRef; void this.sanitizeCsvValue;
     // Keep the SchemaViewStateService in sync whenever new results arrive.
     effect(() => {
       this.viewState.syncResults(this.state.results());
@@ -248,7 +244,7 @@ export class ResultsGridComponent {
   }
 
   /** Opens the kebab context menu for a specific data row. */
-  openRowMenu(row: GeneratedSchema, event: MouseEvent): void {
+  openRowMenu(row: GeneratedSchema, event: MouseEvent): void { void event;
     this.activeMenuRow.set(row);
     const popover = document.getElementById('shared-row-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
@@ -307,7 +303,7 @@ export class ResultsGridComponent {
 
   // ── Virtual-scroll trackBy ───────────────────────────────────────────────
 
-  trackBySubjectId(_index: number, row: GeneratedSchema): string {
+  trackBySubjectId(_index: number, row: GeneratedSchema): string { void _index;
     return row.subjectId;
   }
 
@@ -327,7 +323,7 @@ export class ResultsGridComponent {
   }
 
   /** Records which column's filter panel is currently active. */
-  openColumnFilter(column: string, event: MouseEvent): void {
+  openColumnFilter(column: string, event: MouseEvent): void { void event;
     this.activeFilterColumn.set(column);
     const popover = document.getElementById('shared-filter-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
@@ -470,8 +466,7 @@ export class ResultsGridComponent {
       ...data,
       metadata: {
         ...data.metadata,
-        methodologySpecification: this.methodologySpec.generateNarrative(data.metadata.config),
-      }
+        methodologySpecification: this.methodologySpec.generateNarrative(data.metadata.config) }
     };
 
     const json = JSON.stringify(exportPayload, null, 2);

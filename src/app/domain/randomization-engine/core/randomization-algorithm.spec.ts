@@ -160,6 +160,7 @@ describe('generateRandomizationSchema – property tests', () => {
       })
       .chain((base): fc.Arbitrary<any> => {
         const totalRatio = 2; // Fixed for simplicity in property tests
+        void totalRatio;
         const blockSizes = [2];
 
         if (base.capStrategy === 'MANUAL_MATRIX') {

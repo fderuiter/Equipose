@@ -1,7 +1,7 @@
 import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
-  isDevMode,
+  
   provideZonelessChangeDetection
 } from '@angular/core';
 import {provideHttpClient, withFetch} from '@angular/common/http';

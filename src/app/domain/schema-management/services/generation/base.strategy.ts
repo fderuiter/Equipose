@@ -5,7 +5,7 @@ import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
-import { LogicIR, LogicIRTask, SubjectIdToken } from './ir/ir.model';
+
 import { AlgorithmRegistry } from './framework/algorithm-registry';
 import { LanguageConfig } from './framework/language-config';
 
@@ -24,11 +24,11 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     this.configObject = configObject;
   }
 
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
+  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string { void metadata; 
     return this.transpile(config, 'BLOCK');
   }
 
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
+  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string { void metadata; 
     return this.transpile(config, 'MINIMIZATION');
   }
 

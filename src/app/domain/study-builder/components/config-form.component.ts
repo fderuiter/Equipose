@@ -1,11 +1,11 @@
 import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, OnDestroy, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '../../../core/forms/signal-forms';
 import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 import { SelectComponent } from '../../../core/components/ui/select.component';
 import { CheckboxComponent } from '../../../core/components/ui/checkbox.component';
-import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { DOCUMENT,  isPlatformBrowser } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
@@ -21,7 +21,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
-import { createStepper, StepperState, StepConfig } from "../../../core/utils/stepper.util";
+import { createStepper,  StepConfig } from "../../../core/utils/stepper.util";
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -195,7 +195,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     { validators: [this.blockSizesValidator.bind(this), this.minimizationProbabilitiesValidator.bind(this)] }
   );
 
-  constructor() {
+  constructor() { void this.destroyRef;
     
     this.subjectIdPreview = computed(() => {
       const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
@@ -261,7 +261,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     });
     
     effect(() => {
-      const val = this.form.value;
+      const val = this.form.value; void val;
       untracked(() => {
         this.facade.clearResults();
       });
@@ -344,7 +344,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
     effect(() => {
       // Track whole form value changes
-      const _val = this.form.value;
+      const _val = this.form.value; void _val;
       untracked(() => {
         this.triggerAutoSave();
       });
@@ -1161,7 +1161,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  onDragOver(event: DragEvent, index: number): void {
+  onDragOver(event: DragEvent, index: number): void { void index;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';

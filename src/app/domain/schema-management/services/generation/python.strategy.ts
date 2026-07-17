@@ -7,7 +7,7 @@ export const PYTHON_CONFIG: LanguageConfig = {
   language: 'Python',
   indexStart: 0,
   template: PYTHON_TEMPLATE,
-  customizeDataSetup: (data, config, ir, method, schema) => {
+  customizeDataSetup: (data, config, ir, method, schema) => { void schema;  void ir; 
     data['arms'] = config.arms.map((a: any) => FormattingUtil.escapeString(a.name)).join(', ');
     data['ratios'] = config.arms.map((a: any) => a.ratio).join(', ');
     

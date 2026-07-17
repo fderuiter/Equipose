@@ -1,4 +1,4 @@
-import { signal, computed, WritableSignal, Signal, effect } from '@angular/core';
+import { signal, WritableSignal, effect } from '@angular/core';
 
 export type ValidationErrors = Record<string, any>;
 export type ValidatorFn = (control: AbstractControl) => ValidationErrors | null;
@@ -41,7 +41,7 @@ export class SignalControl<T = any> extends AbstractControl {
       const eff = effect(() => fn(this._value()));
       return { unsubscribe: () => eff.destroy() };
     },
-    pipe: (...args: any[]) => {
+    pipe: (...args: any[]) => { void args;
        // Since the task says "Replace FormBuilder with a custom Signal-based primitive... Replace all .subscribe() side-effects with Signal effect() blocks", we shouldn't fully mock RxJS.
        // Actually wait, I will rewrite ConfigFormComponent to use effects instead of valueChanges.pipe.
        throw new Error('Not implemented');
@@ -58,11 +58,11 @@ export class SignalControl<T = any> extends AbstractControl {
     return this._value();
   }
 
-  setValue(value: T, options?: { emitEvent?: boolean }) {
+  setValue(value: T, options?: { emitEvent?: boolean }) { void options;
     this._value.set(value);
   }
 
-  patchValue(value: T, options?: { emitEvent?: boolean }) {
+  patchValue(value: T, options?: { emitEvent?: boolean }) { void options;
     this.setValue(value, options);
   }
 
@@ -70,11 +70,11 @@ export class SignalControl<T = any> extends AbstractControl {
     return this._disabled();
   }
 
-  disable(options?: { emitEvent?: boolean }) {
+  disable(options?: { emitEvent?: boolean }) { void options;
     this._disabled.set(true);
   }
   
-  enable(options?: { emitEvent?: boolean }) {
+  enable(options?: { emitEvent?: boolean }) { void options;
     this._disabled.set(false);
   }
 
@@ -104,12 +104,12 @@ export class SignalControl<T = any> extends AbstractControl {
     return hasError ? errs : null;
   }
 
-  updateValueAndValidity(options?: { emitEvent?: boolean }) {
+  updateValueAndValidity(options?: { emitEvent?: boolean }) { void options;
     // Re-evaluates inherently with signals, but we can trigger if needed.
     this._value.set(this._value());
   }
 
-  get(path: string | (string | number)[]): AbstractControl | null {
+  get(path: string | (string | number)[]): AbstractControl | null { void path;
     return null;
   }
 
@@ -140,7 +140,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
       const eff = effect(() => fn(this.value));
       return { unsubscribe: () => eff.destroy() };
     },
-    pipe: (...args: any[]) => {
+    pipe: (...args: any[]) => { void args;
        throw new Error('Not implemented');
     }
   };
@@ -173,7 +173,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
     return hasError ? errs : null;
   }
 
-  patchValue(value: any, options?: { emitEvent?: boolean }) {
+  patchValue(value: any, options?: { emitEvent?: boolean }) { void options;
     for (const key in value) {
       if (this.controls[key]) {
         this.controls[key].patchValue(value[key], options);
@@ -181,7 +181,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
     }
   }
 
-  setValue(value: any, options?: { emitEvent?: boolean }) {
+  setValue(value: any, options?: { emitEvent?: boolean }) { void options;
     this.patchValue(value, options);
   }
 
@@ -189,21 +189,21 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
     return this.value; // Simplification
   }
 
-  disable(options?: { emitEvent?: boolean }) {
+  disable(options?: { emitEvent?: boolean }) { void options;
     this._disabled.set(true);
     for (const key in this.controls) {
       this.controls[key].disable(options);
     }
   }
 
-  enable(options?: { emitEvent?: boolean }) {
+  enable(options?: { emitEvent?: boolean }) { void options;
     this._disabled.set(false);
     for (const key in this.controls) {
       this.controls[key].enable(options);
     }
   }
 
-  updateValueAndValidity(options?: { emitEvent?: boolean }) {
+  updateValueAndValidity(options?: { emitEvent?: boolean }) { void options;
     for (const key in this.controls) {
       this.controls[key].updateValueAndValidity(options);
     }
@@ -248,16 +248,16 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
       const eff = effect(() => fn(this.value));
       return { unsubscribe: () => eff.destroy() };
     },
-    pipe: (...args: any[]) => {
+    pipe: (...args: any[]) => { void args;
        throw new Error('Not implemented');
     }
   };
 
-  push(control: T, options?: { emitEvent?: boolean }) {
+  push(control: T, options?: { emitEvent?: boolean }) { void options;
     this._controls.update(arr => [...arr, control]);
   }
 
-  removeAt(index: number, options?: { emitEvent?: boolean }) {
+  removeAt(index: number, options?: { emitEvent?: boolean }) { void options;
     this._controls.update(arr => {
       const newArr = [...arr];
       newArr.splice(index, 1);
@@ -265,11 +265,11 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     });
   }
 
-  clear(options?: { emitEvent?: boolean }) {
+  clear(options?: { emitEvent?: boolean }) { void options;
     this._controls.set([]);
   }
 
-  insert(index: number, control: T, options?: { emitEvent?: boolean }) {
+  insert(index: number, control: T, options?: { emitEvent?: boolean }) { void options;
     this._controls.update(arr => {
       const newArr = [...arr];
       newArr.splice(index, 0, control);
@@ -304,15 +304,15 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     return null;
   }
 
-  setValue(value: any[], options?: { emitEvent?: boolean }) {}
-  patchValue(value: any[], options?: { emitEvent?: boolean }) {}
-  disable(options?: { emitEvent?: boolean }) {
+  setValue(value: any[], options?: { emitEvent?: boolean }) { void value; void options; }
+  patchValue(value: any[], options?: { emitEvent?: boolean }) { void value; void options; }
+  disable(options?: { emitEvent?: boolean }) { void options;
     for (const c of this.controls) c.disable(options);
   }
-  enable(options?: { emitEvent?: boolean }) {
+  enable(options?: { emitEvent?: boolean }) { void options;
     for (const c of this.controls) c.enable(options);
   }
-  updateValueAndValidity(options?: { emitEvent?: boolean }) {
+  updateValueAndValidity(options?: { emitEvent?: boolean }) { void options;
     for (const c of this.controls) c.updateValueAndValidity(options);
   }
   get(path: string | (string | number)[]): AbstractControl | null {
@@ -330,7 +330,7 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     }
     return current;
   }
-  setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void {}
+  setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void { void newValidator; }
 }
 
 export const Validators = {

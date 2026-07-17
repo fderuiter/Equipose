@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CodeGeneratorService, CODE_GENERATION_STRATEGIES } from './code-generator.service';
+import { CodeGeneratorService } from './code-generator.service';
 import { MethodologySpecificationService } from './methodology-specification.service';
 
 describe('CodeGeneratorService', () => {
@@ -10,7 +10,7 @@ describe('CodeGeneratorService', () => {
       providers: [
         CodeGeneratorService,
         MethodologySpecificationService,
-        // CODE_GENERATION_STRATEGIES is already provided in root via the token's factory
+        // is already provided in root via the token's factory
       ]
     });
     service = TestBed.inject(CodeGeneratorService);

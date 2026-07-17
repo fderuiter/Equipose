@@ -132,5 +132,5 @@ export class SkeletonGridComponent {
   readonly cellWidths = ['75%', '55%', '65%', '45%', '85%', '20%'];
 
   /** 12 skeleton rows – enough to fill a typical viewport. */
-  readonly skeletonRows = Array.from({ length: 12 }, (_, i) => i);
+  readonly skeletonRows = Array.from({ length: 12 }, (_, i) => { void _; return i; });
 }

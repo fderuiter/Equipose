@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+
 import { createStepper } from './stepper.util';
 
 describe('StepperUtil', () => {
@@ -55,15 +55,12 @@ describe('StepperUtil', () => {
     const order: string[] = [];
     const configs = {
       0: {
-        onLeave: () => order.push('leave 0'),
-      },
+        onLeave: () => order.push('leave 0') },
       1: {
         onEnter: () => order.push('enter 1'),
-        onLeave: () => order.push('leave 1'),
-      },
+        onLeave: () => order.push('leave 1') },
       2: {
-        onEnter: () => order.push('enter 2'),
-      }
+        onEnter: () => order.push('enter 2') }
     };
     const stepper = createStepper(3, configs);
     

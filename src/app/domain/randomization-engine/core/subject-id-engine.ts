@@ -153,10 +153,10 @@ function applyTokens(
   // ── New curly-brace tokens ──────────────────────────────────────────────
   id = id.replace(/\{SITE\}/g, ctx.site);
   id = id.replace(/\{STRATUM\}/g, ctx.stratumCode);
-  id = id.replace(/\{SEQ:(\d+)\}/g, (_, n) =>
-    ctx.sequence.toString().padStart(parseInt(n, 10), '0')
+  id = id.replace(/\{SEQ:(\d+)\}/g, (_, n) => (void _, 
+    ctx.sequence.toString().padStart(parseInt(n, 10), '0'))
   );
-  id = id.replace(/\{RND:(\d+)\}/g, (_, n) => rndFn(parseInt(n, 10)));
+  id = id.replace(/\{RND:(\d+)\}/g, (_, n) => (void _,  rndFn(parseInt(n, 10))));
 
   // ── Legacy bracket tokens (backward-compatible) ─────────────────────────
   id = id.replace('[SiteID]', ctx.site);

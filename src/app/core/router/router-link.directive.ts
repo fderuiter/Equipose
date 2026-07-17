@@ -1,4 +1,4 @@
-import { Directive, Input, HostListener, inject, ElementRef, Renderer2, effect, OnInit, OnDestroy, HostBinding } from '@angular/core';
+import { Directive, Input, HostListener, inject,   effect,   HostBinding } from '@angular/core';
 import { SignalRouter } from './signal-router.service';
 
 @Directive({

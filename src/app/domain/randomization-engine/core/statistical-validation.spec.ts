@@ -390,7 +390,7 @@ describe('ICH E9 – Boundary Conditions: structural integrity under edge cases'
         { id: 'f4', name: 'Factor4', levels: ['L1', 'L2'] },
       ],
       blockSizes: [2],
-      stratumCaps: Array.from({ length: 16 }, (_, idx) => {
+      stratumCaps: Array.from({ length: 16 }, (_, idx) => { void _;
         const bits = idx.toString(2).padStart(4, '0');
         return {
           levelIds: {

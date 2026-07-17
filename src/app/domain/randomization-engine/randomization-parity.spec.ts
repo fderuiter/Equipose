@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
-import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
+import { RandomizationConfig } from '../core/models/randomization.model';
 import { StudyPresets } from '../core/presets/study-presets';
 import { generateRandomizationSchema } from './core/randomization-algorithm';
 import { vi } from 'vitest';
@@ -72,7 +72,7 @@ describe('RandomizationEngine Parity (Worker vs Fallback)', () => {
   let realWorker: RealLogicWorker;
 
   beforeEach(() => {
-    vi.spyOn(crypto.subtle, 'digest').mockImplementation(async (_algo, data) => {
+    vi.spyOn(crypto.subtle, 'digest').mockImplementation(async (_algo, data) => { void _algo; 
         // Simple deterministic mock hash for testing purposes
         return new Uint8Array(32).fill(data.byteLength % 256).buffer;
     });

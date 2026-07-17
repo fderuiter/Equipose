@@ -24,10 +24,10 @@ describe('ThemeService', () => {
 
     mockMatchMedia = vi.fn().mockReturnValue({
       matches: false,
-      addEventListener: (_event: string, handler: (e: MediaQueryListEvent) => void) => {
+      addEventListener: (_event: string, handler: (e: MediaQueryListEvent) => void) => { void _event; 
         mediaQueryListeners.push(handler);
       },
-      removeEventListener: (_event: string, handler: (e: MediaQueryListEvent) => void) => {
+      removeEventListener: (_event: string, handler: (e: MediaQueryListEvent) => void) => { void _event; 
         mediaQueryListeners = mediaQueryListeners.filter(h => h !== handler);
       }
     });

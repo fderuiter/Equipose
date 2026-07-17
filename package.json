@@ -22,7 +22,8 @@
     "deploy": "pnpm run build && wrangler deploy",
     "preview": "pnpm run build && wrangler dev",
     "verify:logic": "vitest run src/app/domain/randomization-engine/core/randomization-algorithm-golden.spec.ts",
-    "fixtures:generate": "tsx scripts/generate-golden-fixtures.ts"
+    "fixtures:generate": "tsx scripts/generate-golden-fixtures.ts",
+    "prepare": "husky"
   },
   "private": true,
   "dependencies": {
@@ -62,7 +63,9 @@
     "eslint": "^10.4.0",
     "fast-check": "^4.8.0",
     "glob": "^13.0.6",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.0",
+    "lint-staged": "^17.0.8",
     "markdown-link-check": "^3.14.2",
     "markdownlint-cli": "^0.49.0",
     "npm-run-all": "^4.1.5",

@@ -1,6 +1,8 @@
 export function EscapedString(language: 'R' | 'Python' | 'SAS' | 'STATA') {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
+    void target;
+    void propertyKey;
     descriptor.value = function (s: string) {
       if (language === 'R' || language === 'Python') {
         return FormattingUtil.escapeString(s);

@@ -1,11 +1,11 @@
 import { RandomizationConfig, GeneratedSchema } from '../../../../core/models/randomization.model';
-import { generateRandomizationSchema } from '../../../../randomization-engine/core/randomization-algorithm';
+
 import { FormattingUtil } from '../formatting.util';
 import { ReproducibilityUtil } from '../reproducibility.util';
-import { R_TEMPLATE, SAS_TEMPLATE, PYTHON_TEMPLATE, STATA_TEMPLATE } from './templates';
+
 import { LogicIR, LogicIRTask, SubjectIdToken } from './ir.model';
-import { APP_VERSION } from '../../../../../../environments/version';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
+
+
 
 import { simplifyRatios } from '../../../../shared/statistical/ratio-simplification';
 import { formatStratumCode } from '../../../../shared/statistical/stratum-format';
