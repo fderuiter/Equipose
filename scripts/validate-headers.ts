@@ -122,7 +122,7 @@ async function main() {
   // Also check if index.html inline scripts have matching hashes in CSP
   if (rootResult.ok && rootResult.headers.get('content-security-policy')) {
     const csp = rootResult.headers.get('content-security-policy') || '';
-    const inlineScriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+    const inlineScriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
     let match;
     while ((match = inlineScriptRegex.exec(html)) !== null) {
       const scriptContent = match[1];

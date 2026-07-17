@@ -169,7 +169,7 @@ if (fs.existsSync(indexHtmlPath)) {
   const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
   
   // Extract all inline scripts
-  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi;
   const hashes = [];
   
   let scriptMatch;
