@@ -4,7 +4,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult, RandomizationConfig } from '../../core/models/randomization.model';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
@@ -36,8 +36,34 @@ export class CodeGeneratorModalComponent implements OnInit {
     this.state.closeCodeGenerator();
   }
 
+  isDynamicSupported(): boolean {
+    const config = this.state.config();
+    if (!config) return false;
+
+    if (config.randomizationMethod === 'MINIMIZATION') {
+      return false;
+    }
+    if (config.capStrategy === 'MARGINAL_ONLY') {
+      return false;
+    }
+    if (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') {
+      return false;
+    }
+    if (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) {
+      return false;
+    }
+    if ((config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) ||
+        (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0)) {
+      return false;
+    }
+    return true;
+  }
+
   async ngOnInit() {
     this.activeTab.set(this.state.codeLanguage());
+    if (!this.isDynamicSupported()) {
+      this.exportMode.set('STATIC');
+    }
     await this.refreshCode();
   }
 
@@ -51,6 +77,9 @@ export class CodeGeneratorModalComponent implements OnInit {
   }
 
   async setExportMode(mode: 'STATIC' | 'DYNAMIC' | 'BOTH') {
+    if (mode !== 'STATIC' && !this.isDynamicSupported()) {
+      return;
+    }
     this.exportMode.set(mode);
     await this.refreshCode();
   }

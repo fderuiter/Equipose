@@ -36,13 +36,18 @@
                       <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [attr.aria-checked]="exportMode() === 'STATIC' ? 'true' : 'false'">
                         Static Manifest
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [attr.aria-checked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
+                      <app-button variant="segmented" [disabled]="!isDynamicSupported()" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [attr.aria-checked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
                         Dynamic Generator
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [attr.aria-checked]="exportMode() === 'BOTH' ? 'true' : 'false'">
+                      <app-button variant="segmented" [disabled]="!isDynamicSupported()" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [attr.aria-checked]="exportMode() === 'BOTH' ? 'true' : 'false'">
                         Both (ZIP Bundle)
                       </app-button>
                     </nav>
+                    @if (!isDynamicSupported()) {
+                      <span class="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                        ⚠️ Dynamic simulation engine is not supported for this configuration.
+                      </span>
+                    }
                   </div>
 
                   <div class="flex flex-col gap-2">

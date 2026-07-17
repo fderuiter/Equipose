@@ -278,4 +278,94 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       expect(component.currentCode).toBe('Good SAS code');
     });
   });
+
+  describe('dynamic simulation engine support logic', () => {
+    it('should return true for isDynamicSupported() when the configuration supports it', () => {
+      const supportedConfig: RandomizationConfig = {
+        protocolId: 'SUPP-TEST',
+        studyName: 'Supported Block',
+        phase: 'Phase I',
+        arms: [{ id: '1', name: 'Active', ratio: 1 }],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [2],
+        stratumCaps: [],
+        seed: 'supp_seed',
+        subjectIdMask: '[SiteID]-[001]',
+        randomizationMethod: 'BLOCK',
+        capStrategy: 'MANUAL_MATRIX'
+      };
+      (mockFacade as any).config.set(supportedConfig);
+      expect(component.isDynamicSupported()).toBe(true);
+    });
+
+    it('should return false for isDynamicSupported() when randomizationMethod is MINIMIZATION', () => {
+      const minConfig: RandomizationConfig = {
+        protocolId: 'MIN-TEST',
+        studyName: 'Minimization Study',
+        phase: 'Phase I',
+        arms: [{ id: '1', name: 'Active', ratio: 1 }],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [],
+        stratumCaps: [],
+        seed: 'min_seed',
+        subjectIdMask: '[SiteID]-[001]',
+        randomizationMethod: 'MINIMIZATION',
+        capStrategy: 'MANUAL_MATRIX',
+        minimizationConfig: { p: 0.8, totalSampleSize: 100 }
+      };
+      (mockFacade as any).config.set(minConfig);
+      expect(component.isDynamicSupported()).toBe(false);
+    });
+
+    it('should return false for isDynamicSupported() when capStrategy is MARGINAL_ONLY', () => {
+      const marginalConfig: RandomizationConfig = {
+        protocolId: 'MARG-TEST',
+        studyName: 'Marginal Study',
+        phase: 'Phase I',
+        arms: [{ id: '1', name: 'Active', ratio: 1 }],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [2],
+        stratumCaps: [],
+        seed: 'marg_seed',
+        subjectIdMask: '[SiteID]-[001]',
+        randomizationMethod: 'BLOCK',
+        capStrategy: 'MARGINAL_ONLY'
+      };
+      (mockFacade as any).config.set(marginalConfig);
+      expect(component.isDynamicSupported()).toBe(false);
+    });
+
+    it('should default exportMode to STATIC and ignore requests to switch to DYNAMIC/BOTH when unsupported', async () => {
+      const minConfig: RandomizationConfig = {
+        protocolId: 'MIN-TEST',
+        studyName: 'Minimization Study',
+        phase: 'Phase I',
+        arms: [{ id: '1', name: 'Active', ratio: 1 }],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [],
+        stratumCaps: [],
+        seed: 'min_seed',
+        subjectIdMask: '[SiteID]-[001]',
+        randomizationMethod: 'MINIMIZATION',
+        capStrategy: 'MANUAL_MATRIX',
+        minimizationConfig: { p: 0.8, totalSampleSize: 100 }
+      };
+      (mockFacade as any).config.set(minConfig);
+
+      // Trigger ngOnInit to check initial state force-reset
+      await component.ngOnInit();
+      expect(component.exportMode()).toBe('STATIC');
+
+      // Attempt to change mode
+      await component.setExportMode('DYNAMIC');
+      expect(component.exportMode()).toBe('STATIC');
+
+      await component.setExportMode('BOTH');
+      expect(component.exportMode()).toBe('STATIC');
+    });
+  });
 });
