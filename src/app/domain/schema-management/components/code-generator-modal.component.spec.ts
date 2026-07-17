@@ -278,4 +278,47 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       expect(component.currentCode).toBe('Good SAS code');
     });
   });
+
+  describe('Pocock-Simon Minimization specific behavior', () => {
+    let minConfig: RandomizationConfig;
+
+    beforeEach(() => {
+      minConfig = {
+        protocolId: 'MIN-TEST',
+        studyName: 'Minimization Study',
+        phase: 'Phase II',
+        arms: [{ id: '1', name: 'Active', ratio: 1 }],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [],
+        stratumCaps: [],
+        seed: 'min_seed',
+        subjectIdMask: '[SiteID]-[001]',
+        randomizationMethod: 'MINIMIZATION',
+        minimizationConfig: { p: 0.8, totalSampleSize: 100 }
+      };
+      (mockFacade as any).config.set(minConfig);
+    });
+
+    it('should detect minimization and set isMinimization to true', () => {
+      expect(component.isMinimization()).toBe(true);
+    });
+
+    it('should normalize exportMode to STATIC on initialization for minimization', async () => {
+      component.exportMode.set('DYNAMIC');
+      await component.ngOnInit();
+      expect(component.exportMode()).toBe('STATIC');
+    });
+
+    it('should not allow switching exportMode away from STATIC when isMinimization is true', async () => {
+      await component.ngOnInit();
+      expect(component.exportMode()).toBe('STATIC');
+
+      await component.setExportMode('DYNAMIC');
+      expect(component.exportMode()).toBe('STATIC');
+
+      await component.setExportMode('BOTH');
+      expect(component.exportMode()).toBe('STATIC');
+    });
+  });
 });
