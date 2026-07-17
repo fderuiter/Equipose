@@ -80,12 +80,16 @@ export class CodeGeneratorModalComponent implements OnInit {
 
       let code = '';
       if (this.exportMode() === 'BOTH') {
+        // Pre-generate and cache/verify both outputs before enabling downloads!
+        const staticCode = this.codeGenService.generateStatic(this.activeTab(), config, metadata);
+        const dynamicCode = this.codeGenService.generateDynamic(this.activeTab(), config, metadata);
+
         code = `/* BOTH MODES SELECTED (ZIP BUNDLE) */\n\n`;
         code += `/* You have selected to export both the Static Data Manifest and the Dynamic Algorithmic Generator. */\n`;
         code += `/* Click the "Download ZIP" button at the top right to download the ZIP file containing both scripts. */\n\n`;
         code += `/* Preview of Static Manifest below: */\n`;
         code += `/* -------------------------------------------------- */\n\n`;
-        code += this.codeGenService.generate(this.activeTab(), config, metadata);
+        code += staticCode;
       } else {
         if (this.exportMode() === 'STATIC') {
           code = this.codeGenService.generate(this.activeTab(), config, metadata);
@@ -168,6 +172,9 @@ export class CodeGeneratorModalComponent implements OnInit {
   }
 
   async downloadCode() {
+    // Abort if errorState is set or configuration is missing
+    if (this.errorState()) return;
+
     const config = this.state.config();
     if (!config) return;
 
@@ -180,50 +187,56 @@ export class CodeGeneratorModalComponent implements OnInit {
       metadata = currentResults.metadata;
     }
 
-    if (this.exportMode() === 'BOTH') {
-      const { ZipWriter } = await import('../../../core/utils/zip.util');
-      const zip = new ZipWriter();
+    try {
+      if (this.exportMode() === 'BOTH') {
+        const { ZipWriter } = await import('../../../core/utils/zip.util');
+        const zip = new ZipWriter();
 
-      const staticCode = this.codeGenService.generateStatic(tab, config, metadata);
-      const dynamicCode = this.codeGenService.generateDynamic(tab, config, metadata);
+        const staticCode = this.codeGenService.generateStatic(tab, config, metadata);
+        const dynamicCode = this.codeGenService.generateDynamic(tab, config, metadata);
 
-      const encoder = new TextEncoder();
-      zip.addFile(`randomization_schema_static.${extension}`, encoder.encode(staticCode));
-      zip.addFile(`randomization_schema_dynamic.${extension}`, encoder.encode(dynamicCode));
+        const encoder = new TextEncoder();
+        zip.addFile(`randomization_schema_static.${extension}`, encoder.encode(staticCode));
+        zip.addFile(`randomization_schema_dynamic.${extension}`, encoder.encode(dynamicCode));
 
-      const zipBytes = await zip.generateAsync();
-      const blob = new Blob([zipBytes as any], { type: 'application/zip' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `randomization_schema_bundle.zip`);
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 100);
-    } else {
-      const code = this.currentCode;
-      const blob = new Blob([code], { type: 'text/plain;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-
-      if (this.exportMode() === 'STATIC') {
-        link.setAttribute('download', `randomization_schema.${extension}`);
+        const zipBytes = await zip.generateAsync();
+        const blob = new Blob([zipBytes as any], { type: 'application/zip' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `randomization_schema_bundle.zip`);
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
       } else {
-        link.setAttribute('download', `randomization_schema_dynamic.${extension}`);
-      }
+        const code = this.currentCode;
+        if (!code) return; // Abort if required artifact is unavailable!
 
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 100);
+        const blob = new Blob([code], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+
+        if (this.exportMode() === 'STATIC') {
+          link.setAttribute('download', `randomization_schema.${extension}`);
+        } else {
+          link.setAttribute('download', `randomization_schema_dynamic.${extension}`);
+        }
+
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+      }
+    } catch (e) {
+      console.error('Error downloading code:', e);
     }
   }
 }
