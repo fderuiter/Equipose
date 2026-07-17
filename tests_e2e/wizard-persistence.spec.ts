@@ -32,7 +32,12 @@ test.describe('Wizard Persistence', () => {
 
     // Go all the way to Step 6: Review & Generate
     for (let i = 1; i < 6; i++) {
-      await page.getByRole('button', { name: /^Next$/i }).click();
+      const nextBtn = page.getByRole('button', { name: /^Next$/i });
+      await expect(nextBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await nextBtn.click();
+      // Wait for the next step to become active
+      await expect(page.locator(`#step-header-${i + 1}`)).toHaveClass(/bg-indigo-50/);
       // Ensure the step header for the previous step turned emerald (valid)
       await expect(page.locator(`#step-header-${i}`)).toHaveClass(/bg-emerald-50/);
     }
@@ -41,15 +46,23 @@ test.describe('Wizard Persistence', () => {
     await expect(page.getByRole('button', { name: /Generate Schema/i })).toBeEnabled();
 
     // Go all the way back to Step 1
-    for (let i = 0; i < 5; i++) {
-      await page.getByRole('button', { name: /^Previous$/i }).click();
+    for (let i = 6; i > 1; i--) {
+      const prevBtn = page.getByRole('button', { name: /^Previous$/i });
+      await expect(prevBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await prevBtn.click();
+      await expect(page.locator(`#step-header-${i - 1}`)).toHaveClass(/bg-indigo-50/);
     }
 
     await expect(page.locator('#step-header-1')).toHaveClass(/bg-indigo-50/);
 
     // Go forward again and verify emerald markers are still there
     for (let i = 1; i < 6; i++) {
-      await page.getByRole('button', { name: /^Next$/i }).click();
+      const nextBtn = page.getByRole('button', { name: /^Next$/i });
+      await expect(nextBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await nextBtn.click();
+      await expect(page.locator(`#step-header-${i + 1}`)).toHaveClass(/bg-indigo-50/);
       await expect(page.locator(`#step-header-${i}`)).toHaveClass(/bg-emerald-50/);
     }
 
@@ -61,8 +74,12 @@ test.describe('Wizard Persistence', () => {
     await loadPreset(page, 'Standard');
 
     // Navigate to Step 5: Enrollment Caps
-    for (let i = 0; i < 4; i++) {
-      await page.getByRole('button', { name: /^Next$/i }).click();
+    for (let i = 1; i < 5; i++) {
+      const nextBtn = page.getByRole('button', { name: /^Next$/i });
+      await expect(nextBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await nextBtn.click();
+      await expect(page.locator(`#step-header-${i + 1}`)).toHaveClass(/bg-indigo-50/);
     }
     await expect(page.locator('#step-header-5')).toHaveClass(/bg-indigo-50/);
 
@@ -72,11 +89,17 @@ test.describe('Wizard Persistence', () => {
     await firstCapInput.press('Tab');
 
     // Navigate forward to Step 6
-    await page.getByRole('button', { name: /^Next$/i }).click();
+    const nextBtn6 = page.getByRole('button', { name: /^Next$/i });
+    await expect(nextBtn6).toBeEnabled();
+    await page.waitForTimeout(300);
+    await nextBtn6.click();
     await expect(page.locator('#step-header-6')).toHaveClass(/bg-indigo-50/);
 
     // Navigate back to Step 5
-    await page.getByRole('button', { name: /^Previous$/i }).click();
+    const prevBtn5 = page.getByRole('button', { name: /^Previous$/i });
+    await expect(prevBtn5).toBeEnabled();
+    await page.waitForTimeout(300);
+    await prevBtn5.click();
     await expect(page.locator('#step-header-5')).toHaveClass(/bg-indigo-50/);
 
     // Assert modified cap value is preserved
