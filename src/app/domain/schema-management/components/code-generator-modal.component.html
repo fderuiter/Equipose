@@ -17,7 +17,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        Download
+                        {{ exportMode() === 'BOTH' ? 'Download ZIP' : 'Download' }}
                       </app-button>
                       <app-button variant="primary" (onClick)="copyCode()" customClass="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -29,21 +29,39 @@
                   </div>
                 </div>
 
-                <div class="mb-4">
-                  <nav role="tablist" class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium w-full sm:w-auto" aria-label="Tabs" (keydown)="onTabKeydown($event)">
-                    <app-button variant="segmented" (onClick)="setActiveTab('R')" [segmentedActive]="activeTab() === 'R'" segmentedPosition="first" role="tab" [attr.aria-selected]="activeTab() === 'R' ? 'true' : 'false'" [id]="'tab-' + 'R'">
-                      R
-                    </app-button>
-                    <app-button variant="segmented" (onClick)="setActiveTab('SAS')" [segmentedActive]="activeTab() === 'SAS'" segmentedPosition="middle" role="tab" [attr.aria-selected]="activeTab() === 'SAS' ? 'true' : 'false'" [id]="'tab-' + 'SAS'">
-                      SAS
-                    </app-button>
-                    <app-button variant="segmented" (onClick)="setActiveTab('Python')" [segmentedActive]="activeTab() === 'Python'" segmentedPosition="middle" role="tab" [attr.aria-selected]="activeTab() === 'Python' ? 'true' : 'false'" [id]="'tab-' + 'Python'">
-                      Python
-                    </app-button>
-                    <app-button variant="segmented" (onClick)="setActiveTab('STATA')" [segmentedActive]="activeTab() === 'STATA'" segmentedPosition="last" role="tab" [attr.aria-selected]="activeTab() === 'STATA' ? 'true' : 'false'" [id]="'tab-' + 'STATA'">
-                      Stata
-                    </app-button>
-                  </nav>
+                <div class="mb-4 flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
+                  <div class="flex flex-col gap-2">
+                    <span id="export-mode-label" class="text-xs font-semibold uppercase tracking-wider text-muted">Export Mode</span>
+                    <nav role="radiogroup" aria-labelledby="export-mode-label" class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium w-full sm:w-auto">
+                      <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [attr.aria-checked]="exportMode() === 'STATIC' ? 'true' : 'false'">
+                        Static Manifest
+                      </app-button>
+                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [attr.aria-checked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
+                        Dynamic Generator
+                      </app-button>
+                      <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [attr.aria-checked]="exportMode() === 'BOTH' ? 'true' : 'false'">
+                        Both (ZIP Bundle)
+                      </app-button>
+                    </nav>
+                  </div>
+
+                  <div class="flex flex-col gap-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-muted">Language</span>
+                    <nav role="tablist" class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium w-full sm:w-auto" aria-label="Tabs" (keydown)="onTabKeydown($event)">
+                      <app-button variant="segmented" (onClick)="setActiveTab('R')" [segmentedActive]="activeTab() === 'R'" segmentedPosition="first" role="tab" [attr.aria-selected]="activeTab() === 'R' ? 'true' : 'false'" [id]="'tab-' + 'R'">
+                        R
+                      </app-button>
+                      <app-button variant="segmented" (onClick)="setActiveTab('SAS')" [segmentedActive]="activeTab() === 'SAS'" segmentedPosition="middle" role="tab" [attr.aria-selected]="activeTab() === 'SAS' ? 'true' : 'false'" [id]="'tab-' + 'SAS'">
+                        SAS
+                      </app-button>
+                      <app-button variant="segmented" (onClick)="setActiveTab('Python')" [segmentedActive]="activeTab() === 'Python'" segmentedPosition="middle" role="tab" [attr.aria-selected]="activeTab() === 'Python' ? 'true' : 'false'" [id]="'tab-' + 'Python'">
+                        Python
+                      </app-button>
+                      <app-button variant="segmented" (onClick)="setActiveTab('STATA')" [segmentedActive]="activeTab() === 'STATA'" segmentedPosition="last" role="tab" [attr.aria-selected]="activeTab() === 'STATA' ? 'true' : 'false'" [id]="'tab-' + 'STATA'">
+                        Stata
+                      </app-button>
+                    </nav>
+                  </div>
                 </div>
 
                 @if (errorState()) {
