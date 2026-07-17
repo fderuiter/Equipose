@@ -223,7 +223,7 @@ jobs:
       env:
         CI: true
         CODEGEN_FIXTURES: '1'
-        PYTHON: python3
+        PYTHON: python
         PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
     - name: Upload code-generation fixture scripts
@@ -284,7 +284,7 @@ jobs:
         while IFS= read -r -d '' script; do
           echo ""
           echo "--- Running: $script ---"
-          if python3 "$script"; then
+          if python "$script"; then
             echo "PASS: $script"
             PASS=$((PASS + 1))
           else
@@ -708,7 +708,7 @@ jobs:
     - name: Python Cross-Environment Equivalence Check
       run: |
         echo "Running Python cross-environment equivalence fixture..."
-        python3 scripts/cross-env/verify_python_schema.py
+        python scripts/cross-env/verify_python_schema.py
         echo "Python equivalence check completed."
 
     - name: R Cross-Environment Equivalence Check
@@ -764,7 +764,7 @@ jobs:
         npx --yes @cyclonedx/cdxgen \
                     -o sbom.json
         echo "SBOM generated successfully."
-        echo "Total components: $(python3 -c 'import json,sys; d=json.load(open("sbom.json")); print(len(d.get(\"components\", [])))')"
+        echo "Total components: $(python -c 'import json,sys; d=json.load(open("sbom.json")); print(len(d.get(\"components\", [])))')"
 
     - name: Upload SBOM artifact
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
