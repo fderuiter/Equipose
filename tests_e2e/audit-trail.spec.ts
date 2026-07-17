@@ -113,7 +113,7 @@ async function downloadCodeFile(
   await generateCodeBtn.click();
   await page.getByRole('menuitem', { name: new RegExp(language, 'i') }).click();
 
-  const modal = page.locator('div[role="dialog"]');
+  const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
   await expect(modal).toBeVisible({ timeout: 5_000 });
 
   // Wait for code to be rendered
@@ -284,7 +284,7 @@ test.describe('21 CFR Part 11 – Audit Trail: generated code artifact provenanc
 async function downloadPdfText(page: import('@playwright/test').Page, protocolId: string): Promise<string> {
   await generateSchemaFromPreset(page, 'Standard');
 
-  const pdfButton = page.locator('#results-section').getByRole('button', { name: /PDF/i });
+  const pdfButton = page.locator('#results-section').getByRole('button', { name: 'Export as PDF', exact: true });
   await expect(pdfButton).toBeVisible({ timeout: 10_000 });
 
   const downloadPromise = page.waitForEvent('download', { timeout: 15_000 });
@@ -355,7 +355,7 @@ async function downloadPdfTextWithProtocol(
 
   // Wait for the PDF button to be visible before attempting to click it,
   // ensuring the results section has fully rendered all action buttons.
-  const pdfButton = resultsSection.getByRole('button', { name: /PDF/i });
+  const pdfButton = resultsSection.getByRole('button', { name: 'Export as PDF', exact: true });
   await expect(pdfButton).toBeVisible({ timeout: 10_000 });
 
   const downloadPromise = page.waitForEvent('download', { timeout: 15_000 });

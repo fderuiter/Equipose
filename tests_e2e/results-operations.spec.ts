@@ -115,7 +115,7 @@ test.describe('Results Grid Operations', () => {
   // [REQ-EXPORT-002]
   test('should trigger a PDF download when the PDF button is clicked', async ({ page }) => {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
-    const pdfButton = page.locator('#results-section').getByRole('button', { name: /PDF/i });
+    const pdfButton = page.locator('#results-section').getByRole('button', { name: 'Export as PDF', exact: true });
     await pdfButton.evaluate((node: HTMLElement) => node.click());
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/randomization_.*\.pdf$/);

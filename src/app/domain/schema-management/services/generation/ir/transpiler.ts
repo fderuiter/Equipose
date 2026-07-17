@@ -118,51 +118,136 @@ export class CodeTranspiler {
   }
 
   public static formatStaticSchema(lang: 'R'|'Python'|'SAS'|'STATA', config: RandomizationConfig, schema: GeneratedSchema[]): string {
+    if (schema.length === 0) {
+      if (lang === 'R') {
+        return '';
+      }
+      if (lang === 'Python') {
+        return 'schema = []';
+      }
+      if (lang === 'STATA') {
+        const numCols = 6 + (config.strata || []).length;
+        return `schema_out = J(0, ${numCols}, "")`;
+      }
+      if (lang === 'SAS') {
+        return '';
+      }
+    }
+
     let schemaRows = '';
     if (lang === 'SAS') {
-      for (const row of schema) {
-         schemaRows += `  SubjectID="${FormattingUtil.escapeSasString(row.subjectId)}"; ` +
-                `Site="${FormattingUtil.escapeSasString(row.site)}"; ` +
-                `Treatment="${FormattingUtil.escapeSasString(row.treatmentArm)}"; ` +
-                `BlockNumber=${row.blockNumber}; ` +
-                `BlockSize=${row.blockSize}; ` +
-                `StratumCode="${FormattingUtil.escapeSasString(row.stratumCode)}"; `;
-         for (const s of config.strata || []) {
-             schemaRows += `  ${FormattingUtil.escapeSasString(s.id)}="${FormattingUtil.escapeSasString(row.stratum[s.id])}"; `;
-         }
-         schemaRows += `output;\n`;
-      }
+      const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
+      const n = schema.length;
+      colNames.forEach(col => {
+        let vals: string[] = [];
+        const isNum = (col === "BlockNumber" || col === "BlockSize");
+        if (col === "SubjectID") {
+          vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.subjectId)}"`);
+        } else if (col === "Site") {
+          vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.site)}"`);
+        } else if (col === "Treatment") {
+          vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.treatmentArm)}"`);
+        } else if (col === "BlockNumber") {
+          vals = schema.map(row => `${row.blockNumber}`);
+        } else if (col === "BlockSize") {
+          vals = schema.map(row => `${row.blockSize}`);
+        } else if (col === "StratumCode") {
+          vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.stratumCode)}"`);
+        } else {
+          vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.stratum[col])}"`);
+        }
+
+        let maxLen = 1;
+        vals.forEach(val => {
+          const rawVal = val.startsWith('"') && val.endsWith('"') ? val.slice(1, -1) : val;
+          if (rawVal.length > maxLen) {
+            maxLen = rawVal.length;
+          }
+        });
+        const typeStr = isNum ? '' : `$${maxLen} `;
+        schemaRows += `  array arr_${col}[${n}] ${typeStr}_temporary_ (${vals.join(' ')});\n`;
+      });
+      schemaRows += `  do i = 1 to ${n};\n`;
+      colNames.forEach(col => {
+        schemaRows += `    ${FormattingUtil.escapeSasString(col)} = arr_${col}[i];\n`;
+      });
+      schemaRows += `    output;\n  end;\n`;
     } else if (lang === 'STATA') {
+      const numCols = 6 + (config.strata || []).length;
+      schemaRows += `schema_out = J(${schema.length}, ${numCols}, "")\n`;
       schema.forEach((row, i) => {
-         schemaRows += `replace SubjectID=${FormattingUtil.stataLabelQuote(row.subjectId)} in ${i+1}\n`;
-         schemaRows += `replace Site=${FormattingUtil.stataLabelQuote(row.site)} in ${i+1}\n`;
          const armName = config.arms.find(a => a.id === row.treatmentArmId)?.name || row.treatmentArmId;
-         schemaRows += `replace Treatment=${FormattingUtil.stataLabelQuote(armName)} in ${i+1}\n`;
-         schemaRows += `replace BlockNumber=${row.blockNumber} in ${i+1}\n`;
-         schemaRows += `replace BlockSize=${row.blockSize} in ${i+1}\n`;
-         schemaRows += `replace StratumCode=${FormattingUtil.stataLabelQuote(row.stratumCode)} in ${i+1}\n`;
-         (config.strata || []).forEach(s => {
-             schemaRows += `replace ${FormattingUtil.sanitizeStataVarName(s.id)}=${FormattingUtil.stataLabelQuote(row.stratum[s.id])} in ${i+1}\n`;
-         });
+         const rowVals = [
+           FormattingUtil.stataLabelQuote(row.subjectId),
+           FormattingUtil.stataLabelQuote(row.site),
+           FormattingUtil.stataLabelQuote(armName),
+           `"${row.blockNumber}"`,
+           `"${row.blockSize}"`,
+           FormattingUtil.stataLabelQuote(row.stratumCode),
+           ...(config.strata || []).map(s => FormattingUtil.stataLabelQuote(row.stratum[s.id]))
+         ];
+         schemaRows += `schema_out[${i+1}, .] = (${rowVals.join(', ')})\n`;
       });
+      schemaRows += `\n`;
+
+      schemaRows += `if (rows(schema_out) > 0) {\n`;
+      schemaRows += `  st_addobs(rows(schema_out))\n`;
+      schemaRows += `  st_addvar("str100", "SubjectID"); st_sstore(., "SubjectID", schema_out[., 1])\n`;
+      schemaRows += `  st_addvar("str100", "Site"); st_sstore(., "Site", schema_out[., 2])\n`;
+      schemaRows += `  st_addvar("str100", "Treatment"); st_sstore(., "Treatment", schema_out[., 3])\n`;
+      schemaRows += `  st_addvar("double", "BlockNumber"); st_sstore(., "BlockNumber", strtoreal(schema_out[., 4]))\n`;
+      schemaRows += `  st_addvar("double", "BlockSize"); st_sstore(., "BlockSize", strtoreal(schema_out[., 5]))\n`;
+      schemaRows += `  st_addvar("str100", "StratumCode"); st_sstore(., "StratumCode", schema_out[., 6])\n`;
+      (config.strata || []).forEach((s: any, idx: number) => {
+          schemaRows += `  st_addvar("str100", "${FormattingUtil.sanitizeStataVarName(s.id)}"); st_sstore(., "${FormattingUtil.sanitizeStataVarName(s.id)}", schema_out[., ${7 + idx}])\n`;
+      });
+      schemaRows += `}\n`;
     } else if (lang === 'Python') {
-      schemaRows += `schema = [\n`;
-      for (const row of schema) {
-         schemaRows += `  {"SubjectID": "${FormattingUtil.escapeString(row.subjectId)}", "Site": "${FormattingUtil.escapeString(row.site)}", "Treatment": "${FormattingUtil.escapeString(row.treatmentArm)}", "BlockNumber": ${row.blockNumber}, "BlockSize": ${row.blockSize}, "StratumCode": "${FormattingUtil.escapeString(row.stratumCode)}"`;
-         for (const s of config.strata || []) {
-             schemaRows += `, "${FormattingUtil.escapeString(s.id)}": "${FormattingUtil.escapeString(row.stratum[s.id])}"`;
-         }
-         schemaRows += `},\n`;
-      }
-      schemaRows += `]\n`;
-    } else if (lang === 'R') {
-      schema.forEach((row, i) => {
-         schemaRows += `schema_list[[${i+1}]] <- data.frame("SubjectID"="${FormattingUtil.escapeString(row.subjectId)}", "Site"="${FormattingUtil.escapeString(row.site)}", "Treatment"="${FormattingUtil.escapeString(row.treatmentArm)}", "BlockNumber"=${row.blockNumber}, "BlockSize"=${row.blockSize}, "StratumCode"="${FormattingUtil.escapeString(row.stratumCode)}"`;
-         for (const s of config.strata || []) {
-             schemaRows += `, "${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(row.stratum[s.id])}"`;
-         }
-         schemaRows += `, stringsAsFactors=FALSE)\n`;
+      const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
+      schemaRows += `schema = {\n`;
+      colNames.forEach(col => {
+        let vals: string[] = [];
+        if (col === "SubjectID") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.subjectId)}"`);
+        } else if (col === "Site") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.site)}"`);
+        } else if (col === "Treatment") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.treatmentArm)}"`);
+        } else if (col === "BlockNumber") {
+          vals = schema.map(row => `${row.blockNumber}`);
+        } else if (col === "BlockSize") {
+          vals = schema.map(row => `${row.blockSize}`);
+        } else if (col === "StratumCode") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.stratumCode)}"`);
+        } else {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.stratum[col])}"`);
+        }
+        schemaRows += `  "${FormattingUtil.escapeString(col)}": [${vals.join(', ')}],\n`;
       });
+      schemaRows += `}\n`;
+    } else if (lang === 'R') {
+      const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
+      schemaRows += `schema_list[[1]] <- data.frame(\n`;
+      colNames.forEach(col => {
+        let vals: string[] = [];
+        if (col === "SubjectID") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.subjectId)}"`);
+        } else if (col === "Site") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.site)}"`);
+        } else if (col === "Treatment") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.treatmentArm)}"`);
+        } else if (col === "BlockNumber") {
+          vals = schema.map(row => `${row.blockNumber}`);
+        } else if (col === "BlockSize") {
+          vals = schema.map(row => `${row.blockSize}`);
+        } else if (col === "StratumCode") {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.stratumCode)}"`);
+        } else {
+          vals = schema.map(row => `"${FormattingUtil.escapeString(row.stratum[col])}"`);
+        }
+        schemaRows += `  "${FormattingUtil.escapeString(col)}" = c(${vals.join(', ')}),\n`;
+      });
+      schemaRows += `  stringsAsFactors = FALSE,\n  check.names = FALSE\n)\n`;
     }
     return schemaRows.trimEnd();
   }

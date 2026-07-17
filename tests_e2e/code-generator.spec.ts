@@ -35,7 +35,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const modalHeading = page.getByRole('heading', { name: /Code Generator/i });
     await expect(modalHeading).toBeVisible();
-    const modal = page.locator('div[role="dialog"]');
+    const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     const generatedCode = modal.getByTestId('generated-code');
     await expect(generatedCode).toContainText(/Protocol:\s*TEST-PRT-123/i);
 
@@ -63,7 +63,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const stataTab = modal.getByRole('tab', { name: /Stata/i });
     await stataTab.click();
-    await expect(generatedCode).toContainText(/set obs/i, { timeout: 10000 });
+    await expect(generatedCode).toContainText(/mata:/i, { timeout: 10000 });
     const downloadPromiseStata = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.click();
     const downloadStata = await downloadPromiseStata;
@@ -98,7 +98,7 @@ test.describe('Code Generator Modal UI', () => {
     await expect(page.getByRole('menuitem', { name: /Stata Script/i }).first()).toBeVisible();
     await page.getByRole('menuitem', { name: /R Script/i }).first().click();
 
-    const modal = page.locator('div[role="dialog"]');
+    const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     const copyBtn = modal.getByRole('button', { name: /Copy Code/i });
     await expect(copyBtn).toBeVisible();
 
