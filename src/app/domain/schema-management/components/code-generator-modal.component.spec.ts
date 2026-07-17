@@ -7,11 +7,13 @@ import { CodeGenerationError } from '../errors/code-generation-errors';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { AnnouncementService } from '../../../core/services/announcement.service';
 
 describe('CodeGeneratorModalComponent (domain)', () => {
   let component: CodeGeneratorModalComponent;
   let mockFacade: unknown;
   let mockCodeGeneratorService: unknown;
+  let mockAnnouncementService: { announce: any };
 
   beforeEach(async () => {
     mockFacade = {
@@ -34,10 +36,15 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       generateSas: vi.fn().mockReturnValue('Mock SAS Code')
     };
 
+    mockAnnouncementService = {
+      announce: vi.fn()
+    };
+
     TestBed.configureTestingModule({
       providers: [
         { provide: RandomizationEngineFacade, useValue: mockFacade },
-        { provide: CodeGeneratorService, useValue: mockCodeGeneratorService }
+        { provide: CodeGeneratorService, useValue: mockCodeGeneratorService },
+        { provide: AnnouncementService, useValue: mockAnnouncementService }
       ]
     });
 
@@ -276,6 +283,80 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       await component.setActiveTab('SAS');
       expect(component.errorState()).toBeNull();
       expect(component.currentCode).toBe('Good SAS code');
+    });
+  });
+
+  describe('Pocock-Simon Minimization UX Fallback', () => {
+    let mockMinimizationConfig: RandomizationConfig;
+
+    beforeEach(() => {
+      mockMinimizationConfig = {
+        protocolId: 'MIN-TEST',
+        studyName: 'Minimization Study',
+        phase: 'Phase II',
+        arms: [
+          { id: '1', name: 'Arm A', ratio: 1 },
+          { id: '2', name: 'Arm B', ratio: 1 }
+        ],
+        sites: ['Site1'],
+        strata: [{ id: 'gender', name: 'Gender', levels: ['Male', 'Female'] }],
+        blockSizes: [],
+        stratumCaps: [],
+        seed: 'min_seed',
+        subjectIdMask: '[SiteID]-[001]',
+        randomizationMethod: 'MINIMIZATION',
+        minimizationConfig: { p: 0.8, totalSampleSize: 100 }
+      };
+    });
+
+    it('should open in Static Manifest mode on initialization', async () => {
+      (mockFacade as any).config.set(mockMinimizationConfig);
+      // Create new component to test initialization
+      let testComponent: CodeGeneratorModalComponent;
+      await TestBed.runInInjectionContext(async () => {
+        testComponent = new CodeGeneratorModalComponent();
+        testComponent.exportMode.set('DYNAMIC'); // simulate stale state before init
+        await testComponent.ngOnInit();
+      });
+
+      expect(testComponent!.exportMode()).toBe('STATIC');
+      expect(testComponent!.isMinimization()).toBe(true);
+    });
+
+    it('should automatically set exportMode to STATIC if dynamic or both are selected', async () => {
+      (mockFacade as any).config.set(mockMinimizationConfig);
+      await component.ngOnInit();
+
+      await component.setExportMode('DYNAMIC');
+      expect(component.exportMode()).toBe('STATIC'); // setExportMode guards
+
+      component.exportMode.set('BOTH'); // programmatically bypass guard
+      await (component as any).refreshCode();
+      expect(component.exportMode()).toBe('STATIC'); // refreshCode normalizes
+      expect(mockAnnouncementService.announce).toHaveBeenCalledWith(
+        'Dynamic export is not yet available for Pocock-Simon minimization. Switched to Static Manifest.',
+        'assertive'
+      );
+    });
+
+    it('should normalize exportMode to STATIC on downloadCode', async () => {
+      (mockFacade as any).config.set(mockMinimizationConfig);
+      await component.ngOnInit();
+
+      component.exportMode.set('DYNAMIC'); // programmatic stale state
+
+      const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
+      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+
+      await component.downloadCode();
+
+      expect(component.exportMode()).toBe('STATIC');
+      vi.restoreAllMocks();
+    });
+
+    it('should verify isMinimization computed signal is true', () => {
+      (mockFacade as any).config.set(mockMinimizationConfig);
+      expect(component.isMinimization()).toBe(true);
     });
   });
 });

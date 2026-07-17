@@ -36,13 +36,18 @@
                       <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [attr.aria-checked]="exportMode() === 'STATIC' ? 'true' : 'false'">
                         Static Manifest
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [attr.aria-checked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
+                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" [disabled]="isMinimization()" segmentedPosition="middle" role="radio" [attr.aria-checked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
                         Dynamic Generator
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [attr.aria-checked]="exportMode() === 'BOTH' ? 'true' : 'false'">
+                      <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" [disabled]="isMinimization()" segmentedPosition="last" role="radio" [attr.aria-checked]="exportMode() === 'BOTH' ? 'true' : 'false'">
                         Both (ZIP Bundle)
                       </app-button>
                     </nav>
+                    @if (isMinimization()) {
+                      <span class="text-xs text-muted max-w-sm mt-1" role="note">
+                        Dynamic export is not yet available for Pocock-Simon minimization. A static manifest preserves the generated allocation sequence.
+                      </span>
+                    }
                   </div>
 
                   <div class="flex flex-col gap-2">
