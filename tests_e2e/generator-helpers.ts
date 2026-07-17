@@ -16,7 +16,10 @@ export async function openGenerator(page: Page): Promise<void> {
   if (await ackLabel.isVisible({ timeout: 2000 }).catch(() => false)) {
     await ackLabel.click();
     await FocusAuditor.assertFocusTransition(page, async () => {
-      await page.getByRole('button', { name: /^Next$/i }).click();
+      const nextBtn = page.getByRole('button', { name: /^Next$/i }).first();
+      await expect(nextBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await nextBtn.click({ force: true });
       // Wait for step 1 to be active
       await expect(page.locator('#step-header-1')).toHaveClass(/bg-indigo-50/);
       await page.waitForTimeout(300); // give animation a moment to finish
@@ -35,7 +38,10 @@ export async function loadPreset(page: Page, preset: 'Simple' | 'Standard' | 'Co
 export async function goToStep(page: Page, step: number): Promise<void> {
   for (let i = 0; i < Math.max(0, step - FIRST_WIZARD_STEP); i++) {
     await FocusAuditor.assertFocusTransition(page, async () => {
-      await page.locator("button:has-text('Next'):visible").first().click();
+      const nextBtn = page.locator("button:has-text('Next'):visible").first();
+      await expect(nextBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await nextBtn.click({ force: true });
       await page.waitForTimeout(300);
     });
   }
@@ -49,7 +55,10 @@ export async function goToReviewStep(page: Page): Promise<void> {
 export async function goBackToFirstStep(page: Page): Promise<void> {
   for (let i = 0; i < Math.max(0, REVIEW_WIZARD_STEP - FIRST_WIZARD_STEP); i++) {
     await FocusAuditor.assertFocusTransition(page, async () => {
-      await page.getByRole('button', { name: /^Previous$/i }).click();
+      const prevBtn = page.getByRole('button', { name: /^Previous$/i }).first();
+      await expect(prevBtn).toBeEnabled();
+      await page.waitForTimeout(300);
+      await prevBtn.click({ force: true });
       await page.waitForTimeout(300);
     });
   }

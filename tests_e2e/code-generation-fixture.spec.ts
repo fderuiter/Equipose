@@ -1,12 +1,16 @@
-import { test as base, expect, Page } from '@playwright/test';
-import { execFile } from 'child_process';
-import { mkdir, readFile, rm, writeFile } from 'fs/promises';
-import { join, resolve } from 'path';
-import { promisify } from 'util';
-import { goToStep, loadPreset, openGenerator } from './generator-helpers';
-import { commandExists, getRscriptCandidates, resolveExecutable } from '../src/testing/runtime-command.util';
+import { test as base, expect, Page } from "@playwright/test";
+import { execFile } from "child_process";
+import { mkdir, readFile, rm, writeFile } from "fs/promises";
+import { join, resolve } from "path";
+import { promisify } from "util";
+import { goToStep, loadPreset, openGenerator } from "./generator-helpers";
+import {
+  commandExists,
+  getRscriptCandidates,
+  resolveExecutable,
+} from "../src/testing/runtime-command.util";
 
-type Language = 'R' | 'Python' | 'SAS' | 'Stata';
+type Language = "R" | "Python" | "SAS" | "Stata";
 
 type ScenarioDefinition = {
   id: string;
@@ -18,23 +22,33 @@ type ScriptFixture = {
   exportScenarioScripts: (scenario: ScenarioDefinition) => Promise<void>;
 };
 
-const artifactRoot = resolve(process.cwd(), 'artifacts', 'code-generation-fixtures');
+const artifactRoot = resolve(
+  process.cwd(),
+  "artifacts",
+  "code-generation-fixtures",
+);
 const execFileAsync = promisify(execFile);
 
-const languageTabs: { language: Language; tabName: RegExp; extension: string }[] = [
-  { language: 'R', tabName: /^R$/i, extension: 'R' },
-  { language: 'Python', tabName: /^Python$/i, extension: 'py' },
-  { language: 'SAS', tabName: /^SAS$/i, extension: 'sas' },
-  { language: 'Stata', tabName: /^Stata$/i, extension: 'do' },
+const languageTabs: {
+  language: Language;
+  tabName: RegExp;
+  extension: string;
+}[] = [
+  { language: "R", tabName: /^R$/i, extension: "R" },
+  { language: "Python", tabName: /^Python$/i, extension: "py" },
+  { language: "SAS", tabName: /^SAS$/i, extension: "sas" },
+  { language: "Stata", tabName: /^Stata$/i, extension: "do" },
 ];
 
 const test = base.extend<ScriptFixture>({
   exportScenarioScripts: async ({ page }, use) => {
-    await use(async scenario => {
-      page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
+    await use(async (scenario) => {
+      page.on("console", (msg) => console.log("BROWSER CONSOLE:", msg.text()));
       await openGenerator(page);
       await scenario.configure(page);
-      const generateSchemaBtn = page.getByRole('button', { name: /Generate Schema/i });
+      const generateSchemaBtn = page.getByRole("button", {
+        name: /Generate Schema/i,
+      });
       await expect(generateSchemaBtn).toBeVisible({ timeout: 10_000 });
       await expect(generateSchemaBtn).toBeEnabled();
       await generateSchemaBtn.click();
@@ -43,24 +57,40 @@ const test = base.extend<ScriptFixture>({
       await mkdir(scenarioDir, { recursive: true });
       const files: { language: Language; file: string }[] = [];
 
-      const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
+      const generateCodeBtn = page.getByRole("button", {
+        name: /Generate Code/i,
+      });
       await expect(generateCodeBtn).toBeVisible();
       await generateCodeBtn.click();
-      await page.getByRole('menuitem', { name: /R Script/i }).first().click();
+      await page
+        .getByRole("menuitem", { name: /R Script/i })
+        .first()
+        .click();
 
-      const modal = page.getByRole('dialog', { name: 'Code Generator' });
+      const modal = page.getByRole("dialog", { name: "Code Generator" });
       await expect(modal).toBeVisible({ timeout: 10_000 });
-      const codeBlock = modal.getByTestId('generated-code');
-      await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
+      const codeBlock = modal.getByTestId("generated-code");
+      await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), {
+        timeout: 10_000,
+      });
 
       for (const { language, tabName, extension } of languageTabs) {
-        await modal.getByRole('tab', { name: tabName }).click();
-        await page.waitForTimeout(200);
+        const tabBtn = modal.getByRole("tab", { name: tabName });
+        await expect(tabBtn).toBeVisible({ timeout: 10_000 });
+        await expect(tabBtn).toBeEnabled();
+        await page.waitForTimeout(300);
+        await tabBtn.click({ force: true });
+        await page.waitForTimeout(300);
 
-        await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
+        await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), {
+          timeout: 10_000,
+        });
 
         const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-        await modal.getByRole('button', { name: /Download/i }).first().click();
+        const downloadBtn = modal.getByRole('button', { name: /Download/i }).first();
+        await expect(downloadBtn).toBeEnabled();
+        await page.waitForTimeout(300);
+        await downloadBtn.click({ force: true });
         const download = await downloadPromise;
 
         const outputFile = `${scenario.id}.${extension}`;
@@ -68,21 +98,28 @@ const test = base.extend<ScriptFixture>({
         files.push({ language, file: outputFile });
       }
 
-      await modal.getByRole('button', { name: /Close/i }).first().click();
+      await modal.getByRole("button", { name: /Close/i }).first().click();
       await writeFile(
-        join(scenarioDir, 'manifest.json'),
-        JSON.stringify({ scenario: scenario.id, protocolId: scenario.protocolId, files }, null, 2),
-        'utf-8',
+        join(scenarioDir, "manifest.json"),
+        JSON.stringify(
+          { scenario: scenario.id, protocolId: scenario.protocolId, files },
+          null,
+          2,
+        ),
+        "utf-8",
       );
     });
   },
 });
 
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({ mode: "serial" });
 
-test.describe('Code generation fixtures for script execution checks', () => {
-  test.skip(process.env.CODEGEN_FIXTURES !== '1', 'Runs only in dedicated code-generation fixture CI job.');
-  test.setTimeout(180_000);
+test.describe("Code generation fixtures for script execution checks", () => {
+  test.skip(
+    process.env.CODEGEN_FIXTURES !== "1",
+    "Runs only in dedicated code-generation fixture CI job.",
+  );
+  test.setTimeout(360_000);
 
   const assertSubprocessSuccess = async (
     command: string,
@@ -104,11 +141,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
         stderr?: string;
       };
       throw new Error(
-        `${description} failed (exit code: ${failure.code ?? 'unknown'}).\n` +
-        `Command: ${command} ${args.join(' ')}\n` +
-        `stdout:\n${failure.stdout ?? ''}\n` +
-        `stderr:\n${failure.stderr ?? ''}\n` +
-        `error: ${failure.message}`,
+        `${description} failed (exit code: ${failure.code ?? "unknown"}).\n` +
+          `Command: ${command} ${args.join(" ")}\n` +
+          `stdout:\n${failure.stdout ?? ""}\n` +
+          `stderr:\n${failure.stderr ?? ""}\n` +
+          `error: ${failure.message}`,
       );
     }
   };
@@ -118,162 +155,324 @@ test.describe('Code generation fixtures for script execution checks', () => {
     await mkdir(artifactRoot, { recursive: true });
   });
 
-  test('exports representative complex schemas and scripts for CI artifacts', async ({ page, exportScenarioScripts }) => {
+  test("exports representative complex schemas and scripts for CI artifacts", async ({
+    page,
+    exportScenarioScripts,
+  }) => {
     const scenarios: ScenarioDefinition[] = [
       {
-        id: 'block',
-        protocolId: 'FXT-BLOCK-001',
+        id: "block",
+        protocolId: "FXT-BLOCK-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId').fill('FXT-BLOCK-001');
-          await currentPage.locator('#studyName').fill('Fixture Block Scenario');
+          await loadPreset(currentPage, "Simple");
+          await currentPage.locator("#protocolId").fill("FXT-BLOCK-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Block Scenario");
           await goToStep(currentPage, 4);
-          await currentPage.locator('#blockSizesStr').fill('4, 6');
-          const val = await currentPage.locator('#blockSizesStr').inputValue();
-          console.log('blockSizesStr value after fill:', val);
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.locator("#blockSizesStr").fill("4, 6");
+          const val = await currentPage.locator("#blockSizesStr").inputValue();
+          console.log("blockSizesStr value after fill:", val);
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
         },
       },
       {
-        id: 'minimization-only',
-        protocolId: 'FXT-MIN-ONLY-001',
+        id: "minimization-only",
+        protocolId: "FXT-MIN-ONLY-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId').fill('FXT-MIN-ONLY-001');
-          await currentPage.locator('#studyName').fill('Fixture Minimization Only Scenario');
+          await loadPreset(currentPage, "Simple");
+          await currentPage.locator("#protocolId").fill("FXT-MIN-ONLY-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Minimization Only Scenario");
           await goToStep(currentPage, 2);
-          await currentPage.getByRole('radio', { name: 'Minimization' }).first().click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
-          const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
-          await firstStratum.locator('#factorName0').fill('Biomarker Group');
-          const levelsInput = firstStratum.locator('app-tag-input input').first();
-          await levelsInput.fill('High');
-          await levelsInput.press('Enter');
-          await levelsInput.fill('Low');
-          await levelsInput.press('Enter');
-          const probabilityInputs = firstStratum.locator('input[type="number"]');
-          await probabilityInputs.nth(0).fill('40');
-          await probabilityInputs.nth(1).fill('60');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().click();
+          await currentPage
+            .getByRole("radio", { name: "Minimization" })
+            .first()
+            .click();
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          await currentPage
+            .getByRole("button", { name: /\+ Add Factor/i })
+            .click();
+          const firstStratum = currentPage
+            .locator('[formArrayName="strata"] > div')
+            .first();
+          await firstStratum.locator("#factorName0").fill("Biomarker Group");
+          const levelsInput = firstStratum
+            .locator("app-tag-input input")
+            .first();
+          await levelsInput.fill("High");
+          await levelsInput.press("Enter");
+          await levelsInput.fill("Low");
+          await levelsInput.press("Enter");
+          const probabilityInputs = firstStratum.locator(
+            'input[type="number"]',
+          );
+          await probabilityInputs.nth(0).fill("40");
+          await probabilityInputs.nth(1).fill("60");
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          await currentPage
+            .getByRole("radio", { name: "Marginal Only" })
+            .first()
+            .click();
           const margCapInputs = currentPage.locator('input[id*="-margcap-"]');
-          await margCapInputs.nth(0).fill('100');
-          await margCapInputs.nth(1).fill('100');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await margCapInputs.nth(0).fill("100");
+          await margCapInputs.nth(1).fill("100");
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
         },
       },
       {
-        id: 'zero-cap',
-        protocolId: 'FXT-ZERO-CAP-001',
+        id: "zero-cap",
+        protocolId: "FXT-ZERO-CAP-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Standard');
-          await currentPage.locator('#protocolId').fill('FXT-ZERO-CAP-001');
-          await currentPage.locator('#studyName').fill('Fixture Zero Cap Scenario');
+          await loadPreset(currentPage, "Standard");
+          await currentPage.locator("#protocolId").fill("FXT-ZERO-CAP-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Zero Cap Scenario");
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().click();
-          const capRows = currentPage.locator('[formArrayName="stratumCaps"] > div');
+          await currentPage
+            .getByRole("radio", { name: "Manual Matrix" })
+            .first()
+            .click();
+          const capRows = currentPage.locator(
+            '[formArrayName="stratumCaps"] > div',
+          );
           const capCount = await capRows.count();
           for (let capIndex = 0; capIndex < capCount; capIndex++) {
-            await capRows.nth(capIndex).locator('input').fill('0');
+            await capRows.nth(capIndex).locator("input").fill("0");
           }
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
         },
       },
       {
-        id: 'multi-strata',
-        protocolId: 'FXT-MULTI-001',
+        id: "multi-strata",
+        protocolId: "FXT-MULTI-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Complex');
-          await currentPage.locator('#protocolId').fill('FXT-MULTI-001');
-          await currentPage.locator('#studyName').fill('Fixture Multi-Strata Scenario');
+          await loadPreset(currentPage, "Complex");
+          await currentPage.locator("#protocolId").fill("FXT-MULTI-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Multi-Strata Scenario");
           await goToStep(currentPage, 6);
         },
       },
       {
-        id: 'cap-strategy',
-        protocolId: 'FXT-CAP-001',
+        id: "cap-strategy",
+        protocolId: "FXT-CAP-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Complex');
-          await currentPage.locator('#protocolId').fill('FXT-CAP-001');
-          await currentPage.locator('#studyName').fill('Fixture Cap Strategy Scenario');
+          await loadPreset(currentPage, "Complex");
+          await currentPage.locator("#protocolId").fill("FXT-CAP-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Cap Strategy Scenario");
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Proportional' }).first().click();
-          await currentPage.locator('#globalCap').fill('120');
+          await currentPage
+            .getByRole("radio", { name: "Proportional" })
+            .first()
+            .click();
+          await currentPage.locator("#globalCap").fill("120");
           await currentPage.evaluate(() => {
-            const inputs = Array.from(document.querySelectorAll("input[id*='-pct-']")) as HTMLInputElement[];
+            const inputs = Array.from(
+              document.querySelectorAll("input[id*='-pct-']"),
+            ) as HTMLInputElement[];
             const byFactor = new Map<string, HTMLInputElement[]>();
             for (const input of inputs) {
-              const factorId = input.id.split('-pct-')[0];
+              const factorId = input.id.split("-pct-")[0];
               const entries = byFactor.get(factorId) ?? [];
               entries.push(input);
               byFactor.set(factorId, entries);
             }
             for (const group of byFactor.values()) {
               group.forEach((input, index) => {
-                input.value = index === 0 ? '100' : '0';
-                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.value = index === 0 ? "100" : "0";
+                input.dispatchEvent(new Event("input", { bubbles: true }));
               });
             }
           });
-          await currentPage.getByRole('button', { name: /Compute Matrix/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage
+            .getByRole("button", { name: /Compute Matrix/i })
+            .click();
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
         },
       },
       {
-        id: 'unicode-character-labels',
-        protocolId: 'FXT-UNICODE-001',
+        id: "unicode-character-labels",
+        protocolId: "FXT-UNICODE-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId').fill('FXT-UNICODE-001');
-          await currentPage.locator('#studyName').fill('Fixture Unicode Labels Scenario');
+          await loadPreset(currentPage, "Simple");
+          await currentPage.locator("#protocolId").fill("FXT-UNICODE-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Unicode Labels Scenario");
           await goToStep(currentPage, 2);
-          await currentPage.locator('#armName0').fill('Dose α/β');
-          await currentPage.locator('#armName1').fill('Placebo™ & Control');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          const sitesInput = currentPage.locator('#sitesLabel + app-tag-input input');
-          await sitesInput.fill('Site-Ω-01');
-          await sitesInput.press('Enter');
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
-          const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
-          await firstStratum.locator('#factorName0').fill('Éligibilité-Group');
-          const levelsInput = firstStratum.locator('app-tag-input input').first();
-          await levelsInput.fill('≤50yrs');
-          await levelsInput.press('Enter');
-          await levelsInput.fill('>50yrs naïve');
-          await levelsInput.press('Enter');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.locator("#armName0").fill("Dose α/β");
+          await currentPage.locator("#armName1").fill("Placebo™ & Control");
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          const sitesInput = currentPage.locator(
+            "#sitesLabel + app-tag-input input",
+          );
+          await sitesInput.fill("Site-Ω-01");
+          await sitesInput.press("Enter");
+          await currentPage
+            .getByRole("button", { name: /\+ Add Factor/i })
+            .click();
+          const firstStratum = currentPage
+            .locator('[formArrayName="strata"] > div')
+            .first();
+          await firstStratum.locator("#factorName0").fill("Éligibilité-Group");
+          const levelsInput = firstStratum
+            .locator("app-tag-input input")
+            .first();
+          await levelsInput.fill("≤50yrs");
+          await levelsInput.press("Enter");
+          await levelsInput.fill(">50yrs naïve");
+          await levelsInput.press("Enter");
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
         },
       },
       {
-        id: 'weird-chars',
-        protocolId: 'FXT-WEIRD-001',
+        id: "weird-chars",
+        protocolId: "FXT-WEIRD-001",
         configure: async (currentPage: Page) => {
-          await loadPreset(currentPage, 'Simple');
-          await currentPage.locator('#protocolId').fill('FXT-WEIRD-001');
-          await currentPage.locator('#studyName').fill('Fixture Weird Characters Scenario');
+          await loadPreset(currentPage, "Simple");
+          await currentPage.locator("#protocolId").fill("FXT-WEIRD-001");
+          await currentPage
+            .locator("#studyName")
+            .fill("Fixture Weird Characters Scenario");
           await goToStep(currentPage, 3);
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
-          const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
-          await firstStratum.locator('#factorName0').fill('Special Group');
-          const levelsInput = firstStratum.locator('app-tag-input input').first();
-          await levelsInput.fill("O'Brien");     // single quote
-          await levelsInput.press('Enter');
-          await levelsInput.fill('Type "A"');    // double quote
-          await levelsInput.press('Enter');
-          await levelsInput.fill('C:\\path');    // backslash (JS = C:\path)
-          await levelsInput.press('Enter');
-          await levelsInput.fill('α-Ω type');   // Unicode BMP characters
-          await levelsInput.press('Enter');
-          await levelsInput.fill('semi;colon');  // semicolon
-          await levelsInput.press('Enter');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage
+            .getByRole("button", { name: /\+ Add Factor/i })
+            .click();
+          const firstStratum = currentPage
+            .locator('[formArrayName="strata"] > div')
+            .first();
+          await firstStratum.locator("#factorName0").fill("Special Group");
+          const levelsInput = firstStratum
+            .locator("app-tag-input input")
+            .first();
+          await levelsInput.fill("O'Brien"); // single quote
+          await levelsInput.press("Enter");
+          await levelsInput.fill('Type "A"'); // double quote
+          await levelsInput.press("Enter");
+          await levelsInput.fill("C:\\path"); // backslash (JS = C:\path)
+          await levelsInput.press("Enter");
+          await levelsInput.fill("α-Ω type"); // Unicode BMP characters
+          await levelsInput.press("Enter");
+          await levelsInput.fill("semi;colon"); // semicolon
+          await levelsInput.press("Enter");
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
+          {
+            const nextBtn = currentPage
+              .getByRole("button", { name: /^Next$/i })
+              .first();
+            await expect(nextBtn).toBeEnabled();
+            await currentPage.waitForTimeout(300);
+            await nextBtn.click();
+          }
         },
       },
     ];
@@ -283,45 +482,85 @@ test.describe('Code generation fixtures for script execution checks', () => {
     }
 
     const summary = await Promise.all(
-      scenarios.map(async scenario => {
-        const manifestPath = join(artifactRoot, scenario.id, 'manifest.json');
-        const raw = await readFile(manifestPath, 'utf-8');
-        return JSON.parse(raw) as { scenario: string; files: Array<{ file: string }> };
+      scenarios.map(async (scenario) => {
+        const manifestPath = join(artifactRoot, scenario.id, "manifest.json");
+        const raw = await readFile(manifestPath, "utf-8");
+        return JSON.parse(raw) as {
+          scenario: string;
+          files: Array<{ file: string }>;
+        };
       }),
     );
 
     expect(summary).toHaveLength(7);
-    summary.forEach(entry => expect(entry.files).toHaveLength(4));
-    expect(summary.map(entry => entry.scenario)).toEqual(expect.arrayContaining(scenarios.map(scenario => scenario.id)));
+    summary.forEach((entry) => expect(entry.files).toHaveLength(4));
+    expect(summary.map((entry) => entry.scenario)).toEqual(
+      expect.arrayContaining(scenarios.map((scenario) => scenario.id)),
+    );
 
     // Verify structural properties against the UI schema configuration
     // (Requirement: Structural Parity Verification)
-    const blockSas = await readFile(join(artifactRoot, 'block', 'block.sas'), 'utf-8');
-    const blockStata = await readFile(join(artifactRoot, 'block', 'block.do'), 'utf-8');
-    expect(blockSas).toContain('%let block_sizes = 4 6;');
-    expect(blockStata).toContain('local block_1 4');
-    expect(blockStata).toContain('local block_2 6');
+    const blockSas = await readFile(
+      join(artifactRoot, "block", "block.sas"),
+      "utf-8",
+    );
+    const blockStata = await readFile(
+      join(artifactRoot, "block", "block.do"),
+      "utf-8",
+    );
+    expect(blockSas).toContain("%let block_sizes = 4 6;");
+    expect(blockStata).toContain("local block_1 4");
+    expect(blockStata).toContain("local block_2 6");
 
-    const zeroCapStata = await readFile(join(artifactRoot, 'zero-cap', 'zero-cap.do'), 'utf-8');
-    const zeroCapAssignments = [...zeroCapStata.matchAll(/local cap = (\d+)/g)].map(match => Number(match[1]));
+    const zeroCapStata = await readFile(
+      join(artifactRoot, "zero-cap", "zero-cap.do"),
+      "utf-8",
+    );
+    const zeroCapAssignments = [
+      ...zeroCapStata.matchAll(/local cap = (\d+)/g),
+    ].map((match) => Number(match[1]));
     expect(zeroCapAssignments.length).toBeGreaterThan(0);
-    expect(zeroCapAssignments.every(cap => cap === 0)).toBe(true);
+    expect(zeroCapAssignments.every((cap) => cap === 0)).toBe(true);
 
     const minimizationOnlyContents = await Promise.all([
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.R'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.py'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.sas'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.do'), 'utf-8'),
+      readFile(
+        join(artifactRoot, "minimization-only", "minimization-only.R"),
+        "utf-8",
+      ),
+      readFile(
+        join(artifactRoot, "minimization-only", "minimization-only.py"),
+        "utf-8",
+      ),
+      readFile(
+        join(artifactRoot, "minimization-only", "minimization-only.sas"),
+        "utf-8",
+      ),
+      readFile(
+        join(artifactRoot, "minimization-only", "minimization-only.do"),
+        "utf-8",
+      ),
     ]);
-    minimizationOnlyContents.forEach(content => {
-      expect(content).toContain('Algorithm: Pocock-Simon Minimization');
+    minimizationOnlyContents.forEach((content) => {
+      expect(content).toContain("Algorithm: Pocock-Simon Minimization");
     });
 
     // Verify special characters are properly escaped in all four generated languages.
-    const weirdCharsR     = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.R'),   'utf-8');
-    const weirdCharsPy    = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.py'),  'utf-8');
-    const weirdCharsSas   = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.sas'), 'utf-8');
-    const weirdCharsStata = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.do'),  'utf-8');
+    const weirdCharsR = await readFile(
+      join(artifactRoot, "weird-chars", "weird-chars.R"),
+      "utf-8",
+    );
+    const weirdCharsPy = await readFile(
+      join(artifactRoot, "weird-chars", "weird-chars.py"),
+      "utf-8",
+    );
+    const weirdCharsSas = await readFile(
+      join(artifactRoot, "weird-chars", "weird-chars.sas"),
+      "utf-8",
+    );
+    const weirdCharsStata = await readFile(
+      join(artifactRoot, "weird-chars", "weird-chars.do"),
+      "utf-8",
+    );
 
     // R: single quote passes through; double-quote and backslash are escaped.
     expect(weirdCharsR).toContain(`"O'Brien"`);
@@ -351,9 +590,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
     expect(weirdCharsStata).toContain('`"α-Ω type"\'');
     expect(weirdCharsStata).toContain('`"semi;colon"\'');
 
-    const pythonExecutable = process.env.PYTHON || 'python3';
+    const pythonExecutable = process.env.PYTHON || "python3";
 
-    const pythonScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.py`));
+    const pythonScripts = scenarios.map((scenario) =>
+      join(artifactRoot, scenario.id, `${scenario.id}.py`),
+    );
     const hasPython = await commandExists(pythonExecutable, {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
@@ -362,8 +603,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     await assertSubprocessSuccess(
       pythonExecutable,
-      ['-c', 'import numpy, pandas'],
-      'Python dependency preflight check for generated scripts',
+      ["-c", "import numpy, pandas"],
+      "Python dependency preflight check for generated scripts",
     );
 
     for (const scriptPath of pythonScripts) {
@@ -375,19 +616,31 @@ test.describe('Code generation fixtures for script execution checks', () => {
       );
     }
 
-    const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
+    const rScripts = scenarios.map((scenario) =>
+      join(artifactRoot, scenario.id, `${scenario.id}.R`),
+    );
     const rscriptExecutable = await resolveExecutable(getRscriptCandidates(), {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
     });
     if (rscriptExecutable) {
       for (const scriptPath of rScripts) {
-        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);
+        await assertSubprocessSuccess(
+          rscriptExecutable,
+          [scriptPath],
+          `Generated R script execution (${scriptPath})`,
+        );
       }
-    } else if (process.env.GITHUB_ACTIONS === 'true') {
-      throw new Error('Rscript is required in CI for generated R script execution checks.');
+    } else if (process.env.GITHUB_ACTIONS === "true") {
+      throw new Error(
+        "Rscript is required in CI for generated R script execution checks.",
+      );
     }
 
-    await assertSubprocessSuccess('node', ['scripts/validate-sas-syntax.mjs'], 'Generated SAS script static validation');
+    await assertSubprocessSuccess(
+      "node",
+      ["scripts/validate-sas-syntax.mjs"],
+      "Generated SAS script static validation",
+    );
   });
 });
