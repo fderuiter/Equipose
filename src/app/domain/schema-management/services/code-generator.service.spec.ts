@@ -3,7 +3,7 @@ import { CodeGeneratorService } from './code-generator.service';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { RandomizationConfig } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -174,7 +174,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       writeFileSync(tempFile, pyCode, 'utf-8');
 
       try {
-        const stdout = execSync(`python3 ${tempFile}`, { encoding: 'utf-8' });
+        const stdout = execFileSync('python3', [tempFile], { encoding: 'utf-8' });
         const lines = stdout.trim().split('\n');
         const headers = lines[0].split(',');
         const pySchema = lines.slice(1).map(line => {

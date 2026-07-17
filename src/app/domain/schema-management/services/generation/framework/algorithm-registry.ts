@@ -695,17 +695,18 @@ for (s_idx in seq_len(total_sample_size)) {
       const A = arms.length;
       const S = config.sites?.length || 1;
       const L_max = Math.max(...strata.map(f => f.levels.length), 1);
+      const C_dim = C > 0 ? C : 1;
 
       let code = `
   /* SAS Minimization State Arrays */
-  array caps[${C}] _temporary_ (${validPool.map(combo => {
+  array caps[${C_dim}] _temporary_ (${C > 0 ? validPool.map(combo => {
     const key = getIntersectionKey(combo);
     const cap = capsDict[key];
     return cap === undefined ? 99999999 : cap;
-  }).join(' ')});
-  array intersection_counts[${C}] _temporary_ (${C} * 0);
+  }).join(' ') : '99999999'});
+  array intersection_counts[${C_dim}] _temporary_ (${C_dim} * 0);
 
-  array pool_levels[${C}, ${F || 1}] _temporary_ (${C > 0 && F > 0 ? validPool.map(combo => {
+  array pool_levels[${C_dim}, ${F || 1}] _temporary_ (${C > 0 && F > 0 ? validPool.map(combo => {
     return strata.map(f => {
       const lvl = combo[f.id];
       return f.levels.indexOf(lvl) + 1;
@@ -733,10 +734,12 @@ for (s_idx in seq_len(total_sample_size)) {
   do s_idx = 1 to ${config.minimizationConfig?.totalSampleSize || 100};
     /* 1. Check if active pool is exhausted */
     any_valid = 0;
-    do c_idx = 1 to ${C};
-      if intersection_counts[c_idx] < caps[c_idx] then do;
-        any_valid = 1;
-        leave;
+    if ${C} > 0 then do;
+      do c_idx = 1 to ${C};
+        if intersection_counts[c_idx] < caps[c_idx] then do;
+          any_valid = 1;
+          leave;
+        end;
       end;
     end;
     if any_valid = 0 then leave;
@@ -760,18 +763,20 @@ for (s_idx in seq_len(total_sample_size)) {
       /* Find active levels for this factor matching subject_profile prefix */
       do l_idx = 1 to ${L_max}; active_levels_mask[l_idx] = 0; end;
 
-      do c_idx = 1 to ${C};
-        if intersection_counts[c_idx] < caps[c_idx] then do;
-          match = 1;
-          do prev_f = 1 to (f_idx - 1);
-            if pool_levels[c_idx, prev_f] ne subject_profile[prev_f] then do;
-              match = 0;
-              leave;
+      if ${C} > 0 then do;
+        do c_idx = 1 to ${C};
+          if intersection_counts[c_idx] < caps[c_idx] then do;
+            match = 1;
+            do prev_f = 1 to (f_idx - 1);
+              if pool_levels[c_idx, prev_f] ne subject_profile[prev_f] then do;
+                match = 0;
+                leave;
+              end;
             end;
-          end;
-          if match = 1 then do;
-            lvl_idx = pool_levels[c_idx, f_idx];
-            active_levels_mask[lvl_idx] = 1;
+            if match = 1 then do;
+              lvl_idx = pool_levels[c_idx, f_idx];
+              active_levels_mask[lvl_idx] = 1;
+            end;
           end;
         end;
       end;
@@ -975,17 +980,19 @@ for (s_idx in seq_len(total_sample_size)) {
     end;
 
     /* Register subject */
-    do c_idx = 1 to ${C};
-      match = 1;
-      do f_i = 1 to ${F};
-        if pool_levels[c_idx, f_i] ne subject_profile[f_i] then do;
-          match = 0;
+    if ${C} > 0 then do;
+      do c_idx = 1 to ${C};
+        match = 1;
+        do f_i = 1 to ${F};
+          if pool_levels[c_idx, f_i] ne subject_profile[f_i] then do;
+            match = 0;
+            leave;
+          end;
+        end;
+        if match = 1 then do;
+          intersection_counts[c_idx] = intersection_counts[c_idx] + 1;
           leave;
         end;
-      end;
-      if match = 1 then do;
-        intersection_counts[c_idx] = intersection_counts[c_idx] + 1;
-        leave;
       end;
     end;
 
