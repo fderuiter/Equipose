@@ -122,7 +122,7 @@ async function main() {
   // Also check if index.html inline scripts have matching hashes in CSP
   if (rootResult.ok && rootResult.headers.get('content-security-policy')) {
     const csp = rootResult.headers.get('content-security-policy') || '';
-    const inlineScriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script[^>]*>/gi;
+    const inlineScriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi;
     let match;
     while ((match = inlineScriptRegex.exec(html)) !== null) {
       const scriptContent = match[1];
@@ -130,6 +130,18 @@ async function main() {
         const hashValue = crypto.createHash('sha256').update(scriptContent).digest('base64');
         if (!csp.includes(`'sha256-${hashValue}'`)) {
           console.error(`❌ CSP is missing hash 'sha256-${hashValue}' for an inline script.`);
+          allPass = false;
+        }
+      }
+    }
+
+    const onloadRegex = /onload="([^"]+)"/gi;
+    while ((match = onloadRegex.exec(html)) !== null) {
+      const onloadContent = match[1];
+      if (onloadContent.trim().length > 0) {
+        const hashValue = crypto.createHash('sha256').update(onloadContent).digest('base64');
+        if (!csp.includes(`'sha256-${hashValue}'`)) {
+          console.error(`❌ CSP is missing hash 'sha256-${hashValue}' for an inline event handler.`);
           allPass = false;
         }
       }

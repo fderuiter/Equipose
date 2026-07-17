@@ -169,7 +169,7 @@ if (fs.existsSync(indexHtmlPath)) {
   const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
   
   // Extract all inline scripts
-  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script[^>]*>/gi;
+  const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script\b[^>]*>/gi;
   const hashes = [];
   
   let scriptMatch;
@@ -178,6 +178,17 @@ if (fs.existsSync(indexHtmlPath)) {
     // Only hash if there is actually content (ignore `<script src="..."></script>`)
     if (scriptContent.trim().length > 0) {
       const hashValue = crypto.createHash('sha256').update(scriptContent).digest('base64');
+      hashes.push(`'sha256-${hashValue}'`);
+    }
+  }
+
+  // Extract inline event handlers (e.g. onload) used by Angular for CSS deferred loading
+  const onloadRegex = /onload="([^"]+)"/gi;
+  let onloadMatch;
+  while ((onloadMatch = onloadRegex.exec(indexHtml)) !== null) {
+    const onloadContent = onloadMatch[1];
+    if (onloadContent.trim().length > 0) {
+      const hashValue = crypto.createHash('sha256').update(onloadContent).digest('base64');
       hashes.push(`'sha256-${hashValue}'`);
     }
   }
