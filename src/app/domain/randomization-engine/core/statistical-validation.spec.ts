@@ -17,6 +17,7 @@
 import { generateRandomizationSchema } from './randomization-algorithm';
 import { RandomizationConfig } from '../../core/models/randomization.model';
 import { StudyPresets } from '../../core/presets/study-presets';
+import { describe, it, expect } from 'vitest';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers

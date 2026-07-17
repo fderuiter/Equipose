@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { CodeGeneratorService, CODE_GENERATION_STRATEGIES } from './code-generator.service';
 import { MethodologySpecificationService } from './methodology-specification.service';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('CodeGeneratorService', () => {
   let service: CodeGeneratorService;

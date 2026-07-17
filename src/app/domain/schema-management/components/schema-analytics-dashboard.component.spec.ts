@@ -3,7 +3,7 @@ import { SchemaAnalyticsDashboardComponent } from './schema-analytics-dashboard.
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { signal } from '@angular/core';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { RandomizationResult } from '../../core/models/randomization.model';
 
 function buildMockResult(count: number): RandomizationResult {

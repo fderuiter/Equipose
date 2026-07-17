@@ -4,7 +4,7 @@ import { ConfigFormComponent } from './config-form.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore } from '../store/study-builder.store';
 import { signal } from '@angular/core';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('ConfigFormComponent Regression: Signal-Form Synchronization', () => {
   let component: ConfigFormComponent;

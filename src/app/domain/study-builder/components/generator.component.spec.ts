@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { GeneratorComponent } from './generator.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { signal } from '@angular/core';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { SignalRouter } from '../../../core/router/signal-router.service';
 import { RandomizationResult } from '../../core/models/randomization.model';
 

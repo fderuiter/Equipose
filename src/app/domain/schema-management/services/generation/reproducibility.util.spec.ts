@@ -1,4 +1,5 @@
 import { ReproducibilityUtil } from './reproducibility.util';
+import { describe, it, expect } from 'vitest';
 
 describe('ReproducibilityUtil', () => {
   it('should generate identical 128-bit hash and 31-bit integer across calls', () => {

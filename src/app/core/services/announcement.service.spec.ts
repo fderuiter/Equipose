@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AnnouncementService } from './announcement.service';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('AnnouncementService', () => {
   let service: AnnouncementService;

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { StudyBuilderStore } from './study-builder.store';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('StudyBuilderStore', () => {
   let store: InstanceType<typeof StudyBuilderStore>;

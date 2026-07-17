@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('MethodologySpecificationService', () => {
   let service: MethodologySpecificationService;

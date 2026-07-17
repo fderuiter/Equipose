@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { createStepper } from './stepper.util';
+import { describe, it, expect } from 'vitest';
 
 describe('StepperUtil', () => {
   it('should expose the current step index as a Signal', () => {

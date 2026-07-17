@@ -3,7 +3,7 @@ import { SignalRouter } from '../../../core/router/signal-router.service';
 import { SchemaVerificationComponent, RowDiscrepancy } from './schema-verification.component';
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ---------------------------------------------------------------------------
 // Test data helpers

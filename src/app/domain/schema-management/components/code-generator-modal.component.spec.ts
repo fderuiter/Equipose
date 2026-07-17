@@ -6,7 +6,7 @@ import { RandomizationEngineFacade } from '../../randomization-engine/randomizat
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
 import { signal } from '@angular/core';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { RandomizationConfig } from '../../core/models/randomization.model';
 
 describe('CodeGeneratorModalComponent (domain)', () => {

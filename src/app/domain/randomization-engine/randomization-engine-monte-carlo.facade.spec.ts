@@ -3,7 +3,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
 import { RandomizationConfig } from '../core/models/randomization.model';
 import { StudyPresets } from '../core/presets/study-presets';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { MonteCarloProgressPayload, MonteCarloSuccessPayload } from './worker/worker-protocol';
 
 /** Flush all pending microtasks so async signals settle. */

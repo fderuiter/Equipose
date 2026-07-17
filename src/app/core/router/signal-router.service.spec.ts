@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { SignalRouter } from './signal-router.service';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('SignalRouter', () => {
   let service: SignalRouter;

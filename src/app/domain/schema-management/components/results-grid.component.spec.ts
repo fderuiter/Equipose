@@ -7,7 +7,7 @@ import { By } from '@angular/platform-browser';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { ToastService } from '../../../core/services/toast.service';
 import { signal } from '@angular/core';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 vi.mock('jspdf', () => {
   return {

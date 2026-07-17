@@ -8,6 +8,7 @@ import { promisify } from 'util';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { commandExists, getRscriptCandidates, resolveExecutable } from '../../../../testing/runtime-command.util';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 const execFileAsync = promisify(execFile);
 

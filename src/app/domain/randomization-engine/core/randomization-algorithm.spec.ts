@@ -2,6 +2,7 @@ import * as fc from 'fast-check';
 import { generateRandomizationSchema } from './randomization-algorithm';
 import { RandomizationConfig, StratificationFactor } from '../../core/models/randomization.model';
 import { StudyPresets } from '../../core/presets/study-presets';
+import { describe, it, expect } from 'vitest';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers

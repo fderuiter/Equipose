@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { ViewportService } from './viewport.service';
-import { vi } from 'vitest';
+import { vi, describe, it, expect, afterEach } from 'vitest';
 
 describe('ViewportService', () => {
   let service: ViewportService;
