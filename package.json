@@ -13,7 +13,7 @@
     "test:unit": "vitest run --exclude 'tests_e2e/**'",
     "test:e2e:a11y": "playwright test tests_e2e/a11y.spec.ts",
     "lint:code": "ng lint",
-    "lint:md": "node scripts/check-markdown-links.js",
+    "lint:md": "node scripts/check-markdown-links.js && node scripts/check-orphaned-docs.js",
     "lint:md:syntax": "markdownlint \"**/*.md\"",
     "lint": "run-p lint:code lint:md lint:md:syntax",
     "prestart": "node generate-version.js",
