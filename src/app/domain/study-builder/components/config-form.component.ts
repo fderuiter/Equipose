@@ -993,6 +993,11 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       
       const draft = JSON.parse(draftStr);
       if (draft.schemaVersion !== this.SCHEMA_VERSION) {
+        try {
+          localStorage.setItem('draft-trial-config-backup', draftStr);
+        } catch (e) {
+          console.warn('Failed to backup incompatible draft configuration', e);
+        }
         this.clearDraft();
         return;
       }

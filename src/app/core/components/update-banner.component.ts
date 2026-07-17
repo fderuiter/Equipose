@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { UpdateNotificationService } from '../services/update-notification.service';
 import { AppTooltipDirective } from '../directives/tooltip.directive';
 
@@ -33,7 +34,7 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
       <div class="flex items-center gap-2 flex-shrink-0">
         <button
           type="button"
-          (click)="updateService.activateUpdate()"
+          (click)="reloadAndUpdate()"
           class="rounded-md bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 px-3 py-1 font-medium transition-colors"
         >
           Reload &amp; Update
@@ -55,4 +56,18 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
 })
 export class UpdateBannerComponent {
   protected readonly updateService = inject(UpdateNotificationService);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  reloadAndUpdate(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const hasDraft = localStorage.getItem('draft-trial-config');
+      if (hasDraft) {
+        const confirmReload = window.confirm('You have an active, unsaved draft in progress. Updating will reload the page and may discard incompatible drafts. Are you sure you want to proceed?');
+        if (!confirmReload) {
+          return; // Cancel reload
+        }
+      }
+    }
+    this.updateService.activateUpdate();
+  }
 }

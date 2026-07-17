@@ -1,5 +1,5 @@
 import { AppTooltipDirective } from './core/directives/tooltip.directive';
-import {ChangeDetectionStrategy, Component, HostListener, inject, signal, PLATFORM_ID} from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostListener, inject, signal, PLATFORM_ID, OnInit} from '@angular/core';
 import {RouterOutletComponent} from './core/router/router-outlet.component';
 import {RouterLinkDirective, RouterLinkActiveDirective} from './core/router/router-link.directive';
 import {isPlatformBrowser} from '@angular/common';
@@ -24,6 +24,18 @@ import { DateUtil } from './core/utils/date.util';
 
     @if (updateService.updateAvailable()) {
       <app-update-banner />
+    }
+    @if (hasBackup()) {
+      <div class="bg-amber-100 dark:bg-amber-900/50 border-b border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <p class="text-sm">Incompatible draft found and stashed. Do you want to download it?</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="downloadBackup()" class="px-3 py-1 bg-amber-200 dark:bg-amber-800 hover:bg-amber-300 dark:hover:bg-amber-700 rounded text-sm font-medium transition-colors">Download JSON</button>
+          <button (click)="dismissBackup()" class="px-3 py-1 bg-transparent hover:bg-amber-200 dark:hover:bg-amber-800 rounded text-sm transition-colors">Dismiss</button>
+        </div>
+      </div>
     }
     <div class="min-h-screen flex flex-col bg-base text-main font-sans transition-colors duration-200"
          [class.pt-10]="updateService.updateAvailable()">
@@ -291,20 +303,21 @@ import { DateUtil } from './core/utils/date.util';
     </div>
   `
 })
-export class App {
+export class App implements OnInit {
   readonly theme = inject(ThemeService);
   readonly updateService = inject(UpdateNotificationService);
   readonly currentYear = DateUtil.getCurrentYear();
   readonly appVersion = APP_VERSION;
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly themeMenuOpen = signal(false);
   readonly mobileMenuOpen = signal(false);
+  readonly hasBackup = signal(false);
 
   constructor() {
     // Patch the JSON-LD softwareVersion dynamically so it stays in sync with APP_VERSION
     const doc = inject(DOCUMENT);
-    const platformId = inject(PLATFORM_ID);
-    if (isPlatformBrowser(platformId)) {
+    if (isPlatformBrowser(this.platformId)) {
       const scriptEl = doc.getElementById('app-jsonld') as HTMLScriptElement | null;
       if (scriptEl) {
         try {
@@ -316,6 +329,34 @@ export class App {
         }
       }
     }
+  }
+
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      if (localStorage.getItem('draft-trial-config-backup')) {
+        this.hasBackup.set(true);
+      }
+    }
+  }
+
+  downloadBackup(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const backupStr = localStorage.getItem('draft-trial-config-backup');
+    if (backupStr) {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(backupStr);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "draft_config_backup.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+  }
+
+  dismissBackup(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    localStorage.removeItem('draft-trial-config-backup');
+    this.hasBackup.set(false);
   }
 
   setTheme(mode: ThemeMode): void {
