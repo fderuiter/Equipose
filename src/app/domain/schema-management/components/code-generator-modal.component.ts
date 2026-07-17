@@ -192,6 +192,7 @@ export class CodeGeneratorModalComponent implements OnInit {
 
     if (this.isMinimization() && this.exportMode() !== 'STATIC') {
       this.exportMode.set('STATIC');
+      await this.refreshCode();
     }
 
     const tab = this.activeTab();
