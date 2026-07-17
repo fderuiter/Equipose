@@ -68,6 +68,29 @@ describe('generateMinimization', () => {
     expect(Math.abs(countA - countB)).toBeLessThanOrEqual(5);
   });
 
+  it('allows minimization probability p=0.5', () => {
+    const config = { ...baseConfig, minimizationConfig: { p: 0.5, totalSampleSize: 10 } };
+    expect(() => generateMinimization(config, seedRng('balance0.5'), new SubjectRegistry(config))).not.toThrow();
+  });
+
+  it('assigns to non-preferred arm when rng falls outside p', () => {
+    const config = { ...baseConfig, minimizationConfig: { p: 0.8, totalSampleSize: 2 } };
+    
+    // Subject 1: site(0.1), sex(0.1), selectWeightedArm(0.1) -> Active
+    // Subject 2: site(0.1), sex(0.1), r(0.9), selectWeightedArm(0.1) -> Active (non-preferred)
+    const rngValues = [0.1, 0.1, 0.1, 0.1, 0.1, 0.9, 0.1];
+    let callCount = 0;
+    const rng = () => {
+      const val = rngValues[callCount];
+      callCount++;
+      return val !== undefined ? val : 0.1;
+    };
+    const schema = generateMinimization(config, rng, new SubjectRegistry(config));
+    
+    expect(schema[0].treatmentArm).toBe('Active');
+    expect(schema[1].treatmentArm).toBe('Active');
+  });
+
   it('respects sites: distributes subjects across sites', () => {
     const config = {
       ...baseConfig,
@@ -260,7 +283,7 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
         ]
      };
      const rng = seedRng('probtest_zero_ratio');
-     expect(() => generateMinimization(configZeroRatio, rng, new SubjectRegistry(configZeroRatio))).toThrow();
+     expect(() => generateMinimization(configZeroRatio, rng, new SubjectRegistry(configZeroRatio))).toThrow('Arm ratio must be strictly positive');
   });
 });
 

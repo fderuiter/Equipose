@@ -28,18 +28,16 @@ function computeImbalanceScore(
     const levelMarginals = factorMarginals.get(levelValue);
     if (!levelMarginals) continue;
 
-    let min: number | null = null;
-    let max: number | null = null;
+    let min = Infinity;
+    let max = -Infinity;
     for (const arm of arms) {
       const count = (levelMarginals.get(arm.id) ?? 0) + (arm.id === candidateArmId ? 1 : 0);
       const mult = ratioMultipliers.get(arm.id) ?? 1;
       const normalizedCount = count * mult;
-      if (min === null || normalizedCount < min) min = normalizedCount;
-      if (max === null || normalizedCount > max) max = normalizedCount;
+      min = Math.min(min, normalizedCount);
+      max = Math.max(max, normalizedCount);
     }
-    if (min !== null && max !== null) {
-      totalScore += (max - min);
-    }
+    totalScore += (max - min);
   }
   return totalScore;
 }
@@ -63,24 +61,18 @@ export function generateMinimization(
   if (arms.length === 0 || sites.length === 0) return [];
 
   for (const arm of arms) {
-    if (arm.ratio < 0) {
-      throw new Error(`Arm ratio must be non-negative. Arm "${arm.name}" has ratio ${arm.ratio}`);
+    if (arm.ratio <= 0) {
+      throw new Error(`Arm ratio must be strictly positive. Arm "${arm.name}" has ratio ${arm.ratio}`);
     }
   }
 
   let armRatioLcm = 1;
   for (const arm of arms) {
-    if (arm.ratio > 0) {
-      armRatioLcm = MathUtil.lcm(armRatioLcm, arm.ratio);
-    }
+    armRatioLcm = MathUtil.lcm(armRatioLcm, arm.ratio);
   }
   const ratioMultipliers = new Map<string, number>();
   for (const arm of arms) {
-    if (arm.ratio > 0) {
-      ratioMultipliers.set(arm.id, armRatioLcm / arm.ratio);
-    } else {
-      ratioMultipliers.set(arm.id, 0);
-    }
+    ratioMultipliers.set(arm.id, armRatioLcm / arm.ratio);
   }
 
   const schema: GeneratedSchema[] = [];
@@ -271,7 +263,7 @@ export function generateMinimization(
 
     let assignedArm: TreatmentArm;
 
-    if (preferred.length === arms.length || nonPreferred.length === 0) {
+    if (nonPreferred.length === 0) {
       assignedArm = selectWeightedArm(preferred, rng);
     } else {
       const r = Math.floor(rng() * PRECISION_SCALE);
