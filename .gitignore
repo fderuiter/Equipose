@@ -66,6 +66,7 @@ desktop.ini
 Thumbs.db
 
 # Miscellaneous
+scratch/
 sample_output/
 stryker-tmp/
 reports/

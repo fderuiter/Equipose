@@ -1,7 +1,7 @@
 const { globSync } = require('glob');
 const { spawnSync } = require('child_process');
 
-const files = globSync('**/*.md', { ignore: 'node_modules/**' });
+const files = globSync('**/*.md', { ignore: ['node_modules/**', 'scratch/**'] });
 
 if (files.length === 0) {
   console.log('No markdown files found.');
