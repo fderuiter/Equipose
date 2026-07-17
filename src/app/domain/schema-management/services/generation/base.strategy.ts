@@ -1,5 +1,5 @@
 import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
-import { generateRandomizationSchema } from '../../../randomization-engine/core/randomization-algorithm';
+import { generateRandomizationSchema, generateCryptoSeed } from '../../../randomization-engine/core/randomization-algorithm';
 import { MT19937 } from '../../../randomization-engine/core/mt19937';
 import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
@@ -8,13 +8,26 @@ import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/p
 
 import { AlgorithmRegistry } from './framework/algorithm-registry';
 import { LanguageConfig } from './framework/language-config';
+import { CodeGenerationError } from '../../errors/code-generation-errors';
 
+/**
+ * Strategy interface for code generation.
+ */
 export interface CodeGenerationStrategy {
   readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string;
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string;
+  /**
+   * Generates randomization code for BLOCK mode.
+   */
+  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode?: 'STATIC' | 'DYNAMIC'): string;
+  /**
+   * Generates randomization code for MINIMIZATION mode.
+   */
+  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode?: 'STATIC' | 'DYNAMIC'): string;
 }
 
+/**
+ * Orchestrator coordinating single-source transpilation across target languages.
+ */
 export class BaseOrchestrator implements CodeGenerationStrategy {
   readonly language: 'R' | 'SAS' | 'Python' | 'STATA';
   private configObject: LanguageConfig;
@@ -24,26 +37,47 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     this.configObject = configObject;
   }
 
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string { void metadata; 
-    return this.transpile(config, 'BLOCK');
+  /**
+   * Generates block randomization code in the target language.
+   */
+  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+    void metadata; 
+    return this.transpile(config, 'BLOCK', mode);
   }
 
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string { void metadata; 
-    return this.transpile(config, 'MINIMIZATION');
+  /**
+   * Generates minimization randomization code in the target language.
+   */
+  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+    void metadata; 
+    return this.transpile(config, 'MINIMIZATION', mode);
   }
 
-  protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): string {
-    const isComplex = Boolean(method === 'MINIMIZATION' || 
-                      config.capStrategy === 'MARGINAL_ONLY' || 
-                      (config.sites && config.sites.length > 1) ||
-                      (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') ||
-                      (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) ||
-                      (config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) || 
-                      (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0));
-    
-    const result = generateRandomizationSchema(config);
-    const schema = result.schema;
-    const resolvedConfig = { ...config, seed: result.metadata.seed };
+  /**
+   * Performs the core transpilation process, bypassing full static schema generation in dynamic mode.
+   */
+  protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION', mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+    if (mode === 'DYNAMIC' && method === 'MINIMIZATION') {
+      throw new CodeGenerationError("Dynamic simulation engine is not supported for Pocock-Simon Minimization. Please use Static Manifest mode.", config);
+    }
+    if (mode === 'DYNAMIC') {
+      if (config.capStrategy === 'MARGINAL_ONLY') {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for MARGINAL_ONLY cap strategy. Please use Static Manifest mode.", config);
+      }
+      if (config.globalBlockStrategy && config.globalBlockStrategy.selectionType !== 'RANDOM_POOL') {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for non-RANDOM_POOL block selection. Please use Static Manifest mode.", config);
+      }
+      if (config.globalBlockStrategy && config.globalBlockStrategy.limits && Object.keys(config.globalBlockStrategy.limits).length > 0) {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for block size usage limits. Please use Static Manifest mode.", config);
+      }
+      if ((config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0) ||
+          (config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0)) {
+        throw new CodeGenerationError("Dynamic simulation engine is not supported for site or stratum block size overrides. Please use Static Manifest mode.", config);
+      }
+    }
+
+    const seed = config.seed || generateCryptoSeed();
+    const resolvedConfig = { ...config, seed };
     const ir = CodeTranspiler.buildIR(resolvedConfig, method);
 
     const prng = new MT19937(ir.seedHash);
@@ -67,15 +101,21 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
       precisionEpsilon: PRECISION_EPSILON
     };
 
+    let schema: any[] = [];
+    if (mode === 'STATIC') {
+      const result = generateRandomizationSchema(resolvedConfig);
+      schema = result.schema;
+    }
+
     if (this.configObject.customizeDataSetup) {
-      this.configObject.customizeDataSetup(data, config, ir, method, schema);
+      this.configObject.customizeDataSetup(data, resolvedConfig, ir, method, schema);
     }
 
     let algorithmicLogic = '';
-    if (isComplex) {
-      algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, config, schema);
+    if (mode === 'STATIC') {
+      algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, resolvedConfig, schema);
     } else {
-      algorithmicLogic = AlgorithmRegistry.buildDynamicLogic(this.configObject, config, ir);
+      algorithmicLogic = AlgorithmRegistry.buildDynamicLogic(this.configObject, resolvedConfig, ir);
     }
     
     data['algorithmicLogic'] = algorithmicLogic;

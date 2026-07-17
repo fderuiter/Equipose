@@ -42,7 +42,7 @@ function buildMockResult(overrides: Partial<RandomizationResult> = {}): Randomiz
 }
 
 function buildSchema(count: number): GeneratedSchema[] {
-  return Array.from({ length: count }, (_, i) => (void _, {
+  return Array.from({ length: count }, (_, i) => { void _; return {
     subjectId: `S-${String(i + 1).padStart(3, '0')}`,
     site: 'Site 01',
     stratum: {},
@@ -51,7 +51,7 @@ function buildSchema(count: number): GeneratedSchema[] {
     blockSize: 2,
     treatmentArm: i % 2 === 0 ? 'Treatment A' : 'Treatment B',
     treatmentArmId: i % 2 === 0 ? 'A' : 'B',
-  }));
+  }; });
 }
 
 // ---------------------------------------------------------------------------
@@ -66,7 +66,7 @@ describe('SchemaVerificationComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SchemaVerificationComponent],
       providers: [
-        { provide: SignalRouter, useValue: { queryParams: () => (void _, {}), path: () => '/', navigate: vi.fn() } }
+        { provide: SignalRouter, useValue: { queryParams: () => ({}), path: () => '/', navigate: vi.fn() } }
       ],
     }).compileComponents();
 
@@ -145,7 +145,7 @@ describe('SchemaVerificationComponent', () => {
   describe('diff()', () => {
     it('should return empty array when schemas are identical', () => {
       const schema = buildSchema(4);
-      const result = component.diff(schema, [...schema.map(r => (void _, { ...r }))]);
+      const result = component.diff(schema, [...schema.map(r => ({ ...r }))]);
       expect(result).toHaveLength(0);
     });
 
@@ -161,7 +161,7 @@ describe('SchemaVerificationComponent', () => {
 
     it('should detect treatmentArmId mismatch', () => {
       const baseline = buildSchema(2);
-      const fresh = buildSchema(2).map((r, i) => (void _, {
+      const fresh = buildSchema(2).map((r, i) => ({
         ...r,
         treatmentArmId: i === 0 ? 'B' : 'A', // swap
         treatmentArm: i === 0 ? 'Treatment B' : 'Treatment A',
@@ -173,7 +173,7 @@ describe('SchemaVerificationComponent', () => {
 
     it('should detect subjectId mismatch', () => {
       const baseline = buildSchema(2);
-      const fresh = baseline.map((r, i) => (void _, {
+      const fresh = baseline.map((r, i) => ({
         ...r,
         subjectId: i === 0 ? 'WRONG-ID' : r.subjectId,
       }));
@@ -187,7 +187,7 @@ describe('SchemaVerificationComponent', () => {
 
     it('should detect blockNumber mismatch', () => {
       const baseline = buildSchema(2);
-      const fresh = baseline.map((r, i) => (void _, {
+      const fresh = baseline.map((r, i) => ({
         ...r,
         blockNumber: i === 1 ? 99 : r.blockNumber,
       }));
@@ -199,7 +199,7 @@ describe('SchemaVerificationComponent', () => {
 
     it('should detect stratumCode mismatch', () => {
       const baseline = buildSchema(2);
-      const fresh = baseline.map((r, i) => (void _, {
+      const fresh = baseline.map((r, i) => ({
         ...r,
         stratumCode: i === 0 ? 'WRONG' : r.stratumCode,
       }));
@@ -210,7 +210,7 @@ describe('SchemaVerificationComponent', () => {
 
     it('should not short-circuit on first mismatch - collect all discrepancies', () => {
       const baseline = buildSchema(4);
-      const fresh = baseline.map(r => (void _, {
+      const fresh = baseline.map(r => ({
         ...r,
         treatmentArmId: 'WRONG',
       }));

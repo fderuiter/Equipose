@@ -25,7 +25,7 @@ test.describe('Download UX Smoke Tests', () => {
     expect(csvDownload.suggestedFilename()).toMatch(/randomization_.*\.csv$/);
 
     // 4. Assert PDF button is visible and enabled
-    const pdfButton = resultsSection.getByRole('button', { name: /PDF/i });
+    const pdfButton = resultsSection.getByRole('button', { name: 'Export as PDF', exact: true });
     await expect(pdfButton).toBeVisible();
     await expect(pdfButton).toBeEnabled();
 
@@ -48,7 +48,7 @@ test.describe('Download UX Smoke Tests', () => {
     await page.getByRole('menuitem', { name: /R Script/i }).click();
 
     // 3. Assert modal is visible
-    const modal = page.locator('div[role="dialog"]');
+    const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     await expect(modal).toBeVisible();
     await expect(modal.getByRole('heading', { name: /Code Generator/i })).toBeVisible();
 
@@ -66,7 +66,7 @@ test.describe('Download UX Smoke Tests', () => {
     ];
 
     for (const lang of languages) {
-      const tab = modal.getByRole('button', { name: lang.name, exact: true });
+      const tab = modal.getByRole('tab', { name: lang.name, exact: true });
       await tab.click();
       // Wait for code to refresh (represented by the Download button remaining enabled/visible)
       await expect(downloadBtn).toBeVisible();

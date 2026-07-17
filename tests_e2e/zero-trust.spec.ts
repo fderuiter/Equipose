@@ -99,7 +99,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
 
     // Trigger PDF download
     const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-    const pdfButton = page.locator('#results-section').getByRole('button', { name: /PDF/i });
+    const pdfButton = page.locator('#results-section').getByRole('button', { name: 'Export as PDF', exact: true });
     await pdfButton.evaluate((node: HTMLElement) => node.click());
     await downloadPromise;
 
@@ -123,7 +123,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     await generateCodeBtn.click();
     await page.getByRole('menuitem', { name: /R Script/i }).click();
 
-    const modal = page.locator('div[role="dialog"]');
+    const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     await expect(modal).toBeVisible({ timeout: 5_000 });
 
     // Switch through all tabs to trigger all code generation paths
