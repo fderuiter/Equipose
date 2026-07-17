@@ -5,7 +5,7 @@ Welcome to the central documentation hub for Equipose. This documentation is org
 ## Tutorials
 *Learning-oriented resources that take you by the hand through a series of steps to complete a project.*
 
-*(No tutorials currently available.)*
+(No tutorials currently available.)
 
 ## How-To Guides
 *Problem-oriented guides that provide steps to achieve a specific goal.*
