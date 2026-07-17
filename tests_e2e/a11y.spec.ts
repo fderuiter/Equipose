@@ -282,7 +282,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(resultsSection).toBeVisible();
   await expect(resultsSection.getByRole('button', { name: /CSV/i })).toBeVisible();
   await expect(resultsSection.getByRole('button', { name: /Excel/i })).toBeVisible();
-  await expect(resultsSection.getByRole('button', { name: /PDF/i })).toBeVisible();
+  await expect(resultsSection.getByRole('button', { name: 'Export as PDF', exact: true })).toBeVisible();
   await expect(resultsSection.getByRole('button', { name: /JSON/i })).toBeVisible();
   await expect(resultsSection.locator('[data-testid="schema-seed-value"]')).toBeVisible();
   await expect(resultsSection.locator('[data-testid="result-row"]').first()).toBeVisible();
