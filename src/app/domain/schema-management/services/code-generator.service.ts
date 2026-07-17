@@ -26,6 +26,9 @@ export const CODE_GENERATION_STRATEGIES = new InjectionToken<CodeGenerationStrat
   }
 });
 
+/**
+ * Service orchestrating RTSM Code Export for R, Python, SAS, and Stata in both Static and Dynamic modes.
+ */
 @Injectable({ providedIn: 'root' })
 export class CodeGeneratorService {
   private strategies = inject(CODE_GENERATION_STRATEGIES, { optional: true }) || [];
@@ -75,26 +78,46 @@ export class CodeGeneratorService {
     }
   }
 
+  /**
+   * Generates a Static Data Manifest containing the exact, hardcoded randomization list.
+   * Optimized for readability, cell-for-cell consistency, and fast database seeding.
+   */
   generateStatic(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.generate(language, config, metadata, 'STATIC');
   }
 
+  /**
+   * Generates a Dynamic Algorithmic Generator (Simulation Engine) script.
+   * Contains parameters, seeding, and loops to build and shuffle the randomization schema locally.
+   */
   generateDynamic(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.generate(language, config, metadata, 'DYNAMIC');
   }
 
+  /**
+   * Helper to generate Static R script.
+   */
   generateR(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.generate('R', config, metadata, 'STATIC');
   }
 
+  /**
+   * Helper to generate Static Python script.
+   */
   generatePython(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.generate('Python', config, metadata, 'STATIC');
   }
 
+  /**
+   * Helper to generate Static SAS script.
+   */
   generateSas(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.generate('SAS', config, metadata, 'STATIC');
   }
 
+  /**
+   * Helper to generate Static Stata script.
+   */
   generateStata(config: RandomizationConfig, metadata?: RandomizationResult['metadata']): string {
     return this.generate('STATA', config, metadata, 'STATIC');
   }

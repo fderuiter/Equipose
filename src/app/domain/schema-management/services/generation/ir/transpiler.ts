@@ -157,7 +157,14 @@ export class CodeTranspiler {
           vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.stratum[col])}"`);
         }
 
-        const typeStr = isNum ? '' : '$50 ';
+        let maxLen = 1;
+        vals.forEach(val => {
+          const rawVal = val.startsWith('"') && val.endsWith('"') ? val.slice(1, -1) : val;
+          if (rawVal.length > maxLen) {
+            maxLen = rawVal.length;
+          }
+        });
+        const typeStr = isNum ? '' : `$${maxLen} `;
         schemaRows += `  array arr_${col}[${n}] ${typeStr}_temporary_ (${vals.join(' ')});\n`;
       });
       schemaRows += `  do i = 1 to ${n};\n`;
