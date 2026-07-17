@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
