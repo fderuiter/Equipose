@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
@@ -31,6 +31,8 @@ export class CodeGeneratorModalComponent implements OnInit {
   errorState = signal<CodeGenerationError | null>(null);
   generatedCode = signal<string>('');
 
+  isMinimization = computed(() => this.state.config()?.randomizationMethod === 'MINIMIZATION');
+
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.state.closeCodeGenerator();
@@ -38,6 +40,10 @@ export class CodeGeneratorModalComponent implements OnInit {
 
   async ngOnInit() {
     this.activeTab.set(this.state.codeLanguage());
+    if (this.isMinimization() && this.exportMode() !== 'STATIC') {
+      this.exportMode.set('STATIC');
+      this.announcementService.announce('Dynamic export is not available for Pocock-Simon minimization. Switched to Static Manifest mode.', 'polite');
+    }
     await this.refreshCode();
   }
 
@@ -51,6 +57,9 @@ export class CodeGeneratorModalComponent implements OnInit {
   }
 
   async setExportMode(mode: 'STATIC' | 'DYNAMIC' | 'BOTH') {
+    if (this.isMinimization() && mode !== 'STATIC') {
+      return;
+    }
     this.exportMode.set(mode);
     await this.refreshCode();
   }
@@ -61,6 +70,9 @@ export class CodeGeneratorModalComponent implements OnInit {
     if (!config) {
       this.generatedCode.set('');
       return;
+    }
+    if (this.isMinimization() && this.exportMode() !== 'STATIC') {
+      this.exportMode.set('STATIC');
     }
     try {
       let metadata: RandomizationResult['metadata'];
@@ -177,6 +189,10 @@ export class CodeGeneratorModalComponent implements OnInit {
 
     const config = this.state.config();
     if (!config) return;
+
+    if (this.isMinimization() && this.exportMode() !== 'STATIC') {
+      this.exportMode.set('STATIC');
+    }
 
     const tab = this.activeTab();
     const extension = tab === 'R' ? 'R' : tab === 'SAS' ? 'sas' : tab === 'STATA' ? 'do' : 'py';

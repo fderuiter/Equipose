@@ -55,9 +55,6 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
    * Performs the core transpilation process, bypassing full static schema generation in dynamic mode.
    */
   protected transpile(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION', mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
-    if (mode === 'DYNAMIC' && method === 'MINIMIZATION') {
-      throw new CodeGenerationError("Dynamic simulation engine is not supported for Pocock-Simon Minimization. Please use Static Manifest mode.", config);
-    }
     if (mode === 'DYNAMIC') {
       if (config.capStrategy === 'MARGINAL_ONLY') {
         throw new CodeGenerationError("Dynamic simulation engine is not supported for MARGINAL_ONLY cap strategy. Please use Static Manifest mode.", config);
@@ -113,7 +110,11 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     if (mode === 'STATIC') {
       algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, resolvedConfig, schema);
     } else {
-      algorithmicLogic = AlgorithmRegistry.buildDynamicLogic(this.configObject, resolvedConfig, ir);
+      if (method === 'MINIMIZATION') {
+        algorithmicLogic = AlgorithmRegistry.buildDynamicMinimizationLogic(this.language, resolvedConfig, ir);
+      } else {
+        algorithmicLogic = AlgorithmRegistry.buildDynamicLogic(this.configObject, resolvedConfig, ir);
+      }
     }
     
     data['algorithmicLogic'] = algorithmicLogic;
