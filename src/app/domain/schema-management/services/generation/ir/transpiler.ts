@@ -118,6 +118,22 @@ export class CodeTranspiler {
   }
 
   public static formatStaticSchema(lang: 'R'|'Python'|'SAS'|'STATA', config: RandomizationConfig, schema: GeneratedSchema[]): string {
+    if (schema.length === 0) {
+      if (lang === 'R') {
+        return '';
+      }
+      if (lang === 'Python') {
+        return 'schema = []';
+      }
+      if (lang === 'STATA') {
+        const numCols = 6 + (config.strata || []).length;
+        return `schema_out = J(0, ${numCols}, "")`;
+      }
+      if (lang === 'SAS') {
+        return '';
+      }
+    }
+
     let schemaRows = '';
     if (lang === 'SAS') {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
