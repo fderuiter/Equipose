@@ -64,5 +64,6 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['src/setup-vitest.ts'],
+    exclude: ['tests_e2e/**', 'stryker-tmp/**', 'node_modules/**', 'dist/**'],
   },
 });

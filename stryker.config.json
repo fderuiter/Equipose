@@ -7,5 +7,13 @@
   "testRunner_comment": "vitest",
   "mutate": ["src/app/domain/randomization-engine/core/minimization-algorithm.ts"],
   "tempDirName": "stryker-tmp",
-  "cleanTempDir": true
+  "cleanTempDir": true,
+  "vitest": {
+    "configFile": "vitest.stryker.config.ts"
+  },
+  "thresholds": {
+    "high": 80,
+    "low": 68,
+    "break": 68
+  }
 }

@@ -1020,9 +1020,48 @@ jobs:
         path: docs/
         retention-days: 90
 
+
+  mutation_test:
+    runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      contents: read
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
+      with:
+        egress-policy: audit
+    - name: Checkout repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - name: Install pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+      with:
+        run_install: false
+    - name: Set up Node.js
+      uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+      with:
+        node-version: '22'
+        cache: 'pnpm'
+    - name: Download shared environment
+      uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
+      with:
+        name: shared-env
+        path: .
+    - name: Extract shared environment
+      run: tar -xf shared-env.tar
+    - name: Run Mutation Tests
+      run: pnpm run test:mutate
+    - name: Upload Mutation Report Artifact
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+      if: always()
+      with:
+        name: mutation-report
+        path: reports/mutation/
+        retention-days: 14
+
   release:
     runs-on: ubuntu-latest
-    needs: [setup, e2e, code_generation_fixtures, python_script_execution_check, sas_static_validation, stata_static_validation, metadata_validation, merge_reports, traceability_matrix, script_validation_report, cross_env_equivalence, sbom, security_scan, lint_actions]
+    needs: [setup, e2e, mutation_test, code_generation_fixtures, python_script_execution_check, sas_static_validation, stata_static_validation, metadata_validation, merge_reports, traceability_matrix, script_validation_report, cross_env_equivalence, sbom, security_scan, lint_actions]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write
