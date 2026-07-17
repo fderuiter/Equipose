@@ -53,6 +53,12 @@ Built entirely as a client-side Angular application, it ensures that sensitive t
 
 ---
 
+## Documentation
+
+All project documentation, including architecture concepts, developer commands, compliance checklists, and testing protocols, is centralized in our [Documentation Hub](docs/index.md).
+
+---
+
 ## Architecture
 
 This project follows a **Domain-Driven Design** structure with three bounded contexts:
