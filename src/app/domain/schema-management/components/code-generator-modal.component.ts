@@ -192,7 +192,7 @@ export class CodeGeneratorModalComponent implements OnInit {
       zip.addFile(`randomization_schema_dynamic.${extension}`, encoder.encode(dynamicCode));
 
       const zipBytes = await zip.generateAsync();
-      const blob = new Blob([zipBytes], { type: 'application/zip' });
+      const blob = new Blob([zipBytes as any], { type: 'application/zip' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
