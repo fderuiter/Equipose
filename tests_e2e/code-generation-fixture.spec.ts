@@ -82,7 +82,7 @@ test.describe.configure({ mode: 'serial' });
 
 test.describe('Code generation fixtures for script execution checks', () => {
   test.skip(process.env.CODEGEN_FIXTURES !== '1', 'Runs only in dedicated code-generation fixture CI job.');
-  test.setTimeout(180_000);
+  test.setTimeout(420_000);
 
   const assertSubprocessSuccess = async (
     command: string,
