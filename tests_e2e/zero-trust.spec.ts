@@ -127,9 +127,9 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     await expect(modal).toBeVisible({ timeout: 5_000 });
 
     // Switch through all tabs to trigger all code generation paths
-    await modal.getByRole('button', { name: /Python/i }).click();
-    await modal.getByRole('button', { name: /SAS/i }).click();
-    await modal.getByRole('button', { name: /Stata/i }).click();
+    await modal.getByRole('tab', { name: /Python/i }).click();
+    await modal.getByRole('tab', { name: /SAS/i }).click();
+    await modal.getByRole('tab', { name: /Stata/i }).click();
 
     await modal.getByRole('button', { name: /Close/i }).first().click();
 
