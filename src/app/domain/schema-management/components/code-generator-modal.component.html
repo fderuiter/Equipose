@@ -33,13 +33,13 @@
                   <div class="flex flex-col gap-2">
                     <span id="export-mode-label" class="text-xs font-semibold uppercase tracking-wider text-muted">Export Mode</span>
                     <nav role="radiogroup" aria-labelledby="export-mode-label" class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium w-full sm:w-auto">
-                      <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [attr.aria-checked]="exportMode() === 'STATIC' ? 'true' : 'false'">
+                      <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [ariaChecked]="exportMode() === 'STATIC' ? 'true' : 'false'">
                         Static Manifest
                       </app-button>
-                      <app-button variant="segmented" [disabled]="!isDynamicSupported()" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [attr.aria-checked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
+                      <app-button variant="segmented" [disabled]="!isDynamicSupported()" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [ariaChecked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
                         Dynamic Generator
                       </app-button>
-                      <app-button variant="segmented" [disabled]="!isDynamicSupported()" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [attr.aria-checked]="exportMode() === 'BOTH' ? 'true' : 'false'">
+                      <app-button variant="segmented" [disabled]="!isDynamicSupported()" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [ariaChecked]="exportMode() === 'BOTH' ? 'true' : 'false'">
                         Both (ZIP Bundle)
                       </app-button>
                     </nav>
