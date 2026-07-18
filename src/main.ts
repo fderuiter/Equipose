@@ -8,14 +8,24 @@ bootstrapApplication(App, appConfig)
     if (isDevMode()) {
       // Integrated in-browser accessibility audit tool
       import('axe-core').then((axe) => {
-        setTimeout(() => {
+        let isAxeRunning = false;
+        let axeTimeout;
+
+        const runAxe = (label) => {
+          if (isAxeRunning) return;
+          isAxeRunning = true;
           axe.default.run().then(results => {
             if (results.violations.length) {
-              console.warn('Axe-core accessibility violations:', results.violations);
+              console.warn('Axe-core accessibility violations' + label + ':', results.violations);
             }
+          }).catch(() => {}).finally(() => {
+            isAxeRunning = false;
           });
+        };
+
+        setTimeout(() => {
+          runAxe('');
           
-          // Set up a MutationObserver to re-run on significant DOM changes
           const observer = new MutationObserver((mutations) => {
             const significant = mutations.some(m => 
               m.addedNodes.length > 0 && 
@@ -23,11 +33,8 @@ bootstrapApplication(App, appConfig)
               (m.target as Element).getAttribute?.('aria-live') !== 'polite'
             );
             if (significant) {
-              axe.default.run().then(results => {
-                if (results.violations.length) {
-                  console.warn('Axe-core accessibility violations (dynamic):', results.violations);
-                }
-              });
+              clearTimeout(axeTimeout);
+              axeTimeout = setTimeout(() => runAxe(' (dynamic)'), 500);
             }
           });
           observer.observe(document.body, { childList: true, subtree: true });

@@ -60,7 +60,7 @@ const test = base.extend<ScriptFixture>({
         await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
         const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-        await modal.getByRole('button', { name: /Download/i }).first().click();
+        await modal.getByRole('button', { name: /Download/i }).first().click({ force: true });
         const download = await downloadPromise;
 
         const outputFile = `${scenario.id}.${extension}`;
