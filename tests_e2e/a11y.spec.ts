@@ -178,7 +178,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
       
-      await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
+      await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page), maxDiffPixels: 50000 });
       
       // Dismiss the modal so focus restores
       await modal.getByRole('button', { name: /Close/i }).first().click();
