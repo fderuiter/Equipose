@@ -5,6 +5,7 @@ import { DateUtil } from '../../../core/utils/date.util';
 import { APP_VERSION } from '../../../../environments/version';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
 import { OpenXmlWriter } from '../../../core/utils/openxml.util';
+import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -17,32 +18,14 @@ export class ExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly domainTheme = inject(DomainThemeService);
 
-  private sanitizeFilename(s: string): string {
-    return s.replace(/[^A-Za-z0-9._-]/g, '_').trim();
-  }
-
   // ---------------------------------------------------------------------------
   // CSV Export
   // ---------------------------------------------------------------------------
 
-  private sanitizeCsvValue(value: string | null | undefined): string {
-    if (value === null || value === undefined) {
-      return '""';
-    }
-    const strValue = String(value);
-    const escapedValue = strValue.replace(/"/g, '""');
-
-    // Check for formula injection prefixes
-    if (/^[=+\-@\t\r]/.test(escapedValue)) {
-      return `"'${escapedValue}"`;
-    }
-    return `"${escapedValue}"`;
-  }
-
   exportCsv(result: RandomizationResult, isUnblinded: boolean): void {
     const strataHeaders = result.metadata.strata?.map(s => s.name || s.id) || [];
     const headers = ['Subject ID', 'Site', ...strataHeaders, 'Block Number', 'Block Size', 'Treatment Arm']
-      .map(h => this.sanitizeCsvValue(h));
+      .map(h => FileSecurityUtil.sanitizeCsvValue(h));
 
     const rows = result.schema.map(r => {
       const strataValues = result.metadata.strata?.map(s => r.stratum[s.id] || '') || [];
@@ -53,7 +36,7 @@ export class ExportService {
         r.blockNumber.toString(),
         r.blockSize.toString(),
         isUnblinded ? r.treatmentArm : '*** BLINDED ***'
-      ].map(val => this.sanitizeCsvValue(val));
+      ].map(val => FileSecurityUtil.sanitizeCsvValue(val));
     });
 
     const watermark = "DRAFT SCHEMA - DO NOT USE FOR ENROLLMENT. Execute the generated R/SAS/Python script to generate the official trial schema for RTSM/IRT implementation.";
@@ -78,7 +61,7 @@ export class ExportService {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const safeProtocol = this.sanitizeFilename(result.metadata.protocolId);
+    const safeProtocol = FileSecurityUtil.sanitizeFilename(result.metadata.protocolId);
     const dateStamp = DateUtil.getFileDatestamp(new Date());
     link.setAttribute('href', url);
     link.setAttribute('download', `randomization_${dateStamp}_${safeProtocol}_${isUnblinded ? 'unblinded' : 'blinded'}.csv`);
@@ -112,7 +95,7 @@ export class ExportService {
     const link = document.createElement('a');
     link.setAttribute('href', url);
     const blindLabel = isUnblinded ? 'unblinded' : 'blinded';
-    const safeProtocol = this.sanitizeFilename(result.metadata.protocolId);
+    const safeProtocol = FileSecurityUtil.sanitizeFilename(result.metadata.protocolId);
     const dateStamp = DateUtil.getFileDatestamp(new Date());
     link.setAttribute('download', `randomization_${dateStamp}_${safeProtocol}_${blindLabel}.xlsx`);
     link.style.display = 'none';
@@ -192,7 +175,7 @@ export class ExportService {
 
     const cols = maxWidths.map(w => Math.min(60, w + 3));
     
-    const lastColLetter = this.getColLetter(headerLabels.length);
+    const lastColLetter = OpenXmlWriter.getColLetter(headerLabels.length);
     const autoFilterRef = `A1:${lastColLetter}1`;
 
     writer.addWorksheet('Schema', sheetRows, {
@@ -423,17 +406,7 @@ export class ExportService {
       }
     });
 
-    const safeProtocol = this.sanitizeFilename(result.metadata.protocolId);
+    const safeProtocol = FileSecurityUtil.sanitizeFilename(result.metadata.protocolId);
     doc.save(`randomization_${safeProtocol}_${isUnblinded ? 'unblinded' : 'blinded'}.pdf`);
-  }
-
-  private getColLetter(colIndex: number): string {
-    let letter = '';
-    while (colIndex > 0) {
-      const mod = (colIndex - 1) % 26;
-      letter = String.fromCharCode(65 + mod) + letter;
-      colIndex = Math.floor((colIndex - mod) / 26);
-    }
-    return letter;
   }
 }

@@ -12,6 +12,7 @@ import { generateSubjectId } from './subject-id-engine';
 import { generateMinimization } from './minimization-algorithm';
 import { SubjectRegistry } from './subject-registry';
 import { MathUtil } from '../../core/utils/math.util';
+import { ShuffleUtil } from '../../../core/utils/shuffle.util';
 
 // ---------------------------------------------------------------------------
 // Crypto seed helper (shared with the Web Worker)
@@ -45,11 +46,7 @@ function buildBlock(arms: TreatmentArm[], blockSize: number, totalRatio: number,
     }
   }
   // Fisher-Yates shuffle using raw 32-bit integers
-  for (let i = block.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [block[i], block[j]] = [block[j], block[i]];
-  }
-  return block;
+  return ShuffleUtil.fisherYates(block, rng);
 }
 
 // ---------------------------------------------------------------------------

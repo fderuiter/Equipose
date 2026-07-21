@@ -10,6 +10,7 @@ import { MethodologySpecificationService } from '../services/methodology-specifi
 import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 
@@ -388,31 +389,6 @@ export class ResultsGridComponent {
     return !!(this.filterState()[column]);
   }
 
-  /** Sanitizes a string for use in filenames by replacing invalid characters with underscores. */
-  private sanitizeFilename(s: string): string {
-    return s.replace(/[^A-Za-z0-9._-]/g, '_').trim();
-  }
-
-  /**
-   * Sanitizes a value for CSV export to prevent Formula Injection (CSV Injection).
-   * It escapes double quotes, wraps the value in double quotes, and prepends a single
-   * quote if the value starts with an executable prefix.
-   */
-  private sanitizeCsvValue(value: string | null | undefined): string {
-    if (value === null || value === undefined) {
-      return '""';
-    }
-    const strValue = String(value);
-    const escapedValue = strValue.replace(/"/g, '""');
-
-    // Check for formula injection prefixes
-    if (/^[=+\-@\t\r]/.test(escapedValue)) {
-      return `"'${escapedValue}"`;
-    }
-
-    return `"${escapedValue}"`;
-  }
-
   private isSimulationMode(protocolId: string): boolean {
     return protocolId === 'Simulation' || protocolId === 'Draft';
   }
@@ -461,8 +437,8 @@ export class ResultsGridComponent {
       return;
     }
 
-    const safeProtocol = this.sanitizeFilename(data.metadata.protocolId);
-    const safeSeed = this.sanitizeFilename(data.metadata.seed);
+    const safeProtocol = FileSecurityUtil.sanitizeFilename(data.metadata.protocolId);
+    const safeSeed = FileSecurityUtil.sanitizeFilename(data.metadata.seed);
 
     const exportPayload = {
       ...data,
