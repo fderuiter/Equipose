@@ -3,6 +3,8 @@ import { CodeGeneratorService } from './code-generator.service';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { RandomizationConfig } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
+import { CodeTranspiler } from './generation/ir/transpiler';
+import { vi } from 'vitest';
 import { execFileSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
@@ -216,6 +218,31 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(() => {
         service.generateDynamic('Python', marginalMinConfig);
       }).toThrow('Dynamic simulation engine is not supported for MARGINAL_ONLY cap strategy. Please use Static Manifest mode.');
+    });
+
+    it('should throw StrataParsingError when strata configurations are invalid', () => {
+      const malformedConfig = {
+        ...standardBlockConfig,
+        strata: [{ id: 'age', name: 'Age' }] // Missing levels array
+      } as unknown as RandomizationConfig;
+      
+      expect(() => {
+        service.generateStatic('Python', malformedConfig);
+      }).toThrowError(/Failed to parse strata levels/);
+    });
+
+    it('should throw TemplateCompilationError when template rendering fails', () => {
+      const renderSpy = vi.spyOn(CodeTranspiler, 'renderTemplate').mockImplementation(() => {
+        throw new Error('Mock render failure');
+      });
+      
+      try {
+        expect(() => {
+          service.generateStatic('Python', standardBlockConfig);
+        }).toThrowError(/Failed to compile Python template/);
+      } finally {
+        renderSpy.mockRestore();
+      }
     });
   });
 });

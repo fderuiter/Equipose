@@ -4,7 +4,6 @@ import {
   TemplateCompilationError,
   StrataParsingError,
   UnsupportedLanguageError,
-  MissingSeedError,
   ConfigurationValidationError
 } from './code-generation-errors';
 import { RandomizationConfig } from '../../core/models/randomization.model';
@@ -77,19 +76,6 @@ describe('Code Generation Errors', () => {
       expect(error.name).toBe('UnsupportedLanguageError');
       expect(error.context).toEqual(mockConfig);
       expect(error).toBeInstanceOf(UnsupportedLanguageError);
-      expect(error).toBeInstanceOf(CodeGenerationError);
-    });
-  });
-
-  describe('MissingSeedError', () => {
-    it('should initialize correctly', () => {
-      const language = 'Python';
-      const error = new MissingSeedError(language, mockConfig);
-
-      expect(error.message).toContain(`Missing valid PRNG seed for ${language} compilation`);
-      expect(error.name).toBe('MissingSeedError');
-      expect(error.context).toEqual(mockConfig);
-      expect(error).toBeInstanceOf(MissingSeedError);
       expect(error).toBeInstanceOf(CodeGenerationError);
     });
   });

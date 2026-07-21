@@ -47,15 +47,6 @@ export class UnsupportedLanguageError extends CodeGenerationError {
   }
 }
 
-/** Thrown when reproducible code generation is attempted without a PRNG seed. */
-export class MissingSeedError extends CodeGenerationError {
-  constructor(language: string, context: Partial<RandomizationConfig> | null = null) {
-    super(`Missing valid PRNG seed for ${language} compilation. Configure a seed value to generate reproducible scripts.`, context);
-    this.name = 'MissingSeedError';
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-}
-
 /** Thrown when the RandomizationConfig object fails pre-flight validation. */
 export class ConfigurationValidationError extends CodeGenerationError {
   readonly failures: ValidationFailure[];
