@@ -5,18 +5,33 @@ export type ValidatorFn = (control: AbstractControl) => ValidationErrors | null;
 
 export abstract class AbstractControl {
   abstract get value(): any;
-  abstract get valueChanges(): any;
   abstract setValue(value: any, options?: { emitEvent?: boolean }): void;
   abstract patchValue(value: any, options?: { emitEvent?: boolean }): void;
   abstract disable(options?: { emitEvent?: boolean }): void;
   abstract enable(options?: { emitEvent?: boolean }): void;
   abstract get valid(): boolean;
-  abstract get invalid(): boolean;
-  abstract get error(): ValidationErrors | null;
   abstract get errors(): ValidationErrors | null;
   abstract updateValueAndValidity(options?: { emitEvent?: boolean }): void;
   abstract get(path: string | (string | number)[]): AbstractControl | null;
   abstract setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void;
+
+  get invalid(): boolean {
+    return !this.valid;
+  }
+
+  get error(): ValidationErrors | null {
+    return this.errors;
+  }
+
+  public valueChanges = {
+    subscribe: (fn: (val: any) => void) => {
+      const eff = effect(() => fn(this.value));
+      return { unsubscribe: () => eff.destroy() };
+    },
+    pipe: (...args: any[]) => {
+       throw new Error('Not implemented');
+    }
+  };
   
   // States
   protected _touched = signal(false);
@@ -33,20 +48,6 @@ export class SignalControl<T = any> extends AbstractControl {
   private _value: WritableSignal<T>;
   private _validators: ValidatorFn[];
   private _disabled = signal(false);
-
-  // We add a mock subscribe method to valueChanges so we don't have to change all code
-  public valueChanges = {
-    subscribe: (fn: (val: T) => void) => {
-      // Create an effect to mimic subscribe
-      const eff = effect(() => fn(this._value()));
-      return { unsubscribe: () => eff.destroy() };
-    },
-    pipe: (...args: any[]) => {
-       // Since the task says "Replace FormBuilder with a custom Signal-based primitive... Replace all .subscribe() side-effects with Signal effect() blocks", we shouldn't fully mock RxJS.
-       // Actually wait, I will rewrite ConfigFormComponent to use effects instead of valueChanges.pipe.
-       throw new Error('Not implemented');
-    }
-  };
 
   constructor(initialValue: T, validators: ValidatorFn[] = []) {
     super();
@@ -82,14 +83,6 @@ export class SignalControl<T = any> extends AbstractControl {
     return this.errors === null;
   }
 
-  get invalid(): boolean {
-    return !this.valid;
-  }
-
-  get error(): ValidationErrors | null {
-    return this.errors;
-  }
-  
   get errors(): ValidationErrors | null {
     if (this.disabled) return null;
     const errs: ValidationErrors = {};
@@ -135,29 +128,11 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
     return result;
   }
 
-  public valueChanges = {
-    subscribe: (fn: (val: any) => void) => {
-      const eff = effect(() => fn(this.value));
-      return { unsubscribe: () => eff.destroy() };
-    },
-    pipe: (...args: any[]) => {
-       throw new Error('Not implemented');
-    }
-  };
-
   get valid(): boolean {
     for (const key in this.controls) {
       if (!this.controls[key].valid) return false;
     }
     return this.errors === null;
-  }
-
-  get invalid(): boolean {
-    return !this.valid;
-  }
-
-  get error(): ValidationErrors | null {
-    return this.errors;
   }
 
   get errors(): ValidationErrors | null {
@@ -243,16 +218,6 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     return this._controls().map(c => c.value);
   }
 
-  public valueChanges = {
-    subscribe: (fn: (val: any) => void) => {
-      const eff = effect(() => fn(this.value));
-      return { unsubscribe: () => eff.destroy() };
-    },
-    pipe: (...args: any[]) => {
-       throw new Error('Not implemented');
-    }
-  };
-
   push(control: T, options?: { emitEvent?: boolean }) {
     this._controls.update(arr => [...arr, control]);
   }
@@ -292,20 +257,27 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     return true;
   }
 
-  get invalid(): boolean {
-    return !this.valid;
-  }
-
-  get error(): ValidationErrors | null {
-    return this.errors;
-  }
-
   get errors(): ValidationErrors | null {
     return null;
   }
 
-  setValue(value: any[], options?: { emitEvent?: boolean }) {}
-  patchValue(value: any[], options?: { emitEvent?: boolean }) {}
+  setValue(value: any[], options?: { emitEvent?: boolean }) {
+    if (!Array.isArray(value)) return;
+    this.controls.forEach((control, index) => {
+      if (index < value.length) {
+        control.setValue(value[index], options);
+      }
+    });
+  }
+  
+  patchValue(value: any[], options?: { emitEvent?: boolean }) {
+    if (!Array.isArray(value)) return;
+    this.controls.forEach((control, index) => {
+      if (index < value.length && value[index] !== undefined) {
+        control.patchValue(value[index], options);
+      }
+    });
+  }
   disable(options?: { emitEvent?: boolean }) {
     for (const c of this.controls) c.disable(options);
   }
