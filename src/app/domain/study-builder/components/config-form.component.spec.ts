@@ -25,6 +25,8 @@ describe('ConfigFormComponent (domain)', () => {
       showCodeGenerator: signal(false),
       codeLanguage: signal('R'),
       generateSchema: vi.fn(),
+      previewSubjectIdMask: vi.fn().mockReturnValue('mock-preview'),
+      validateSubjectIdMask: vi.fn().mockReturnValue({ valid: true }),
       openCodeGenerator: vi.fn(),
       closeCodeGenerator: vi.fn(),
       clearResults: vi.fn()
