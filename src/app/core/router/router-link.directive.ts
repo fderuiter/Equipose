@@ -1,5 +1,5 @@
 import { Directive, Input, HostListener, inject, ElementRef, Renderer2, effect, OnInit, OnDestroy, HostBinding } from '@angular/core';
-import { SignalRouter } from './signal-router.service';
+import { SignalRouter } from '@core/router/signal-router.service';
 
 @Directive({
   selector: '[routerLink]',

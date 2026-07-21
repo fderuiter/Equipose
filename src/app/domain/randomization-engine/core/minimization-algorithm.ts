@@ -1,10 +1,10 @@
 import { sampleLevel, selectWeightedArm } from "../../shared/statistical/weighted-sampling";
-import { RandomizationConfig, GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../core/constants/precision.config';
-import { generateSubjectId } from './subject-id-engine';
-import { SubjectRegistry } from './subject-registry';
+import { RandomizationConfig, GeneratedSchema, TreatmentArm } from 'src/app/domain/core/models/randomization.model';
+import { PRECISION_EPSILON, PRECISION_SCALE } from '@core/constants/precision.config';
+import { generateSubjectId } from 'src/app/domain/randomization-engine/core/subject-id-engine';
+import { SubjectRegistry } from 'src/app/domain/randomization-engine/core/subject-registry';
 
-import { MathUtil } from '../../core/utils/math.util';
+import { MathUtil } from 'src/app/domain/core/utils/math.util';
 
 function computeImbalanceScore(
   candidateArmId: string,

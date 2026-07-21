@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 
 @Component({
   selector: 'app-schema-analytics-dashboard',

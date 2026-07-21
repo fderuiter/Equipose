@@ -62,6 +62,42 @@ module.exports = defineConfig([
               message:
                 'domain/study-builder must not access the randomization-engine worker internals. ' +
                 'Use RandomizationEngineFacade instead.'
+            },
+            {
+              group: [
+                
+                '../core/**',
+                '../../core/**',
+                '../../../core/**',
+                '../../../../core/**',
+                './core/**'
+              ],
+              message: 'Direct relative imports to core directories are not allowed. Please use the "@core" alias instead.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  {
+    files: ['**/*.ts'],
+    ignores: ['src/app/core/**/*.ts', 'src/app/domain/study-builder/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                
+                '../core/**',
+                '../../core/**',
+                '../../../core/**',
+                '../../../../core/**',
+                './core/**'
+              ],
+              message: 'Direct relative imports to core directories are not allowed. Please use the "@core" alias instead.'
             }
           ]
         }
@@ -85,6 +121,17 @@ module.exports = defineConfig([
               message:
                 'The randomization-engine core algorithm must be pure TypeScript with no Angular dependencies. ' +
                 'It must be usable inside Web Workers and SSR.'
+            },
+            {
+              group: [
+                
+                '../core/**',
+                '../../core/**',
+                '../../../core/**',
+                '../../../../core/**',
+                './core/**'
+              ],
+              message: 'Direct relative imports to core directories are not allowed. Please use the "@core" alias instead.'
             }
           ]
         }

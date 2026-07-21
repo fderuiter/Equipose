@@ -1,6 +1,6 @@
-import goldenFixtures from './randomization-algorithm-golden.json';
-import { generateRandomizationSchema } from './randomization-algorithm';
-import { RandomizationConfig } from '../../core/models/randomization.model';
+import goldenFixtures from 'src/app/domain/randomization-engine/core/randomization-algorithm-golden.json';
+import { generateRandomizationSchema } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 import { TestBed } from '@angular/core/testing';
 import { CodeGeneratorService } from '../../schema-management/services/code-generator.service';
 import { execFile } from 'child_process';

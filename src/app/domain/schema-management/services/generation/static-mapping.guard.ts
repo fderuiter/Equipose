@@ -1,4 +1,4 @@
-import { RandomizationConfig } from '../../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 import { MappingMismatchError } from '../../errors/code-generation-errors';
 import { ReproducibilityUtil } from './reproducibility.util';
 import { FormattingUtil } from './formatting.util';

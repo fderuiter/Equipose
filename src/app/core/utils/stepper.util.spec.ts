@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { createStepper } from './stepper.util';
+import { createStepper } from '@core/utils/stepper.util';
 
 describe('StepperUtil', () => {
   it('should expose the current step index as a Signal', () => {

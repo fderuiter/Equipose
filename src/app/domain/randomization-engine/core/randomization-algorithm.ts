@@ -1,17 +1,17 @@
-import { MT19937 } from './mt19937';
-import { DeterminismProvider } from './determinism.provider';
-import { UnifiedValidationAuthority, ValidationFailure } from '../../core/validation/unified-validator';
+import { MT19937 } from 'src/app/domain/randomization-engine/core/mt19937';
+import { DeterminismProvider } from 'src/app/domain/randomization-engine/core/determinism.provider';
+import { UnifiedValidationAuthority, ValidationFailure } from 'src/app/domain/core/validation/unified-validator';
 import {
   TreatmentArm,
   RandomizationConfig,
   GeneratedSchema,
   RandomizationResult,
   BlockRule
-} from '../../core/models/randomization.model';
-import { generateSubjectId } from './subject-id-engine';
-import { generateMinimization } from './minimization-algorithm';
-import { SubjectRegistry } from './subject-registry';
-import { MathUtil } from '../../core/utils/math.util';
+} from 'src/app/domain/core/models/randomization.model';
+import { generateSubjectId } from 'src/app/domain/randomization-engine/core/subject-id-engine';
+import { generateMinimization } from 'src/app/domain/randomization-engine/core/minimization-algorithm';
+import { SubjectRegistry } from 'src/app/domain/randomization-engine/core/subject-registry';
+import { MathUtil } from 'src/app/domain/core/utils/math.util';
 
 // ---------------------------------------------------------------------------
 // Crypto seed helper (shared with the Web Worker)

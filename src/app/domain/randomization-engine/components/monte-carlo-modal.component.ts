@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, effect, ElementRef, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
-import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
-import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
+import { KeyboardScrollDirective } from '@core/directives/keyboard-scroll.directive';
+import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

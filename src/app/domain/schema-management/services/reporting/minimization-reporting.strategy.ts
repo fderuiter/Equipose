@@ -1,4 +1,4 @@
-import { RandomizationConfig } from '../../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 import { BaseReportingStrategy } from './base-reporting.strategy';
 
 export class MinimizationReportingStrategy extends BaseReportingStrategy {

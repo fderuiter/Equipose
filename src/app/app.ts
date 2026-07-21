@@ -1,15 +1,15 @@
-import { AppTooltipDirective } from './core/directives/tooltip.directive';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import {ChangeDetectionStrategy, Component, HostListener, inject, signal, PLATFORM_ID} from '@angular/core';
-import {RouterOutletComponent} from './core/router/router-outlet.component';
-import {RouterLinkDirective, RouterLinkActiveDirective} from './core/router/router-link.directive';
+import {RouterOutletComponent} from '@core/router/router-outlet.component';
+import {RouterLinkDirective, RouterLinkActiveDirective} from '@core/router/router-link.directive';
 import {isPlatformBrowser} from '@angular/common';
 import {DOCUMENT} from '@angular/common';
-import {ThemeService, ThemeMode} from './core/services/theme.service';
-import {UpdateNotificationService} from './core/services/update-notification.service';
-import {UpdateBannerComponent} from './core/components/update-banner.component';
+import {ThemeService, ThemeMode} from '@core/services/theme.service';
+import {UpdateNotificationService} from '@core/services/update-notification.service';
+import {UpdateBannerComponent} from '@core/components/update-banner.component';
 import { APP_VERSION } from '../environments/version';
-import { FocusManagerDirective } from './core/directives/focus-manager.directive';
-import { DateUtil } from './core/utils/date.util';
+import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
+import { DateUtil } from '@core/utils/date.util';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

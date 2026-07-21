@@ -1,9 +1,9 @@
 import * as fc from 'fast-check';
 import { describe, it, expect } from 'vitest';
-import { generateMinimization } from './minimization-algorithm';
-import { SubjectRegistry } from './subject-registry';
-import { MT19937 } from './mt19937';
-import { RandomizationConfig, StratificationFactor, TreatmentArm } from '../../core/models/randomization.model';
+import { generateMinimization } from 'src/app/domain/randomization-engine/core/minimization-algorithm';
+import { SubjectRegistry } from 'src/app/domain/randomization-engine/core/subject-registry';
+import { MT19937 } from 'src/app/domain/randomization-engine/core/mt19937';
+import { RandomizationConfig, StratificationFactor, TreatmentArm } from 'src/app/domain/core/models/randomization.model';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Arbitraries

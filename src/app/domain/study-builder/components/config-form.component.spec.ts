@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '../../../core/forms/signal-forms';
+import { ReactiveFormsModule } from '@core/forms/signal-forms';
 import { ConfigFormComponent } from './config-form.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore } from '../store/study-builder.store';
-import { AnnouncementService } from '../../../core/services/announcement.service';
+import { AnnouncementService } from '@core/services/announcement.service';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { By } from '@angular/platform-browser';

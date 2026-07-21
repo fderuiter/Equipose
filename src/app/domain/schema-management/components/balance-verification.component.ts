@@ -1,9 +1,9 @@
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
-import { GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
+import { GeneratedSchema, TreatmentArm } from 'src/app/domain/core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Data model for the aggregation engine

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, effect, signal, viewChild, OnInit } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { RouterLinkDirective } from '../../../core/router/router-link.directive';
-import { SignalRouter } from '../../../core/router/signal-router.service';
+import { RouterLinkDirective } from '@core/router/router-link.directive';
+import { SignalRouter } from '@core/router/signal-router.service';
 import { ConfigFormComponent } from './config-form.component';
 import { ZeroStateComponent } from './zero-state.component';
 import { SkeletonGridComponent } from './skeleton-grid.component';
@@ -11,10 +11,10 @@ import { SchemaAnalyticsDashboardComponent } from '../../schema-management/compo
 import { BalanceVerificationComponent } from '../../schema-management/components/balance-verification.component';
 import { MonteCarloModalComponent } from '../../randomization-engine/components/monte-carlo-modal.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
-import { ViewportService } from '../../../core/services/viewport.service';
-import { SeoService } from '../../../core/services/seo.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
-import { ButtonComponent } from '../../../core/components/ui/button.component';
+import { ViewportService } from '@core/services/viewport.service';
+import { SeoService } from '@core/services/seo.service';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { ButtonComponent } from '@core/components/ui/button.component';
 
 type ResultsTab = 'grid' | 'balance';
 

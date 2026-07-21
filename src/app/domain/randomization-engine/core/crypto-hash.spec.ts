@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { buildHashPayload, sha256Hex, computeAuditHash } from './crypto-hash';
-import { RandomizationResult } from '../../core/models/randomization.model';
-import { StudyPresets } from '../../core/presets/study-presets';
+import { buildHashPayload, sha256Hex, computeAuditHash } from 'src/app/domain/randomization-engine/core/crypto-hash';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { StudyPresets } from 'src/app/domain/core/presets/study-presets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // buildHashPayload

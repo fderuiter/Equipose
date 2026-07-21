@@ -1,9 +1,9 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {APP_VERSION} from '../../../environments/version';
-import {SeoService} from '../../core/services/seo.service';
-import { DateUtil } from '../../core/utils/date.util';
+import {SeoService} from '@core/services/seo.service';
+import { DateUtil } from '@core/utils/date.util';
 
-import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice/regulatory-notice.component';
+import {RegulatoryNoticeComponent} from '@core/components/regulatory-notice/regulatory-notice.component';
 
 @Component({
   selector: 'app-about',

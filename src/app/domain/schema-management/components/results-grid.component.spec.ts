@@ -1,10 +1,10 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ResultsGridComponent } from './results-grid.component';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 import { By } from '@angular/platform-browser';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
-import { ToastService } from '../../../core/services/toast.service';
+import { ToastService } from '@core/services/toast.service';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 

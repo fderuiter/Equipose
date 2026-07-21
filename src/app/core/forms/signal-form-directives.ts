@@ -1,5 +1,5 @@
 import { Directive, Input, HostListener, ElementRef, inject, effect, OnInit, Injector, Renderer2 } from '@angular/core';
-import { SignalControl, FormGroup, FormArray } from './signal-forms';
+import { SignalControl, FormGroup, FormArray } from '@core/forms/signal-forms';
 
 @Directive({
   selector: '[formGroup]',

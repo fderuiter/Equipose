@@ -1,20 +1,20 @@
 import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { GeneratedSchema } from '../../core/models/randomization.model';
-import { ViewportService } from '../../../core/services/viewport.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { GeneratedSchema } from 'src/app/domain/core/models/randomization.model';
+import { ViewportService } from '@core/services/viewport.service';
+import { ToastService } from '@core/services/toast.service';
 import { MethodologySpecificationService } from '../services/methodology-specification.service';
-import { DateUtil } from '../../../core/utils/date.util';
+import { DateUtil } from '@core/utils/date.util';
 import { ExportService } from '../services/export.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
-import { ButtonComponent } from '../../../core/components/ui/button.component';
-import { TextInputComponent } from '../../../core/components/ui/text-input.component';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { ButtonComponent } from '@core/components/ui/button.component';
+import { TextInputComponent } from '@core/components/ui/text-input.component';
 
-import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
-import { ToggleComponent } from '../../../core/components/ui/toggle.component';
+import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
+import { ToggleComponent } from '@core/components/ui/toggle.component';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
 

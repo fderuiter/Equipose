@@ -1,6 +1,6 @@
 import { Component, computed, Input, ChangeDetectionStrategy, signal, inject } from '@angular/core';
-import { PRECISION_SCALE } from '../../../core/constants/precision.config';
-import { DomainThemeService, ArmColorTokens } from '../../core/theme/domain-theme.service';
+import { PRECISION_SCALE } from '@core/constants/precision.config';
+import { DomainThemeService, ArmColorTokens } from 'src/app/domain/core/theme/domain-theme.service';
 
 /** One arm's data passed from the parent. */
 export interface ArmInput {

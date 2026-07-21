@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
-import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
-import { StudyPresets } from '../core/presets/study-presets';
+import { RandomizationConfig, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { StudyPresets } from 'src/app/domain/core/presets/study-presets';
 import { vi } from 'vitest';
-import * as algo from './core/randomization-algorithm';
+import * as algo from 'src/app/domain/randomization-engine/core/randomization-algorithm';
 
 /** Flush all pending microtasks so async signals settle. */
 const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));

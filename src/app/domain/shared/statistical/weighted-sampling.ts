@@ -1,4 +1,4 @@
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../core/constants/precision.config';
+import { PRECISION_EPSILON, PRECISION_SCALE } from '@core/constants/precision.config';
 
 export function sampleLevel(
   levels: string[],

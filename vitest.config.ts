@@ -59,8 +59,16 @@ function angularTemplateInliner(): Plugin {
 
 export default defineConfig({
   plugins: [angularTemplateInliner()],
+  resolve: {
+    alias: [
+      { find: /^\@core$/, replacement: resolve(__dirname, './src/app/core/index.ts') },
+      { find: /^\@core\/(.*)/, replacement: resolve(__dirname, './src/app/core/$1') },
+      { find: /^src\/(.*)/, replacement: resolve(__dirname, './src/$1') }
+    ],
+  },
   test: {
     includeTaskLocation: true,
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests_e2e/**'],
     globals: true,
     environment: 'jsdom',
     setupFiles: ['src/setup-vitest.ts'],

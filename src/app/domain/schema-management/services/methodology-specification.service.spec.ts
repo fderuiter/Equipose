@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MethodologySpecificationService } from './methodology-specification.service';
-import { RandomizationConfig } from '../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 
 describe('MethodologySpecificationService', () => {
   let service: MethodologySpecificationService;

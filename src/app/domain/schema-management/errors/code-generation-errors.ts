@@ -1,5 +1,5 @@
-import { RandomizationConfig } from '../../core/models/randomization.model';
-import { ValidationFailure } from '../../core/validation/unified-validator';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
+import { ValidationFailure } from 'src/app/domain/core/validation/unified-validator';
 
 /** Base error for all code-generation pipeline failures. */
 export class CodeGenerationError extends Error {

@@ -1,5 +1,5 @@
-import { RandomizationConfig, BlockRule } from '../models/randomization.model';
-import { MathUtil } from '../utils/math.util';
+import { RandomizationConfig, BlockRule } from 'src/app/domain/core/models/randomization.model';
+import { MathUtil } from 'src/app/domain/core/utils/math.util';
 
 export interface ValidationFailure {
   code: string;

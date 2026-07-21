@@ -1,4 +1,4 @@
-import { RandomizationConfig } from '../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 import { formatStratumCode } from '../../shared/statistical/stratum-format';
 
 export class SubjectRegistry {

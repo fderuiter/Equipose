@@ -1,6 +1,6 @@
 import { computed } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { BlockRule, CapStrategy, RandomizationConfig, RandomizationMethod } from '../../core/models/randomization.model';
+import { BlockRule, CapStrategy, RandomizationConfig, RandomizationMethod } from 'src/app/domain/core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Types used internally by the store

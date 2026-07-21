@@ -1,4 +1,4 @@
-import { MT19937 } from '../../../randomization-engine/core/mt19937';
+import { MT19937 } from 'src/app/domain/randomization-engine/core/mt19937';
 
 export class ReproducibilityUtil {
   static get128BitHash(seed: string | undefined): string {

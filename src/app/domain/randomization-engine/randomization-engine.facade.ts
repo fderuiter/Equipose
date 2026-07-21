@@ -3,11 +3,11 @@ import { isPlatformBrowser } from '@angular/common';
 import {
   RandomizationConfig,
   RandomizationResult
-} from '../core/models/randomization.model';
-import { AnnouncementService } from '../../core/services/announcement.service';
-import { ToastService } from '../../core/services/toast.service';
-import { computeAuditHash } from './core/crypto-hash';
-import { generateRandomizationSchema, generateCryptoSeed } from './core/randomization-algorithm';
+} from 'src/app/domain/core/models/randomization.model';
+import { AnnouncementService } from '@core/services/announcement.service';
+import { ToastService } from '@core/services/toast.service';
+import { computeAuditHash } from 'src/app/domain/randomization-engine/core/crypto-hash';
+import { generateRandomizationSchema, generateCryptoSeed } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
 import type {
   GenerationCommand,
   MonteCarloCommand,

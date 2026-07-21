@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RandomizationConfig, RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationConfig, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 import { ReportingStrategy } from './reporting/reporting-strategy.interface';
 import { BlockReportingStrategy } from './reporting/block-reporting.strategy';
 import { MinimizationReportingStrategy } from './reporting/minimization-reporting.strategy';

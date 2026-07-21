@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
-import {RouterLinkDirective} from '../../core/router/router-link.directive';
-import {SeoService} from '../../core/services/seo.service';
+import {RouterLinkDirective} from '@core/router/router-link.directive';
+import {SeoService} from '@core/services/seo.service';
 
 @Component({
   selector: 'app-landing',

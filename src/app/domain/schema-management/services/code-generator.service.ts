@@ -1,12 +1,12 @@
 import { Injectable, inject, InjectionToken } from '@angular/core';
-import { RandomizationConfig, RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationConfig, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 import {
   ConfigurationValidationError,
   UnsupportedLanguageError,
 } from '../errors/code-generation-errors';
 import { CodeGenerationStrategy, BaseOrchestrator } from './generation/base.strategy';
 import { StaticMappingGuard } from './generation/static-mapping.guard';
-import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
+import { UnifiedValidationAuthority } from 'src/app/domain/core/validation/unified-validator';
 
 import { R_CONFIG } from './generation/r.strategy';
 import { PYTHON_CONFIG } from './generation/python.strategy';

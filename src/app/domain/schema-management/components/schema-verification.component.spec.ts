@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { SignalRouter } from '../../../core/router/signal-router.service';
+import { SignalRouter } from '@core/router/signal-router.service';
 import { SchemaVerificationComponent, RowDiscrepancy } from './schema-verification.component';
-import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
-import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
+import { GeneratedSchema, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { generateRandomizationSchema } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
 import { vi } from 'vitest';
 
 // ---------------------------------------------------------------------------

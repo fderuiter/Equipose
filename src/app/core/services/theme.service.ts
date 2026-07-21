@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, effect, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DOCUMENT } from '@angular/common';
-import { injectMediaQuery } from '../utils/media-query';
+import { injectMediaQuery } from '@core/utils/media-query';
 
 export type ThemeMode = 'Light' | 'Dark' | 'System';
 

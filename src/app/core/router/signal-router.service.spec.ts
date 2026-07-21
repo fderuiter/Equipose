@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SignalRouter } from './signal-router.service';
+import { SignalRouter } from '@core/router/signal-router.service';
 
 describe('SignalRouter', () => {
   let service: SignalRouter;

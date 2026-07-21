@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
 
 /**
  * SkeletonGridComponent

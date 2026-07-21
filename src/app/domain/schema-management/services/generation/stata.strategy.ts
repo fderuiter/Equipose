@@ -2,7 +2,7 @@ import { FormattingUtil } from './formatting.util';
 import { STATA_TEMPLATE } from './ir/templates';
 import { LanguageConfig } from './framework/language-config';
 import { CodeTranspiler } from './ir/transpiler';
-import { PRECISION_EPSILON } from '../../../../core/constants/precision.config';
+import { PRECISION_EPSILON } from '@core/constants/precision.config';
 
 export const STATA_CONFIG: LanguageConfig = {
   language: 'STATA',

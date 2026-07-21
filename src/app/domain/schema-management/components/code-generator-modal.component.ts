@@ -1,13 +1,13 @@
 import { Component, signal, computed, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { JsonPipe } from '@angular/common';
-import { ButtonComponent } from '../../../core/components/ui/button.component';
+import { ButtonComponent } from '@core/components/ui/button.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
-import { RandomizationResult } from '../../core/models/randomization.model';
-import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
-import { AnnouncementService } from '../../../core/services/announcement.service';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
+import { AnnouncementService } from '@core/services/announcement.service';
 
 /**
  * ⚡ Bolt Performance Optimization:

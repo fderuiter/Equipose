@@ -1,4 +1,4 @@
-import { RandomizationConfig, RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationConfig, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 
 /** Discriminated union of commands sent from the main thread to the worker. */
 export type WorkerCommandType = 'START_GENERATION' | 'START_MONTE_CARLO';

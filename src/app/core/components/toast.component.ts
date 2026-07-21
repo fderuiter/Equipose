@@ -3,7 +3,7 @@ import {
   Component,
   inject,
 } from '@angular/core';
-import { ToastMessage, ToastService } from '../services/toast.service';
+import { ToastMessage, ToastService } from '@core/services/toast.service';
 
 /**
  * ToastComponent

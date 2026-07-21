@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ExportService } from './export.service';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 import { vi } from 'vitest';
 
 const buildMockResult = (): RandomizationResult => ({

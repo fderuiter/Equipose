@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
 import { computeProportionalCaps, validateProportionalPercentages } from './largest-remainder';
-import { StratificationFactor } from '../../core/models/randomization.model';
+import { StratificationFactor } from 'src/app/domain/core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Helpers

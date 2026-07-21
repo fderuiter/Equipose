@@ -1,5 +1,5 @@
 import { Component, inject, computed, ViewContainerRef, ViewChild, Type, OnDestroy, effect } from '@angular/core';
-import { SignalRouter } from './signal-router.service';
+import { SignalRouter } from '@core/router/signal-router.service';
 import { routes } from '../../app.routes';
 import { NgComponentOutlet } from '@angular/common';
 

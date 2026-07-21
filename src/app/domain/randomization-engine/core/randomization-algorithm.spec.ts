@@ -1,7 +1,7 @@
 import * as fc from 'fast-check';
-import { generateRandomizationSchema } from './randomization-algorithm';
-import { RandomizationConfig, StratificationFactor } from '../../core/models/randomization.model';
-import { StudyPresets } from '../../core/presets/study-presets';
+import { generateRandomizationSchema } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
+import { RandomizationConfig, StratificationFactor } from 'src/app/domain/core/models/randomization.model';
+import { StudyPresets } from 'src/app/domain/core/presets/study-presets';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers

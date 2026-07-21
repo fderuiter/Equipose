@@ -6,7 +6,7 @@ import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
-import { RandomizationConfig } from '../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 
 describe('CodeGeneratorModalComponent (domain)', () => {
   let component: CodeGeneratorModalComponent;

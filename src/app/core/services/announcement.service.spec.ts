@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { AnnouncementService } from './announcement.service';
+import { AnnouncementService } from '@core/services/announcement.service';
 import { vi } from 'vitest';
 
 describe('AnnouncementService', () => {

@@ -4,7 +4,7 @@ import { RandomizationEngineFacade } from '../../randomization-engine/randomizat
 import { SchemaViewStateService } from '../services/schema-view-state.service';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 
 function buildMockResult(count: number): RandomizationResult {
   return {

@@ -1,5 +1,5 @@
-import { AdamLiteDataset, AdamLiteVariable } from '../../core/models/adam-lite.model';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { AdamLiteDataset, AdamLiteVariable } from 'src/app/domain/core/models/adam-lite.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 
 export class AdamLiteMapper {
   static fromRandomizationResult(result: RandomizationResult): AdamLiteDataset {

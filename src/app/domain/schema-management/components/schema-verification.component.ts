@@ -1,10 +1,10 @@
-import { createStepper } from '../../../core/utils/stepper.util';
+import { createStepper } from '@core/utils/stepper.util';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLinkDirective } from '../../../core/router/router-link.directive';
-import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
-import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
-import { SeoService } from '../../../core/services/seo.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { RouterLinkDirective } from '@core/router/router-link.directive';
+import { GeneratedSchema, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { generateRandomizationSchema } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
+import { SeoService } from '@core/services/seo.service';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
 
 // ---------------------------------------------------------------------------
 // Data model for the diff engine

@@ -3,7 +3,7 @@ import { BalanceVerificationComponent } from './balance-verification.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 
 // ---------------------------------------------------------------------------
 // Test data helpers

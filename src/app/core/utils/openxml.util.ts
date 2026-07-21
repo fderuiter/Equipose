@@ -1,4 +1,4 @@
-import { ZipWriter } from './zip.util';
+import { ZipWriter } from '@core/utils/zip.util';
 
 export class OpenXmlWriter {
   private zip = new ZipWriter();

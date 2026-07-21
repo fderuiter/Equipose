@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
-import { AdamLiteDataset } from '../../core/models/adam-lite.model';
+import { GeneratedSchema, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { AdamLiteDataset } from 'src/app/domain/core/models/adam-lite.model';
 import { AdamLiteMapper } from './adam-lite.mapper';
 
 export interface ActiveFilter {

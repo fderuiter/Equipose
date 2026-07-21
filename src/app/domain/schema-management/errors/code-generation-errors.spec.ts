@@ -6,7 +6,7 @@ import {
   UnsupportedLanguageError,
   ConfigurationValidationError
 } from './code-generation-errors';
-import { RandomizationConfig } from '../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 
 describe('Code Generation Errors', () => {
   const mockConfig: Partial<RandomizationConfig> = {

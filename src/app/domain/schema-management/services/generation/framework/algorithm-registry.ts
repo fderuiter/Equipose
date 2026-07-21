@@ -1,9 +1,9 @@
-import { RandomizationConfig } from '../../../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 import { LogicIR } from '../ir/ir.model';
 import { LanguageConfig } from './language-config';
 import { FormattingUtil } from '../formatting.util';
 import { CodeTranspiler } from '../ir/transpiler';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
+import { PRECISION_EPSILON, PRECISION_SCALE } from '@core/constants/precision.config';
 
 export class AlgorithmRegistry {
   static buildDynamicLogic(configObj: LanguageConfig, config: RandomizationConfig, ir: LogicIR): string {

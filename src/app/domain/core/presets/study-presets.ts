@@ -1,5 +1,5 @@
-import { RandomizationConfig } from '../models/randomization.model';
-import { UnifiedValidationAuthority } from '../validation/unified-validator';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
+import { UnifiedValidationAuthority } from 'src/app/domain/core/validation/unified-validator';
 
 /**
  * Validates a configuration and throws if invalid.

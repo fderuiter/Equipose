@@ -4,7 +4,7 @@ import {
   previewSubjectIdMask,
   generateSubjectId,
   luhnCheckDigit
-} from './subject-id-engine';
+} from 'src/app/domain/randomization-engine/core/subject-id-engine';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // validateSubjectIdMask

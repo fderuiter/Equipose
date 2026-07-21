@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 import { MethodologySpecificationService } from './methodology-specification.service';
-import { DateUtil } from '../../../core/utils/date.util';
+import { DateUtil } from '@core/utils/date.util';
 import { APP_VERSION } from '../../../../environments/version';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
-import { OpenXmlWriter } from '../../../core/utils/openxml.util';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { OpenXmlWriter } from '@core/utils/openxml.util';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

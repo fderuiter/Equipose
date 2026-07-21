@@ -1,4 +1,4 @@
-import { GeneratedSchema, RandomizationConfig, RandomizationResult } from '../../core/models/randomization.model';
+import { GeneratedSchema, RandomizationConfig, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 
 /**
  * Recursively sort the keys of a plain object alphabetically so that JSON

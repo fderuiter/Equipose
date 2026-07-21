@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { SchemaViewStateService } from './schema-view-state.service';
-import { RandomizationResult } from '../../core/models/randomization.model';
+import { RandomizationResult } from 'src/app/domain/core/models/randomization.model';
 
 function buildResult(count: number): RandomizationResult {
   return {

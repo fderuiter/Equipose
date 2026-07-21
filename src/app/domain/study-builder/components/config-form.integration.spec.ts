@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '../../../core/forms/signal-forms';
+import { ReactiveFormsModule } from '@core/forms/signal-forms';
 import { ConfigFormComponent } from './config-form.component';
 const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';

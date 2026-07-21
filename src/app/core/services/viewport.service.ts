@@ -1,5 +1,5 @@
 import { Injectable, computed } from '@angular/core';
-import { injectMediaQuery } from '../utils/media-query';
+import { injectMediaQuery } from '@core/utils/media-query';
 
 export type ViewportSize = 'mobile' | 'tablet' | 'desktop';
 

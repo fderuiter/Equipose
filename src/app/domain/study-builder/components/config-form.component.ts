@@ -1,27 +1,27 @@
 import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, OnDestroy, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '../../../core/forms/signal-forms';
-import { SIGNAL_FORM_DIRECTIVES } from '../../../core/forms/signal-form-directives';
-import { ButtonComponent } from '../../../core/components/ui/button.component';
-import { TextInputComponent } from '../../../core/components/ui/text-input.component';
-import { SelectComponent } from '../../../core/components/ui/select.component';
-import { CheckboxComponent } from '../../../core/components/ui/checkbox.component';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '@core/forms/signal-forms';
+import { SIGNAL_FORM_DIRECTIVES } from '@core/forms/signal-form-directives';
+import { ButtonComponent } from '@core/components/ui/button.component';
+import { TextInputComponent } from '@core/components/ui/text-input.component';
+import { SelectComponent } from '@core/components/ui/select.component';
+import { CheckboxComponent } from '@core/components/ui/checkbox.component';
 import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
-import { previewSubjectIdMask, validateSubjectIdMask } from '../../randomization-engine/core/subject-id-engine';
+import { previewSubjectIdMask, validateSubjectIdMask } from 'src/app/domain/randomization-engine/core/subject-id-engine';
 import { BlockPreviewComponent, ArmInput } from './block-preview.component';
 import { computeProportionalCaps, validateProportionalPercentages } from '../../shared/statistical/largest-remainder';
-import { CapStrategy } from '../../core/models/randomization.model';
-import { ToastService } from '../../../core/services/toast.service';
-import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
-import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
-import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
-import { AnnouncementService } from '../../../core/services/announcement.service';
-import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
-import { createStepper, StepperState, StepConfig } from "../../../core/utils/stepper.util";
+import { CapStrategy } from 'src/app/domain/core/models/randomization.model';
+import { ToastService } from '@core/services/toast.service';
+import { RegulatoryNoticeComponent } from '@core/components/regulatory-notice/regulatory-notice.component';
+import { UnifiedValidationAuthority } from 'src/app/domain/core/validation/unified-validator';
+import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
+import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
+import { AnnouncementService } from '@core/services/announcement.service';
+import { RovingTabindexDirective } from '@core/directives/roving-tabindex.directive';
+import { createStepper, StepperState, StepConfig } from '@core/utils/stepper.util';
 
 /**
  * ⚡ Bolt Performance Optimization:

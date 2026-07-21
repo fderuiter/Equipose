@@ -1,9 +1,9 @@
-import { SubjectRegistry } from './subject-registry';
+import { SubjectRegistry } from 'src/app/domain/randomization-engine/core/subject-registry';
 import { describe, it, expect } from 'vitest';
-import { generateMinimization } from './minimization-algorithm';
-import { MT19937 } from './mt19937';
-import { RandomizationConfig } from '../../core/models/randomization.model';
-import { StudyPresets } from '../../core/presets/study-presets';
+import { generateMinimization } from 'src/app/domain/randomization-engine/core/minimization-algorithm';
+import { MT19937 } from 'src/app/domain/randomization-engine/core/mt19937';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
+import { StudyPresets } from 'src/app/domain/core/presets/study-presets';
 
 const seedRng = (seed: string) => {
   const mt = new MT19937(MT19937.get31BitSeed(seed));

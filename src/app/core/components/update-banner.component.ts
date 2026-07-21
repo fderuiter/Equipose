@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { UpdateNotificationService } from '../services/update-notification.service';
-import { AppTooltipDirective } from '../directives/tooltip.directive';
+import { UpdateNotificationService } from '@core/services/update-notification.service';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 
 /**
  * UpdateBannerComponent

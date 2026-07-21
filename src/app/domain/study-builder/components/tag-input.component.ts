@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, ViewChild, ChangeDetectionStrategy, inject, ChangeDetectorRef, effect, ElementRef } from '@angular/core';
-import { AbstractControl } from '../../../core/forms/signal-forms';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
-import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
-import { ButtonComponent } from '../../../core/components/ui/button.component';
-import { TextInputComponent } from '../../../core/components/ui/text-input.component';
+import { AbstractControl } from '@core/forms/signal-forms';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
+import { RovingTabindexDirective } from '@core/directives/roving-tabindex.directive';
+import { ButtonComponent } from '@core/components/ui/button.component';
+import { TextInputComponent } from '@core/components/ui/text-input.component';
 
 /**
  * TagInputComponent – an interactive chip/tag input that reads and writes

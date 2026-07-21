@@ -1,10 +1,10 @@
-import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
-import { generateRandomizationSchema, generateCryptoSeed } from '../../../randomization-engine/core/randomization-algorithm';
-import { MT19937 } from '../../../randomization-engine/core/mt19937';
-import { DateUtil } from '../../../../core/utils/date.util';
+import { RandomizationConfig, RandomizationResult } from 'src/app/domain/core/models/randomization.model';
+import { generateRandomizationSchema, generateCryptoSeed } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
+import { MT19937 } from 'src/app/domain/randomization-engine/core/mt19937';
+import { DateUtil } from '@core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
+import { PRECISION_EPSILON, PRECISION_SCALE } from '@core/constants/precision.config';
 import { LogicIR, LogicIRTask, SubjectIdToken } from './ir/ir.model';
 import { AlgorithmRegistry } from './framework/algorithm-registry';
 import { LanguageConfig } from './framework/language-config';

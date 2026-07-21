@@ -1,5 +1,5 @@
-import { StratificationFactor, StratumCap } from '../../core/models/randomization.model';
-import { PRECISION_SCALE, PRECISION_SCALE_BIGINT } from '../../../core/constants/precision.config';
+import { StratificationFactor, StratumCap } from 'src/app/domain/core/models/randomization.model';
+import { PRECISION_SCALE, PRECISION_SCALE_BIGINT } from '@core/constants/precision.config';
 
 /**
  * Validates that every stratification factor's level percentages sum to exactly 100.

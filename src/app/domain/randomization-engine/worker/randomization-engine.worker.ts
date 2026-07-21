@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { generateRandomizationSchema, generateCryptoSeed } from '../core/randomization-algorithm';
+import { generateRandomizationSchema, generateCryptoSeed } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
 import { mulberry32 } from './attrition-prng';
 import type {
   MonteCarloPayload,
@@ -8,7 +8,7 @@ import type {
   MonteCarloSuccessPayload,
   WorkerResponse
 } from './worker-protocol';
-import type { RandomizationConfig } from '../../core/models/randomization.model';
+import type { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 
 /**
  * Truly-discriminated command union: TypeScript narrows `payload` by `command` value,

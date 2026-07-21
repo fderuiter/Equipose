@@ -1,6 +1,6 @@
 import { inject, Injectable, PLATFORM_ID, signal, ApplicationRef, createComponent, EnvironmentInjector } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { ToastComponent } from '../components/toast.component';
+import { ToastComponent } from '@core/components/toast.component';
 
 export type ToastType = 'success' | 'error' | 'info';
 

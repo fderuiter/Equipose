@@ -1,4 +1,4 @@
-import { RandomizationConfig } from '../../../core/models/randomization.model';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
 import { ReportingStrategy } from './reporting-strategy.interface';
 
 export abstract class BaseReportingStrategy implements ReportingStrategy {

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { CodeGeneratorService } from './code-generator.service';
 import { MethodologySpecificationService } from './methodology-specification.service';
-import { RandomizationConfig } from '../../core/models/randomization.model';
-import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
+import { RandomizationConfig } from 'src/app/domain/core/models/randomization.model';
+import { generateRandomizationSchema } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
 import { CodeTranspiler } from './generation/ir/transpiler';
 import { vi } from 'vitest';
 import { execFileSync } from 'child_process';
