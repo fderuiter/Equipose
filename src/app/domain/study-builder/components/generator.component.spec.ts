@@ -25,6 +25,8 @@ function buildMockFacade() {
     monteCarloResults: signal(null),
     monteCarloError: signal<string | null>(null),
     generateSchema: vi.fn(),
+    previewSubjectIdMask: vi.fn().mockReturnValue('mock-preview'),
+    validateSubjectIdMask: vi.fn().mockReturnValue({ valid: true }),
     openCodeGenerator: vi.fn(),
     closeCodeGenerator: vi.fn(),
     clearResults: vi.fn(),
