@@ -45,22 +45,22 @@ module.exports = defineConfig([
   //          as the entry point, plus domain/core models.
   // ---------------------------------------------------------------------------
   {
-    files: ['src/app/domain/study-builder/**/*.ts'],
+    files: ['src/app/domain/study-builder/**/*.ts', 'src/app/domain/schema-management/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['*/domain/randomization-engine/core/*'],
+              group: ['*/domain/randomization-engine/core/*', '@domain/randomization-engine/core/*'],
               message:
-                'domain/study-builder must not access the randomization-engine core algorithm. ' +
+                'UI domains must not access the randomization-engine core algorithm directly. ' +
                 'Use RandomizationEngineFacade instead.'
             },
             {
-              group: ['*/domain/randomization-engine/worker/*'],
+              group: ['*/domain/randomization-engine/worker/*', '@domain/randomization-engine/worker/*'],
               message:
-                'domain/study-builder must not access the randomization-engine worker internals. ' +
+                'UI domains must not access the randomization-engine worker internals. ' +
                 'Use RandomizationEngineFacade instead.'
             },
             {
@@ -149,5 +149,33 @@ module.exports = defineConfig([
       '@angular-eslint/template/interactive-supports-focus': 'off',
       '@angular-eslint/template/click-events-have-key-events': 'off',
     },
+  },
+  {
+    files: ['src/app/domain/**/*.html'],
+    plugins: {
+      'custom-template-rules': {
+        rules: {
+          'no-raw-html-elements': {
+            create(context) {
+              return {
+                'Element[name="button"]'(node) {
+                  context.report({ node, message: 'Use <app-button> standard component instead of raw <button> tags.' });
+                },
+                'Element[name="input"]'(node) {
+                  const typeAttr = node.attributes?.find(attr => attr.name === 'type');
+                  const type = typeAttr ? typeAttr.value : undefined;
+                  if (!type || type === 'text') {
+                    context.report({ node, message: 'Use <app-text-input> standard component instead of raw text <input> tags.' });
+                  }
+                }
+              };
+            }
+          }
+        }
+      }
+    },
+    rules: {
+      'custom-template-rules/no-raw-html-elements': 'error'
+    }
   }
 ]);

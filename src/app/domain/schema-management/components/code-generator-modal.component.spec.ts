@@ -22,6 +22,13 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       showCodeGenerator: signal(false),
       codeLanguage: signal('R'),
       generateSchema: vi.fn(),
+      generateSchemaAsync: vi.fn().mockResolvedValue({
+        metadata: {
+          auditHash: 'fake_hash',
+          generatedAt: new Date().toISOString(),
+          config: { seed: 'fake_seed' }
+        }
+      }),
       openCodeGenerator: vi.fn(),
       closeCodeGenerator: vi.fn(),
       clearResults: vi.fn()

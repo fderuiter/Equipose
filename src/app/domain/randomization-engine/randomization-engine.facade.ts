@@ -8,6 +8,7 @@ import { AnnouncementService } from '@core/services/announcement.service';
 import { ToastService } from '@core/services/toast.service';
 import { computeAuditHash } from 'src/app/domain/randomization-engine/core/crypto-hash';
 import { generateRandomizationSchema, generateCryptoSeed } from 'src/app/domain/randomization-engine/core/randomization-algorithm';
+import { previewSubjectIdMask, validateSubjectIdMask } from 'src/app/domain/randomization-engine/core/subject-id-engine';
 import type {
   GenerationCommand,
   MonteCarloCommand,
@@ -66,6 +67,14 @@ export class RandomizationEngineFacade {
   // Public API
   // -------------------------------------------------------------------------
 
+  previewSubjectIdMask(mask: string): string {
+    return previewSubjectIdMask(mask);
+  }
+
+  validateSubjectIdMask(mask: string): { valid: boolean; error?: string } {
+    return validateSubjectIdMask(mask);
+  }
+
   generateSchema(newConfig: RandomizationConfig): void {
     this.config.set(newConfig);
     this.isGenerating.set(true);
@@ -93,6 +102,46 @@ export class RandomizationEngineFacade {
         this.error.set(message);
         this.isGenerating.set(false);
         this.toastService.showError(message);
+      }
+    }
+  }
+
+  generateSchemaAsync(config: RandomizationConfig): Promise<RandomizationResult> {
+    if (this.worker) {
+      return new Promise((resolve, reject) => {
+        const id = crypto.randomUUID();
+        this.pendingCallbacks.set(id, {
+          resolve: async result => {
+            try {
+              const hash = await computeAuditHash(result);
+              const resultWithHash: RandomizationResult = {
+                ...result,
+                metadata: { ...result.metadata, auditHash: hash }
+              };
+              resolve(resultWithHash);
+            } catch (err) {
+              reject(err);
+            }
+          },
+          reject: err => {
+            const errPayload = err as { error?: { error?: string } };
+            const message =
+              errPayload?.error?.error ?? 'An error occurred during schema generation.';
+            reject(new Error(message));
+          }
+        });
+        const command: GenerationCommand = { id, command: 'START_GENERATION', payload: config };
+        this.worker!.postMessage(command);
+      });
+    } else {
+      try {
+        const res = generateRandomizationSchema(config);
+        return computeAuditHash(res).then(hash => ({
+          ...res,
+          metadata: { ...res.metadata, auditHash: hash }
+        }));
+      } catch (err: any) {
+        return Promise.reject(new Error(err.message ?? 'An error occurred during schema generation.'));
       }
     }
   }

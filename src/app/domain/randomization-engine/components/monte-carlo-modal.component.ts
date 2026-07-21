@@ -5,12 +5,13 @@ import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.servi
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '@core/directives/keyboard-scroll.directive';
 import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
+import { ButtonComponent } from '@core/components/ui/button.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-monte-carlo-modal',
   standalone: true,
-  imports: [DecimalPipe, KeyboardScrollDirective, FocusManagerDirective],
+  imports: [DecimalPipe, KeyboardScrollDirective, FocusManagerDirective, ButtonComponent],
   template: `
     <dialog #modalDialog appFocusManager tabindex="-1" (cancel)="onCancel($event)" class="p-0 m-auto bg-transparent backdrop:bg-black/50 border-none open:flex open:flex-col rounded-xl overflow-hidden shadow-xl w-full max-w-4xl max-h-[90vh]">
       <div class="relative flex flex-col align-bottom bg-overlay backdrop-blur-md rounded-xl text-left overflow-hidden transform transition-all w-full h-full border border-border-subtle" role="dialog" aria-modal="true" aria-labelledby="mc-modal-title">
@@ -34,16 +35,15 @@ import { FocusManagerDirective } from '@core/directives/focus-manager.directive'
                 </div>
               </div>
               @if (!facade.isMonteCarloRunning()) {
-                <button
-                  type="button"
-                  (click)="closeModal()"
-                  class="text-disabled hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
-                  aria-label="Close"
+                <app-button variant="bare"
+                  (onClick)="closeModal()"
+                  customClass="text-disabled hover:text-gray-600 dark:hover:text-slate-300 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500"
+                  ariaLabel="Close"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </app-button>
               }
             </div>
           </div>
@@ -256,14 +256,13 @@ import { FocusManagerDirective } from '@core/directives/focus-manager.directive'
       <!-- Footer -->
       @if (!facade.isMonteCarloRunning()) {
         <div class="bg-gray-50/80 dark:bg-slate-900/50 px-6 py-3 flex justify-end border-t border-border-subtle flex-none">
-          <button
-            type="button"
-            (click)="closeModal()"
-            class="inline-flex justify-center rounded-lg border border-border-strong shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          <app-button
+            variant="secondary"
+            (onClick)="closeModal()"
             data-testid="modal-close-footer"
           >
             Close
-          </button>
+          </app-button>
         </div>
       }
 

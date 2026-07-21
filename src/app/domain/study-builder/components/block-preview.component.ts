@@ -1,6 +1,7 @@
 import { Component, computed, Input, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { PRECISION_SCALE } from '@core/constants/precision.config';
-import { DomainThemeService, ArmColorTokens } from 'src/app/domain/core/theme/domain-theme.service';
+import { DomainThemeService, ArmColorTokens } from '@domain/core/theme/domain-theme.service';
+import { simplifyRatios } from '@domain/shared/statistical/ratio-simplification';
 
 /** One arm's data passed from the parent. */
 export interface ArmInput {
@@ -30,13 +31,15 @@ export interface BlockPreview {
 
 /** Calculate the total ratio from an array of arms. Returns at least 1. */
 export function calcTotalRatio(arms: ArmInput[]): number {
-  const sum = arms.reduce((acc, a) => acc + (a.ratio ?? 0), 0);
+  const simplified = simplifyRatios(arms);
+  const sum = simplified.reduce((acc, a) => acc + (a.ratio ?? 0), 0);
   return sum > 0 ? sum : 1;
 }
 
 /** Build the preview data for all given block sizes given arm definitions. */
 export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColor: (index: number) => ArmColorTokens): BlockPreview[] {
   if (arms.length === 0 || blockSizes.length === 0) return [];
+  const simplifiedArms = simplifyRatios(arms);
   const totalRatio = calcTotalRatio(arms);
 
   return blockSizes
@@ -46,7 +49,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
       const slots: BlockSlot[] = [];
 
       if (isValid) {
-        arms.forEach((arm, idx) => {
+        simplifiedArms.forEach((arm, idx) => {
           const proportionScaled = Math.round((arm.ratio / totalRatio) * PRECISION_SCALE);
           const count = Math.round((proportionScaled * blockSize) / PRECISION_SCALE);
           for (let i = 0; i < count; i++) {
@@ -61,7 +64,7 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
       } else {
         const cleanCount = blockSize - (blockSize % totalRatio);
         let rendered = 0;
-        arms.forEach((arm, idx) => {
+        simplifiedArms.forEach((arm, idx) => {
           if (rendered >= cleanCount) return;
           const proportionScaled = Math.round((arm.ratio / totalRatio) * PRECISION_SCALE);
           const count = Math.round((proportionScaled * cleanCount) / PRECISION_SCALE);
@@ -77,8 +80,8 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
         });
         // Fill any remaining clean slots that weren't assigned due to rounding
         while (slots.length < cleanCount) {
-          const armIdx = slots.length % arms.length;
-          const arm = arms[armIdx];
+          const armIdx = slots.length % simplifiedArms.length;
+          const arm = simplifiedArms[armIdx];
           slots.push({
             bgClass: getArmColor(armIdx).bgClass,
             isInvalid: false,

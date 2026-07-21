@@ -6,13 +6,14 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { DomainThemeService } from '@domain/core/theme/domain-theme.service';
 import { AppTooltipDirective } from '@core/directives/tooltip.directive';
+import { ButtonComponent } from '@core/components/ui/button.component';
 
 @Component({
   selector: 'app-schema-analytics-dashboard',
   standalone: true,
-  imports: [DecimalPipe, AppTooltipDirective],
+  imports: [DecimalPipe, AppTooltipDirective, ButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (viewState.adamDataset()) {
@@ -29,17 +30,17 @@ import { AppTooltipDirective } from '@core/directives/tooltip.directive';
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 font-medium text-xs">
                 {{ getVariableLabel(viewState.activeFilter()!.variableId || viewState.activeFilter()!.type || '') }}:
                 {{ viewState.activeFilter()!.value }}
-                <button
-                  (click)="viewState.clearFilter()"
-                  class="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200 leading-none rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  aria-label="Remove filter"
+                <app-button variant="bare"
+                  (onClick)="viewState.clearFilter()"
+                  customClass="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200 leading-none rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  ariaLabel="Remove filter"
                   appTooltip="Remove filter"
-                >✕</button>
+                >✕</app-button>
               </span>
-              <button
-                (click)="viewState.clearFilter()"
-                class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-              >Clear all filters</button>
+              <app-button variant="bare"
+                (onClick)="viewState.clearFilter()"
+                customClass="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              >Clear all filters</app-button>
             </div>
           }
         </div>

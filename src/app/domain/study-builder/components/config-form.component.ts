@@ -6,18 +6,17 @@ import { TextInputComponent } from '@core/components/ui/text-input.component';
 import { SelectComponent } from '@core/components/ui/select.component';
 import { CheckboxComponent } from '@core/components/ui/checkbox.component';
 import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
-import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
+import { RandomizationEngineFacade } from '@domain/randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
-import { previewSubjectIdMask, validateSubjectIdMask } from 'src/app/domain/randomization-engine/core/subject-id-engine';
 import { BlockPreviewComponent, ArmInput } from './block-preview.component';
-import { computeProportionalCaps, validateProportionalPercentages } from '../../shared/statistical/largest-remainder';
-import { CapStrategy } from 'src/app/domain/core/models/randomization.model';
+import { computeProportionalCaps, validateProportionalPercentages } from '@domain/shared/statistical/largest-remainder';
+import { CapStrategy } from '@domain/core/models/randomization.model';
 import { ToastService } from '@core/services/toast.service';
 import { RegulatoryNoticeComponent } from '@core/components/regulatory-notice/regulatory-notice.component';
-import { UnifiedValidationAuthority } from 'src/app/domain/core/validation/unified-validator';
+import { UnifiedValidationAuthority } from '@domain/core/validation/unified-validator';
 import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
-import { DomainThemeService } from 'src/app/domain/core/theme/domain-theme.service';
+import { DomainThemeService } from '@domain/core/theme/domain-theme.service';
 import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import { AnnouncementService } from '@core/services/announcement.service';
 import { RovingTabindexDirective } from '@core/directives/roving-tabindex.directive';
@@ -200,12 +199,12 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     
     this.subjectIdPreview = computed(() => {
       const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
-      return previewSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '');
+      return this.facade.previewSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '');
     });
     
     this.subjectIdMaskInvalid = computed(() => {
       const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
-      return !validateSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '').valid;
+      return !this.facade.validateSubjectIdMask(maskCtrl ? maskCtrl.value ?? '' : '').valid;
     });
 
     this.armsSignal = computed(() => {
