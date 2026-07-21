@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, output } from '@angular/core';
+import { ButtonComponent } from '../../../core/components/ui/button.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-zero-state',
   standalone: true,
+  imports: [ButtonComponent],
   template: `
     <div
       class="flex flex-col items-center justify-center py-16 px-6
@@ -54,21 +56,17 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
       </div>
 
       <!-- CTA -->
-      <button
-        type="button"
+      <app-button
+        variant="primary"
         (click)="loadPreset.emit()"
-        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg
-               bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800
-               text-white text-sm font-medium shadow-sm
-               transition-colors focus-visible:outline-none focus-visible:ring-2
-               focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+        customClass="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium"
         data-testid="load-preset-btn"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
         </svg>
         Load Standard Trial Preset
-      </button>
+      </app-button>
     </div>
   `
 })

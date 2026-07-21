@@ -1,13 +1,13 @@
 import { Component, signal, computed, inject, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { JsonPipe } from '@angular/common';
-import { ButtonComponent } from '../../../core/components/ui/button.component';
-import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
+import { ButtonComponent } from '@core/components/ui/button.component';
+import { RandomizationEngineFacade } from '@domain/randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
 import { CodeGenerationError } from '../errors/code-generation-errors';
-import { RandomizationResult } from '../../core/models/randomization.model';
-import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
-import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
-import { AnnouncementService } from '../../../core/services/announcement.service';
+import { RandomizationResult } from '@domain/core/models/randomization.model';
+import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
+import { AppTooltipDirective } from '@core/directives/tooltip.directive';
+import { AnnouncementService } from '@core/services/announcement.service';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -80,13 +80,7 @@ export class CodeGeneratorModalComponent implements OnInit {
       if (currentResults && currentResults.metadata.config.seed === config.seed) {
         metadata = currentResults.metadata;
       } else {
-        const { generateRandomizationSchema } = await import('../../randomization-engine/core/randomization-algorithm');
-        const { computeAuditHash } = await import('../../randomization-engine/core/crypto-hash');
-        
-        const generatedAt = new Date().toISOString();
-        const result = generateRandomizationSchema(config);
-        const auditHash = await computeAuditHash(result);
-        result.metadata.auditHash = auditHash;
+        const result = await this.state.generateSchemaAsync(config);
         metadata = result.metadata;
       }
 
@@ -206,7 +200,7 @@ export class CodeGeneratorModalComponent implements OnInit {
 
     try {
       if (this.exportMode() === 'BOTH') {
-        const { ZipWriter } = await import('../../../core/utils/zip.util');
+        const { ZipWriter } = await import('@core/utils/zip.util');
         const zip = new ZipWriter();
 
         const staticCode = this.codeGenService.generateStatic(tab, config, metadata);
