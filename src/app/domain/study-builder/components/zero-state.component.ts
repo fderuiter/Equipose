@@ -57,8 +57,9 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
 
       <!-- CTA -->
       <app-button
+        type="button"
         variant="primary"
-        (click)="loadPreset.emit()"
+        (onClick)="loadPreset.emit()"
         customClass="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium"
         data-testid="load-preset-btn"
       >
