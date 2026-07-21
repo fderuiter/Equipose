@@ -93,6 +93,18 @@ module.exports = defineConfig([
   },
 
   {
+    files: ['src/app/domain/**/*.html'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Element[name="button"], Element[name="input"], Element[name="select"]',
+          message: 'Raw button, input, or select tag is not allowed. Please use the core UI components instead.'
+        }
+      ]
+    }
+  },
+  {
     files: ['**/*.html'],
     extends: [
       angular.configs.templateRecommended,

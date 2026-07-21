@@ -146,26 +146,26 @@ type ResultsTab = 'grid' | 'balance';
 
           <!-- ── Tab Navigation ──────────────────────────────────────── -->
           <div class="flex gap-1 border-b border-border-subtle">
-            <button
-              (click)="activeTab.set('grid')"
-              class="px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
-              [class]="activeTab() === 'grid'
+            <app-button
+              variant="bare"
+              (onClick)="activeTab.set('grid')"
+              [customClass]="'px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 ' + (activeTab() === 'grid'
                 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-surface'
-                : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500'"
-              aria-label="Schema Grid tab"
+                : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500')"
+              ariaLabel="Schema Grid tab"
             >
               Schema Grid
-            </button>
-            <button
-              (click)="activeTab.set('balance')"
-              class="px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"
-              [class]="activeTab() === 'balance'
+            </app-button>
+            <app-button
+              variant="bare"
+              (onClick)="activeTab.set('balance')"
+              [customClass]="'px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 ' + (activeTab() === 'balance'
                 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-surface'
-                : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500'"
-              aria-label="Balance Verification tab"
+                : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500')"
+              ariaLabel="Balance Verification tab"
             >
               Balance Verification
-            </button>
+            </app-button>
           </div>
 
           <!-- ── Schema Grid tab ─────────────────────────────────────── -->

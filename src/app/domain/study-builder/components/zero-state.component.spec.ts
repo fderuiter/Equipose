@@ -39,8 +39,9 @@ describe('ZeroStateComponent', () => {
     let emitted = false;
     component.loadPreset.subscribe(() => (emitted = true));
 
-    const button = fixture.debugElement.query(By.css('[data-testid="load-preset-btn"]'));
-    button.nativeElement.click();
+    const appButton = fixture.debugElement.query(By.css('[data-testid="load-preset-btn"]'));
+    const innerButton = appButton.query(By.css('button'));
+    innerButton.nativeElement.click();
 
     expect(emitted).toBe(true);
   });
