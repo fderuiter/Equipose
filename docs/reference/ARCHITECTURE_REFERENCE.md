@@ -516,10 +516,6 @@ classDiagram
         when arms/blockSizes are empty
         or MARGINAL_ONLY guard fails
     }
-    class MissingSeedError {
-        Thrown when config.seed is blank
-        message names the failing language
-    }
     class StrataParsingError {
         Thrown in Phase 2 of each language method
         when strata/stratumCaps are malformed
@@ -533,7 +529,6 @@ classDiagram
         argument is not R, SAS, Python, or STATA
     }
     CodeGenerationError <|-- ConfigurationValidationError
-    CodeGenerationError <|-- MissingSeedError
     CodeGenerationError <|-- StrataParsingError
     CodeGenerationError <|-- TemplateCompilationError
     CodeGenerationError <|-- UnsupportedLanguageError

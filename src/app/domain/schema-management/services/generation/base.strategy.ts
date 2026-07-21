@@ -8,7 +8,7 @@ import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/p
 import { LogicIR, LogicIRTask, SubjectIdToken } from './ir/ir.model';
 import { AlgorithmRegistry } from './framework/algorithm-registry';
 import { LanguageConfig } from './framework/language-config';
-import { CodeGenerationError } from '../../errors/code-generation-errors';
+import { CodeGenerationError, StrataParsingError, TemplateCompilationError } from '../../errors/code-generation-errors';
 
 /**
  * Strategy interface for code generation.
@@ -73,7 +73,13 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
 
     const seed = config.seed || generateCryptoSeed();
     const resolvedConfig = { ...config, seed };
-    const ir = CodeTranspiler.buildIR(resolvedConfig, method);
+    
+    let ir: LogicIR;
+    try {
+      ir = CodeTranspiler.buildIR(resolvedConfig, method);
+    } catch (e) {
+      throw new StrataParsingError(this.language, e, resolvedConfig);
+    }
 
     const prng = new MT19937(ir.seedHash);
     const valVec = [];
@@ -118,6 +124,10 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     }
     
     data['algorithmicLogic'] = algorithmicLogic;
-    return CodeTranspiler.renderTemplate(this.configObject.template, data);
+    try {
+      return CodeTranspiler.renderTemplate(this.configObject.template, data);
+    } catch (e) {
+      throw new TemplateCompilationError(this.language, e, resolvedConfig);
+    }
   }
 }
