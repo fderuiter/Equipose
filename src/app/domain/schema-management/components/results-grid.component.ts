@@ -7,7 +7,6 @@ import { GeneratedSchema } from '../../core/models/randomization.model';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { MethodologySpecificationService } from '../services/methodology-specification.service';
-import { APP_VERSION } from '../../../../environments/version';
 import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
 import { DomainThemeService } from '../../core/theme/domain-theme.service';
