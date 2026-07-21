@@ -190,11 +190,11 @@ describe('CodeGeneratorService Dual-Mode', () => {
         for (let i = 0; i < tsSchema.length; i++) {
           const tsRow = tsSchema[i];
           const pyRow = pySchema[i];
-          expect(pyRow.SubjectID).toBe(tsRow.subjectId);
-          expect(pyRow.Site).toBe(tsRow.site);
-          expect(pyRow.Treatment).toBe(tsRow.treatmentArm);
-          expect(pyRow.StratumCode).toBe(tsRow.stratumCode);
-          expect(pyRow.age).toBe(tsRow.stratum.age);
+          expect(pyRow['SubjectID']).toBe(tsRow.subjectId);
+          expect(pyRow['Site']).toBe(tsRow.site);
+          expect(pyRow['Treatment']).toBe(tsRow.treatmentArm);
+          expect(pyRow['StratumCode']).toBe(tsRow.stratumCode);
+          expect(pyRow['age']).toBe(tsRow.stratum['age']);
         }
       } finally {
         unlinkSync(tempFile);
