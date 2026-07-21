@@ -1,4 +1,4 @@
-export interface IdentityProfile {
+interface IdentityProfile {
   timestamp?: string;
   // Other potential deterministic overrides could go here
 }

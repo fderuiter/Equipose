@@ -13,7 +13,7 @@ export interface LogicIRTask {
   cap: number;
 }
 
-export type LogicIRTemplates = Record<string, {
+type LogicIRTemplates = Record<string, {
   fisherYates: string;
   buildBlock: string;
 }>;
