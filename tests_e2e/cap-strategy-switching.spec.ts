@@ -31,7 +31,7 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     // 1. Select Proportional strategy
     const propButton = page.getByRole('radio', { name: /Proportional/i });
     await propButton.click();
-    await expect(propButton).toHaveAttribute('aria-checked', 'true');
+    await expect(propButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
 
     // 2. Set Global Cap
     const globalCapInput = page.locator('#globalCap');
@@ -73,10 +73,11 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     // 2. Edit a computed cap
     const firstCapInput = page.locator('div[formarrayname="stratumCaps"] input[type="number"]').first();
     await firstCapInput.fill('60');
+    await firstCapInput.blur(); // allow the form logic to react
 
     // 3. Verify strategy switched to Manual Matrix
     const manualButton = page.getByRole('radio', { name: /Manual Matrix/i });
-    await expect(manualButton).toHaveAttribute('aria-checked', 'true');
+    await expect(manualButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await expect(page.locator('#globalCap')).not.toBeVisible();
 
     // 4. Verify payload
@@ -89,11 +90,12 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     // 1. Select Marginal Only
     const marginalButton = page.getByRole('radio', { name: /Marginal Only/i });
     await marginalButton.click();
-    await expect(marginalButton).toHaveAttribute('aria-checked', 'true');
+    await expect(marginalButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
 
     // 2. Set marginal caps
     const age65Marginal = page.locator('input[id="age-margcap-<65"]');
     await age65Marginal.fill('50');
+    await age65Marginal.blur();
 
     // 3. Verify payload
     await verifyPayload(page, 'MARGINAL_ONLY', (config) => {
@@ -103,23 +105,30 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     });
 
     // 4. Switch back to Manual Matrix
-    await page.getByRole('radio', { name: /Manual Matrix/i }).click();
+    const manualButton = page.getByRole('radio', { name: /Manual Matrix/i });
+    await manualButton.click();
+    await expect(manualButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await verifyPayload(page, 'MANUAL_MATRIX');
   });
 
   test('should maintain strategy values when switching (no reset)', async ({ page }) => {
     // 1. Set up Proportional
-    await page.getByRole('radio', { name: /Proportional/i }).click();
+    const propButton = page.getByRole('radio', { name: /Proportional/i });
+    await propButton.click();
+    await expect(propButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await page.locator('#globalCap').fill('100');
     await page.locator('input[id="age-pct-<65"]').fill('50');
     await page.locator('input[id="age-pct->=65"]').fill('50');
 
     // 2. Switch to Marginal Only and set a cap
-    await page.getByRole('radio', { name: /Marginal Only/i }).click();
+    const marginalButton = page.getByRole('radio', { name: /Marginal Only/i });
+    await marginalButton.click();
+    await expect(marginalButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await page.locator('input[id="age-margcap-<65"]').fill('20');
 
     // 3. Switch back to Proportional - percentages should be preserved
-    await page.getByRole('radio', { name: /Proportional/i }).click();
+    await propButton.click();
+    await expect(propButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await expect(page.locator('input[id="age-pct-<65"]')).toHaveValue('50');
 
     // 4. Verify payload

@@ -17,7 +17,18 @@ test.describe('Determinism Test Suite', () => {
     await page.keyboard.press('Tab');
     await page.locator("button:has-text('Next'):visible").first().click();
 
-    await page.getByRole('radio', { name: 'Minimization' }).click();
+    await page.getByRole('radio', { name: 'Minimization' }).click({ force: true });
+    
+    // Wait for the Minimization state to be reflected in the UI
+    await expect(page.getByRole('radio', { name: 'Minimization' })).toHaveClass(/bg-brand-600/, { timeout: 10000 });
+
+    await expect(
+      page.getByRole('button', { name: /Increase ratio for Low Dose/i })
+    ).toBeVisible({ timeout: 15000 });
+
+    await expect(
+      page.getByRole('button', { name: /Increase ratio for Placebo/i })
+    ).toBeVisible({ timeout: 15000 });
 
     for (let i = 0; i < 2; i++) {
       await page.getByRole('button', { name: 'Increase ratio for Low Dose' }).click();

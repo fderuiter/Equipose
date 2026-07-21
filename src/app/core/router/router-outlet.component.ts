@@ -23,7 +23,7 @@ export class RouterOutletComponent {
       match = routes.find(r => r.path === '**');
     }
     
-    if (match && match.redirectTo) {
+    if (match && match.redirectTo !== undefined) {
       // Very simple redirect handling
       setTimeout(() => this.router.navigate('/' + match!.redirectTo));
       return null;
