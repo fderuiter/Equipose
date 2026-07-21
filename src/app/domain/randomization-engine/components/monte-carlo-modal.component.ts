@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, effect, ElementRef, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
@@ -272,7 +272,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
 })
 export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
-  protected readonly domainTheme = inject(DomainThemeService);
+  protected readonly domainTheme = inject(ThemeService);
   @ViewChild('modalDialog') modalDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
   @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;

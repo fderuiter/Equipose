@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { MT19937 } from './mt19937';
 import { DeterminismProvider } from './determinism.provider';
 import { UnifiedValidationAuthority, ValidationFailure } from '../../core/validation/unified-validator';

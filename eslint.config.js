@@ -7,6 +7,7 @@ const angular = require('angular-eslint');
 module.exports = defineConfig([
   {
     files: ['**/*.ts'],
+    languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: __dirname } },
     extends: [
       eslint.configs.recommended,
       tseslint.configs.recommended,
@@ -18,6 +19,7 @@ module.exports = defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-deprecated': 'error',
       '@angular-eslint/no-output-on-prefix': 'off',
       'no-empty': 'off',
       '@typescript-eslint/class-literal-property-style': 'off',

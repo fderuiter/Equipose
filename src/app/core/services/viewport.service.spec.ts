@@ -128,11 +128,11 @@ describe('ViewportService', () => {
 
     setMediaQueryMatch(MOBILE_QUERY, false);
     setMediaQueryMatch(TABLET_QUERY, true);
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(service.viewportSize()).toBe('tablet');
 
     setMediaQueryMatch(TABLET_QUERY, false);
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(service.viewportSize()).toBe('desktop');
   });
 

@@ -13,7 +13,7 @@ import { MonteCarloModalComponent } from '../../randomization-engine/components/
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { SeoService } from '../../../core/services/seo.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 
 type ResultsTab = 'grid' | 'balance';
@@ -200,7 +200,7 @@ type ResultsTab = 'grid' | 'balance';
 export class GeneratorComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   public readonly viewport = inject(ViewportService);
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(SignalRouter);
 

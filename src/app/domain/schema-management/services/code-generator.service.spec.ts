@@ -228,7 +228,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       
       expect(() => {
         service.generateStatic('Python', malformedConfig);
-      }).toThrowError(/Failed to parse strata levels/);
+      }).toThrow(/Failed to parse strata levels/);
     });
 
     it('should throw TemplateCompilationError when template rendering fails', () => {
@@ -239,7 +239,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       try {
         expect(() => {
           service.generateStatic('Python', standardBlockConfig);
-        }).toThrowError(/Failed to compile Python template/);
+        }).toThrow(/Failed to compile Python template/);
       } finally {
         renderSpy.mockRestore();
       }
