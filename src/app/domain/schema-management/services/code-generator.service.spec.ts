@@ -174,7 +174,8 @@ describe('CodeGeneratorService Dual-Mode', () => {
       writeFileSync(tempFile, pyCode, 'utf-8');
 
       try {
-        const stdout = execFileSync('python3', [tempFile], { encoding: 'utf-8' });
+        const pythonExecutable = process.env['PYTHON'] || 'python';
+        const stdout = execFileSync(pythonExecutable, [tempFile], { encoding: 'utf-8' });
         const lines = stdout.trim().split('\n');
         const headers = lines[0].split(',');
         const pySchema = lines.slice(1).map(line => {
