@@ -9,9 +9,9 @@ bootstrapApplication(App, appConfig)
       // Integrated in-browser accessibility audit tool
       import('axe-core').then((axe) => {
         let isAxeRunning = false;
-        let axeTimeout;
+        let axeTimeout: any;
 
-        const runAxe = (label) => {
+        const runAxe = (label: string) => {
           if (isAxeRunning) return;
           isAxeRunning = true;
           axe.default.run().then(results => {
