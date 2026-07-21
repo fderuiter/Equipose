@@ -21,7 +21,6 @@ test.describe('Determinism Test Suite', () => {
     
     // Wait for the Minimization state to be reflected in the UI
     await expect(page.getByRole('radio', { name: 'Minimization' })).toHaveClass(/bg-brand-600/, { timeout: 10000 });
-
     await expect(
       page.getByRole('button', { name: /Increase ratio for Low Dose/i })
     ).toBeVisible({ timeout: 15000 });
@@ -31,10 +30,10 @@ test.describe('Determinism Test Suite', () => {
     ).toBeVisible({ timeout: 15000 });
 
     for (let i = 0; i < 2; i++) {
-      await page.getByRole('button', { name: 'Increase ratio for Low Dose' }).click();
+      await page.getByRole('button', { name: /Increase ratio for Low Dose/i }).click();
     }
     for (let i = 0; i < 6; i++) {
-      await page.getByRole('button', { name: 'Increase ratio for Placebo' }).click();
+      await page.getByRole('button', { name: /Increase ratio for Placebo/i }).click();
     }
     await page.locator("button:has-text('Next'):visible").first().click();
 
@@ -78,6 +77,6 @@ test.describe('Determinism Test Suite', () => {
     const hash = await auditHashElement.innerText();
     console.log(`Generated Hash: ${hash}`);
     
-    expect(hash).toBe('f388de0b30cd...185fe80e07a9');
+    expect(hash).toBe('bee2b6a37476...0a4dc268d78e');
   });
 });

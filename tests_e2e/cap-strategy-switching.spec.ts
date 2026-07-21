@@ -3,8 +3,8 @@ import { openGenerator, loadPreset, goToStep } from './generator-helpers';
 
 async function verifyPayload(page: Page, expectedStrategy: string, checkFn?: (config: any) => void) {
   // Navigate to Step 6 (Review & Generate)
-  // We use the specific "Next" button in the Enrollment Caps step (Step 5)
-  const nextButton = page.locator('button[cdksteppernext]').filter({ hasText: 'Next' });
+  // We use the specific visible "Next" button in the Enrollment Caps step
+  const nextButton = page.locator("button:has-text('Next'):visible").first();
   await nextButton.click();
 
   await expect(page.locator('li#step-header-6')).toHaveClass(/bg-indigo-50/);
@@ -36,12 +36,15 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     // 2. Set Global Cap
     const globalCapInput = page.locator('#globalCap');
     await globalCapInput.fill('200');
+    await globalCapInput.blur();
 
     // 3. Set percentages (Standard preset has Age Group: <65, >=65)
     const age65Pct = page.locator('input[id="age-pct-<65"]');
     const ageOver65Pct = page.locator('input[id="age-pct->=65"]');
     await age65Pct.fill('60');
+    await age65Pct.blur();
     await ageOver65Pct.fill('40');
+    await ageOver65Pct.blur();
 
     // 4. Assert Compute Matrix is enabled and click it
     const computeButton = page.getByRole('button', { name: /Compute Matrix/i });
@@ -66,8 +69,14 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     // 1. Setup Proportional and Compute
     await page.getByRole('radio', { name: /Proportional/i }).click();
     await page.locator('#globalCap').fill('100');
+    await page.locator('#globalCap').blur();
+    // tab
     await page.locator('input[id="age-pct-<65"]').fill('50');
+    await page.locator('input[id="age-pct-<65"]').blur();
+    // tab
     await page.locator('input[id="age-pct->=65"]').fill('50');
+    await page.locator('input[id="age-pct->=65"]').blur();
+    // tab
     await page.getByRole('button', { name: /Compute Matrix/i }).click();
 
     // 2. Edit a computed cap
@@ -117,14 +126,22 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     await propButton.click();
     await expect(propButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await page.locator('#globalCap').fill('100');
+    await page.locator('#globalCap').blur();
+    // tab
     await page.locator('input[id="age-pct-<65"]').fill('50');
+    await page.locator('input[id="age-pct-<65"]').blur();
+    // tab
     await page.locator('input[id="age-pct->=65"]').fill('50');
+    await page.locator('input[id="age-pct->=65"]').blur();
+    // tab
 
     // 2. Switch to Marginal Only and set a cap
     const marginalButton = page.getByRole('radio', { name: /Marginal Only/i });
     await marginalButton.click();
     await expect(marginalButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await page.locator('input[id="age-margcap-<65"]').fill('20');
+    await page.locator('input[id="age-margcap-<65"]').blur();
+    // tab
 
     // 3. Switch back to Proportional - percentages should be preserved
     await propButton.click();
