@@ -103,13 +103,11 @@
           <h2 class="text-lg font-semibold mb-2">Randomization Algorithm</h2>
           <div class="flex rounded-lg border overflow-hidden" role="radiogroup" aria-label="Randomization algorithm" appRovingTabindex="[role='radio']">
             <app-button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('BLOCK')" customClass="flex-1 px-3 py-2 text-sm"
-                    role="radio" [ariaChecked]="randomizationMethod === 'BLOCK' ? 'true' : null"
-                    [class.bg-indigo-600]="randomizationMethod === 'BLOCK'" [class.text-white]="randomizationMethod === 'BLOCK'" [segmentedActive]="randomizationMethod === 'BLOCK'" segmentedPosition="first" variant="segmented">
+                    role="radio" [ariaChecked]="randomizationMethod === 'BLOCK' ? 'true' : null"                    [class.bg-indigo-600]="randomizationMethod === 'BLOCK'" [class.text-white]="randomizationMethod === 'BLOCK'" [segmentedActive]="randomizationMethod === 'BLOCK'" segmentedPosition="first" variant="segmented">
               Stratified Block
             </app-button>
             <app-button type="button" (click)="designGroup.get('randomizationMethod')?.setValue('MINIMIZATION')" customClass="flex-1 px-3 py-2 text-sm border-l"
-                    role="radio" [ariaChecked]="randomizationMethod === 'MINIMIZATION' ? 'true' : null"
-                    [class.bg-indigo-600]="randomizationMethod === 'MINIMIZATION'" [class.text-white]="randomizationMethod === 'MINIMIZATION'" [segmentedActive]="randomizationMethod === 'MINIMIZATION'" segmentedPosition="middle" variant="segmented">
+                    role="radio" [ariaChecked]="randomizationMethod === 'MINIMIZATION' ? 'true' : null"                    [class.bg-indigo-600]="randomizationMethod === 'MINIMIZATION'" [class.text-white]="randomizationMethod === 'MINIMIZATION'" [segmentedActive]="randomizationMethod === 'MINIMIZATION'" segmentedPosition="middle" variant="segmented">
               Minimization
             </app-button>
           </div>
@@ -133,9 +131,9 @@
                 </div>
                 <app-text-input [inputId]="'armName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
                 <div class="flex items-center gap-2">
-                  <app-button type="button" (click)="decrementRatio($index)" [disabled]="arm.get('ratio')?.value <= 1" customClass="w-10 h-10 rounded-full border" [attr.aria-label]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">-</app-button>
+                  <app-button type="button" (click)="decrementRatio($index)" [disabled]="arm.get('ratio')?.value <= 1" customClass="w-10 h-10 rounded-full border" [ariaLabel]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Decrease ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">-</app-button>
                   <span class="font-bold w-6 text-center">{{ arm.get('ratio')?.value }}</span>
-                  <app-button type="button" (click)="incrementRatio($index)" customClass="w-10 h-10 rounded-full border" [attr.aria-label]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">+</app-button>
+                  <app-button type="button" (click)="incrementRatio($index)" customClass="w-10 h-10 rounded-full border" [ariaLabel]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" [appTooltip]="'Increase ratio for ' + (arm.get('name')?.value || 'arm')" variant="outline">+</app-button>
                   <span class="text-xs text-gray-500">of {{ totalRatio }}</span>
                 </div>
               </div>
@@ -251,8 +249,7 @@
                         role="radio" [ariaChecked]="blockSelectionType === 'RANDOM_POOL' ? 'true' : null"
                         [class.bg-indigo-600]="blockSelectionType === 'RANDOM_POOL'" [class.text-white]="blockSelectionType === 'RANDOM_POOL'" [segmentedActive]="blockSelectionType === 'RANDOM_POOL'" segmentedPosition="first" variant="segmented">Random</app-button>
                 <app-button type="button" (click)="allocationGroup.get('blockSelectionType')?.setValue('FIXED_SEQUENCE')" customClass="flex-1 px-3 py-2 text-sm border-l"
-                        role="radio" [ariaChecked]="blockSelectionType === 'FIXED_SEQUENCE' ? 'true' : null"
-                        [class.bg-indigo-600]="blockSelectionType === 'FIXED_SEQUENCE'" [class.text-white]="blockSelectionType === 'FIXED_SEQUENCE'" [segmentedActive]="blockSelectionType === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
+                        role="radio" [ariaChecked]="blockSelectionType === 'FIXED_SEQUENCE' ? 'true' : null"                        [class.bg-indigo-600]="blockSelectionType === 'FIXED_SEQUENCE'" [class.text-white]="blockSelectionType === 'FIXED_SEQUENCE'" [segmentedActive]="blockSelectionType === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
               </div>
             </div>
 
@@ -288,8 +285,7 @@
                               role="radio" [ariaChecked]="override.get('selectionType')?.value === 'RANDOM_POOL' ? 'true' : null"
                               [class.bg-indigo-600]="override.get('selectionType')?.value === 'RANDOM_POOL'" [class.text-white]="override.get('selectionType')?.value === 'RANDOM_POOL'" [segmentedActive]="override.get('selectionType')?.value === 'RANDOM_POOL'" segmentedPosition="first" variant="segmented">Random</app-button>
                       <app-button type="button" (click)="override.get('selectionType')?.setValue('FIXED_SEQUENCE')" customClass="flex-1 px-3 py-1.5 text-xs border-l"
-                              role="radio" [ariaChecked]="override.get('selectionType')?.value === 'FIXED_SEQUENCE' ? 'true' : null"
-                              [class.bg-indigo-600]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [class.text-white]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [segmentedActive]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
+                              role="radio" [ariaChecked]="override.get('selectionType')?.value === 'FIXED_SEQUENCE' ? 'true' : null"                              [class.bg-indigo-600]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [class.text-white]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [segmentedActive]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
                     </div>
                     <app-button type="button" (click)="removeBlockOverride(i)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Override" appTooltip="Remove Override" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -358,8 +354,7 @@
                     role="radio" [ariaChecked]="capStrategy === 'PROPORTIONAL' ? 'true' : null"
                     [class.bg-indigo-600]="capStrategy === 'PROPORTIONAL'" [class.text-white]="capStrategy === 'PROPORTIONAL'" [segmentedActive]="capStrategy === 'PROPORTIONAL'" segmentedPosition="middle" variant="segmented">Proportional</app-button>
             <app-button type="button" (click)="capsGroup.get('capStrategy')?.setValue('MARGINAL_ONLY')" customClass="flex-1 px-3 py-2 text-xs border-l"
-                    role="radio" [ariaChecked]="capStrategy === 'MARGINAL_ONLY' ? 'true' : null"
-                    [class.bg-indigo-600]="capStrategy === 'MARGINAL_ONLY'" [class.text-white]="capStrategy === 'MARGINAL_ONLY'" [segmentedActive]="capStrategy === 'MARGINAL_ONLY'" segmentedPosition="middle" variant="segmented">Marginal Only</app-button>
+                    role="radio" [ariaChecked]="capStrategy === 'MARGINAL_ONLY' ? 'true' : null"                    [class.bg-indigo-600]="capStrategy === 'MARGINAL_ONLY'" [class.text-white]="capStrategy === 'MARGINAL_ONLY'" [segmentedActive]="capStrategy === 'MARGINAL_ONLY'" segmentedPosition="middle" variant="segmented">Marginal Only</app-button>
           </div>
         </div>
 

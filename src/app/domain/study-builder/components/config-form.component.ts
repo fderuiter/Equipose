@@ -101,6 +101,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
   /** Expected attrition/dropout rate for the Monte Carlo simulation (0–50 %). */
   readonly attritionRate = signal(0);
+  private lastCapsValueStr = '';
 
   readonly stepLabels = [
     'Regulatory Disclaimer',
@@ -267,13 +268,13 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       });
     });
     
-    let lastCapsValueStr = JSON.stringify(this.form.get('capsGroup.stratumCaps')?.value);
+    this.lastCapsValueStr = JSON.stringify(this.form.get('capsGroup.stratumCaps')?.value);
     effect(() => {
       const caps = this.form.get('capsGroup.stratumCaps')?.value;
       untracked(() => {
         const capsStr = JSON.stringify(caps);
-        if (lastCapsValueStr === capsStr) return;
-        lastCapsValueStr = capsStr;
+        if (this.lastCapsValueStr === capsStr) return;
+        this.lastCapsValueStr = capsStr;
 
         if (this.matrixComputed()) {
           this.form.get('capsGroup.capStrategy')?.setValue('MANUAL_MATRIX', { emitEvent: false });
@@ -515,13 +516,13 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     );
 
     // Repopulate stratumCaps with the computed values.
-    this.stratumCaps.clear({ emitEvent: false });
+    this.stratumCaps.clear();
     for (const cap of caps) {
       this.stratumCaps.push(
-        this.fb.group({ levelIds: [cap.levelIds], cap: [cap.cap, [Validators.required, Validators.min(0)]] }),
-        { emitEvent: false }
+        this.fb.group({ levelIds: [cap.levelIds], cap: [cap.cap, [Validators.required, Validators.min(0)]] })
       );
     }
+    this.lastCapsValueStr = JSON.stringify(this.stratumCaps.value);
     this.matrixComputed.set(true);
   }
 

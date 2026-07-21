@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, ChangeDetectionStrategy, booleanAttribute } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, ViewChild, ChangeDetectionStrategy, booleanAttribute, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -23,7 +23,7 @@ import { CommonModule } from '@angular/common';
     />
   `
 })
-export class TextInputComponent {
+export class TextInputComponent implements AfterViewInit {
   @Input() variant: 'default' | 'bare' = 'default';
   @Input('type') typeAttr: 'text' | 'number' | 'range' = 'text';
   @Input() inputId = '';
@@ -82,6 +82,12 @@ export class TextInputComponent {
     
     this.internalValue = val;
     // Event naturally bubbles from the inner input to be caught by SignalFormControlDirective
+  }
+
+  ngAfterViewInit() {
+    if (this.inputEl && this.internalValue !== '' && this.inputEl.nativeElement.value !== this.internalValue) {
+      this.inputEl.nativeElement.value = this.internalValue;
+    }
   }
 
   focus() {

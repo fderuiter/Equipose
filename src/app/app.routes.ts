@@ -9,10 +9,11 @@ export interface Route {
   component?: Type<any>;
   title?: string;
   redirectTo?: string;
+  pathMatch?: 'full' | 'prefix';
 }
 
 export const routes: Route[] = [
-  { path: '', component: LandingComponent, title: 'Equipose - Clinical Trial Randomization Tool' },
+  { path: '', component: LandingComponent, title: 'Equipose - Clinical Trial Randomization Tool', pathMatch: 'full' },
   { path: 'about', component: AboutComponent, title: 'About | Equipose' },
   { path: 'generator', component: GeneratorComponent, title: 'Randomization Generator | Equipose' },
   { path: 'verify', component: SchemaVerificationComponent, title: 'Verify Schema | Equipose' },

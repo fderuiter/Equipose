@@ -101,7 +101,7 @@ type ResultsTab = 'grid' | 'balance';
         @if (state.results() && !state.isGenerating()) {
           <div class="flex items-center gap-2">
             <span class="text-xs text-muted">Audit Hash:</span>
-            <span class="font-mono text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded border border-gray-200 dark:border-slate-700 text-main" [title]="state.results()?.metadata?.auditHash">
+            <span class="font-mono text-xs bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded border border-gray-200 dark:border-slate-700 text-main" [title]="state.results()?.metadata?.auditHash" data-testid="audit-hash-value">
               {{ truncatedAuditHash }}
             </span>
             <app-button
