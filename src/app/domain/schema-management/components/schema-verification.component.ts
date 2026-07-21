@@ -1,10 +1,11 @@
 import { createStepper } from '../../../core/utils/stepper.util';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLinkDirective } from '../../../core/router/router-link.directive';
+import { TextInputComponent } from '../../../core/components/ui/text-input.component';
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
 import { SeoService } from '../../../core/services/seo.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 
 // ---------------------------------------------------------------------------
 // Data model for the diff engine
@@ -27,7 +28,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
 @Component({
   selector: 'app-schema-verification',
   standalone: true,
-  imports: [RouterLinkDirective],
+  imports: [RouterLinkDirective, TextInputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
@@ -81,14 +82,14 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
           </p>
           <p class="text-xs text-disabled mt-1">JSON files only</p>
 
-          <input
-            id="schema-file-input"
+          <app-text-input
+            inputId="schema-file-input"
             type="file"
             accept="application/json,.json"
-            class="hidden"
+            customClass="hidden"
             (change)="onFileSelected($event)"
             data-testid="file-input"
-          />
+          ></app-text-input>
         </label>
 
         @if (fileName()) {
@@ -204,7 +205,7 @@ export class SchemaVerificationComponent {
   readonly discrepancies = signal<RowDiscrepancy[]>([]);
   readonly uploadedSchema = signal<GeneratedSchema[]>([]);
 
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
 
   constructor() {
     inject(SeoService).setPage({

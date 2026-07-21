@@ -13,7 +13,7 @@ import { MonteCarloModalComponent } from '../../randomization-engine/components/
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { SeoService } from '../../../core/services/seo.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 
 type ResultsTab = 'grid' | 'balance';
@@ -146,16 +146,22 @@ type ResultsTab = 'grid' | 'balance';
 
           <!-- ── Tab Navigation ──────────────────────────────────────── -->
           <div class="flex gap-1 border-b border-border-subtle">
-            <app-button variant="bare"
+            <app-button
+              variant="bare"
               (onClick)="activeTab.set('grid')"
-              [customClass]="'px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset ' + (activeTab() === 'grid' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-surface' : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500')"
+              [customClass]="'px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 ' + (activeTab() === 'grid'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-surface'
+                : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500')"
               ariaLabel="Schema Grid tab"
             >
               Schema Grid
             </app-button>
-            <app-button variant="bare"
+            <app-button
+              variant="bare"
               (onClick)="activeTab.set('balance')"
-              [customClass]="'px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset ' + (activeTab() === 'balance' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-surface' : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500')"
+              [customClass]="'px-5 py-2.5 text-sm font-medium rounded-t-lg border-b-2 ' + (activeTab() === 'balance'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-surface'
+                : 'border-transparent text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:border-gray-300 dark:hover:border-slate-500')"
               ariaLabel="Balance Verification tab"
             >
               Balance Verification
@@ -200,7 +206,7 @@ type ResultsTab = 'grid' | 'balance';
 export class GeneratorComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   public readonly viewport = inject(ViewportService);
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(SignalRouter);
 

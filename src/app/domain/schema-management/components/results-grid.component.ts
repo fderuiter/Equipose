@@ -9,7 +9,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { MethodologySpecificationService } from '../services/methodology-specification.service';
 import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
@@ -69,7 +69,7 @@ export class ResultsGridComponent {
   public state = inject(RandomizationEngineFacade);
   public viewState = inject(SchemaViewStateService);
   public readonly viewport = inject(ViewportService);
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
   private readonly toast = inject(ToastService);
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly exportService = inject(ExportService);

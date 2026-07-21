@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import * as fc from 'fast-check';
 import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';

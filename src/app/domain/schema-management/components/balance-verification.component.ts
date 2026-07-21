@@ -1,4 +1,4 @@
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
@@ -276,7 +276,7 @@ export interface MarginalBalanceRow {
   `,
 })
 export class BalanceVerificationComponent {
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
   protected readonly state = inject(RandomizationEngineFacade);
 
   // ── Helpers ──────────────────────────────────────────────────────────────

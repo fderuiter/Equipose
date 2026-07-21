@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, effect, ElementRef, ViewChild } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RandomizationEngineFacade } from '../randomization-engine.facade';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import type { MonteCarloArmResult } from '../worker/worker-protocol';
 import { KeyboardScrollDirective } from '../../../core/directives/keyboard-scroll.directive';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
@@ -35,9 +35,11 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                 </div>
               </div>
               @if (!facade.isMonteCarloRunning()) {
-                <app-button variant="bare"
+                <app-button
+                  type="button"
+                  variant="bare"
                   (onClick)="closeModal()"
-                  customClass="text-disabled hover:text-gray-600 dark:hover:text-slate-300 transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500"
+                  customClass="text-disabled hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                   ariaLabel="Close"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,8 +259,10 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
       @if (!facade.isMonteCarloRunning()) {
         <div class="bg-gray-50/80 dark:bg-slate-900/50 px-6 py-3 flex justify-end border-t border-border-subtle flex-none">
           <app-button
+            type="button"
             variant="secondary"
             (onClick)="closeModal()"
+            customClass="inline-flex justify-center rounded-lg shadow-sm px-4 py-2 text-sm font-medium"
             data-testid="modal-close-footer"
           >
             Close
@@ -272,7 +276,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
 })
 export class MonteCarloModalComponent {
   readonly facade = inject(RandomizationEngineFacade);
-  protected readonly domainTheme = inject(DomainThemeService);
+  protected readonly domainTheme = inject(ThemeService);
   @ViewChild('modalDialog') modalDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('resultsHeader') resultsHeader?: ElementRef<HTMLElement>;
   @ViewChild('warningBanner') warningBanner?: ElementRef<HTMLElement>;

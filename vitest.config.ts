@@ -58,6 +58,12 @@ function angularTemplateInliner(): Plugin {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@core': resolve(__dirname, './src/app/core'),
+      '@domain': resolve(__dirname, './src/app/domain')
+    }
+  },
   plugins: [angularTemplateInliner()],
   test: {
     includeTaskLocation: true,

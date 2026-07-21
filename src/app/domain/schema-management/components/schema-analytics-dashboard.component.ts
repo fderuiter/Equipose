@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 
@@ -30,14 +30,16 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
               <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 font-medium text-xs">
                 {{ getVariableLabel(viewState.activeFilter()!.variableId || viewState.activeFilter()!.type || '') }}:
                 {{ viewState.activeFilter()!.value }}
-                <app-button variant="bare"
+                <app-button
+                  variant="bare"
                   (onClick)="viewState.clearFilter()"
-                  customClass="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200 leading-none rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  customClass="ml-1 hover:text-indigo-600 dark:hover:text-indigo-200 leading-none rounded"
                   ariaLabel="Remove filter"
                   appTooltip="Remove filter"
                 >✕</app-button>
               </span>
-              <app-button variant="bare"
+              <app-button
+                variant="bare"
                 (onClick)="viewState.clearFilter()"
                 customClass="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
               >Clear all filters</app-button>
@@ -133,7 +135,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
 })
 export class SchemaAnalyticsDashboardComponent {
   protected readonly viewState = inject(SchemaViewStateService);
-  protected readonly domainTheme = inject(DomainThemeService);
+  protected readonly domainTheme = inject(ThemeService);
 
   private getCssColor(token: string, fallback: string): string {
     if (typeof window === 'undefined') return fallback;

@@ -43,7 +43,7 @@ describe('ThemeService', () => {
       ]
     });
     service = TestBed.inject(ThemeService);
-    TestBed.flushEffects();
+    TestBed.tick();
   });
 
   afterEach(() => {
@@ -85,32 +85,32 @@ describe('ThemeService', () => {
 
   it('should be Light (not dark) when mode is Light regardless of system preference', () => {
     service.setMode('Light');
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(service.isDark()).toBe(false);
   });
 
   it('should be Dark when mode is Dark regardless of system preference', () => {
     service.setMode('Dark');
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(service.isDark()).toBe(true);
   });
 
   it('should follow system preference when mode is System and system is light', () => {
     service.setMode('System');
-    TestBed.flushEffects();
+    TestBed.tick();
     // mockMatchMedia returns matches: false (light)
     expect(service.isDark()).toBe(false);
   });
 
   it('should add dark class to html element when isDark is true', () => {
     service.setMode('Dark');
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(mockDocument.documentElement.classList.add).toHaveBeenCalledWith('dark');
   });
 
   it('should remove dark class from html element when isDark is false', () => {
     service.setMode('Light');
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(mockDocument.documentElement.classList.remove).toHaveBeenCalledWith('dark');
   });
 
@@ -125,26 +125,26 @@ describe('ThemeService', () => {
 
   it('should update isDark when OS theme changes to dark via media query event', () => {
     service.setMode('System');
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(service.isDark()).toBe(false);
 
     // Simulate OS switching to dark
     mediaQueryListeners.forEach(handler =>
       handler({ matches: true } as MediaQueryListEvent)
     );
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(service.isDark()).toBe(true);
   });
 
   it('should not update isDark on OS change when mode is explicitly Light', () => {
     service.setMode('Light');
-    TestBed.flushEffects();
+    TestBed.tick();
 
     // Simulate OS switching to dark
     mediaQueryListeners.forEach(handler =>
       handler({ matches: true } as MediaQueryListEvent)
     );
-    TestBed.flushEffects();
+    TestBed.tick();
     // Still light because mode is explicitly 'Light'
     expect(service.isDark()).toBe(false);
   });

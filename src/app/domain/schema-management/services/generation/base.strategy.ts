@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
 import { generateRandomizationSchema, generateCryptoSeed } from '../../../randomization-engine/core/randomization-algorithm';
 import { MT19937 } from '../../../randomization-engine/core/mt19937';
