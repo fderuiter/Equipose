@@ -114,9 +114,9 @@ test.describe('Enrollment Cap Strategy Switching', () => {
     });
 
     // 4. Switch back to Manual Matrix
-    const manualButton = page.getByRole('radio', { name: /Manual Matrix/i });
-    await manualButton.click();
-    await expect(manualButton).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
+    const manualBtn = page.getByRole('radio', { name: /Manual Matrix/i });
+    await manualBtn.click();
+    await expect(manualBtn).toHaveAttribute('aria-checked', 'true', { timeout: 10000 });
     await verifyPayload(page, 'MANUAL_MATRIX');
   });
 

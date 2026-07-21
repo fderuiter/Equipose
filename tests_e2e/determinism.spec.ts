@@ -29,6 +29,9 @@ test.describe('Determinism Test Suite', () => {
       page.getByRole('button', { name: /Increase ratio for Placebo/i })
     ).toBeVisible({ timeout: 15000 });
 
+    await expect(page.getByRole('button', { name: 'Increase ratio for Low Dose' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('button', { name: 'Increase ratio for Placebo' })).toBeVisible({ timeout: 15000 });
+
     for (let i = 0; i < 2; i++) {
       await page.getByRole('button', { name: /Increase ratio for Low Dose/i }).click();
     }
