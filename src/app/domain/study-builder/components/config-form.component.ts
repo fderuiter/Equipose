@@ -17,7 +17,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { RegulatoryNoticeComponent } from '../../../core/components/regulatory-notice/regulatory-notice.component';
 import { UnifiedValidationAuthority } from '../../core/validation/unified-validator';
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { AnnouncementService } from '../../../core/services/announcement.service';
 import { RovingTabindexDirective } from '../../../core/directives/roving-tabindex.directive';
@@ -43,7 +43,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   readonly store = inject(StudyBuilderStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly toastService = inject(ToastService);
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
   private readonly document = inject(DOCUMENT);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly announcementService = inject(AnnouncementService);

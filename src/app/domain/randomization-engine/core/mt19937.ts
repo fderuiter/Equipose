@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
+/**
+ * @deprecated Use Web Crypto API (`crypto.getRandomValues`) for random number generation and `sha256Hex` from `crypto-hash.ts` for hashing.
+ */
 class HashPRNG {
   private i = 0;
   private j = 0;
@@ -62,6 +66,9 @@ class HashPRNG {
   }
 }
 
+/**
+ * @deprecated Use Web Crypto API (`crypto.getRandomValues`) for random number generation and `sha256Hex` from `crypto-hash.ts` for hashing.
+ */
 export class MT19937 {
   private mt: Uint32Array;
   private mti: number;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { MT19937 } from '../../../randomization-engine/core/mt19937';
 
 export class ReproducibilityUtil {

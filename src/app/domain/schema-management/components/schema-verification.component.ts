@@ -4,7 +4,7 @@ import { RouterLinkDirective } from '../../../core/router/router-link.directive'
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
 import { SeoService } from '../../../core/services/seo.service';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 
 // ---------------------------------------------------------------------------
 // Data model for the diff engine
@@ -204,7 +204,7 @@ export class SchemaVerificationComponent {
   readonly discrepancies = signal<RowDiscrepancy[]>([]);
   readonly uploadedSchema = signal<GeneratedSchema[]>([]);
 
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
 
   constructor() {
     inject(SeoService).setPage({

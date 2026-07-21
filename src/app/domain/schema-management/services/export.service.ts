@@ -3,7 +3,7 @@ import { RandomizationResult } from '../../core/models/randomization.model';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { DateUtil } from '../../../core/utils/date.util';
 import { APP_VERSION } from '../../../../environments/version';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 import { OpenXmlWriter } from '../../../core/utils/openxml.util';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -15,7 +15,7 @@ import autoTable from 'jspdf-autotable';
 @Injectable({ providedIn: 'root' })
 export class ExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
-  private readonly domainTheme = inject(DomainThemeService);
+  private readonly domainTheme = inject(ThemeService);
 
   private sanitizeFilename(s: string): string {
     return s.replace(/[^A-Za-z0-9._-]/g, '_').trim();

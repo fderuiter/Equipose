@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-deprecated */
 import { SubjectRegistry } from './subject-registry';
 import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';

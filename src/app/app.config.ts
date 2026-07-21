@@ -17,7 +17,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withFetch()),
+    provideHttpClient(),
     { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(R_CONFIG), multi: true },
     { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(PYTHON_CONFIG), multi: true },
     { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(SAS_CONFIG), multi: true },

@@ -27,44 +27,44 @@ describe('AnnouncementService', () => {
 
   it('should handle single announcement lifecycle', () => {
     service.announce('Hello World');
-    TestBed.flushEffects();
+    TestBed.tick();
 
     const liveRegion = document.querySelector('.sr-only') as HTMLElement;
     expect(liveRegion.textContent).toBe('Hello World');
     expect(liveRegion.getAttribute('aria-live')).toBe('polite');
 
     vi.advanceTimersByTime(1500);
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(liveRegion.textContent).toBe('Hello World');
 
     vi.advanceTimersByTime(1500);
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(liveRegion.textContent).toBe('');
   });
 
   it('should reset the timer when multiple announcements are triggered rapidly', () => {
     service.announce('First Message');
-    TestBed.flushEffects();
+    TestBed.tick();
 
     const liveRegion = document.querySelector('.sr-only') as HTMLElement;
     expect(liveRegion.textContent).toBe('First Message');
 
     vi.advanceTimersByTime(500);
-    TestBed.flushEffects();
+    TestBed.tick();
 
     // Trigger second message
     service.announce('Second Message');
-    TestBed.flushEffects();
+    TestBed.tick();
     expect(liveRegion.textContent).toBe('Second Message');
 
     vi.advanceTimersByTime(2500); // 3000ms from First Message, 2500ms from Second Message
-    TestBed.flushEffects();
+    TestBed.tick();
 
     // Should still be visible because the timer was reset by the second message
     expect(liveRegion.textContent).toBe('Second Message');
 
     vi.advanceTimersByTime(500); // Now 3000ms from Second Message
-    TestBed.flushEffects();
+    TestBed.tick();
 
     // Now it should be cleared
     expect(liveRegion.textContent).toBe('');

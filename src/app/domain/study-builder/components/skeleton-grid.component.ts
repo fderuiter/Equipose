@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { DomainThemeService } from '../../core/theme/domain-theme.service';
+import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
 
 /**
  * SkeletonGridComponent
@@ -114,7 +114,7 @@ import { DomainThemeService } from '../../core/theme/domain-theme.service';
   `
 })
 export class SkeletonGridComponent {
-  public readonly domainTheme = inject(DomainThemeService);
+  public readonly domainTheme = inject(ThemeService);
 
   /** Used only to drive the @for loop for bar-chart x-axis label stubs. */
   readonly barLabels = [1, 2, 3, 4, 5];
