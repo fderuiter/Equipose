@@ -102,5 +102,33 @@ module.exports = defineConfig([
       '@angular-eslint/template/interactive-supports-focus': 'off',
       '@angular-eslint/template/click-events-have-key-events': 'off',
     },
+  },
+  {
+    files: ['src/app/domain/**/*.html'],
+    plugins: {
+      'custom-template-rules': {
+        rules: {
+          'no-raw-html-elements': {
+            create(context) {
+              return {
+                'Element[name="button"]'(node) {
+                  context.report({ node, message: 'Use <app-button> standard component instead of raw <button> tags.' });
+                },
+                'Element[name="input"]'(node) {
+                  const typeAttr = node.attributes?.find(attr => attr.name === 'type');
+                  const type = typeAttr ? typeAttr.value : undefined;
+                  if (!type || type === 'text') {
+                    context.report({ node, message: 'Use <app-text-input> standard component instead of raw text <input> tags.' });
+                  }
+                }
+              };
+            }
+          }
+        }
+      }
+    },
+    rules: {
+      'custom-template-rules/no-raw-html-elements': 'error'
+    }
   }
 ]);
