@@ -41,7 +41,7 @@ rules:
       exclude:
         - "**/scripts/cross-env/verify_r_schema.R"
 
-  - id: insecure-sas-ranuni
+  - id: custom-sas-ranuni
     message: "Do not use the deprecated 'ranuni' function in SAS templates. Use 'call streaminit' and 'rand' instead."
     severity: ERROR
     languages:
@@ -51,3 +51,41 @@ rules:
     paths:
       include:
         - "**/src/app/domain/schema-management/services/code-generator.service.ts"
+
+  - id: no-custom-ratio-simplification
+    message: "Do not write custom ratio simplification logic. Import `simplifyRatios` from `domain/shared/statistical/ratio-simplification`."
+    severity: ERROR
+    languages:
+      - typescript
+      - javascript
+    patterns:
+      - pattern-either:
+          - pattern: $X.ratio / $GCD
+          - pattern: MathUtil.gcdArray($ARMS.map(...))
+    paths:
+      exclude:
+        - "**/domain/shared/statistical/ratio-simplification.ts"
+
+  - id: no-custom-weighted-sampling
+    message: "Do not write custom weighted sampling loops. Use `selectWeightedArm` from `domain/shared/statistical/weighted-sampling`."
+    severity: ERROR
+    languages:
+      - typescript
+      - javascript
+    patterns:
+      - pattern-either:
+          - pattern: |
+              let $R = Math.floor($RNG() * $TOTAL);
+              ...
+              for (const $ARM of $CANDIDATES) {
+                ...
+                $R -= $ARM.ratio;
+                ...
+              }
+          - pattern: |
+              $X.reduce((sum, $ARM) => sum + $ARM.ratio, 0)
+    paths:
+      exclude:
+        - "**/domain/shared/statistical/weighted-sampling.ts"
+        - "**/domain/randomization-engine/core/randomization-algorithm.ts"
+

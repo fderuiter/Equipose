@@ -13,6 +13,8 @@ import { generateSubjectId } from './subject-id-engine';
 import { generateMinimization } from './minimization-algorithm';
 import { SubjectRegistry } from './subject-registry';
 import { MathUtil } from '../../core/utils/math.util';
+import { simplifyRatios } from '../../shared/statistical/ratio-simplification';
+import { fisherYatesShuffle } from '../../shared/statistical/fisher-yates';
 
 // ---------------------------------------------------------------------------
 // Crypto seed helper (shared with the Web Worker)
@@ -45,12 +47,7 @@ function buildBlock(arms: TreatmentArm[], blockSize: number, totalRatio: number,
       block.push(arm);
     }
   }
-  // Fisher-Yates shuffle using raw 32-bit integers
-  for (let i = block.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [block[i], block[j]] = [block[j], block[i]];
-  }
-  return block;
+  return fisherYatesShuffle(block, rng);
 }
 
 // ---------------------------------------------------------------------------
@@ -326,11 +323,7 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
   }
 
   // 2. Simplify ratios and calculate total ratio sum
-  const ratioGcd = MathUtil.gcdArray(resolvedConfig.arms.map(a => a.ratio));
-  const simplifiedArms = resolvedConfig.arms.map(arm => ({
-    ...arm,
-    ratio: arm.ratio / ratioGcd
-  }));
+  const simplifiedArms = simplifyRatios(resolvedConfig.arms);
   const totalRatio = simplifiedArms.reduce((sum, arm) => sum + arm.ratio, 0);
 
   // Apply simplified arms for internal generation logic

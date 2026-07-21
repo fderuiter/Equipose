@@ -15,6 +15,7 @@ import { CommonModule } from '@angular/common';
       [min]="min"
       [max]="max"
       [step]="step"
+      [accept]="accept"
       [placeholder]="placeholder"
       [disabled]="disabled"
       [class]="computedClasses"
@@ -25,11 +26,12 @@ import { CommonModule } from '@angular/common';
 })
 export class TextInputComponent implements AfterViewInit {
   @Input() variant: 'default' | 'bare' = 'default';
-  @Input('type') typeAttr: 'text' | 'number' | 'range' = 'text';
+  @Input('type') typeAttr: 'text' | 'number' | 'range' | 'file' = 'text';
   @Input() inputId = '';
   @Input() min?: number | string;
   @Input() max?: number | string;
   @Input() step?: number | string;
+  @Input() accept?: string;
   @Input() placeholder = '';
   @Input({ transform: booleanAttribute }) disabled = false;
   @Input() customClass = '';
