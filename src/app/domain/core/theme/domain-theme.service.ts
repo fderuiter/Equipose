@@ -72,8 +72,6 @@ export class DomainThemeService {
     borderRadius: 'rounded-xl'
   });
 
-  readonly armColors = computed(() => this._armColors());
-  readonly semanticColors = computed(() => this._semanticColors());
   readonly layout = computed(() => this._layout());
 
   getArmColor(index: number): ArmColorTokens {
