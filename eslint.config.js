@@ -45,22 +45,22 @@ module.exports = defineConfig([
   //          as the entry point, plus domain/core models.
   // ---------------------------------------------------------------------------
   {
-    files: ['src/app/domain/study-builder/**/*.ts'],
+    files: ['src/app/domain/study-builder/**/*.ts', 'src/app/domain/schema-management/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['*/domain/randomization-engine/core/*'],
+              group: ['*/domain/randomization-engine/core/*', '@domain/randomization-engine/core/*'],
               message:
-                'domain/study-builder must not access the randomization-engine core algorithm. ' +
+                'UI domains must not access the randomization-engine core algorithm directly. ' +
                 'Use RandomizationEngineFacade instead.'
             },
             {
-              group: ['*/domain/randomization-engine/worker/*'],
+              group: ['*/domain/randomization-engine/worker/*', '@domain/randomization-engine/worker/*'],
               message:
-                'domain/study-builder must not access the randomization-engine worker internals. ' +
+                'UI domains must not access the randomization-engine worker internals. ' +
                 'Use RandomizationEngineFacade instead.'
             }
           ]
