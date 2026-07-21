@@ -74,6 +74,16 @@ export class RovingTabindexDirective implements AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * Handles keyboard navigation for roving tabindex items.
+   *
+   * Simulates native radio group behavior for custom `<button role="radio">` elements.
+   * Native radio groups update their value during arrow-key navigation. To seamlessly 
+   * replicate this behavior for custom elements, a programmatic click is dispatched 
+   * upon focus to ensure the underlying form control updates.
+   *
+   * @param event The KeyboardEvent triggered by the user.
+   */
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
     if (this.items.length === 0) return;
@@ -81,8 +91,7 @@ export class RovingTabindexDirective implements AfterViewInit, OnDestroy {
     let nextIndex = this.activeIndex;
     let handled = false;
 
-    // For TagInput, input text box might have selection, we shouldn't steal Left/Right if inside an input unless caret is at edge?
-    // "Arrow-key navigation must not interfere with text selection inside the nested input field [cite:source2]."
+    // Do not interfere with text selection inside nested input fields
     const activeItem = this.items[this.activeIndex];
     if (activeItem instanceof HTMLInputElement && activeItem.type === 'text') {
       if (event.key === 'ArrowLeft') {
@@ -123,14 +132,6 @@ export class RovingTabindexDirective implements AfterViewInit, OnDestroy {
       this.updateTabIndices();
       this.items[this.activeIndex].focus();
       
-      // If it's a radio group, we should trigger a click to select it?
-      // Wait, native radio group arrows update the value.
-      // But radio buttons in config-form are custom `<button role="radio">`.
-      // We can dispatch a click or let the user handle it, but wait, the requirement:
-      // "The new utility should seamlessly take over the arrow-key navigation and wrapping for these custom radio groups."
-      // "Remove the manual onRadioGroupArrowKey method... The new utility should seamlessly take over the arrow-key navigation and wrapping for these custom radio groups."
-      // If we remove `onRadioGroupArrowKey` which does `control.setValue(values[nextIndex])`, how will the utility update the form control?
-      // For a button role="radio", triggering `.click()` will call the `(click)` handler on it!
       const newActive = this.items[this.activeIndex];
       if (newActive.getAttribute('role') === 'radio') {
         newActive.click();
