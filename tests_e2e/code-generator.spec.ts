@@ -13,25 +13,25 @@ test.describe('Code Generator Modal UI', () => {
     await page.locator('#studyName').fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
     await page.locator('#armName0').fill('Placebo');
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
 
     const siteInput = page.locator('#sitesLabel + app-tag-input input');
     await expect(siteInput).toBeVisible();
     await siteInput.fill('Site-001');
     await siteInput.press('Enter');
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
 
     await page.locator('#blockSizesStr').fill('2');
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
 
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
     await expect(generateCodeBtn).toBeVisible();
-    await generateCodeBtn.evaluate(b => (b as HTMLElement).click());
+    await generateCodeBtn.click({ force: true });
     await expect(page.getByRole('menuitem', { name: /Stata Script/i }).first()).toBeVisible();
-    await page.getByRole('menuitem', { name: /R Script/i }).first().evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('menuitem', { name: /R Script/i }).first().click({ force: true });
 
     const modalHeading = page.getByRole('heading', { name: /Code Generator/i });
     await expect(modalHeading).toBeVisible();
@@ -41,35 +41,35 @@ test.describe('Code Generator Modal UI', () => {
 
     const downloadBtn = modal.getByRole('button', { name: /Download/i }).first();
     const downloadPromiseR = page.waitForEvent('download', { timeout: 10000 });
-    await downloadBtn.evaluate(b => (b as HTMLElement).click());
+    await downloadBtn.click({ force: true });
     const downloadR = await downloadPromiseR;
     expect(downloadR.suggestedFilename()).toBe('randomization_schema.R');
 
     const pythonTab = modal.getByRole('tab', { name: /Python/i });
-    await pythonTab.evaluate(b => (b as HTMLElement).click());
+    await pythonTab.click({ force: true });
     await expect(generatedCode).toContainText(/import numpy as np/i, { timeout: 10000 });
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
-    await downloadBtn.evaluate(b => (b as HTMLElement).click());
+    await downloadBtn.click({ force: true });
     const downloadPy = await downloadPromisePy;
     expect(downloadPy.suggestedFilename()).toBe('randomization_schema.py');
 
     const sasTab = modal.getByRole('tab', { name: /SAS/i });
-    await sasTab.evaluate(b => (b as HTMLElement).click());
+    await sasTab.click({ force: true });
     await expect(generatedCode).toContainText(/Randomization Schema Generation in SAS/i, { timeout: 10000 });
     const downloadPromiseSas = page.waitForEvent('download', { timeout: 10000 });
-    await downloadBtn.evaluate(b => (b as HTMLElement).click());
+    await downloadBtn.click({ force: true });
     const downloadSas = await downloadPromiseSas;
     expect(downloadSas.suggestedFilename()).toBe('randomization_schema.sas');
 
     const stataTab = modal.getByRole('tab', { name: /Stata/i });
-    await stataTab.evaluate(b => (b as HTMLElement).click());
+    await stataTab.click({ force: true });
     await expect(generatedCode).toContainText(/mata:/i, { timeout: 10000 });
     const downloadPromiseStata = page.waitForEvent('download', { timeout: 10000 });
-    await downloadBtn.evaluate(b => (b as HTMLElement).click());
+    await downloadBtn.click({ force: true });
     const downloadStata = await downloadPromiseStata;
     expect(downloadStata.suggestedFilename()).toBe('randomization_schema.do');
 
-    await modal.getByRole('button', { name: /Close/i }).first().evaluate(b => (b as HTMLElement).click());
+    await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
     await expect(modalHeading).toBeHidden();
   });
 
@@ -78,25 +78,25 @@ test.describe('Code Generator Modal UI', () => {
     await page.locator('#studyName').fill('End-to-end Test Study');
     await page.locator('#phase').selectOption({ label: 'Phase II' });
 
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
     await page.locator('#armName0').fill('Placebo');
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
 
     const siteInput = page.locator('#sitesLabel + app-tag-input input');
     await expect(siteInput).toBeVisible();
     await siteInput.fill('Site-001');
     await siteInput.press('Enter');
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
 
     await page.locator('#blockSizesStr').fill('2');
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
-    await page.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
+    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
 
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
     await expect(generateCodeBtn).toBeVisible();
-    await generateCodeBtn.evaluate(b => (b as HTMLElement).click());
+    await generateCodeBtn.click({ force: true });
     await expect(page.getByRole('menuitem', { name: /Stata Script/i }).first()).toBeVisible();
-    await page.getByRole('menuitem', { name: /R Script/i }).first().evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('menuitem', { name: /R Script/i }).first().click({ force: true });
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     const copyBtn = modal.getByRole('button', { name: /Copy Code/i });
@@ -104,7 +104,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const liveRegion = page.locator('.sr-only[aria-live="polite"]');
     await FocusAuditor.assertFocusRestoration(page, async () => {
-      await copyBtn.evaluate(b => (b as HTMLElement).click());
+      await copyBtn.click({ force: true });
       await expect(liveRegion).toContainText(/Copied to clipboard!/i, { timeout: 3000 });
     }, copyBtn);
   });
