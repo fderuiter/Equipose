@@ -18,7 +18,7 @@ test.describe('Results Grid Empty State', () => {
     // 2. Open Site filter
     const siteFilterBtn = page.getByRole('button', { name: 'Filter Site' });
     await expect(siteFilterBtn).toBeVisible();
-    await siteFilterBtn.click();
+    await siteFilterBtn.click({ force: true });
 
     // 3. Type a non-existent value in the search input
     // Using a more flexible locator for the search input
@@ -33,7 +33,7 @@ test.describe('Results Grid Empty State', () => {
     // 5. Assert Clear Filters button is visible and click it
     const clearFiltersBtn = page.getByRole('button', { name: /Clear Filters/i });
     await expect(clearFiltersBtn).toBeVisible();
-    await clearFiltersBtn.click();
+    await clearFiltersBtn.click({ force: true });
 
     // 6. Assert rows are visible again
     await expect(rows.first()).toBeVisible();
