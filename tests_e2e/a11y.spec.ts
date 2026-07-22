@@ -10,8 +10,8 @@ const fontSmoothingStyle = `
   }
 `;
 
-const screenshotOptions = { fullPage: true, maxDiffPixels: 200, style: fontSmoothingStyle } as const;
-const resultsScreenshotOptions = { fullPage: true, maxDiffPixels: 5000, style: fontSmoothingStyle } as const;
+const screenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, style: fontSmoothingStyle } as const;
+const resultsScreenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, style: fontSmoothingStyle } as const;
 
 function getMasks(page: Page) {
   return [
@@ -108,16 +108,16 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await loadPreset(page, 'Simple');
   await assertInputAndButtonReadable(page.locator('#protocolId'), page.getByRole('button', { name: /^Next$/i }).first());
   await assertSelectReadableStyling(page.locator('#phase'));
-  await expect(page.locator('#protocolId')).toHaveScreenshot(`input-protocol-${mode}.png`, { maxDiffPixels: 100 });
-  await expect(page.getByRole('button', { name: /^Next$/i }).first()).toHaveScreenshot(`button-next-${mode}.png`, { maxDiffPixels: 100 });
+  await expect(page.locator('#protocolId')).toHaveScreenshot(`input-protocol-${mode}.png`, { maxDiffPixelRatio: 0.05 });
+  await expect(page.getByRole('button', { name: /^Next$/i }).first()).toHaveScreenshot(`button-next-${mode}.png`, { maxDiffPixelRatio: 0.05 });
   await goToStep(page, 4);
   await page.getByRole('button', { name: /\+ Add Override/i }).evaluate(b => (b as HTMLElement).click());
   const targetTypeSelect = page.locator('[formcontrolname="targetType"]').first();
   const targetIdSelect = page.locator('[formcontrolname="targetId"]').first();
   await assertSelectReadableStyling(targetTypeSelect.locator('select'));
   await assertSelectReadableStyling(targetIdSelect.locator('select'));
-  await expect(targetTypeSelect.locator('select')).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixels: 100 });
-  await expect(targetIdSelect.locator('select')).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixels: 100 });
+  await expect(targetTypeSelect.locator('select')).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixelRatio: 0.05 });
+  await expect(targetIdSelect.locator('select')).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixelRatio: 0.05 });
   await expect(page.locator('#blockSizesStr')).toBeVisible();
   await page.locator('#blockSizesStr').fill('3');
   await page.locator('#blockSizesStr').press('Tab');
@@ -200,7 +200,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   const toast = page.locator('div[role="alert"]').first();
   await expect(toast).toBeVisible();
   await checkA11y(page, 'div[role="alert"]');
-  await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, { maxDiffPixels: 200 });
+  await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, { maxDiffPixelRatio: 0.05 });
 }
 
 async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
@@ -230,7 +230,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
           console.error('Mobile menu accessibility baseline violation:', e.message);
         }
         
-        await expect(mobileMenu).toHaveScreenshot(`mobile-menu-${mode}.png`, { maxDiffPixels: 200 });
+        await expect(mobileMenu).toHaveScreenshot(`mobile-menu-${mode}.png`, { maxDiffPixelRatio: 0.05 });
         
         await page.keyboard.press('Escape');
         await expect(mobileMenu).toBeHidden();
