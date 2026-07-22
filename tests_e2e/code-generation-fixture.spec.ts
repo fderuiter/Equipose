@@ -29,7 +29,7 @@ const languageTabs: { language: Language; tabName: RegExp; extension: string }[]
 ];
 
 const test = base.extend<ScriptFixture>({
-  exportScenarioScripts: async ({ page }, use) => {
+  exportScenarioScripts: async ({ page }, use, testInfo) => {
     await use(async scenario => {
       page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
       await openGenerator(page);
@@ -39,7 +39,8 @@ const test = base.extend<ScriptFixture>({
       await expect(generateSchemaBtn).toBeEnabled();
       await generateSchemaBtn.click();
 
-      const scenarioDir = join(artifactRoot, scenario.id);
+      const workerRoot = join(artifactRoot, testInfo.project.name || "default");
+      const scenarioDir = join(workerRoot, scenario.id);
       await mkdir(scenarioDir, { recursive: true });
       const files: { language: Language; file: string }[] = [];
 
@@ -118,7 +119,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
     await mkdir(artifactRoot, { recursive: true });
   });
 
-  test('exports representative complex schemas and scripts for CI artifacts', async ({ page, exportScenarioScripts }) => {
+  test('exports representative complex schemas and scripts for CI artifacts', async ({ page, exportScenarioScripts }, testInfo) => {
+    const workerRoot = join(artifactRoot, testInfo.project.name || "default");
     const scenarios: ScenarioDefinition[] = [
       {
         id: 'block',
@@ -284,7 +286,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     const summary = await Promise.all(
       scenarios.map(async scenario => {
-        const manifestPath = join(artifactRoot, scenario.id, 'manifest.json');
+        const manifestPath = join(workerRoot, scenario.id, 'manifest.json');
         const raw = await readFile(manifestPath, 'utf-8');
         return JSON.parse(raw) as { scenario: string; files: Array<{ file: string }> };
       }),
@@ -296,32 +298,32 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     // Verify structural properties against the UI schema configuration
     // (Requirement: Structural Parity Verification)
-    const blockSas = await readFile(join(artifactRoot, 'block', 'block.sas'), 'utf-8');
-    const blockStata = await readFile(join(artifactRoot, 'block', 'block.do'), 'utf-8');
+    const blockSas = await readFile(join(workerRoot, 'block', 'block.sas'), 'utf-8');
+    const blockStata = await readFile(join(workerRoot, 'block', 'block.do'), 'utf-8');
     expect(blockSas).toContain('%let block_sizes = 4 6;');
     expect(blockStata).toContain('local block_1 4');
     expect(blockStata).toContain('local block_2 6');
 
-    const zeroCapStata = await readFile(join(artifactRoot, 'zero-cap', 'zero-cap.do'), 'utf-8');
+    const zeroCapStata = await readFile(join(workerRoot, 'zero-cap', 'zero-cap.do'), 'utf-8');
     const zeroCapAssignments = [...zeroCapStata.matchAll(/local cap = (\d+)/g)].map(match => Number(match[1]));
     expect(zeroCapAssignments.length).toBeGreaterThan(0);
     expect(zeroCapAssignments.every(cap => cap === 0)).toBe(true);
 
     const minimizationOnlyContents = await Promise.all([
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.R'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.py'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.sas'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.do'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.R'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.py'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.sas'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.do'), 'utf-8'),
     ]);
     minimizationOnlyContents.forEach(content => {
       expect(content).toContain('Algorithm: Pocock-Simon Minimization');
     });
 
     // Verify special characters are properly escaped in all four generated languages.
-    const weirdCharsR     = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.R'),   'utf-8');
-    const weirdCharsPy    = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.py'),  'utf-8');
-    const weirdCharsSas   = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.sas'), 'utf-8');
-    const weirdCharsStata = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.do'),  'utf-8');
+    const weirdCharsR     = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.R'),   'utf-8');
+    const weirdCharsPy    = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.py'),  'utf-8');
+    const weirdCharsSas   = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.sas'), 'utf-8');
+    const weirdCharsStata = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.do'),  'utf-8');
 
     // R: single quote passes through; double-quote and backslash are escaped.
     expect(weirdCharsR).toContain(`"O'Brien"`);
@@ -353,7 +355,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     const pythonExecutable = process.env.PYTHON || 'python3';
 
-    const pythonScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.py`));
+    const pythonScripts = scenarios.map(scenario => join(workerRoot, scenario.id, `${scenario.id}.py`));
     const hasPython = await commandExists(pythonExecutable, {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
@@ -381,7 +383,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
     });
     if (rscriptExecutable) {
       for (const scenario of scenarios) {
-        const scenarioDir = join(artifactRoot, scenario.id);
+        const workerRoot = join(artifactRoot, testInfo.project.name || "default");
+      const scenarioDir = join(workerRoot, scenario.id);
         const scriptPath = join(scenarioDir, `${scenario.id}.R`);
         const mt19937Path = join(process.cwd(), 'src/app/domain/randomization-engine/runtimes/mt19937_v1.0.0.r');
         await writeFile(join(scenarioDir, 'mt19937_v1.0.0.r'), await readFile(mt19937Path));
