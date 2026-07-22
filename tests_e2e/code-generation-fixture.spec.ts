@@ -391,6 +391,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
         await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`, {
           cwd: scenarioDir
         });
+        await rm(join(scenarioDir, 'mt19937_v1.0.0.r'), { force: true });
       }
     } else if (process.env.GITHUB_ACTIONS === 'true') {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
