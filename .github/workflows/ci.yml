@@ -553,7 +553,6 @@ jobs:
 
     - name: Run unit tests with JSON reporter
       run: |
-        node generate-version.js
         ./node_modules/.bin/vitest run \
           --exclude 'tests_e2e/**' \
           --reporter=json \
