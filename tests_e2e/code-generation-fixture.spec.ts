@@ -1,6 +1,6 @@
 import { test as base, expect, Page } from '@playwright/test';
 import { execFile } from 'child_process';
-import { mkdir, readFile, rm, writeFile } from 'fs/promises';
+import { mkdir, readFile, rm, writeFile, copyFile } from 'fs/promises';
 import { join, resolve } from 'path';
 import { promisify } from 'util';
 import { goToStep, loadPreset, openGenerator } from './generator-helpers';
@@ -69,6 +69,13 @@ const test = base.extend<ScriptFixture>({
       }
 
       await modal.getByRole('button', { name: /Close/i }).first().click();
+
+      // Copy the mt19937 dependency so the generated R script can source it locally.
+      await copyFile(
+        resolve(process.cwd(), 'src/app/domain/randomization-engine/runtimes/mt19937_v1.0.0.r'),
+        join(scenarioDir, 'mt19937_v1.0.0.r')
+      );
+
       await writeFile(
         join(scenarioDir, 'manifest.json'),
         JSON.stringify({ scenario: scenario.id, protocolId: scenario.protocolId, files }, null, 2),
@@ -88,11 +95,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
     command: string,
     args: string[],
     description: string,
-    options?: { env?: NodeJS.ProcessEnv },
+    options?: { env?: NodeJS.ProcessEnv; cwd?: string },
   ): Promise<void> => {
     try {
       await execFileAsync(command, args, {
-        cwd: process.cwd(),
+        cwd: options?.cwd ?? process.cwd(),
         maxBuffer: 10 * 1024 * 1024,
         env: options?.env ?? process.env,
       });
@@ -353,7 +360,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     const pythonExecutable = process.env.PYTHON || 'python3';
 
-    const pythonScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.py`));
+    const pythonScripts = scenarios.map(scenario => ({ path: join(artifactRoot, scenario.id, `${scenario.id}.py`), dir: join(artifactRoot, scenario.id) }));
     const hasPython = await commandExists(pythonExecutable, {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
@@ -366,23 +373,23 @@ test.describe('Code generation fixtures for script execution checks', () => {
       'Python dependency preflight check for generated scripts',
     );
 
-    for (const scriptPath of pythonScripts) {
+    for (const { path: scriptPath, dir: scriptDir } of pythonScripts) {
       await assertSubprocessSuccess(
         pythonExecutable,
         [scriptPath],
         `Generated Python script execution (${scriptPath})`,
-        { env: { ...process.env, PYTHON: pythonExecutable } },
+        { env: { ...process.env, PYTHON: pythonExecutable }, cwd: scriptDir },
       );
     }
 
-    const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
+    const rScripts = scenarios.map(scenario => ({ path: join(artifactRoot, scenario.id, `${scenario.id}.R`), dir: join(artifactRoot, scenario.id) }));
     const rscriptExecutable = await resolveExecutable(getRscriptCandidates(), {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
     });
     if (rscriptExecutable) {
-      for (const scriptPath of rScripts) {
-        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);
+      for (const { path: scriptPath, dir: scriptDir } of rScripts) {
+        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`, { cwd: scriptDir });
       }
     } else if (process.env.GITHUB_ACTIONS === 'true') {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
