@@ -6,7 +6,7 @@ import { R_TEMPLATE, SAS_TEMPLATE, PYTHON_TEMPLATE, STATA_TEMPLATE } from './tem
 import { LogicIR, LogicIRTask, SubjectIdToken } from './ir.model';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
 
-import { simplifyRatios } from '../../../../shared/statistical/ratio-simplification';
+import { simplifyRatios, getTotalRatio } from '../../../../shared/statistical/ratio-simplification';
 import { formatStratumCode } from '../../../../shared/statistical/stratum-format';
 import { ALGORITHM_TEMPLATES } from '../../../../shared/templates/algorithm-templates';
 
@@ -61,7 +61,7 @@ export class CodeTranspiler {
   public static buildIR(config: RandomizationConfig, method: 'BLOCK' | 'MINIMIZATION'): LogicIR {
     const seedHash = ReproducibilityUtil.hashCode(config.seed);
     const simplifiedArms = simplifyRatios(config.arms);
-    const totalRatio = simplifiedArms.reduce((sum, a) => sum + a.ratio, 0);
+    const totalRatio = getTotalRatio(simplifiedArms);
 
     const capsDict: Record<string, number> = {};
     if (config.stratumCaps) {

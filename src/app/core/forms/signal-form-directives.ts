@@ -146,7 +146,7 @@ export class SignalFormControlDirective implements OnInit {
 
     if (errorEl) {
       if (!errorEl.id) {
-        errorEl.id = 'a11y-err-' + Math.random().toString(36).substring(2, 9);
+        errorEl.id = 'a11y-err-' + crypto.getRandomValues(new Uint32Array(1))[0].toString(36);
       }
       
       const currentDescribedBy = targetEl.getAttribute('aria-describedby');

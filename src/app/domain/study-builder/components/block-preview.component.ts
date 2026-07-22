@@ -50,7 +50,8 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
 
       if (isValid) {
         simplifiedArms.forEach((arm, idx) => {
-          const proportionScaled = Math.round((arm.ratio / totalRatio) * PRECISION_SCALE);
+          const r = arm.ratio;
+          const proportionScaled = Math.round((r / totalRatio) * PRECISION_SCALE);
           const count = Math.round((proportionScaled * blockSize) / PRECISION_SCALE);
           for (let i = 0; i < count; i++) {
             slots.push({
@@ -66,7 +67,8 @@ export function buildPreviews(arms: ArmInput[], blockSizes: number[], getArmColo
         let rendered = 0;
         simplifiedArms.forEach((arm, idx) => {
           if (rendered >= cleanCount) return;
-          const proportionScaled = Math.round((arm.ratio / totalRatio) * PRECISION_SCALE);
+          const r = arm.ratio;
+          const proportionScaled = Math.round((r / totalRatio) * PRECISION_SCALE);
           const count = Math.round((proportionScaled * cleanCount) / PRECISION_SCALE);
           for (let i = 0; i < count && rendered < cleanCount; i++) {
             slots.push({

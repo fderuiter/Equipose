@@ -16,7 +16,7 @@ bootstrapApplication(App, appConfig)
           isAxeRunning = true;
           axe.default.run().then(results => {
             if (results.violations.length) {
-              console.warn('Axe-core accessibility violations' + label + ':', results.violations);
+              console.warn('Axe-core accessibility violations %s:', label, results.violations);
             }
           }).catch(() => {}).finally(() => {
             isAxeRunning = false;
