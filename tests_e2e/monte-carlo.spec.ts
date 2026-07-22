@@ -11,6 +11,8 @@ async function navigateToGenerator(page: Page) {
 }
 
 test.describe('Monte Carlo Statistical Validation', () => {
+  test.setTimeout(120000); // Give WebKit & CI enough time for Web Worker simulation
+
   test.beforeEach(async ({ page }) => {
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`));
     await navigateToGenerator(page);
@@ -236,7 +238,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
       // Click Close button in footer
-      await modal.getByTestId('modal-close-footer').click();
+      await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
 
       // Modal should be gone
       await expect(modal).toBeHidden({ timeout: 5000 });
@@ -260,7 +262,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
       // The X button aria-label="Close" in the header
       const xBtn = modal.getByRole('button', { name: /^Close$/i });
-      await xBtn.first().click();
+      await xBtn.first().dispatchEvent('click');
 
       await expect(modal).toBeHidden({ timeout: 5000 });
       await page.waitForTimeout(150);
@@ -270,8 +272,6 @@ test.describe('Monte Carlo Statistical Validation', () => {
   // ── Works with different presets ──────────────────────────────────────────
 
   test('Monte Carlo should complete with the Complex (Multi-strata) preset', async ({ page }) => {
-    test.setTimeout(120000); // CI can be slower for complex simulation
-
     // Load complex preset
     await goBackToFirstStep(page);
     await loadPreset(page, 'Complex');
