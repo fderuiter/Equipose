@@ -38,7 +38,7 @@
     "@angular/build": "22.0.6",
     "@angular/cli": "22.0.6",
     "@angular/compiler-cli": "22.0.6",
-    "@angular/platform-browser-dynamic": "22.0.6",
+    "@angular/platform-browser-dynamic": "22.0.8",
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
