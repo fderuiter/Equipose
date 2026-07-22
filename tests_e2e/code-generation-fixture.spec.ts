@@ -88,11 +88,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
     command: string,
     args: string[],
     description: string,
-    options?: { env?: NodeJS.ProcessEnv },
+    options?: { env?: NodeJS.ProcessEnv; cwd?: string },
   ): Promise<void> => {
     try {
       await execFileAsync(command, args, {
-        cwd: process.cwd(),
+        cwd: options?.cwd ?? process.cwd(),
         maxBuffer: 10 * 1024 * 1024,
         env: options?.env ?? process.env,
       });
