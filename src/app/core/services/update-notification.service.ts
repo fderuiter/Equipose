@@ -64,6 +64,11 @@ export class UpdateNotificationService {
     }
   }
 
+  /** Force the update banner to show up (e.g. on chunk loading error) */
+  requireUpdate(): void {
+    this.updateAvailable.set(true);
+  }
+
   /** Dismiss the banner without reloading (user can reload manually later). */
   dismiss(): void {
     this.updateAvailable.set(false);

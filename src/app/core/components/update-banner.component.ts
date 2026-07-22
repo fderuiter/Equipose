@@ -21,7 +21,7 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
     <div
       role="status"
       aria-live="polite"
-      class="fixed top-0 inset-x-0 z-50 flex items-center justify-between gap-4 bg-indigo-700 dark:bg-indigo-800 text-white px-4 py-2.5 text-sm shadow-lg"
+      class="fixed top-0 inset-x-0 z-[9999] flex items-center justify-between gap-4 bg-indigo-700 dark:bg-indigo-800 text-white px-4 py-2.5 text-sm shadow-lg"
     >
       <div class="flex items-center gap-2.5">
         <!-- Download / refresh icon -->
