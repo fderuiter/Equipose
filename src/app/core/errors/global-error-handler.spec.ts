@@ -59,4 +59,9 @@ describe('GlobalErrorHandler', () => {
     expect(() => errorHandler.handleError(undefined)).not.toThrow();
     expect(() => errorHandler.handleError({ reason: null })).not.toThrow();
   });
+
+  it('should not throw if error is an object without a prototype', () => {
+    const error = Object.create(null);
+    expect(() => errorHandler.handleError(error)).not.toThrow();
+  });
 });

@@ -6,20 +6,31 @@ export class GlobalErrorHandler implements ErrorHandler {
   private readonly injector = inject(Injector);
 
   handleError(error: any): void {
-    const originalError = error?.rejection || error?.reason || error;
-    const message = originalError?.message 
-      ? String(originalError.message).toLowerCase() 
-      : String(originalError).toLowerCase();
+    try {
+      const originalError = error?.rejection || error?.reason || error;
+      
+      let message = '';
+      try {
+        message = originalError?.message 
+          ? String(originalError.message).toLowerCase() 
+          : String(originalError).toLowerCase();
+      } catch (e) {
+        // Fallback if String() throws (e.g. Object.create(null))
+        message = '';
+      }
 
-    const isChunkLoadError = 
-      message?.includes('failed to fetch dynamically imported module') ||
-      message?.includes('importing a module script failed') ||
-      message?.includes('loading chunk') ||
-      message?.includes('chunkloaderror');
+      const isChunkLoadError = 
+        message?.includes('failed to fetch dynamically imported module') ||
+        message?.includes('importing a module script failed') ||
+        message?.includes('loading chunk') ||
+        message?.includes('chunkloaderror');
 
-    if (isChunkLoadError) {
-      const updateService = this.injector.get(UpdateNotificationService);
-      updateService.requireUpdate();
+      if (isChunkLoadError) {
+        const updateService = this.injector.get(UpdateNotificationService);
+        updateService.requireUpdate();
+      }
+    } catch (e) {
+      // Never throw from within GlobalErrorHandler
     }
 
     // Call the default behavior to log to console
