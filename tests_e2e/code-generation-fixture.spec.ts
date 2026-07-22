@@ -375,14 +375,19 @@ test.describe('Code generation fixtures for script execution checks', () => {
       );
     }
 
-    const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
     const rscriptExecutable = await resolveExecutable(getRscriptCandidates(), {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
     });
     if (rscriptExecutable) {
-      for (const scriptPath of rScripts) {
-        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);
+      for (const scenario of scenarios) {
+        const scenarioDir = join(artifactRoot, scenario.id);
+        const scriptPath = join(scenarioDir, `${scenario.id}.R`);
+        const mt19937Path = join(process.cwd(), 'src/app/domain/randomization-engine/runtimes/mt19937_v1.0.0.r');
+        await writeFile(join(scenarioDir, 'mt19937_v1.0.0.r'), await readFile(mt19937Path));
+        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`, {
+          cwd: scenarioDir
+        });
       }
     } else if (process.env.GITHUB_ACTIONS === 'true') {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
