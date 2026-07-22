@@ -47,13 +47,13 @@ const SEMVER_RE = /v\d+\.\d+\.\d+/;
  * These patterns assert the seed initialisation call is present in the artifact.
  */
 const SEED_PATTERNS: Record<string, RegExp> = {
-  'R Script':     /set\.seed\(\d+\)/,
-  'Python Script':/np\.random\.default_rng\(\d+\)/,
+  'R Script':     /init_mt\(\d+\)/,
+  'Python Script':/_rs = np\.random\.RandomState\(\d+\)/,
   // The SAS generator always emits `%let seed = <number>;` at the top.
   // `call streaminit(&seed.)` is a downstream use of that macro variable, so
   // validating the definition (with its numeric value) is sufficient.
   'SAS Script':   /%let seed\s*=\s*\d+/,
-  'Stata Script': /set seed \d+/i,
+  'Stata Script': /init_mt\(\d+\)/i,
 };
 
 /**
@@ -129,7 +129,7 @@ async function downloadCodeFile(
   };
   const tabName = tabMap[language];
   if (tabName) {
-    const tab = modal.getByRole('button', { name: new RegExp(`^${tabName}$`, 'i') });
+    const tab = modal.getByRole('tab', { name: new RegExp(`^${tabName}$`, 'i') });
     const isActive = await tab.evaluate(el => el.classList.contains('active') || el.getAttribute('aria-selected') === 'true');
     if (!isActive) {
       await tab.click();
