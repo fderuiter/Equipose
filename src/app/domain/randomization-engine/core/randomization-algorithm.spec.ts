@@ -2,6 +2,7 @@ import * as fc from 'fast-check';
 import { generateRandomizationSchema } from './randomization-algorithm';
 import { RandomizationConfig, StratificationFactor } from '../../core/models/randomization.model';
 import { StudyPresets } from '../../core/presets/study-presets';
+import { getTotalRatio } from '../../shared/statistical/ratio-simplification';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -104,7 +105,7 @@ describe('generateRandomizationSchema – property tests', () => {
       randomizationMethod: fc.constant('BLOCK' as const)
     })
     .chain(base => {
-      const totalRatio = base.arms.reduce((sum, arm) => sum + arm.ratio, 0);
+      const totalRatio = getTotalRatio(base.arms);
       return fc.record({
         protocolId: fc.constant(base.protocolId),
         studyName: fc.constant(base.studyName),

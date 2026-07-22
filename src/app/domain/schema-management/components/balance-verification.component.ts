@@ -4,6 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
+import { getTotalRatio } from '../../shared/statistical/ratio-simplification';
 
 // ---------------------------------------------------------------------------
 // Data model for the aggregation engine
@@ -304,7 +305,7 @@ export class BalanceVerificationComponent {
 
   /** Sum of all arm ratios (e.g. 2:1 → 3). */
   private readonly totalRatio = computed<number>(() =>
-    this.arms().reduce((sum, a) => sum + a.ratio, 0)
+    getTotalRatio(this.arms())
   );
 
   // ── Core aggregation helper ───────────────────────────────────────────────
@@ -321,8 +322,9 @@ export class BalanceVerificationComponent {
     }
 
     return arms.map(arm => {
+      const r = arm.ratio;
       const actual = actualMap.get(arm.name) ?? 0;
-      const target = totalRatio > 0 ? (arm.ratio / totalRatio) * n : 0;
+      const target = totalRatio > 0 ? (r / totalRatio) * n : 0;
       const variance = actual - target;
       const absVariance = Math.abs(variance);
 
@@ -440,11 +442,14 @@ export class BalanceVerificationComponent {
           factor: factor.name || factor.id,
           level,
           total,
-          armCounts: arms.map(arm => ({
-            name: arm.name,
-            actual: armCounts.get(arm.name) ?? 0,
-            target: totalRatio > 0 ? (arm.ratio / totalRatio) * total : 0
-          }))
+          armCounts: arms.map(arm => {
+            const r = arm.ratio;
+            return {
+              name: arm.name,
+              actual: armCounts.get(arm.name) ?? 0,
+              target: totalRatio > 0 ? (r / totalRatio) * total : 0
+            };
+          })
         };
       })
     );

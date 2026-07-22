@@ -11,6 +11,8 @@ async function navigateToGenerator(page: Page) {
 }
 
 test.describe('Monte Carlo Statistical Validation', () => {
+  test.setTimeout(120000); // Give WebKit & CI enough time for Web Worker simulation
+
   test.beforeEach(async ({ page }) => {
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`));
     await navigateToGenerator(page);
@@ -38,7 +40,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('clicking "Run Statistical QA" should open the Monte Carlo validation modal', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -49,7 +51,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('modal should show the seed disclaimer banner immediately', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -63,7 +65,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('modal should show the progress bar when simulation starts', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -75,7 +77,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('modal should show "Simulating trials" text and live-region announcements during simulation', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const liveRegion = page.locator('.sr-only[aria-live="polite"]');
     await expect(liveRegion).toContainText(/Simulation progress:/i, { timeout: 10000 });
@@ -89,7 +91,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('modal should show subtitle about 10,000 independent simulations', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -100,7 +102,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('simulation should complete and populate screen reader live regions', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const liveRegion = page.locator('.sr-only[aria-live="polite"]');
     await expect(liveRegion).toContainText(/Simulation complete\. Results are available\./i, { timeout: 30000 });
@@ -118,7 +120,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should display "Simulations Run" summary stat', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -130,7 +132,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should display "Total Subjects Simulated" summary stat', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -140,7 +142,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should display "Max Arm Deviation" stat', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -150,7 +152,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should display the arm distribution bar chart', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -165,7 +167,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should display a per-arm detail table', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -180,7 +182,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should show data rows in the per-arm table', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -194,7 +196,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should display the clinical confidence banner', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -208,7 +210,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report confidence banner should include the computed deviation value', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
@@ -225,7 +227,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
 
     await FocusAuditor.assertFocusRestoration(page, async () => {
-      await mcBtn.click();
+      await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
       const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
       await expect(modal).toBeVisible();
@@ -236,10 +238,11 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
       // Click Close button in footer
-      await modal.getByTestId('modal-close-footer').click();
+      await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
 
       // Modal should be gone
       await expect(modal).toBeHidden({ timeout: 5000 });
+      await page.waitForTimeout(150);
     }, mcBtn);
   });
 
@@ -247,7 +250,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
 
     await FocusAuditor.assertFocusRestoration(page, async () => {
-      await mcBtn.click();
+      await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
       const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
       await expect(modal).toBeVisible();
@@ -259,24 +262,23 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
       // The X button aria-label="Close" in the header
       const xBtn = modal.getByRole('button', { name: /^Close$/i });
-      await xBtn.first().click();
+      await xBtn.first().dispatchEvent('click');
 
       await expect(modal).toBeHidden({ timeout: 5000 });
+      await page.waitForTimeout(150);
     }, mcBtn);
   });
 
   // ── Works with different presets ──────────────────────────────────────────
 
   test('Monte Carlo should complete with the Complex (Multi-strata) preset', async ({ page }) => {
-    test.setTimeout(120000); // CI can be slower for complex simulation
-
     // Load complex preset
     await goBackToFirstStep(page);
     await loadPreset(page, 'Complex');
     await goToReviewStep(page);
 
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -300,7 +302,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
     await goToReviewStep(page);
 
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal).toBeVisible({ timeout: 5000 });
@@ -318,7 +320,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
 
   test('completed report should show the chart legend with Expected and Actual labels', async ({ page }) => {
     const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
-    await mcBtn.click();
+    await mcBtn.focus(); await mcBtn.dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
     await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });

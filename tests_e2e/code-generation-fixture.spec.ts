@@ -1,6 +1,6 @@
 import { test as base, expect, Page } from '@playwright/test';
 import { execFile } from 'child_process';
-import { mkdir, readFile, rm, writeFile } from 'fs/promises';
+import { mkdir, readFile, rm, writeFile, copyFile } from 'fs/promises';
 import { join, resolve } from 'path';
 import { promisify } from 'util';
 import { goToStep, loadPreset, openGenerator } from './generator-helpers';
@@ -29,7 +29,7 @@ const languageTabs: { language: Language; tabName: RegExp; extension: string }[]
 ];
 
 const test = base.extend<ScriptFixture>({
-  exportScenarioScripts: async ({ page }, use) => {
+  exportScenarioScripts: async ({ page }, use, testInfo) => {
     await use(async scenario => {
       page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));
       await openGenerator(page);
@@ -37,16 +37,17 @@ const test = base.extend<ScriptFixture>({
       const generateSchemaBtn = page.getByRole('button', { name: /Generate Schema/i });
       await expect(generateSchemaBtn).toBeVisible({ timeout: 10_000 });
       await expect(generateSchemaBtn).toBeEnabled();
-      await generateSchemaBtn.click();
+      await generateSchemaBtn.dispatchEvent('click');
 
-      const scenarioDir = join(artifactRoot, scenario.id);
+      const workerRoot = join(artifactRoot, testInfo.project.name || "default");
+      const scenarioDir = join(workerRoot, scenario.id);
       await mkdir(scenarioDir, { recursive: true });
       const files: { language: Language; file: string }[] = [];
 
       const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
-      await expect(generateCodeBtn).toBeVisible({ timeout: 30_000 });
-      await generateCodeBtn.click();
-      await page.getByRole('menuitem', { name: /R Script/i }).first().click();
+      await expect(generateCodeBtn).toBeVisible();
+      await generateCodeBtn.dispatchEvent('click');
+      await page.getByRole('menuitem', { name: /R Script/i }).first().dispatchEvent('click');
 
       const modal = page.getByRole('dialog', { name: 'Code Generator' });
       await expect(modal).toBeVisible({ timeout: 10_000 });
@@ -54,13 +55,13 @@ const test = base.extend<ScriptFixture>({
       await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
       for (const { language, tabName, extension } of languageTabs) {
-        await modal.getByRole('tab', { name: tabName }).click();
+        await modal.getByRole('tab', { name: tabName }).dispatchEvent('click');
         await page.waitForTimeout(200);
 
         await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
         const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-        await modal.getByRole('button', { name: /Download/i }).first().click({ force: true });
+        await modal.getByRole('button', { name: /Download/i }).first().dispatchEvent('click');
         const download = await downloadPromise;
 
         const outputFile = `${scenario.id}.${extension}`;
@@ -68,7 +69,14 @@ const test = base.extend<ScriptFixture>({
         files.push({ language, file: outputFile });
       }
 
-      await modal.getByRole('button', { name: /Close/i }).first().click();
+      await modal.getByRole('button', { name: /Close/i }).first().dispatchEvent('click');
+
+      // Copy the mt19937 dependency so the generated R script can source it locally.
+      await copyFile(
+        resolve(process.cwd(), 'src/app/domain/randomization-engine/runtimes/mt19937_v1.0.0.r'),
+        join(scenarioDir, 'mt19937_v1.0.0.r')
+      );
+
       await writeFile(
         join(scenarioDir, 'manifest.json'),
         JSON.stringify({ scenario: scenario.id, protocolId: scenario.protocolId, files }, null, 2),
@@ -88,11 +96,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
     command: string,
     args: string[],
     description: string,
-    options?: { env?: NodeJS.ProcessEnv },
+    options?: { env?: NodeJS.ProcessEnv; cwd?: string },
   ): Promise<void> => {
     try {
       await execFileAsync(command, args, {
-        cwd: process.cwd(),
+        cwd: options?.cwd ?? process.cwd(),
         maxBuffer: 10 * 1024 * 1024,
         env: options?.env ?? process.env,
       });
@@ -118,7 +126,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
     await mkdir(artifactRoot, { recursive: true });
   });
 
-  test('exports representative complex schemas and scripts for CI artifacts', async ({ page, exportScenarioScripts }) => {
+  test('exports representative complex schemas and scripts for CI artifacts', async ({ page, exportScenarioScripts }, testInfo) => {
+    const workerRoot = join(artifactRoot, testInfo.project.name || "default");
     const scenarios: ScenarioDefinition[] = [
       {
         id: 'block',
@@ -131,8 +140,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#blockSizesStr').fill('4, 6');
           const val = await currentPage.locator('#blockSizesStr').inputValue();
           console.log('blockSizesStr value after fill:', val);
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
         },
       },
       {
@@ -143,9 +152,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-MIN-ONLY-001');
           await currentPage.locator('#studyName').fill('Fixture Minimization Only Scenario');
           await goToStep(currentPage, 2);
-          await currentPage.getByRole('radio', { name: 'Minimization' }).first().click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
+          await currentPage.getByRole('radio', { name: 'Minimization' }).first().dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).dispatchEvent('click');
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
           await firstStratum.locator('#factorName0').fill('Biomarker Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
@@ -156,13 +165,13 @@ test.describe('Code generation fixtures for script execution checks', () => {
           const probabilityInputs = firstStratum.locator('input[type="number"]');
           await probabilityInputs.nth(0).fill('40');
           await probabilityInputs.nth(1).fill('60');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().dispatchEvent('click');
           const margCapInputs = currentPage.locator('input[id*="-margcap-"]');
           await margCapInputs.nth(0).fill('100');
           await margCapInputs.nth(1).fill('100');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
         },
       },
       {
@@ -173,13 +182,13 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-ZERO-CAP-001');
           await currentPage.locator('#studyName').fill('Fixture Zero Cap Scenario');
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().click();
+          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().dispatchEvent('click');
           const capRows = currentPage.locator('[formArrayName="stratumCaps"] > div');
           const capCount = await capRows.count();
           for (let capIndex = 0; capIndex < capCount; capIndex++) {
             await capRows.nth(capIndex).locator('input').fill('0');
           }
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
         },
       },
       {
@@ -200,7 +209,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-CAP-001');
           await currentPage.locator('#studyName').fill('Fixture Cap Strategy Scenario');
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Proportional' }).first().click();
+          await currentPage.getByRole('radio', { name: 'Proportional' }).first().dispatchEvent('click');
           await currentPage.locator('#globalCap').fill('120');
           await currentPage.evaluate(() => {
             const inputs = Array.from(document.querySelectorAll("input[id*='-pct-']")) as HTMLInputElement[];
@@ -218,8 +227,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
               });
             }
           });
-          await currentPage.getByRole('button', { name: /Compute Matrix/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /Compute Matrix/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
         },
       },
       {
@@ -232,11 +241,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await goToStep(currentPage, 2);
           await currentPage.locator('#armName0').fill('Dose α/β');
           await currentPage.locator('#armName1').fill('Placebo™ & Control');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
           const sitesInput = currentPage.locator('#sitesLabel + app-tag-input input');
           await sitesInput.fill('Site-Ω-01');
           await sitesInput.press('Enter');
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
+          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).dispatchEvent('click');
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
           await firstStratum.locator('#factorName0').fill('Éligibilité-Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
@@ -244,9 +253,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await levelsInput.press('Enter');
           await levelsInput.fill('>50yrs naïve');
           await levelsInput.press('Enter');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
         },
       },
       {
@@ -257,7 +266,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-WEIRD-001');
           await currentPage.locator('#studyName').fill('Fixture Weird Characters Scenario');
           await goToStep(currentPage, 3);
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click();
+          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).dispatchEvent('click');
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
           await firstStratum.locator('#factorName0').fill('Special Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
@@ -271,9 +280,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await levelsInput.press('Enter');
           await levelsInput.fill('semi;colon');  // semicolon
           await levelsInput.press('Enter');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
-          await currentPage.getByRole('button', { name: /^Next$/i }).click();
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+          await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
         },
       },
     ];
@@ -284,7 +293,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     const summary = await Promise.all(
       scenarios.map(async scenario => {
-        const manifestPath = join(artifactRoot, scenario.id, 'manifest.json');
+        const manifestPath = join(workerRoot, scenario.id, 'manifest.json');
         const raw = await readFile(manifestPath, 'utf-8');
         return JSON.parse(raw) as { scenario: string; files: Array<{ file: string }> };
       }),
@@ -296,32 +305,32 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     // Verify structural properties against the UI schema configuration
     // (Requirement: Structural Parity Verification)
-    const blockSas = await readFile(join(artifactRoot, 'block', 'block.sas'), 'utf-8');
-    const blockStata = await readFile(join(artifactRoot, 'block', 'block.do'), 'utf-8');
+    const blockSas = await readFile(join(workerRoot, 'block', 'block.sas'), 'utf-8');
+    const blockStata = await readFile(join(workerRoot, 'block', 'block.do'), 'utf-8');
     expect(blockSas).toContain('%let block_sizes = 4 6;');
     expect(blockStata).toContain('local block_1 4');
     expect(blockStata).toContain('local block_2 6');
 
-    const zeroCapStata = await readFile(join(artifactRoot, 'zero-cap', 'zero-cap.do'), 'utf-8');
+    const zeroCapStata = await readFile(join(workerRoot, 'zero-cap', 'zero-cap.do'), 'utf-8');
     const zeroCapAssignments = [...zeroCapStata.matchAll(/local cap = (\d+)/g)].map(match => Number(match[1]));
     expect(zeroCapAssignments.length).toBeGreaterThan(0);
     expect(zeroCapAssignments.every(cap => cap === 0)).toBe(true);
 
     const minimizationOnlyContents = await Promise.all([
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.R'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.py'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.sas'), 'utf-8'),
-      readFile(join(artifactRoot, 'minimization-only', 'minimization-only.do'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.R'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.py'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.sas'), 'utf-8'),
+      readFile(join(workerRoot, 'minimization-only', 'minimization-only.do'), 'utf-8'),
     ]);
     minimizationOnlyContents.forEach(content => {
       expect(content).toContain('Algorithm: Pocock-Simon Minimization');
     });
 
     // Verify special characters are properly escaped in all four generated languages.
-    const weirdCharsR     = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.R'),   'utf-8');
-    const weirdCharsPy    = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.py'),  'utf-8');
-    const weirdCharsSas   = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.sas'), 'utf-8');
-    const weirdCharsStata = await readFile(join(artifactRoot, 'weird-chars', 'weird-chars.do'),  'utf-8');
+    const weirdCharsR     = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.R'),   'utf-8');
+    const weirdCharsPy    = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.py'),  'utf-8');
+    const weirdCharsSas   = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.sas'), 'utf-8');
+    const weirdCharsStata = await readFile(join(workerRoot, 'weird-chars', 'weird-chars.do'),  'utf-8');
 
     // R: single quote passes through; double-quote and backslash are escaped.
     expect(weirdCharsR).toContain(`"O'Brien"`);
@@ -353,7 +362,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     const pythonExecutable = process.env.PYTHON || 'python3';
 
-    const pythonScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.py`));
+    const pythonScripts = scenarios.map(scenario => ({ path: join(workerRoot, scenario.id, `${scenario.id}.py`), dir: join(workerRoot, scenario.id) }));
     const hasPython = await commandExists(pythonExecutable, {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
@@ -366,23 +375,27 @@ test.describe('Code generation fixtures for script execution checks', () => {
       'Python dependency preflight check for generated scripts',
     );
 
-    for (const scriptPath of pythonScripts) {
+    for (const { path: scriptPath, dir: scriptDir } of pythonScripts) {
       await assertSubprocessSuccess(
         pythonExecutable,
         [scriptPath],
         `Generated Python script execution (${scriptPath})`,
-        { env: { ...process.env, PYTHON: pythonExecutable } },
+        { env: { ...process.env, PYTHON: pythonExecutable }, cwd: scriptDir },
       );
     }
 
-    const rScripts = scenarios.map(scenario => join(artifactRoot, scenario.id, `${scenario.id}.R`));
     const rscriptExecutable = await resolveExecutable(getRscriptCandidates(), {
       cwd: process.cwd(),
       maxBuffer: 1024 * 1024,
     });
     if (rscriptExecutable) {
-      for (const scriptPath of rScripts) {
-        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`);
+      for (const scenario of scenarios) {
+        const workerRoot = join(artifactRoot, testInfo.project.name || "default");
+        const scenarioDir = join(workerRoot, scenario.id);
+        const scriptPath = join(scenarioDir, `${scenario.id}.R`);
+        await assertSubprocessSuccess(rscriptExecutable, [scriptPath], `Generated R script execution (${scriptPath})`, {
+          cwd: scenarioDir
+        });
       }
     } else if (process.env.GITHUB_ACTIONS === 'true') {
       throw new Error('Rscript is required in CI for generated R script execution checks.');

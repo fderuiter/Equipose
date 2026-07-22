@@ -11,13 +11,13 @@
         <div class="flex items-center gap-3 flex-wrap">
 
           <!-- View Mode Toggle -->
-          <div class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium" role="radiogroup" ariaLabel="View mode">
+          <div class="inline-flex rounded-lg border border-border-strong overflow-hidden text-sm font-medium" role="radiogroup" [ariaLabel]="'View mode'">
             <app-button
               variant="segmented"
               role="radio"
               [ariaChecked]="viewMode() === 'flat' ? 'true' : 'false'"
               (onClick)="viewMode.set('flat')"
-              appTooltip="View as Flat List"
+              [appTooltip]="'View as Flat List'"
               [segmentedActive]="viewMode() === 'flat'"
               segmentedPosition="first">
               Flat List
@@ -27,7 +27,7 @@
               role="radio"
               [ariaChecked]="viewMode() === 'grouped' ? 'true' : 'false'"
               (onClick)="viewMode.set('grouped')"
-              appTooltip="Group by Block"
+              [appTooltip]="'Group by Block'"
               [segmentedActive]="viewMode() === 'grouped'"
               segmentedPosition="last">
               Group by Block
@@ -37,7 +37,7 @@
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
 
           <div class="flex items-center px-1 -ml-1">
-            <app-toggle ariaLabel="Toggle unblinded view" [checked]="isUnblinded()" (checkedChange)="toggleBlinding()"></app-toggle>
+            <app-toggle [ariaLabel]="'Toggle unblinded view'" [checked]="isUnblinded()" (checkedChange)="toggleBlinding()"></app-toggle>
             <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" (click)="toggleBlinding()">
               {{ isUnblinded() ? 'Unblinded' : 'Blinded' }}
             </span>
@@ -45,7 +45,7 @@
           
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
           
-          <app-button variant="secondary" (onClick)="exportCsv()" appTooltip="Export as CSV" ariaLabel="Export as CSV" customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
+          <app-button variant="secondary" (onClick)="exportCsv()" [appTooltip]="'Export as CSV'" [ariaLabel]="'Export as CSV'" customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
@@ -55,15 +55,15 @@
             variant="secondary"
             (onClick)="exportXlsx()"
             data-testid="export-xlsx-btn"
-            appTooltip="Export as Excel (.xlsx) – preserves leading zeros and provides two-sheet audit workbook"
-            ariaLabel="Export as Excel"
+            [appTooltip]="'Export as Excel (.xlsx) – preserves leading zeros and provides two-sheet audit workbook'"
+            [ariaLabel]="'Export as Excel'"
             customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Excel
           </app-button>
-          <app-button variant="secondary" (onClick)="exportPdf()" appTooltip="Export as PDF" ariaLabel="Export as PDF" customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
+          <app-button variant="secondary" (onClick)="exportPdf()" [appTooltip]="'Export as PDF'" [ariaLabel]="'Export as PDF'" customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -149,7 +149,7 @@
                   <!-- Subject ID – pinned column (intersection: z-30) -->
                   <th scope="col"
                       class="sticky left-0 z-30 bg-subtle/50 border-r border-border-base px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
-                    <app-button variant="bare" (onClick)="toggleSort('subjectId')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 group" ariaLabel="Sort by Subject ID" appTooltip="Sort by Subject ID">
+                    <app-button variant="bare" (onClick)="toggleSort('subjectId')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 group" [ariaLabel]="'Sort by Subject ID'" [appTooltip]="'Sort by Subject ID'">
                       Subject ID
                       <!-- Chevron sort indicator -->
                       <svg class="h-3 w-3 transition-transform"
@@ -165,7 +165,7 @@
                   <!-- Site column with sort + filter -->
                   <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
                     <div class="inline-flex items-center gap-1">
-                      <app-button variant="bare" (onClick)="toggleSort('site')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 " ariaLabel="Sort by Site" appTooltip="Sort by Site">
+                      <app-button variant="bare" (onClick)="toggleSort('site')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 " [ariaLabel]="'Sort by Site'" [appTooltip]="'Sort by Site'">
                         Site
                         <svg class="h-3 w-3 transition-transform"
                              [class.text-indigo-500]="sortState().column === 'site'"
@@ -176,7 +176,7 @@
                         </svg>
 </app-button>
                       <!-- Filter trigger -->
-                      <app-button variant="bare" popovertarget="shared-filter-menu" (onClick)="openColumnFilter('site', $event)" [style.anchor-name]="'--filter-anchor-site'" customClass="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600" [class.text-indigo-500]="hasActiveFilter('site')" [class.text-gray-400]="!hasActiveFilter('site')" ariaLabel="Filter Site" appTooltip="Filter Site">
+                      <app-button variant="bare" popovertarget="shared-filter-menu" (onClick)="openColumnFilter('site', $event)" [style.anchor-name]="'--filter-anchor-site'" customClass="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600" [class.text-indigo-500]="hasActiveFilter('site')" [class.text-gray-400]="!hasActiveFilter('site')" [ariaLabel]="'Filter Site'" [appTooltip]="'Filter Site'">
                         <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                           <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
                         </svg>
@@ -209,7 +209,7 @@
 
                   <!-- Block column -->
                   <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
-                    <app-button variant="bare" (onClick)="toggleSort('blockNumber')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 " ariaLabel="Sort by Block" appTooltip="Sort by Block">
+                    <app-button variant="bare" (onClick)="toggleSort('blockNumber')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 " [ariaLabel]="'Sort by Block'" [appTooltip]="'Sort by Block'">
                       Block
                       <svg class="h-3 w-3 transition-transform"
                            [class.text-indigo-500]="sortState().column === 'blockNumber'"
@@ -224,7 +224,7 @@
                   <!-- Treatment Arm column with sort + filter -->
                   <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider whitespace-nowrap">
                     <div class="inline-flex items-center gap-1">
-                      <app-button variant="bare" (onClick)="toggleSort('treatmentArm')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 " ariaLabel="Sort by Treatment Arm" appTooltip="Sort by Treatment Arm">
+                      <app-button variant="bare" (onClick)="toggleSort('treatmentArm')" customClass="inline-flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 " [ariaLabel]="'Sort by Treatment Arm'" [appTooltip]="'Sort by Treatment Arm'">
                         Treatment Arm
                         <svg class="h-3 w-3 transition-transform"
                              [class.text-indigo-500]="sortState().column === 'treatmentArm'"
@@ -234,7 +234,7 @@
                           <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                         </svg>
 </app-button>
-                      <app-button variant="bare" popovertarget="shared-filter-menu" (onClick)="openColumnFilter('treatmentArm', $event)" [style.anchor-name]="'--filter-anchor-treatmentArm'" customClass="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600" [class.text-indigo-500]="hasActiveFilter('treatmentArm')" [class.text-gray-400]="!hasActiveFilter('treatmentArm')" ariaLabel="Filter Treatment Arm" appTooltip="Filter Treatment Arm">
+                      <app-button variant="bare" popovertarget="shared-filter-menu" (onClick)="openColumnFilter('treatmentArm', $event)" [style.anchor-name]="'--filter-anchor-treatmentArm'" customClass="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-slate-600" [class.text-indigo-500]="hasActiveFilter('treatmentArm')" [class.text-gray-400]="!hasActiveFilter('treatmentArm')" [ariaLabel]="'Filter Treatment Arm'" [appTooltip]="'Filter Treatment Arm'">
                         <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                           <path fill-rule="evenodd" d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z" clip-rule="evenodd"/>
                         </svg>

@@ -240,10 +240,12 @@ resolve_fixture_root <- function(arg_path = NULL) {
 }
 
 execute_generated_script <- function(script_path) {
-  env <- new.env(parent = baseenv())
+  env <- new.env(parent = globalenv())
+  old_wd <- getwd()
 
   tryCatch({
-    sys.source(script_path, envir = env)
+    setwd(dirname(script_path))
+    sys.source(basename(script_path), envir = env)
 
     if (!exists("schema", envir = env, inherits = FALSE)) {
       stop("Expected generated script to define a 'schema' data.frame.")
@@ -257,6 +259,8 @@ execute_generated_script <- function(script_path) {
     list(ok = TRUE, rows = nrow(schema))
   }, error = function(err) {
     list(ok = FALSE, message = conditionMessage(err))
+  }, finally = {
+    setwd(old_wd)
   })
 }
 
@@ -279,6 +283,8 @@ verify_generated_scripts <- function(fixture_root, explicit_path = FALSE) {
     full.names = TRUE,
     ignore.case = TRUE
   ))
+
+  script_paths <- script_paths[!grepl("mt19937_v1.0.0.r", script_paths, ignore.case = TRUE)]
 
   if (length(script_paths) == 0) {
     return(sprintf("No generated R scripts were found in fixture directory: %s", fixture_root))

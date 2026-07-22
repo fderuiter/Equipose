@@ -4,6 +4,7 @@ import { RandomizationEngineFacade } from '../../randomization-engine/randomizat
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { RandomizationResult } from '../../core/models/randomization.model';
+import { getTotalRatio } from '../../shared/statistical/ratio-simplification';
 
 // ---------------------------------------------------------------------------
 // Test data helpers
@@ -27,13 +28,14 @@ function buildMockResult(overrides: Partial<{
     stratumFactor,
   } = overrides;
 
-  const totalRatio = arms.reduce((s, a) => s + a.ratio, 0);
+  const totalRatio = getTotalRatio(arms);
 
   const schema = Array.from({ length: totalSubjects }, (_, i) => {
     const siteIdx = i % sites.length;
     // Assign treatments proportionally based on position within block
     const posInBlock = i % blockSizes[0];
-    const threshold = Math.round((arms[0].ratio / totalRatio) * blockSizes[0]);
+    const r = arms[0].ratio;
+    const threshold = Math.round((r / totalRatio) * blockSizes[0]);
     const treatmentIdx = posInBlock < threshold ? 0 : 1;
     const stratum: Record<string, string> = {};
     if (stratumFactor) {

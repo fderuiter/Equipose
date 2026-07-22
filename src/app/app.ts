@@ -189,7 +189,7 @@ import { DateUtil } from './core/utils/date.util';
 
               <!-- Mobile theme options -->
               <div class="pt-2 border-t border-indigo-600/50 dark:border-slate-600">
-                <p class="px-3 pb-1.5 text-xs font-semibold text-indigo-300 dark:text-slate-400 uppercase tracking-wider">Colour Theme</p>
+                <p class="px-3 pb-1.5 text-xs font-semibold text-indigo-200 dark:text-slate-400 uppercase tracking-wider">Colour Theme</p>
                 <div class="flex gap-2 px-3">
                   <button type="button" (click)="setTheme('Light'); mobileMenuOpen.set(false)"
                     class="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors"

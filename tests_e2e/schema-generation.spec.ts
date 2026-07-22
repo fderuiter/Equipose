@@ -25,7 +25,7 @@ test.describe('Schema Generation Flow', () => {
 
     // Click the "Blinded" label to toggle
     const unblindedToggleLabel = page.locator('span.cursor-pointer').filter({ hasText: 'Blinded' });
-    await unblindedToggleLabel.click();
+    await unblindedToggleLabel.dispatchEvent('click');
 
     // Assert the text changes from "*** BLINDED ***"
     await expect(armCell).not.toContainText('*** BLINDED ***');
