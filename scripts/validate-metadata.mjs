@@ -46,7 +46,7 @@ async function collectGeneratedFiles(dir) {
       files.push(...await collectGeneratedFiles(full));
     } else if (entry.isFile()) {
       const ext = entry.name.split('.').pop().toLowerCase();
-      if (['py', 'r', 'sas', 'do'].includes(ext)) {
+      if (['py', 'r', 'sas', 'do'].includes(ext) && !entry.name.startsWith('mt19937_')) {
         files.push(full);
       }
     }
