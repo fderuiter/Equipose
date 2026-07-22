@@ -71,7 +71,7 @@ test.describe('Results Grid Operations', () => {
 
   test('should reveal treatment arms after clicking the blinding toggle', async ({ page }) => {
     const toggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
-    await toggleLabel.dispatchEvent('click');
+    await toggleLabel.click({ force: true });
 
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
@@ -84,11 +84,11 @@ test.describe('Results Grid Operations', () => {
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
 
-    await unblindToggleLabel.dispatchEvent('click'); // unblind
+    await unblindToggleLabel.click({ force: true }); // unblind
     await expect(armCell).not.toContainText('*** BLINDED ***');
 
     const blindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Unblinded' });
-    await blindToggleLabel.dispatchEvent('click'); // re-blind
+    await blindToggleLabel.click({ force: true }); // re-blind
     await expect(armCell).toContainText('*** BLINDED ***');
   });
 
@@ -99,7 +99,7 @@ test.describe('Results Grid Operations', () => {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
     const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
     // Use evaluate to bypass any CSS pointer-events: none
-    await csvButton.dispatchEvent('click');
+    await csvButton.evaluate((node: HTMLElement) => node.click());
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/randomization_.*\.csv$/);
   });
@@ -107,7 +107,7 @@ test.describe('Results Grid Operations', () => {
   test('CSV filename should contain "blinded" when the schema is blinded', async ({ page }) => {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
     const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
-    await csvButton.dispatchEvent('click');
+    await csvButton.evaluate((node: HTMLElement) => node.click());
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toContain('blinded');
   });
@@ -119,7 +119,7 @@ test.describe('Results Grid Operations', () => {
   test('should trigger a PDF download when the PDF button is clicked', async ({ page }) => {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
     const pdfButton = page.locator('#results-section').getByRole('button', { name: 'Export as PDF', exact: true });
-    await pdfButton.dispatchEvent('click');
+    await pdfButton.evaluate((node: HTMLElement) => node.click());
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/randomization_.*\.pdf$/);
   });
