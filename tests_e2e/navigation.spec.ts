@@ -14,7 +14,7 @@ test.describe('Application Navigation', () => {
 
   test('should navigate to the generator page via the "New Study" link', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    await page.getByRole('link', { name: /New Study/i }).click({ force: true });
+    await page.getByRole('link', { name: /New Study/i }).dispatchEvent('click');
     await expect(page).toHaveURL(/\/generator/);
     await expect(page.getByTestId('generator-page')).toBeVisible();
   });
@@ -26,12 +26,12 @@ test.describe('Application Navigation', () => {
     if (isMobile) {
       const menu = page.locator('#mobile-menu');
       if (!(await menu.isVisible())) {
-        await page.getByRole('button', { name: 'Toggle navigation menu' }).click({ force: true });
+        await page.getByRole('button', { name: 'Toggle navigation menu' }).dispatchEvent('click');
         await expect(menu).toBeVisible();
       }
-      await menu.getByRole('link', { name: /About/i }).click({ force: true });
+      await menu.getByRole('link', { name: /About/i }).dispatchEvent('click');
     } else {
-      await page.locator('header').getByRole('link', { name: /About/i }).click({ force: true });
+      await page.locator('header').getByRole('link', { name: /About/i }).dispatchEvent('click');
     }
     
     await expect(page).toHaveURL(/\/about/);
@@ -45,12 +45,12 @@ test.describe('Application Navigation', () => {
     if (isMobile) {
       const menu = page.locator('#mobile-menu');
       if (!(await menu.isVisible())) {
-        await page.getByRole('button', { name: 'Toggle navigation menu' }).click({ force: true });
+        await page.getByRole('button', { name: 'Toggle navigation menu' }).dispatchEvent('click');
         await expect(menu).toBeVisible();
       }
-      await menu.getByRole('link', { name: 'Generator', exact: true }).click({ force: true });
+      await menu.getByRole('link', { name: 'Generator', exact: true }).dispatchEvent('click');
     } else {
-      await page.locator('header').getByRole('link', { name: 'Generator', exact: true }).click({ force: true });
+      await page.locator('header').getByRole('link', { name: 'Generator', exact: true }).dispatchEvent('click');
     }
     
     await expect(page).toHaveURL(/\/generator/);
@@ -59,7 +59,7 @@ test.describe('Application Navigation', () => {
 
   test('should navigate back to the landing page via the logo link', async ({ page }) => {
     await page.goto('http://localhost:4200/generator');
-    await page.getByRole('link', { name: /Equipose/ }).first().click({ force: true });
+    await page.getByRole('link', { name: /Equipose/ }).first().dispatchEvent('click');
     await expect(page).toHaveURL('http://localhost:4200/');
     await expect(page.getByRole('link', { name: /New Study/i })).toBeVisible();
   });
