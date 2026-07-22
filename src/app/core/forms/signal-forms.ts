@@ -46,13 +46,34 @@ export abstract class AbstractControl {
 
 export class SignalControl<T = any> extends AbstractControl {
   private _value: WritableSignal<T>;
-  private _validators: ValidatorFn[];
+  private _validatorsSignal: WritableSignal<ValidatorFn[]>;
   private _disabled = signal(false);
+  private _errorsSignal: Signal<ValidationErrors | null>;
+  private _validSignal: Signal<boolean>;
 
   constructor(initialValue: T, validators: ValidatorFn[] = []) {
     super();
     this._value = signal(initialValue);
-    this._validators = validators;
+    this._validatorsSignal = signal(validators);
+    
+    this._errorsSignal = computed(() => {
+      if (this.disabled) return null;
+      const errs: ValidationErrors = {};
+      let hasError = false;
+      const currentValidators = this._validatorsSignal();
+      for (const v of currentValidators) {
+        const err = v(this);
+        if (err) {
+          Object.assign(errs, err);
+          hasError = true;
+        }
+      }
+      return hasError ? errs : null;
+    });
+
+    this._validSignal = computed(() => {
+      return this._errorsSignal() === null;
+    });
   }
 
   get value(): T {
@@ -80,21 +101,11 @@ export class SignalControl<T = any> extends AbstractControl {
   }
 
   get valid(): boolean {
-    return this.errors === null;
+    return this._validSignal();
   }
 
   get errors(): ValidationErrors | null {
-    if (this.disabled) return null;
-    const errs: ValidationErrors = {};
-    let hasError = false;
-    for (const v of this._validators) {
-      const err = v(this);
-      if (err) {
-        Object.assign(errs, err);
-        hasError = true;
-      }
-    }
-    return hasError ? errs : null;
+    return this._errorsSignal();
   }
 
   updateValueAndValidity(options?: { emitEvent?: boolean }) {
@@ -107,17 +118,42 @@ export class SignalControl<T = any> extends AbstractControl {
   }
 
   setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void {
-    if (!newValidator) this._validators = [];
-    else if (Array.isArray(newValidator)) this._validators = newValidator;
-    else this._validators = [newValidator];
+    if (!newValidator) this._validatorsSignal.set([]);
+    else if (Array.isArray(newValidator)) this._validatorsSignal.set(newValidator);
+    else this._validatorsSignal.set([newValidator]);
   }
 }
 
 export class FormGroup<T extends Record<string, AbstractControl> = any> extends AbstractControl {
   private _disabled = signal(false);
+  private _validatorsSignal: WritableSignal<ValidatorFn[]>;
+  private _errorsSignal: Signal<ValidationErrors | null>;
+  private _validSignal: Signal<boolean>;
   
   constructor(public controls: T, private _validators: ValidatorFn[] = []) {
     super();
+    this._validatorsSignal = signal(_validators);
+    
+    this._errorsSignal = computed(() => {
+      const errs: ValidationErrors = {};
+      let hasError = false;
+      const currentValidators = this._validatorsSignal();
+      for (const v of currentValidators) {
+        const err = v(this);
+        if (err) {
+          Object.assign(errs, err);
+          hasError = true;
+        }
+      }
+      return hasError ? errs : null;
+    });
+
+    this._validSignal = computed(() => {
+      for (const key in this.controls) {
+        if (!this.controls[key].valid) return false;
+      }
+      return this._errorsSignal() === null;
+    });
   }
 
   get value(): any {
@@ -129,23 +165,11 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
   }
 
   get valid(): boolean {
-    for (const key in this.controls) {
-      if (!this.controls[key].valid) return false;
-    }
-    return this.errors === null;
+    return this._validSignal();
   }
 
   get errors(): ValidationErrors | null {
-    const errs: ValidationErrors = {};
-    let hasError = false;
-    for (const v of this._validators) {
-      const err = v(this);
-      if (err) {
-        Object.assign(errs, err);
-        hasError = true;
-      }
-    }
-    return hasError ? errs : null;
+    return this._errorsSignal();
   }
 
   patchValue(value: any, options?: { emitEvent?: boolean }) {
@@ -196,18 +220,26 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
   }
 
   setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void {
-    if (!newValidator) this._validators = [];
-    else if (Array.isArray(newValidator)) this._validators = newValidator;
-    else this._validators = [newValidator];
+    if (!newValidator) this._validatorsSignal.set([]);
+    else if (Array.isArray(newValidator)) this._validatorsSignal.set(newValidator);
+    else this._validatorsSignal.set([newValidator]);
   }
 }
 
 export class FormArray<T extends AbstractControl = any> extends AbstractControl {
   private _controls = signal<T[]>([]);
+  private _validSignal: Signal<boolean>;
 
   constructor(initialControls: T[] = []) {
     super();
     this._controls.set(initialControls);
+    this._validSignal = computed(() => {
+      const controls = this._controls();
+      for (const c of controls) {
+        if (!c.valid) return false;
+      }
+      return true;
+    });
   }
 
   get controls(): T[] {
@@ -251,10 +283,7 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
   }
 
   get valid(): boolean {
-    for (const c of this.controls) {
-      if (!c.valid) return false;
-    }
-    return true;
+    return this._validSignal();
   }
 
   get errors(): ValidationErrors | null {
