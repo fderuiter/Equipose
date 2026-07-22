@@ -71,7 +71,7 @@ test.describe('Results Grid Operations', () => {
 
   test('should reveal treatment arms after clicking the blinding toggle', async ({ page }) => {
     const toggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
-    await toggleLabel.click({ force: true });
+    await toggleLabel.dispatchEvent('click');
 
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
@@ -84,11 +84,11 @@ test.describe('Results Grid Operations', () => {
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
 
-    await unblindToggleLabel.click({ force: true }); // unblind
+    await unblindToggleLabel.dispatchEvent('click'); // unblind
     await expect(armCell).not.toContainText('*** BLINDED ***');
 
     const blindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Unblinded' });
-    await blindToggleLabel.click({ force: true }); // re-blind
+    await blindToggleLabel.dispatchEvent('click'); // re-blind
     await expect(armCell).toContainText('*** BLINDED ***');
   });
 

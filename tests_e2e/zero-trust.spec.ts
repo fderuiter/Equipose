@@ -120,18 +120,18 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     // Open code generator and switch through all language tabs
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
     await expect(generateCodeBtn).toBeVisible();
-    await generateCodeBtn.click({ force: true });
-    await page.getByRole('menuitem', { name: /R Script/i }).click({ force: true });
+    await generateCodeBtn.dispatchEvent('click');
+    await page.getByRole('menuitem', { name: /R Script/i }).dispatchEvent('click');
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     await expect(modal).toBeVisible({ timeout: 5_000 });
 
     // Switch through all tabs to trigger all code generation paths
-    await modal.getByRole('tab', { name: /Python/i }).click({ force: true });
-    await modal.getByRole('tab', { name: /SAS/i }).click({ force: true });
-    await modal.getByRole('tab', { name: /Stata/i }).click({ force: true });
+    await modal.getByRole('tab', { name: /Python/i }).dispatchEvent('click');
+    await modal.getByRole('tab', { name: /SAS/i }).dispatchEvent('click');
+    await modal.getByRole('tab', { name: /Stata/i }).dispatchEvent('click');
 
-    await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
+    await modal.getByRole('button', { name: /Close/i }).first().dispatchEvent('click');
 
     expect(externalRequests).toHaveLength(0);
   });

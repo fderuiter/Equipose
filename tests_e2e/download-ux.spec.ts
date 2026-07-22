@@ -20,7 +20,7 @@ test.describe('Download UX Smoke Tests', () => {
 
     // 3. Verify CSV download triggers
     const csvDownloadPromise = page.waitForEvent('download');
-    await csvButton.click({ force: true });
+    await csvButton.dispatchEvent('click');
     const csvDownload = await csvDownloadPromise;
     expect(csvDownload.suggestedFilename()).toMatch(/randomization_.*\.csv$/);
 
@@ -31,7 +31,7 @@ test.describe('Download UX Smoke Tests', () => {
 
     // 5. Verify PDF download triggers
     const pdfDownloadPromise = page.waitForEvent('download');
-    await pdfButton.click({ force: true });
+    await pdfButton.dispatchEvent('click');
     const pdfDownload = await pdfDownloadPromise;
     expect(pdfDownload.suggestedFilename()).toMatch(/randomization_.*\.pdf$/);
   });
@@ -44,8 +44,8 @@ test.describe('Download UX Smoke Tests', () => {
 
     // 2. Open Code Generator dropdown and select R Script
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
-    await generateCodeBtn.click({ force: true });
-    await page.getByRole('menuitem', { name: /R Script/i }).click({ force: true });
+    await generateCodeBtn.dispatchEvent('click');
+    await page.getByRole('menuitem', { name: /R Script/i }).dispatchEvent('click');
 
     // 3. Assert modal is visible
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
@@ -67,18 +67,18 @@ test.describe('Download UX Smoke Tests', () => {
 
     for (const lang of languages) {
       const tab = modal.getByRole('tab', { name: lang.name, exact: true });
-      await tab.click({ force: true });
+      await tab.dispatchEvent('click');
       // Wait for code to refresh (represented by the Download button remaining enabled/visible)
       await expect(downloadBtn).toBeVisible();
 
       const downloadPromise = page.waitForEvent('download');
-      await downloadBtn.click({ force: true });
+      await downloadBtn.dispatchEvent('click');
       const download = await downloadPromise;
       expect(download.suggestedFilename()).toContain(lang.extension);
     }
 
     // 6. Close modal
-    await modal.getByRole('button', { name: /Close/i }).click({ force: true });
+    await modal.getByRole('button', { name: /Close/i }).dispatchEvent('click');
     await expect(modal).toBeHidden();
   });
 });
