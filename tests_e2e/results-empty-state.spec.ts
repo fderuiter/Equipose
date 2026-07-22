@@ -7,7 +7,8 @@ test.describe('Results Grid Empty State', () => {
     await generateSchemaFromPreset(page, 'Simple');
   });
 
-  test('should show empty state when filters return no results and allow clearing', async ({ page }) => {
+  test('should show empty state when filters return no results and allow clearing', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'Filtering is currently not supported in mobile layout');
     // 1. Verify rows are initially present
     const rows = page.locator('[data-testid="result-row"]');
     await expect(rows.first()).toBeVisible();

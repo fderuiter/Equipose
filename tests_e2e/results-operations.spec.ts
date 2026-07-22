@@ -34,7 +34,8 @@ test.describe('Results Grid Operations', () => {
   // ---------------------------------------------------------------------------
   // Table View Verification
   // ---------------------------------------------------------------------------
-  test('scrollable table viewport should be present in flat view', async ({ page }) => {
+  test('scrollable table viewport should be present in flat view', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'Table viewport is not present in mobile view');
     const viewport = page.locator('#results-section div.overflow-auto');
     await expect(viewport).toBeVisible();
   });
@@ -47,12 +48,14 @@ test.describe('Results Grid Operations', () => {
   // ---------------------------------------------------------------------------
   // Column headers and sorting
   // ---------------------------------------------------------------------------
-  test('should show sortable column headers in flat view', async ({ page }) => {
+  test('should show sortable column headers in flat view', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'Column headers are not present in mobile view');
     const subjectIdHeader = page.locator('#results-section thead th').first();
     await expect(subjectIdHeader.getByRole('button', { name: /Sort by Subject ID/i })).toBeVisible();
   });
 
-  test('should show filter icon on Site column', async ({ page }) => {
+  test('should show filter icon on Site column', async ({ page, isMobile }) => {
+    test.skip(!!isMobile, 'Column filters are not present in mobile view');
     const filterBtn = page.locator('#results-section thead').getByRole('button', { name: /Filter Site/i });
     await expect(filterBtn).toBeVisible();
   });
