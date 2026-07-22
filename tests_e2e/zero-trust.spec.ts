@@ -79,7 +79,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     // Trigger CSV download
     const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
     const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
-    await csvButton.evaluate((node: HTMLElement) => node.click({ force: true }));
+    await csvButton.evaluate((node: HTMLElement) => node.click());
     await downloadPromise;
 
     expect(externalRequests).toHaveLength(0);
@@ -100,7 +100,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     // Trigger PDF download
     const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
     const pdfButton = page.locator('#results-section').getByRole('button', { name: 'Export as PDF', exact: true });
-    await pdfButton.evaluate((node: HTMLElement) => node.click({ force: true }));
+    await pdfButton.evaluate((node: HTMLElement) => node.click());
     await downloadPromise;
 
     expect(externalRequests).toHaveLength(0);
@@ -120,18 +120,18 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     // Open code generator and switch through all language tabs
     const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
     await expect(generateCodeBtn).toBeVisible();
-    await generateCodeBtn.click({ force: true });
-    await page.getByRole('menuitem', { name: /R Script/i }).click({ force: true });
+    await generateCodeBtn.evaluate(b => (b as HTMLElement).click());
+    await page.getByRole('menuitem', { name: /R Script/i }).evaluate(b => (b as HTMLElement).click());
 
     const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
     await expect(modal).toBeVisible({ timeout: 5_000 });
 
     // Switch through all tabs to trigger all code generation paths
-    await modal.getByRole('tab', { name: /Python/i }).click({ force: true });
-    await modal.getByRole('tab', { name: /SAS/i }).click({ force: true });
-    await modal.getByRole('tab', { name: /Stata/i }).click({ force: true });
+    await modal.getByRole('tab', { name: /Python/i }).evaluate(b => (b as HTMLElement).click());
+    await modal.getByRole('tab', { name: /SAS/i }).evaluate(b => (b as HTMLElement).click());
+    await modal.getByRole('tab', { name: /Stata/i }).evaluate(b => (b as HTMLElement).click());
 
-    await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
+    await modal.getByRole('button', { name: /Close/i }).first().evaluate(b => (b as HTMLElement).click());
 
     expect(externalRequests).toHaveLength(0);
   });

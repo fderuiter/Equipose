@@ -111,7 +111,7 @@ async function downloadCodeFile(
   const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
   await expect(generateCodeBtn).toBeVisible();
   await generateCodeBtn.evaluate(b => (b as HTMLElement).click());
-  await page.getByRole('menuitem', { name: new RegExp(language, 'i') }).click({ force: true });
+  await page.getByRole('menuitem', { name: new RegExp(language, 'i') }).evaluate(b => (b as HTMLElement).click());
 
   const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
   await expect(modal).toBeVisible({ timeout: 5_000 });
@@ -146,7 +146,7 @@ async function downloadCodeFile(
   const content = await readDownload(download);
   const filename = download.suggestedFilename();
 
-  await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
+  await modal.getByRole('button', { name: /Close/i }).first().evaluate(b => (b as HTMLElement).click());
 
   return { content, filename, language };
 }

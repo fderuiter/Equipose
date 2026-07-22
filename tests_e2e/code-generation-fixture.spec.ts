@@ -133,8 +133,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#blockSizesStr').fill('4, 6');
           const val = await currentPage.locator('#blockSizesStr').inputValue();
           console.log('blockSizesStr value after fill:', val);
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
         },
       },
       {
@@ -145,9 +145,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-MIN-ONLY-001');
           await currentPage.locator('#studyName').fill('Fixture Minimization Only Scenario');
           await goToStep(currentPage, 2);
-          await currentPage.getByRole('radio', { name: 'Minimization' }).first().click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+          await currentPage.getByRole('radio', { name: 'Minimization' }).first().evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).evaluate(b => (b as HTMLElement).click());
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
           await firstStratum.locator('#factorName0').fill('Biomarker Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
@@ -158,13 +158,13 @@ test.describe('Code generation fixtures for script execution checks', () => {
           const probabilityInputs = firstStratum.locator('input[type="number"]');
           await probabilityInputs.nth(0).fill('40');
           await probabilityInputs.nth(1).fill('60');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('radio', { name: 'Marginal Only' }).first().evaluate(b => (b as HTMLElement).click());
           const margCapInputs = currentPage.locator('input[id*="-margcap-"]');
           await margCapInputs.nth(0).fill('100');
           await margCapInputs.nth(1).fill('100');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
         },
       },
       {
@@ -175,13 +175,13 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-ZERO-CAP-001');
           await currentPage.locator('#studyName').fill('Fixture Zero Cap Scenario');
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().click({ force: true });
+          await currentPage.getByRole('radio', { name: 'Manual Matrix' }).first().evaluate(b => (b as HTMLElement).click());
           const capRows = currentPage.locator('[formArrayName="stratumCaps"] > div');
           const capCount = await capRows.count();
           for (let capIndex = 0; capIndex < capCount; capIndex++) {
             await capRows.nth(capIndex).locator('input').fill('0');
           }
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
         },
       },
       {
@@ -202,7 +202,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-CAP-001');
           await currentPage.locator('#studyName').fill('Fixture Cap Strategy Scenario');
           await goToStep(currentPage, 5);
-          await currentPage.getByRole('radio', { name: 'Proportional' }).first().click({ force: true });
+          await currentPage.getByRole('radio', { name: 'Proportional' }).first().evaluate(b => (b as HTMLElement).click());
           await currentPage.locator('#globalCap').fill('120');
           await currentPage.evaluate(() => {
             const inputs = Array.from(document.querySelectorAll("input[id*='-pct-']")) as HTMLInputElement[];
@@ -220,8 +220,8 @@ test.describe('Code generation fixtures for script execution checks', () => {
               });
             }
           });
-          await currentPage.getByRole('button', { name: /Compute Matrix/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /Compute Matrix/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
         },
       },
       {
@@ -234,11 +234,11 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await goToStep(currentPage, 2);
           await currentPage.locator('#armName0').fill('Dose α/β');
           await currentPage.locator('#armName1').fill('Placebo™ & Control');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
           const sitesInput = currentPage.locator('#sitesLabel + app-tag-input input');
           await sitesInput.fill('Site-Ω-01');
           await sitesInput.press('Enter');
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).evaluate(b => (b as HTMLElement).click());
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
           await firstStratum.locator('#factorName0').fill('Éligibilité-Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
@@ -246,9 +246,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await levelsInput.press('Enter');
           await levelsInput.fill('>50yrs naïve');
           await levelsInput.press('Enter');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
         },
       },
       {
@@ -259,7 +259,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await currentPage.locator('#protocolId').fill('FXT-WEIRD-001');
           await currentPage.locator('#studyName').fill('Fixture Weird Characters Scenario');
           await goToStep(currentPage, 3);
-          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /\+ Add Factor/i }).evaluate(b => (b as HTMLElement).click());
           const firstStratum = currentPage.locator('[formArrayName="strata"] > div').first();
           await firstStratum.locator('#factorName0').fill('Special Group');
           const levelsInput = firstStratum.locator('app-tag-input input').first();
@@ -273,9 +273,9 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await levelsInput.press('Enter');
           await levelsInput.fill('semi;colon');  // semicolon
           await levelsInput.press('Enter');
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
-          await currentPage.getByRole('button', { name: /^Next$/i }).click({ force: true });
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
+          await currentPage.getByRole('button', { name: /^Next$/i }).evaluate(b => (b as HTMLElement).click());
         },
       },
     ];
