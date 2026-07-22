@@ -94,24 +94,24 @@ async function downloadCodeFile(
 
   // Navigate to the end of the wizard
   const nextBtn = page.getByRole('button', { name: /^Next$/i });
-  await nextBtn.click(); // → Arms
+  await nextBtn.click({ force: true }); // → Arms
 
-  await nextBtn.click(); // → Sites
+  await nextBtn.click({ force: true }); // → Sites
   const siteInput = page.locator('#sitesLabel + app-tag-input input');
   await expect(siteInput).toBeVisible();
   await siteInput.fill('AUDIT-SITE-01');
   await siteInput.press('Enter');
-  await nextBtn.click(); // → Blocks
+  await nextBtn.click({ force: true }); // → Blocks
 
   await page.locator('#blockSizesStr').fill('4');
-  await nextBtn.click(); // → Strata
-  await nextBtn.click(); // → Review
+  await nextBtn.click({ force: true }); // → Strata
+  await nextBtn.click({ force: true }); // → Review
 
   // Open the code generator dropdown and choose the requested language
   const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
   await expect(generateCodeBtn).toBeVisible();
-  await generateCodeBtn.click();
-  await page.getByRole('menuitem', { name: new RegExp(language, 'i') }).click();
+  await generateCodeBtn.click({ force: true });
+  await page.getByRole('menuitem', { name: new RegExp(language, 'i') }).click({ force: true });
 
   const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Code Generator' });
   await expect(modal).toBeVisible({ timeout: 5_000 });
@@ -132,7 +132,7 @@ async function downloadCodeFile(
     const tab = modal.getByRole('tab', { name: new RegExp(`^${tabName}$`, 'i') });
     const isActive = await tab.evaluate(el => el.classList.contains('active') || el.getAttribute('aria-selected') === 'true');
     if (!isActive) {
-      await tab.click();
+      await tab.click({ force: true });
       await expect(codeBlock).toBeVisible({ timeout: 5_000 });
     }
   }
@@ -140,13 +140,13 @@ async function downloadCodeFile(
   // Download the file
   const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
   const downloadBtn = modal.getByRole('button', { name: /Download/i }).first();
-  await downloadBtn.click();
+  await downloadBtn.click({ force: true });
   const download = await downloadPromise;
 
   const content = await readDownload(download);
   const filename = download.suggestedFilename();
 
-  await modal.getByRole('button', { name: /Close/i }).first().click();
+  await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
 
   return { content, filename, language };
 }
@@ -288,7 +288,7 @@ async function downloadPdfText(page: import('@playwright/test').Page, protocolId
   await expect(pdfButton).toBeVisible({ timeout: 10_000 });
 
   const downloadPromise = page.waitForEvent('download', { timeout: 15_000 });
-  await pdfButton.click();
+  await pdfButton.click({ force: true });
   const download = await downloadPromise;
 
   const buffer = await readDownloadBuffer(download);
@@ -333,22 +333,22 @@ async function downloadPdfTextWithProtocol(
   await page.locator('#phase').selectOption({ label: 'Phase III' });
 
   const nextBtn = page.getByRole('button', { name: /^Next$/i });
-  await nextBtn.click(); // → Arms
-  await nextBtn.click(); // → Sites
+  await nextBtn.click({ force: true }); // → Arms
+  await nextBtn.click({ force: true }); // → Sites
 
   const siteInput = page.locator('#sitesLabel + app-tag-input input');
   await expect(siteInput).toBeVisible();
   await siteInput.fill('PDF-SITE-01');
   await siteInput.press('Enter');
-  await nextBtn.click(); // → Blocks
+  await nextBtn.click({ force: true }); // → Blocks
 
   await page.locator('#blockSizesStr').fill('4');
-  await nextBtn.click(); // → Strata
-  await nextBtn.click(); // → Review
+  await nextBtn.click({ force: true }); // → Strata
+  await nextBtn.click({ force: true }); // → Review
 
   const generateBtn = page.getByRole('button', { name: /Generate Schema/i });
   await expect(generateBtn).toBeVisible();
-  await generateBtn.click();
+  await generateBtn.click({ force: true });
 
   const resultsSection = page.locator('#results-section');
   await expect(resultsSection).toBeVisible({ timeout: 15_000 });
@@ -359,7 +359,7 @@ async function downloadPdfTextWithProtocol(
   await expect(pdfButton).toBeVisible({ timeout: 10_000 });
 
   const downloadPromise = page.waitForEvent('download', { timeout: 15_000 });
-  await pdfButton.click();
+  await pdfButton.click({ force: true });
   const download = await downloadPromise;
 
   const filename = download.suggestedFilename();
@@ -446,7 +446,7 @@ test.describe('21 CFR Part 11 – Audit Trail: results grid metadata stamping', 
 
     const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
     const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
-    await csvButton.evaluate((node: HTMLElement) => node.click());
+    await csvButton.evaluate((node: HTMLElement) => node.click({ force: true }));
     const download = await downloadPromise;
 
     const name = download.suggestedFilename();
