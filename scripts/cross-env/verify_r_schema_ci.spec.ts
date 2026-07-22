@@ -20,6 +20,6 @@ describe('R generated-script CI wiring', () => {
 
     expect(verifier).toContain('artifacts", "code-generation-fixtures"');
     expect(verifier).toContain('verify_generated_scripts');
-    expect(verifier).toContain('sys.source(script_path, envir = env)');
+    expect(verifier).toContain('sys.source(basename(script_path), envir = env)');
   });
 });
