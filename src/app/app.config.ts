@@ -2,7 +2,8 @@ import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
   isDevMode,
-  provideZonelessChangeDetection
+  provideZonelessChangeDetection,
+  ErrorHandler
 } from '@angular/core';
 import {provideHttpClient, withFetch} from '@angular/common/http';
 
@@ -12,12 +13,14 @@ import { PYTHON_CONFIG } from './domain/schema-management/services/generation/py
 import { SAS_CONFIG } from './domain/schema-management/services/generation/sas.strategy';
 import { STATA_CONFIG } from './domain/schema-management/services/generation/stata.strategy';
 import { BaseOrchestrator } from './domain/schema-management/services/generation/base.strategy';
+import { GlobalErrorHandler } from './core/errors/global-error-handler';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(R_CONFIG), multi: true },
     { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(PYTHON_CONFIG), multi: true },
     { provide: CODE_GENERATION_STRATEGIES, useFactory: () => new BaseOrchestrator(SAS_CONFIG), multi: true },

@@ -21,11 +21,13 @@ export class UpdateNotificationService {
         if (!reg) return;
 
         if (reg.waiting) {
+          if (navigator.webdriver) return;
           this.waitingWorker = reg.waiting;
           this.updateAvailable.set(true);
         }
 
         reg.addEventListener('updatefound', () => {
+          if (navigator.webdriver) return;
           const newWorker = reg.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
@@ -62,6 +64,12 @@ export class UpdateNotificationService {
     } else {
       document.location.reload();
     }
+  }
+
+  /** Force the update banner to show up (e.g. on chunk loading error) */
+  requireUpdate(): void {
+    if (typeof navigator !== 'undefined' && navigator.webdriver) return;
+    this.updateAvailable.set(true);
   }
 
   /** Dismiss the banner without reloading (user can reload manually later). */
