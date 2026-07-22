@@ -50,6 +50,7 @@ export class SignalControl<T = any> extends AbstractControl {
   private _disabled = signal(false);
   private _errorsSignal: Signal<ValidationErrors | null>;
   private _validSignal: Signal<boolean>;
+  private _version = signal(0);
 
   constructor(initialValue: T, validators: ValidatorFn[] = []) {
     super();
@@ -57,6 +58,7 @@ export class SignalControl<T = any> extends AbstractControl {
     this._validatorsSignal = signal(validators);
     
     this._errorsSignal = computed(() => {
+      this._version(); // Force re-evaluation on updateValueAndValidity
       if (this.disabled) return null;
       const errs: ValidationErrors = {};
       let hasError = false;
@@ -109,8 +111,7 @@ export class SignalControl<T = any> extends AbstractControl {
   }
 
   updateValueAndValidity(options?: { emitEvent?: boolean }) {
-    // Re-evaluates inherently with signals, but we can trigger if needed.
-    this._value.set(this._value());
+    this._version.update(v => v + 1);
   }
 
   get(path: string | (string | number)[]): AbstractControl | null {
@@ -129,12 +130,14 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
   private _validatorsSignal: WritableSignal<ValidatorFn[]>;
   private _errorsSignal: Signal<ValidationErrors | null>;
   private _validSignal: Signal<boolean>;
+  private _version = signal(0);
   
   constructor(public controls: T, private _validators: ValidatorFn[] = []) {
     super();
     this._validatorsSignal = signal(_validators);
     
     this._errorsSignal = computed(() => {
+      this._version();
       const errs: ValidationErrors = {};
       let hasError = false;
       const currentValidators = this._validatorsSignal();
@@ -149,6 +152,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
     });
 
     this._validSignal = computed(() => {
+      this._version();
       for (const key in this.controls) {
         if (!this.controls[key].valid) return false;
       }
@@ -203,6 +207,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
   }
 
   updateValueAndValidity(options?: { emitEvent?: boolean }) {
+    this._version.update(v => v + 1);
     for (const key in this.controls) {
       this.controls[key].updateValueAndValidity(options);
     }
