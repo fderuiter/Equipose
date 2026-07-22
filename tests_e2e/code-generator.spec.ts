@@ -104,6 +104,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const liveRegion = page.locator('.sr-only[aria-live="polite"]');
     await FocusAuditor.assertFocusRestoration(page, async () => {
+      await copyBtn.focus();
       await copyBtn.dispatchEvent('click');
       await expect(liveRegion).toContainText(/Copied to clipboard!/i, { timeout: 3000 });
     }, copyBtn);

@@ -138,7 +138,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await FocusAuditor.assertFocusRestoration(
     page,
     async () => {
-      await generateCodeBtn.dispatchEvent('click');
+      await generateCodeBtn.focus(); await generateCodeBtn.dispatchEvent('click');
       const menu = page.getByRole('menu');
       await expect(page.getByRole('menuitem', { name: /R Script/i }).first()).toBeVisible();
       // wait for it to be ready
@@ -153,7 +153,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await FocusAuditor.assertFocusRestoration(
     page,
     async () => {
-      await generateCodeBtn.dispatchEvent('click');
+      await generateCodeBtn.focus(); await generateCodeBtn.dispatchEvent('click');
       await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
       await page.getByRole('menuitem', { name: /R Script/i }).dispatchEvent('click');
       const modal = page.getByRole('dialog', { name: 'Code Generator' });
@@ -218,7 +218,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
     await FocusAuditor.assertFocusRestoration(
       page,
       async () => {
-        await menuBtn.dispatchEvent('click');
+        await menuBtn.focus(); await menuBtn.dispatchEvent('click');
         const mobileMenu = page.locator('#mobile-menu');
         await expect(mobileMenu).toBeVisible();
         
@@ -247,7 +247,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
     await FocusAuditor.assertFocusRestoration(
       page,
       async () => {
-        await themeToggleBtn.dispatchEvent('click');
+        await themeToggleBtn.focus(); await themeToggleBtn.dispatchEvent('click');
         const themeMenu = page.getByRole('menu', { name: /Choose colour theme/i });
         await expect(themeMenu).toBeVisible();
         await page.waitForTimeout(100);
