@@ -238,7 +238,7 @@ test.describe('Monte Carlo Statistical Validation', () => {
       await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
 
       // Click Close button in footer
-      await modal.getByTestId('modal-close-footer').dispatchEvent('click');
+      await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
 
       // Modal should be gone
       await expect(modal).toBeHidden({ timeout: 5000 });

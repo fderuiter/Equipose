@@ -145,6 +145,8 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await page.waitForTimeout(100);
       await FocusTrapPlugin.verifyFocusContainment(page, menu);
       await page.keyboard.press('Escape');
+      await expect(menu).toBeHidden();
+      await page.waitForTimeout(150);
     },
     generateCodeBtn
   );
