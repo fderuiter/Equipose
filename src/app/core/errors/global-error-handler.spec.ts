@@ -53,4 +53,10 @@ describe('GlobalErrorHandler', () => {
     errorHandler.handleError(error);
     expect(updateServiceMock.requireUpdate).toHaveBeenCalled();
   });
+
+  it('should not throw if error is null or undefined', () => {
+    expect(() => errorHandler.handleError(null)).not.toThrow();
+    expect(() => errorHandler.handleError(undefined)).not.toThrow();
+    expect(() => errorHandler.handleError({ reason: null })).not.toThrow();
+  });
 });

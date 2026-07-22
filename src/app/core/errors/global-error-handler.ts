@@ -7,7 +7,9 @@ export class GlobalErrorHandler implements ErrorHandler {
 
   handleError(error: any): void {
     const originalError = error?.rejection || error?.reason || error;
-    const message = originalError?.message ? originalError.message.toLowerCase() : originalError?.toString().toLowerCase();
+    const message = originalError?.message 
+      ? String(originalError.message).toLowerCase() 
+      : String(originalError).toLowerCase();
 
     const isChunkLoadError = 
       message?.includes('failed to fetch dynamically imported module') ||
