@@ -196,7 +196,8 @@ describe('GeneratorComponent (domain)', () => {
     const configForm = fixture.componentInstance['configForm']();
     if (configForm) {
       const spy = vi.spyOn(configForm, 'loadPreset');
-      const btn: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="load-preset-btn"]');
+      const appBtn = fixture.nativeElement.querySelector('[data-testid="load-preset-btn"]');
+      const btn: HTMLButtonElement = appBtn.querySelector('button');
       btn.click();
       fixture.detectChanges();
       expect(spy).toHaveBeenCalledWith('standard');

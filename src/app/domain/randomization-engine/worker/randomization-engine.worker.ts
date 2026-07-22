@@ -2,6 +2,7 @@
 
 import { generateRandomizationSchema, generateCryptoSeed } from '../core/randomization-algorithm';
 import { mulberry32 } from './attrition-prng';
+import { getTotalRatio } from '../../shared/statistical/ratio-simplification';
 import type {
   MonteCarloPayload,
   MonteCarloProgressPayload,
@@ -117,16 +118,19 @@ function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload)
   // expectedCount is always based on total simulated (pre-attrition basis) so that
   // the algorithm's inherent fairness can be assessed independently of attrition.
   // expectedRetainedCount is based on total retained subjects for post-attrition analysis.
-  const totalRatio = config.arms.reduce((sum, arm) => sum + arm.ratio, 0);
-  const arms = config.arms.map((arm, idx) => ({
-    armId: arm.id,
-    armName: arm.name,
-    ratio: arm.ratio,
-    expectedCount: Math.round((arm.ratio / totalRatio) * totalSubjects),
-    actualCount: armCounts[idx],
-    expectedRetainedCount: Math.round((arm.ratio / totalRatio) * totalRetained),
-    retainedCount: retainedArmCounts[idx]
-  }));
+  const totalRatio = getTotalRatio(config.arms);
+  const arms = config.arms.map((arm, idx) => {
+    const r = arm.ratio;
+    return {
+      armId: arm.id,
+      armName: arm.name,
+      ratio: arm.ratio,
+      expectedCount: Math.round((r / totalRatio) * totalSubjects),
+      actualCount: armCounts[idx],
+      expectedRetainedCount: Math.round((r / totalRatio) * totalRetained),
+      retainedCount: retainedArmCounts[idx]
+    };
+  });
 
   const successPayload: MonteCarloSuccessPayload = {
     totalIterations: TOTAL_ITERATIONS,

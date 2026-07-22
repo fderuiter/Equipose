@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 const TARGETS = [
-  'src/app/core/utils',
-  'src/app/core/components/ui'
+  'src/app'
 ];
 
 const IGNORE_PATTERNS = [
   '**/*.spec.ts',
-  '**/*.test.ts'
+  '**/*.test.ts',
+  '**/*.property.spec.ts'
 ];
 
 // Determine if we are running in CI or similar, but for now we just use a temp dir.

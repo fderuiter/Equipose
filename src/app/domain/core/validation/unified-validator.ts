@@ -1,5 +1,6 @@
 import { RandomizationConfig, BlockRule } from '../models/randomization.model';
 import { MathUtil } from '../utils/math.util';
+import { getTotalRatio, simplifyRatios } from '../../shared/statistical/ratio-simplification';
 
 export interface ValidationFailure {
   code: string;
@@ -21,14 +22,13 @@ export class UnifiedValidationAuthority {
       return errors;
     }
 
-    const totalRatioRaw = config.arms.reduce((sum, arm) => sum + arm.ratio, 0);
+    const totalRatioRaw = getTotalRatio(config.arms);
     if (totalRatioRaw === 0) {
       errors.push({ code: 'ERR_RATIO_ZERO', property: 'arms', message: 'Total arm ratio must be greater than zero' });
       return errors;
     }
 
-    const ratioGcd = MathUtil.gcdArray(config.arms.map(a => a.ratio));
-    const totalRatio = config.arms.reduce((sum, arm) => sum + (arm.ratio / ratioGcd), 0);
+    const totalRatio = getTotalRatio(simplifyRatios(config.arms));
 
     // 2. Minimization specific validation
     if (config.randomizationMethod === 'MINIMIZATION') {

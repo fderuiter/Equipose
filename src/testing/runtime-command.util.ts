@@ -35,7 +35,7 @@ export const getRscriptCandidates = (env: NodeJS.ProcessEnv = process.env): stri
   return [
     env['RSCRIPT'],
     env['R_SCRIPT'],
-    rHome ? join(rHome, 'bin', 'Rscript') : undefined,
+    rHome ? `${rHome}/bin/Rscript` : undefined,
     'Rscript',
   ].filter((candidate): candidate is string => Boolean(candidate));
 };

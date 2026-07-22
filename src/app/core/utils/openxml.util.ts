@@ -50,14 +50,14 @@ export class OpenXmlWriter {
       sheetData += `<row r="${rowIndex}"${ht}>`;
       let colIndex = 1;
       for (const cell of row.cells) {
-        const colLetter = this.getColLetter(colIndex);
+        const colLetter = OpenXmlWriter.getColLetter(colIndex);
         const ref = `${colLetter}${rowIndex}`;
         const s = cell.styleId ? ` s="${cell.styleId}"` : '';
         const escaped = this.escapeXml(cell.val);
         sheetData += `<c r="${ref}"${s} t="inlineStr"><is><t>${escaped}</t></is></c>`;
         
         if (cell.mergeAcross) {
-          const endColLetter = this.getColLetter(colIndex + cell.mergeAcross);
+          const endColLetter = OpenXmlWriter.getColLetter(colIndex + cell.mergeAcross);
           merges.push(`<mergeCell ref="${ref}:${endColLetter}${rowIndex}"/>`);
           colIndex += cell.mergeAcross;
         }
@@ -194,7 +194,7 @@ export class OpenXmlWriter {
     return this.zip.generateAsync();
   }
 
-  private getColLetter(colIndex: number): string {
+  public static getColLetter(colIndex: number): string {
     let letter = '';
     while (colIndex > 0) {
       const mod = (colIndex - 1) % 26;

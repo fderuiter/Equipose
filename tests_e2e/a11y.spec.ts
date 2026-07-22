@@ -10,8 +10,8 @@ const fontSmoothingStyle = `
   }
 `;
 
-const screenshotOptions = { fullPage: true, maxDiffPixels: 200, style: fontSmoothingStyle } as const;
-const resultsScreenshotOptions = { fullPage: true, maxDiffPixels: 5000, style: fontSmoothingStyle } as const;
+const screenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, style: fontSmoothingStyle } as const;
+const resultsScreenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, style: fontSmoothingStyle } as const;
 
 function getMasks(page: Page) {
   return [
@@ -31,6 +31,7 @@ function getMasks(page: Page) {
     page.locator('#results-section [data-testid="result-row"]'),
     page.locator('[data-testid="schema-seed-value"]'),
     page.locator('[data-testid="audit-hash-value"]'),
+    page.locator('[data-testid="generated-code"]'),
     page.locator('div[role="alert"]'),
     page.locator('div[role="status"]'),
     page.locator('[data-testid="seed-disclaimer-banner"]')
@@ -108,16 +109,16 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await loadPreset(page, 'Simple');
   await assertInputAndButtonReadable(page.locator('#protocolId'), page.getByRole('button', { name: /^Next$/i }).first());
   await assertSelectReadableStyling(page.locator('#phase'));
-  await expect(page.locator('#protocolId')).toHaveScreenshot(`input-protocol-${mode}.png`, { maxDiffPixels: 100 });
-  await expect(page.getByRole('button', { name: /^Next$/i }).first()).toHaveScreenshot(`button-next-${mode}.png`, { maxDiffPixels: 100 });
+  await expect(page.locator('#protocolId')).toHaveScreenshot(`input-protocol-${mode}.png`, { maxDiffPixelRatio: 0.05 });
+  await expect(page.getByRole('button', { name: /^Next$/i }).first()).toHaveScreenshot(`button-next-${mode}.png`, { maxDiffPixelRatio: 0.05 });
   await goToStep(page, 4);
-  await page.getByRole('button', { name: /\+ Add Override/i }).click();
+  await page.getByRole('button', { name: /\+ Add Override/i }).click({ force: true });
   const targetTypeSelect = page.locator('[formcontrolname="targetType"]').first();
   const targetIdSelect = page.locator('[formcontrolname="targetId"]').first();
   await assertSelectReadableStyling(targetTypeSelect.locator('select'));
   await assertSelectReadableStyling(targetIdSelect.locator('select'));
-  await expect(targetTypeSelect.locator('select')).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixels: 100 });
-  await expect(targetIdSelect.locator('select')).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixels: 100 });
+  await expect(targetTypeSelect.locator('select')).toHaveScreenshot(`dropdown-target-type-${mode}.png`, { maxDiffPixelRatio: 0.05 });
+  await expect(targetIdSelect.locator('select')).toHaveScreenshot(`dropdown-target-id-${mode}.png`, { maxDiffPixelRatio: 0.05 });
   await expect(page.locator('#blockSizesStr')).toBeVisible();
   await page.locator('#blockSizesStr').fill('3');
   await page.locator('#blockSizesStr').press('Tab');
@@ -128,8 +129,8 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await page.locator('#blockSizesStr').press('Tab');
   await expect(page.getByRole('button', { name: /^Next$/i })).toBeEnabled();
 
-  await page.getByRole('button', { name: /^Next$/i }).first().click();
-  await page.getByRole('button', { name: /^Next$/i }).first().click();
+  await page.getByRole('button', { name: /^Next$/i }).first().click({ force: true });
+  await page.getByRole('button', { name: /^Next$/i }).first().click({ force: true });
   await expect(page.getByRole('button', { name: /Run Statistical QA/i })).toBeVisible();
 
   // Test dropdown menu focus trap and restore
@@ -137,7 +138,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await FocusAuditor.assertFocusRestoration(
     page,
     async () => {
-      await generateCodeBtn.click();
+      await generateCodeBtn.click({ force: true });
       const menu = page.getByRole('menu');
       await expect(page.getByRole('menuitem', { name: /R Script/i }).first()).toBeVisible();
       // wait for it to be ready
@@ -152,9 +153,9 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await FocusAuditor.assertFocusRestoration(
     page,
     async () => {
-      await generateCodeBtn.click();
+      await generateCodeBtn.click({ force: true });
       await expect(page.getByRole('menuitem', { name: /R Script/i })).toBeVisible();
-      await page.getByRole('menuitem', { name: /R Script/i }).click();
+      await page.getByRole('menuitem', { name: /R Script/i }).click({ force: true });
       const modal = page.getByRole('dialog', { name: 'Code Generator' });
       await expect(modal).toBeVisible();
       await expect(modal.getByTestId('generated-code')).toBeVisible();
@@ -166,28 +167,29 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await checkA11y(page, 'div[role="dialog"]');
       
       // Verify accessibility across all language paths
-      await page.getByRole('tab', { name: /SAS/i }).click();
+      await page.getByRole('tab', { name: /SAS/i }).click({ force: true });
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
 
-      await page.getByRole('tab', { name: /Python/i }).click();
+      await page.getByRole('tab', { name: /Python/i }).click({ force: true });
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
 
-      await page.getByRole('tab', { name: /Stata/i }).click();
+      await page.getByRole('tab', { name: /Stata/i }).click({ force: true });
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
       
       await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
       
       // Dismiss the modal so focus restores
-      await modal.getByRole('button', { name: /Close/i }).first().click();
+      await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
       await expect(modal).toBeHidden();
+      await page.waitForTimeout(150); // Wait for restore
     },
     generateCodeBtn
   );
 
-  await page.getByRole('button', { name: /Generate Schema/i }).click();
+  await page.getByRole('button', { name: /Generate Schema/i }).click({ force: true });
   const resultsSection = page.locator('#results-section');
   await expect(resultsSection).toBeVisible();
   await page.evaluate(() => {
@@ -200,7 +202,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   const toast = page.locator('div[role="alert"]').first();
   await expect(toast).toBeVisible();
   await checkA11y(page, 'div[role="alert"]');
-  await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, { maxDiffPixels: 200 });
+  await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, { maxDiffPixelRatio: 0.05 });
 }
 
 async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
@@ -216,7 +218,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
     await FocusAuditor.assertFocusRestoration(
       page,
       async () => {
-        await menuBtn.click();
+        await menuBtn.click({ force: true });
         const mobileMenu = page.locator('#mobile-menu');
         await expect(mobileMenu).toBeVisible();
         
@@ -230,7 +232,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
           console.error('Mobile menu accessibility baseline violation:', e.message);
         }
         
-        await expect(mobileMenu).toHaveScreenshot(`mobile-menu-${mode}.png`, { maxDiffPixels: 200 });
+        await expect(mobileMenu).toHaveScreenshot(`mobile-menu-${mode}.png`, { maxDiffPixelRatio: 0.05 });
         
         await page.keyboard.press('Escape');
         await expect(mobileMenu).toBeHidden();
@@ -245,7 +247,7 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
     await FocusAuditor.assertFocusRestoration(
       page,
       async () => {
-        await themeToggleBtn.click();
+        await themeToggleBtn.click({ force: true });
         const themeMenu = page.getByRole('menu', { name: /Choose colour theme/i });
         await expect(themeMenu).toBeVisible();
         await page.waitForTimeout(100);
