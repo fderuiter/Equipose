@@ -37,7 +37,7 @@ const test = base.extend<ScriptFixture>({
       const generateSchemaBtn = page.getByRole('button', { name: /Generate Schema/i });
       await expect(generateSchemaBtn).toBeVisible({ timeout: 10_000 });
       await expect(generateSchemaBtn).toBeEnabled();
-      await generateSchemaBtn.click({ force: true });
+      await generateSchemaBtn.evaluate(b => (b as HTMLElement).click());
 
       const workerRoot = join(artifactRoot, testInfo.project.name || "default");
       const scenarioDir = join(workerRoot, scenario.id);
@@ -46,8 +46,8 @@ const test = base.extend<ScriptFixture>({
 
       const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
       await expect(generateCodeBtn).toBeVisible();
-      await generateCodeBtn.click({ force: true });
-      await page.getByRole('menuitem', { name: /R Script/i }).first().click({ force: true });
+      await generateCodeBtn.evaluate(b => (b as HTMLElement).click());
+      await page.getByRole('menuitem', { name: /R Script/i }).first().evaluate(b => (b as HTMLElement).click());
 
       const modal = page.getByRole('dialog', { name: 'Code Generator' });
       await expect(modal).toBeVisible({ timeout: 10_000 });
@@ -55,13 +55,13 @@ const test = base.extend<ScriptFixture>({
       await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
       for (const { language, tabName, extension } of languageTabs) {
-        await modal.getByRole('tab', { name: tabName }).click({ force: true });
+        await modal.getByRole('tab', { name: tabName }).evaluate(b => (b as HTMLElement).click());
         await page.waitForTimeout(200);
 
         await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
         const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-        await modal.getByRole('button', { name: /Download/i }).first().click({ force: true });
+        await modal.getByRole('button', { name: /Download/i }).first().evaluate(b => (b as HTMLElement).click());
         const download = await downloadPromise;
 
         const outputFile = `${scenario.id}.${extension}`;
@@ -69,7 +69,7 @@ const test = base.extend<ScriptFixture>({
         files.push({ language, file: outputFile });
       }
 
-      await modal.getByRole('button', { name: /Close/i }).first().click({ force: true });
+      await modal.getByRole('button', { name: /Close/i }).first().evaluate(b => (b as HTMLElement).click());
       await writeFile(
         join(scenarioDir, 'manifest.json'),
         JSON.stringify({ scenario: scenario.id, protocolId: scenario.protocolId, files }, null, 2),
