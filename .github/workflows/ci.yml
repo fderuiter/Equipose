@@ -131,11 +131,11 @@ jobs:
     - name: Extract shared environment
       run: tar -xf shared-env.tar
 
-    - name: Install Playwright WebKit runtime libraries
+    - name: Install Playwright runtime dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libwoff1
-        npx playwright install --with-deps webkit
+        npx playwright install-deps
       env:
         CI: true
         PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
