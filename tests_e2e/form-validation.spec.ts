@@ -99,7 +99,7 @@ test.describe('Form Validation and Configuration', () => {
     const armRows = page.locator('[formArrayName="arms"] > div');
     await expect(armRows).toHaveCount(2);
 
-    await page.getByRole('button', { name: /\+ Add Arm/i }).click({ force: true });
+    await page.getByRole('button', { name: /\+ Add Arm/i }).click();
 
     await expect(armRows).toHaveCount(3);
   });
@@ -112,7 +112,7 @@ test.describe('Form Validation and Configuration', () => {
     await goToStep(page, 3);
     await expect(page.getByText(/No stratification factors defined/i)).toBeVisible();
 
-    await page.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+    await page.getByRole('button', { name: /\+ Add Factor/i }).click();
     const strataRows = page.locator('[formArrayName="strata"] > div');
     await expect(strataRows).toHaveCount(1);
   });
@@ -120,7 +120,7 @@ test.describe('Form Validation and Configuration', () => {
   test('should update the stratum caps table when stratum levels are entered', async ({ page }) => {
     await loadPreset(page, 'Simple');
     await goToStep(page, 3);
-    await page.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+    await page.getByRole('button', { name: /\+ Add Factor/i }).click();
 
     // Wait for the new stratum row to be fully rendered
     const strataRows = page.locator('[formArrayName="strata"] > div');
@@ -139,8 +139,8 @@ test.describe('Form Validation and Configuration', () => {
     await levelsInput.press('Tab');
 
     // Move from Step 3 (Sites & Stratification) to Step 5 (Enrollment Caps).
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
     const capRows = page.locator('[formArrayName="stratumCaps"] > div');
     await expect(capRows).toHaveCount(2, { timeout: 5000 });
   });
@@ -152,10 +152,10 @@ test.describe('Form Validation and Configuration', () => {
     await loadPreset(page, 'Simple');
 
     await goToStep(page, 2);
-    await page.getByRole('radio', { name: 'Minimization' }).click({ force: true });
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
+    await page.getByRole('radio', { name: 'Minimization' }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
 
-    await page.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+    await page.getByRole('button', { name: /\+ Add Factor/i }).click();
     const strataRows = page.locator('[formArrayName="strata"] > div');
     await expect(strataRows).toHaveCount(1, { timeout: 5000 });
 
@@ -182,10 +182,10 @@ test.describe('Form Validation and Configuration', () => {
     await loadPreset(page, 'Simple');
 
     await goToStep(page, 2);
-    await page.getByRole('radio', { name: 'Minimization' }).click({ force: true });
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
+    await page.getByRole('radio', { name: 'Minimization' }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
 
-    await page.getByRole('button', { name: /\+ Add Factor/i }).click({ force: true });
+    await page.getByRole('button', { name: /\+ Add Factor/i }).click();
     const firstStratumRow = page.locator('[formArrayName="strata"] > div').first();
     const levelsInput = firstStratumRow.locator('app-tag-input input').first();
     await levelsInput.waitFor({ state: 'visible', timeout: 10000 });
@@ -206,11 +206,11 @@ test.describe('Form Validation and Configuration', () => {
     await expect(minimizationInputs.nth(0)).toHaveValue('33.3');
     await expect(minimizationInputs.nth(1)).toHaveValue('66.7');
 
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
-    await page.getByRole('button', { name: /^Next$/i }).click({ force: true });
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
     await expect(page.getByRole('button', { name: /Generate Schema/i })).toBeVisible();
-    await page.getByRole('button', { name: /Generate Schema/i }).click({ force: true });
+    await page.getByRole('button', { name: /Generate Schema/i }).click();
     await expect(page.locator('#results-section')).toBeVisible({ timeout: 15000 });
   });
 });

@@ -15,9 +15,9 @@ test.describe('Determinism Test Suite', () => {
     
     await page.fill('input#seed', 'deterministic-seed-2026');
     await page.keyboard.press('Tab');
-    await page.locator("button:has-text('Next'):visible").first().click({ force: true });
+    await page.locator("button:has-text('Next'):visible").first().click();
 
-    await page.getByRole('radio', { name: 'Minimization' }).click({ force: true });
+    await page.getByRole('radio', { name: 'Minimization' }).click();
     
     // Wait for the Minimization state to be reflected in the UI
     await expect(page.getByRole('radio', { name: 'Minimization' })).toHaveClass(/bg-brand-600/, { timeout: 10000 });
@@ -33,12 +33,12 @@ test.describe('Determinism Test Suite', () => {
     await expect(page.getByRole('button', { name: 'Increase ratio for Placebo' })).toBeVisible({ timeout: 15000 });
 
     for (let i = 0; i < 2; i++) {
-      await page.getByRole('button', { name: /Increase ratio for Low Dose/i }).click({ force: true });
+      await page.getByRole('button', { name: /Increase ratio for Low Dose/i }).click();
     }
     for (let i = 0; i < 6; i++) {
-      await page.getByRole('button', { name: /Increase ratio for Placebo/i }).click({ force: true });
+      await page.getByRole('button', { name: /Increase ratio for Placebo/i }).click();
     }
-    await page.locator("button:has-text('Next'):visible").first().click({ force: true });
+    await page.locator("button:has-text('Next'):visible").first().click();
 
     await page.fill('input[id="levelDistage_<65"]', '50');
     await page.fill('input[id="levelDistage_>=65"]', '50');
@@ -49,20 +49,20 @@ test.describe('Determinism Test Suite', () => {
     await page.keyboard.press('Tab');
     
     await expect(page.locator("button:has-text('Next'):visible").first()).toBeEnabled();
-    await page.locator("button:has-text('Next'):visible").first().click({ force: true });
+    await page.locator("button:has-text('Next'):visible").first().click();
 
     await page.fill('input#baseProbability', '0.8');
     await page.fill('input#totalSampleSize', '100');
     await expect(page.locator("button:has-text('Next'):visible").first()).toBeEnabled();
-    await page.locator("button:has-text('Next'):visible").first().click({ force: true });
+    await page.locator("button:has-text('Next'):visible").first().click();
 
-    await page.getByRole('radio', { name: 'Marginal Only' }).click({ force: true });
+    await page.getByRole('radio', { name: 'Marginal Only' }).click();
     await page.fill('input[id="age-margcap-<65"]', '80');
     await page.fill('input[id="age-margcap->=65"]', '80');
     await expect(page.locator("button:has-text('Next'):visible").first()).toBeEnabled();
-    await page.locator("button:has-text('Next'):visible").first().click({ force: true });
+    await page.locator("button:has-text('Next'):visible").first().click();
 
-    await page.getByRole('button', { name: /Generate Schema/i }).click({ force: true });
+    await page.getByRole('button', { name: /Generate Schema/i }).click();
 
     const toast = page.locator('.toast-error, .p-toast-message, [role="alert"]');
     try {
