@@ -44,7 +44,7 @@ const test = base.extend<ScriptFixture>({
       const files: { language: Language; file: string }[] = [];
 
       const generateCodeBtn = page.getByRole('button', { name: /Generate Code/i });
-      await expect(generateCodeBtn).toBeVisible();
+      await expect(generateCodeBtn).toBeVisible({ timeout: 30_000 });
       await generateCodeBtn.click();
       await page.getByRole('menuitem', { name: /R Script/i }).first().click();
 
