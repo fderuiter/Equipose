@@ -39,7 +39,7 @@ export class RovingTabindexDirective implements AfterViewInit, OnDestroy {
 
     if (this.items.length === 0) return;
 
-    let currentActive = 0;
+    let currentActive: number;
     const activeEl = document.activeElement as HTMLElement;
     const focusIndex = this.items.indexOf(activeEl);
     const wasFocusedBefore = this.el.nativeElement.contains(activeEl) || document.activeElement === document.body;

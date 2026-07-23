@@ -1,4 +1,3 @@
-import { TestBed } from '@angular/core/testing';
 import { createStepper } from './stepper.util';
 
 describe('StepperUtil', () => {

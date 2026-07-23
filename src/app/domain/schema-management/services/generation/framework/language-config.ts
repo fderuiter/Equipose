@@ -1,5 +1,5 @@
 import { RandomizationConfig, GeneratedSchema } from '../../../../core/models/randomization.model';
-import { LogicIR, LogicIRTask, SubjectIdToken } from '../ir/ir.model';
+import { LogicIR } from '../ir/ir.model';
 
 export interface LanguageConfig {
   language: 'R' | 'SAS' | 'Python' | 'STATA';

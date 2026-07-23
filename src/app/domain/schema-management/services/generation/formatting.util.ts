@@ -1,5 +1,5 @@
 export function EscapedString(language: 'R' | 'Python' | 'SAS' | 'STATA') {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = function (s: string) {
       if (language === 'R' || language === 'Python') {

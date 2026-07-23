@@ -7,7 +7,7 @@ export const R_CONFIG: LanguageConfig = {
   language: 'R',
   indexStart: 1,
   template: R_TEMPLATE,
-  customizeDataSetup: (data, config, ir, method, schema) => {
+  customizeDataSetup: (data, config, _ir, method, _schema) => {
     data['arms'] = config.arms.map((a: any) => FormattingUtil.escapeString(a.name)).join(', ');
     data['ratios'] = config.arms.map((a: any) => a.ratio).join(', ');
     
