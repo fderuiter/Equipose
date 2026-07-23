@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
-import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
+import { RandomizationConfig } from '../core/models/randomization.model';
 import { StudyPresets } from '../core/presets/study-presets';
 import { generateRandomizationSchema } from './core/randomization-algorithm';
 import { vi } from 'vitest';

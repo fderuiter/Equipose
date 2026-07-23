@@ -7,7 +7,7 @@ export const SAS_CONFIG: LanguageConfig = {
   language: 'SAS',
   indexStart: 1,
   template: SAS_TEMPLATE,
-  customizeDataSetup: (data, config, ir, method, schema) => {
+  customizeDataSetup: (data, config, _ir, method, _schema) => {
     data['arms'] = config.arms.map((a: any) => `"${FormattingUtil.escapeSasString(a.name)}"`).join(' ');
     data['armsNames'] = data['arms'];
     data['strataFactors'] = (config.strata || []).map(s => `"${FormattingUtil.escapeSasString(s.id)}"`).join(' ');
@@ -54,7 +54,7 @@ export const SAS_CONFIG: LanguageConfig = {
       utils += `  skip_utilities:\n`;
       return utils;
     },
-    fisherYates: (ir) => ``,
+    fisherYates: (_ir) => ``,
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = '';
       const numTasks = ir.tasks.length;

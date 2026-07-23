@@ -17,7 +17,14 @@ module.exports = defineConfig([
     processor: angular.processInlineTemplates,
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ],
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-deprecated': 'error',
       '@angular-eslint/no-output-on-prefix': 'off',
@@ -26,7 +33,7 @@ module.exports = defineConfig([
       '@angular-eslint/no-input-rename': 'off',
       '@angular-eslint/use-lifecycle-interface': 'off',
       '@angular-eslint/prefer-inject': 'off',
-      'no-useless-assignment': 'off',
+      'no-useless-assignment': 'error',
       '@angular-eslint/directive-selector': 'off',
       'prefer-const': 'off',
       '@typescript-eslint/no-this-alias': 'off',

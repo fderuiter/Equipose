@@ -12,7 +12,6 @@ import {
 import { generateSubjectId } from './subject-id-engine';
 import { generateMinimization } from './minimization-algorithm';
 import { SubjectRegistry } from './subject-registry';
-import { MathUtil } from '../../core/utils/math.util';
 import { simplifyRatios } from '../../shared/statistical/ratio-simplification';
 import { fisherYatesShuffle } from '../../shared/statistical/fisher-yates';
 
@@ -124,19 +123,6 @@ function selectBlockSize(rule: BlockRule, state: BlockState, rng: () => number):
 /** Returns a fresh, zeroed BlockState. */
 function newBlockState(): BlockState {
   return { sequenceIndex: 0, usageCounts: new Map() };
-}
-
-/**
- * Collect every block size referenced across all block rules in the config so
- * they can be validated against the total treatment ratio.
- */
-function collectAllBlockSizes(config: RandomizationConfig): number[] {
-  const sizes = new Set<number>(config.blockSizes);
-  const addRule = (rule: BlockRule) => rule.sizes.forEach(s => sizes.add(s));
-  if (config.globalBlockStrategy) addRule(config.globalBlockStrategy);
-  if (config.siteBlockOverrides) Object.values(config.siteBlockOverrides).forEach(addRule);
-  if (config.stratumBlockOverrides) Object.values(config.stratumBlockOverrides).forEach(addRule);
-  return [...sizes];
 }
 
 // ---------------------------------------------------------------------------
