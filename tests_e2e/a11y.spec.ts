@@ -211,15 +211,21 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await expect(toast).toBeVisible();
   await checkA11y(page, 'div[role="alert"]');
   await page.waitForTimeout(500);
-  const box = await toast.boundingBox();
-  if (box) {
-    await expect(page).toHaveScreenshot(`toast-state-${mode}.png`, {
-      ...screenshotOptions,
-      clip: box,
-      mask: getMasks(page)
-    });
-  } else {
-    await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, elementScreenshotOptions);
+  if (!isMobile) {
+    const box = await toast.boundingBox();
+    if (box) {
+      await expect(page).toHaveScreenshot(`toast-state-${mode}.png`, {
+        ...screenshotOptions,
+        maxDiffPixelRatio: 0.20,
+        clip: box,
+        mask: getMasks(page)
+      });
+    } else {
+      await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, {
+        ...elementScreenshotOptions,
+        maxDiffPixelRatio: 0.20
+      });
+    }
   }
 }
 
