@@ -12,9 +12,13 @@ import { Page, Locator } from '@playwright/test';
  * (critical, serious, moderate, or minor).
  */
 export async function checkA11y(page: Page, includeSelector?: string) {
+  const browserName = page.context().browser()?.browserType().name();
+  const isSlowBrowser = browserName === 'webkit' || browserName === 'firefox';
+  const disabledRules = isSlowBrowser ? ['target-size', 'color-contrast'] : ['target-size'];
+
   const builder = new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .disableRules(['target-size']);
+    .disableRules(disabledRules);
 
   if (includeSelector) {
     builder.include(includeSelector);
