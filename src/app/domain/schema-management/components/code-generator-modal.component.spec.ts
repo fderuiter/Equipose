@@ -7,13 +7,19 @@ import { CodeGenerationError } from '../errors/code-generation-errors';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { RandomizationConfig } from '../../core/models/randomization.model';
+import { AnnouncementService } from '@core/services/announcement.service';
 
 describe('CodeGeneratorModalComponent (domain)', () => {
   let component: CodeGeneratorModalComponent;
   let mockFacade: unknown;
   let mockCodeGeneratorService: unknown;
+  let mockAnnouncementService: { announce: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
+    mockAnnouncementService = {
+      announce: vi.fn()
+    };
+
     mockFacade = {
       config: signal<RandomizationConfig | null>(null),
       results: signal(null),
@@ -44,7 +50,8 @@ describe('CodeGeneratorModalComponent (domain)', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: RandomizationEngineFacade, useValue: mockFacade },
-        { provide: CodeGeneratorService, useValue: mockCodeGeneratorService }
+        { provide: CodeGeneratorService, useValue: mockCodeGeneratorService },
+        { provide: AnnouncementService, useValue: mockAnnouncementService }
       ]
     });
 
@@ -326,6 +333,34 @@ describe('CodeGeneratorModalComponent (domain)', () => {
 
       await component.setExportMode('BOTH');
       expect(component.exportMode()).toBe('STATIC');
+    });
+
+    it('should announce fallback when exportMode is normalized to STATIC on initialization', async () => {
+      component.exportMode.set('DYNAMIC');
+      await component.ngOnInit();
+      expect(mockAnnouncementService.announce).toHaveBeenCalledWith(
+        'Dynamic export is not available for Pocock-Simon minimization. Switched to Static Manifest mode.',
+        'polite'
+      );
+    });
+
+    it('should offensively normalize to STATIC in downloadCode() when set to a non-static mode', async () => {
+      const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
+      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      globalThis.URL.createObjectURL = vi.fn(() => "mock://url") as unknown as (obj: Blob | MediaSource) => string;
+      globalThis.URL.revokeObjectURL = vi.fn() as unknown as (url: string) => void;
+
+      await component.ngOnInit();
+      component.exportMode.set('DYNAMIC'); // programmatically bypass
+
+      await component.downloadCode();
+
+      expect(component.exportMode()).toBe('STATIC');
+      // Verify that the anchor element has the correct static suffix/attributes
+      const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
+      expect(anchorEl.getAttribute('download')).toBe('randomization_schema.R');
+
+      appendSpy.mockRestore();
     });
   });
 });
