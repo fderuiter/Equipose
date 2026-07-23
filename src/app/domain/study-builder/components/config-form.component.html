@@ -3,7 +3,7 @@
     <div class="flex justify-between items-center">
       <ol class="grid grid-cols-2 lg:grid-cols-6 gap-2 flex-grow">
         @for (label of stepLabels; track label; let i = $index) {
-          <li [id]="'step-header-' + i" tabindex="-1" class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors outline-none focus:ring-2 focus:ring-indigo-500"
+          <li [id]="'step-header-' + i" tabindex="-1" class="rounded-lg border px-3 py-2 text-xs font-medium transition-colors outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset"
               [attr.aria-current]="currentStepIndex() === i ? 'step' : null"
               [class.border-indigo-500]="currentStepIndex() === i"
               [class.bg-indigo-50]="currentStepIndex() === i"
@@ -25,7 +25,7 @@
       @if (isSimulationMode) {
         <div class="ml-4 flex items-center gap-2">
           <span class="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">Simulation Mode</span>
-          <app-button type="button" (onClick)="onPromoteToStudy()" customClass="rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" variant="primary">Promote to Study</app-button>
+          <app-button type="button" (onClick)="onPromoteToStudy()" customClass="rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset" variant="primary">Promote to Study</app-button>
         </div>
       }
     </div>
@@ -34,7 +34,7 @@
       <div [formGroup]="regulatoryGroup" class="space-y-4">
         <app-regulatory-notice></app-regulatory-notice>
         <div class="flex items-center space-x-2 mt-4 px-1">
-          <app-checkbox inputId="acknowledge" formControlName="isAcknowledged" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></app-checkbox>
+          <app-checkbox inputId="acknowledge" formControlName="isAcknowledged" class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset"></app-checkbox>
           <label for="acknowledge" class="text-sm font-medium">I have read and understand the regulatory limitations of this tool.</label>
         </div>
       </div>
@@ -123,7 +123,7 @@
               <div [formGroupName]="$index" class="rounded-xl border p-4 space-y-3">
                 <div class="flex justify-between items-center">
                   <label [for]="'armName' + $index" class="text-xs uppercase tracking-wide">Arm Name</label>
-                  <app-button type="button" (onClick)="removeArm($index)" [disabled]="arms.length <= 2" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Arm" appTooltip="Remove Arm" variant="secondary">
+                  <app-button type="button" (onClick)="removeArm($index)" [disabled]="arms.length <= 2" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset rounded p-1 transition-colors group" aria-label="Remove Arm" appTooltip="Remove Arm" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-disabled:opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -171,7 +171,7 @@
             @for (stratum of strata.controls; track stratum; let stratumIndex = $index) {
               <div [formGroupName]="$index" role="listitem" draggable="true" (dragstart)="onDragStart($event, $index)" (dragover)="onDragOver($event, $index)" (drop)="onDrop($event, $index)" (dragend)="onDragEnd()" class="rounded-xl border p-4 space-y-3">
                 <div class="flex items-start gap-2">
-                  <app-button type="button" aria-label="Reorder factor" aria-description="Press Up or Down arrow to reorder" appTooltip="Drag or use Up/Down arrows to reorder" customClass="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)" variant="secondary">
+                  <app-button type="button" aria-label="Reorder factor" aria-description="Press Up or Down arrow to reorder" appTooltip="Drag or use Up/Down arrows to reorder" customClass="stratum-drag-handle mt-2 text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset rounded cursor-grab active:cursor-grabbing transition-colors" (keydown)="onStratumKeyDown($event, stratumIndex)" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 9h8M8 15h8" />
                       </svg>
@@ -182,7 +182,7 @@
                       <app-text-input [inputId]="'factorName' + $index" formControlName="name" type="text" class="w-full rounded-lg border px-3 py-2"></app-text-input>
                     </div>
                     <div class="flex items-end justify-end">
-                      <app-button type="button" (onClick)="removeStratum($index)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Factor" appTooltip="Remove Factor" variant="secondary">
+                      <app-button type="button" (onClick)="removeStratum($index)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset rounded p-1 transition-colors group" aria-label="Remove Factor" appTooltip="Remove Factor" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
@@ -287,7 +287,7 @@
                       <app-button type="button" (onClick)="override.get('selectionType')?.setValue('FIXED_SEQUENCE')" customClass="flex-1 px-3 py-1.5 text-xs border-l"
                               role="radio" [ariaChecked]="override.get('selectionType')?.value === 'FIXED_SEQUENCE' ? 'true' : null"                              [class.bg-indigo-600]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [class.text-white]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" [segmentedActive]="override.get('selectionType')?.value === 'FIXED_SEQUENCE'" segmentedPosition="middle" variant="segmented">Fixed</app-button>
                     </div>
-                    <app-button type="button" (onClick)="removeBlockOverride(i)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded p-1 transition-colors group" aria-label="Remove Override" appTooltip="Remove Override" variant="secondary">
+                    <app-button type="button" (onClick)="removeBlockOverride(i)" customClass="text-gray-400 hover:{{ domainTheme.getSemanticColor('error').textClass }} focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-focus-offset rounded p-1 transition-colors group" aria-label="Remove Override" appTooltip="Remove Override" variant="secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
