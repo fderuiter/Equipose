@@ -16,9 +16,8 @@ const screenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, animations:
 const resultsScreenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 30000 } as const;
 const elementScreenshotOptions = { maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 15000 } as const;
 
-function getMasks(page: Page) {
-  return [
-    page.locator('app-toast'),
+function getMasks(page: Page, includeToast = true) {
+  const masks = [
     page.locator('svg'),
     page.locator('progress'),
     page.locator('[data-testid="mc-progress-bar"]'),
@@ -35,10 +34,16 @@ function getMasks(page: Page) {
     page.locator('[data-testid="schema-seed-value"]'),
     page.locator('[data-testid="audit-hash-value"]'),
     page.locator('[data-testid="generated-code"]'),
-    page.locator('div[role="alert"]'),
     page.locator('div[role="status"]'),
     page.locator('[data-testid="seed-disclaimer-banner"]')
   ];
+  if (includeToast) {
+    masks.push(
+      page.locator('app-toast'),
+      page.locator('div[role="alert"]')
+    );
+  }
+  return masks;
 }
 
 async function applyDarkMode(page: Page): Promise<void> {
@@ -216,7 +221,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
     await expect(page).toHaveScreenshot(`toast-state-${mode}.png`, {
       ...screenshotOptions,
       clip: box,
-      mask: getMasks(page)
+      mask: getMasks(page, false)
     });
   } else {
     await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, elementScreenshotOptions);
