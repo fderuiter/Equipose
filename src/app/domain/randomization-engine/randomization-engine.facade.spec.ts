@@ -4,7 +4,6 @@ import { RandomizationEngineFacade } from './randomization-engine.facade';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
 import { StudyPresets } from '../core/presets/study-presets';
 import { vi } from 'vitest';
-import * as algo from './core/randomization-algorithm';
 
 /** Flush all pending microtasks so async signals settle. */
 const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));

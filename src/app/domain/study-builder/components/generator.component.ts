@@ -13,7 +13,7 @@ import { MonteCarloModalComponent } from '../../randomization-engine/components/
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { SeoService } from '../../../core/services/seo.service';
-import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 
 type ResultsTab = 'grid' | 'balance';

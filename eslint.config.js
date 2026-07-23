@@ -17,7 +17,14 @@ module.exports = defineConfig([
     processor: angular.processInlineTemplates,
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        }
+      ],
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-deprecated': 'error',
       '@angular-eslint/no-output-on-prefix': 'off',

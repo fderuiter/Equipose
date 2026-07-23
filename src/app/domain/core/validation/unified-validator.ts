@@ -1,5 +1,4 @@
 import { RandomizationConfig, BlockRule } from '../models/randomization.model';
-import { MathUtil } from '../utils/math.util';
 import { getTotalRatio, simplifyRatios } from '../../shared/statistical/ratio-simplification';
 
 export interface ValidationFailure {

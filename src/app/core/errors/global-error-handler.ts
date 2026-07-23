@@ -14,7 +14,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         message = originalError?.message 
           ? String(originalError.message).toLowerCase() 
           : String(originalError).toLowerCase();
-      } catch (e) {
+      } catch (_e) {
         // Fallback if String() throws (e.g. Object.create(null))
         message = '';
       }
@@ -29,7 +29,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         const updateService = this.injector.get(UpdateNotificationService);
         updateService.requireUpdate();
       }
-    } catch (e) {
+    } catch (_e) {
       // Never throw from within GlobalErrorHandler
     }
 

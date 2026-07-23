@@ -1,11 +1,11 @@
-import { ChangeDetectorRef, Component, computed, DestroyRef, ElementRef, HostListener, inject, OnInit, OnDestroy, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators, SignalControl } from '@core/forms/signal-forms';
+import { ChangeDetectorRef, Component, computed, ElementRef, HostListener, inject, OnInit, OnDestroy, signal, Signal, ViewChild, ChangeDetectionStrategy, Input, Output, EventEmitter, effect, untracked, PLATFORM_ID } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ValidationErrors, Validators } from '@core/forms/signal-forms';
 import { SIGNAL_FORM_DIRECTIVES } from '@core/forms/signal-form-directives';
 import { ButtonComponent } from '@core/components/ui/button.component';
 import { TextInputComponent } from '@core/components/ui/text-input.component';
 import { SelectComponent } from '@core/components/ui/select.component';
 import { CheckboxComponent } from '@core/components/ui/checkbox.component';
-import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RandomizationEngineFacade } from '@domain/randomization-engine/randomization-engine.facade';
 import { StudyBuilderStore, StratumFormValue } from '../store/study-builder.store';
 import { TagInputComponent } from './tag-input.component';
@@ -16,11 +16,11 @@ import { ToastService } from '@core/services/toast.service';
 import { RegulatoryNoticeComponent } from '@core/components/regulatory-notice/regulatory-notice.component';
 import { UnifiedValidationAuthority } from '@domain/core/validation/unified-validator';
 import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
-import { ThemeService, ArmColorTokens } from '@core/services/theme.service';
+import { ThemeService } from '@core/services/theme.service';
 import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import { AnnouncementService } from '@core/services/announcement.service';
 import { RovingTabindexDirective } from '@core/directives/roving-tabindex.directive';
-import { createStepper, StepperState, StepConfig } from '@core/utils/stepper.util';
+import { createStepper, StepConfig } from '@core/utils/stepper.util';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -40,7 +40,6 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   readonly facade = inject(RandomizationEngineFacade);
   readonly store = inject(StudyBuilderStore);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly toastService = inject(ToastService);
   public readonly domainTheme = inject(ThemeService);
   private readonly document = inject(DOCUMENT);
@@ -261,10 +260,11 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     });
     
     effect(() => {
-      const val = this.form.value;
-      untracked(() => {
-        this.facade.clearResults();
-      });
+      if (this.form.value) {
+        untracked(() => {
+          this.facade.clearResults();
+        });
+      }
     });
     
     this.lastCapsValueStr = JSON.stringify(this.form.get('capsGroup.stratumCaps')?.value);
@@ -344,10 +344,11 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
     effect(() => {
       // Track whole form value changes
-      const _val = this.form.value;
-      untracked(() => {
-        this.triggerAutoSave();
-      });
+      if (this.form.value) {
+        untracked(() => {
+          this.triggerAutoSave();
+        });
+      }
     });
   }
 
@@ -1161,7 +1162,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  onDragOver(event: DragEvent, index: number): void {
+  onDragOver(event: DragEvent, _index: number): void {
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';

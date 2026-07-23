@@ -28,7 +28,7 @@ export abstract class AbstractControl {
       const eff = effect(() => fn(this.value));
       return { unsubscribe: () => eff.destroy() };
     },
-    pipe: (...args: any[]) => {
+    pipe: (..._args: any[]) => {
        throw new Error('Not implemented');
     }
   };
@@ -82,7 +82,7 @@ export class SignalControl<T = any> extends AbstractControl {
     return this._value();
   }
 
-  setValue(value: T, options?: { emitEvent?: boolean }) {
+  setValue(value: T, _options?: { emitEvent?: boolean }) {
     this._value.set(value);
   }
 
@@ -94,11 +94,11 @@ export class SignalControl<T = any> extends AbstractControl {
     return this._disabled();
   }
 
-  disable(options?: { emitEvent?: boolean }) {
+  disable(_options?: { emitEvent?: boolean }) {
     this._disabled.set(true);
   }
   
-  enable(options?: { emitEvent?: boolean }) {
+  enable(_options?: { emitEvent?: boolean }) {
     this._disabled.set(false);
   }
 
@@ -110,11 +110,11 @@ export class SignalControl<T = any> extends AbstractControl {
     return this._errorsSignal();
   }
 
-  updateValueAndValidity(options?: { emitEvent?: boolean }) {
+  updateValueAndValidity(_options?: { emitEvent?: boolean }) {
     this._version.update(v => v + 1);
   }
 
-  get(path: string | (string | number)[]): AbstractControl | null {
+  get(_path: string | (string | number)[]): AbstractControl | null {
     return null;
   }
 
@@ -132,7 +132,7 @@ export class FormGroup<T extends Record<string, AbstractControl> = any> extends 
   private _validSignal: Signal<boolean>;
   private _version = signal(0);
   
-  constructor(public controls: T, private _validators: ValidatorFn[] = []) {
+  constructor(public controls: T, _validators: ValidatorFn[] = []) {
     super();
     this._validatorsSignal = signal(_validators);
     
@@ -255,11 +255,11 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     return this._controls().map(c => c.value);
   }
 
-  push(control: T, options?: { emitEvent?: boolean }) {
+  push(control: T, _options?: { emitEvent?: boolean }) {
     this._controls.update(arr => [...arr, control]);
   }
 
-  removeAt(index: number, options?: { emitEvent?: boolean }) {
+  removeAt(index: number, _options?: { emitEvent?: boolean }) {
     this._controls.update(arr => {
       const newArr = [...arr];
       newArr.splice(index, 1);
@@ -267,11 +267,11 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     });
   }
 
-  clear(options?: { emitEvent?: boolean }) {
+  clear(_options?: { emitEvent?: boolean }) {
     this._controls.set([]);
   }
 
-  insert(index: number, control: T, options?: { emitEvent?: boolean }) {
+  insert(index: number, control: T, _options?: { emitEvent?: boolean }) {
     this._controls.update(arr => {
       const newArr = [...arr];
       newArr.splice(index, 0, control);
@@ -336,7 +336,7 @@ export class FormArray<T extends AbstractControl = any> extends AbstractControl 
     }
     return current;
   }
-  setValidators(newValidator: ValidatorFn | ValidatorFn[] | null): void {}
+  setValidators(_newValidator: ValidatorFn | ValidatorFn[] | null): void {}
 }
 
 export const Validators = {

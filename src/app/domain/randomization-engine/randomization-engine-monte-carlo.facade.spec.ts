@@ -72,16 +72,11 @@ class FakeWorker {
 describe('RandomizationEngineFacade – Monte Carlo', () => {
   let facade: RandomizationEngineFacade;
   let fakeWorker: FakeWorker;
-  let dialogMock: any;
 
   beforeEach(() => {
     fakeWorker = new FakeWorker();
     // Mock crypto.subtle.digest to avoid relative-import vi.mock restrictions in Angular's test system
     vi.spyOn(crypto.subtle, 'digest').mockResolvedValue(new Uint8Array(32).buffer);
-
-    dialogMock = {
-      open: vi.fn().mockReturnValue({ closed: { subscribe: vi.fn() }, close: vi.fn() })
-    };
 
     TestBed.configureTestingModule({
       imports: [],

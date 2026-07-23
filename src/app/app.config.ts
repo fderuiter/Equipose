@@ -1,11 +1,10 @@
 import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
-  isDevMode,
   provideZonelessChangeDetection,
   ErrorHandler
 } from '@angular/core';
-import {provideHttpClient, withFetch} from '@angular/common/http';
+import {provideHttpClient} from '@angular/common/http';
 
 import { CODE_GENERATION_STRATEGIES } from './domain/schema-management/services/code-generator.service';
 import { R_CONFIG } from './domain/schema-management/services/generation/r.strategy';

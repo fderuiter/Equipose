@@ -6,7 +6,7 @@ import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
 import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../core/constants/precision.config';
-import { LogicIR, LogicIRTask, SubjectIdToken } from './ir/ir.model';
+import { LogicIR } from './ir/ir.model';
 import { AlgorithmRegistry } from './framework/algorithm-registry';
 import { LanguageConfig } from './framework/language-config';
 import { CodeGenerationError, StrataParsingError, TemplateCompilationError } from '../../errors/code-generation-errors';
@@ -41,14 +41,14 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
   /**
    * Generates block randomization code in the target language.
    */
-  generate(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+  generate(config: RandomizationConfig, _metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
     return this.transpile(config, 'BLOCK', mode);
   }
 
   /**
    * Generates minimization randomization code in the target language.
    */
-  generateMinimization(config: RandomizationConfig, metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
+  generateMinimization(config: RandomizationConfig, _metadata?: RandomizationResult['metadata'], mode: 'STATIC' | 'DYNAMIC' = 'STATIC'): string {
     return this.transpile(config, 'MINIMIZATION', mode);
   }
 

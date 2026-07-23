@@ -140,7 +140,7 @@ export class UpdateNotificationService {
           await window.caches.delete(key);
         }
       }
-    } catch (e) {
+    } catch (_e) {
       // Silent failures to avoid disrupting the user experience
     }
   }

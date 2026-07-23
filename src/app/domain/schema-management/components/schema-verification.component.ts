@@ -5,7 +5,7 @@ import { TextInputComponent } from '../../../core/components/ui/text-input.compo
 import { GeneratedSchema, RandomizationResult } from '../../core/models/randomization.model';
 import { generateRandomizationSchema } from '../../randomization-engine/core/randomization-algorithm';
 import { SeoService } from '../../../core/services/seo.service';
-import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 // ---------------------------------------------------------------------------
 // Data model for the diff engine
