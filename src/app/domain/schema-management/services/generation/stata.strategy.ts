@@ -8,7 +8,7 @@ export const STATA_CONFIG: LanguageConfig = {
   language: 'STATA',
   indexStart: 1,
   template: STATA_TEMPLATE,
-  customizeDataSetup: (data, config, ir, method, schema) => {
+  customizeDataSetup: (data, config, _ir, method, schema) => {
     let armsVars = '';
     config.arms.forEach((a: any, i: number) => {
       armsVars += `local arm_name_${i + 1} ${FormattingUtil.stataLabelQuote(a.name)}\n`;
@@ -54,7 +54,7 @@ export const STATA_CONFIG: LanguageConfig = {
       logic += `seq_count = 0\n`;
       return logic;
     },
-    utilityBlocks: (ir) => {
+    utilityBlocks: (_ir) => {
       let utils = `string rowvector build_block(real scalar size) {\n`;
       utils += `    string rowvector block\n`;
       utils += `    real scalar multiplier, i, j, arm_idx, k\n`;
@@ -203,7 +203,7 @@ export const STATA_CONFIG: LanguageConfig = {
 `;
       return algorithmicLogic;
     },
-    postLoop: (ir, config) => {
+    postLoop: (_ir, config) => {
       let logic = ``;
       (config.strata || []).forEach((s: any, idx: number) => {
           logic += `st_addvar("str50", "${FormattingUtil.sanitizeStataVarName(s.id)}"); st_sstore(., "${FormattingUtil.sanitizeStataVarName(s.id)}", schema_out[., ${7 + idx}])\n`;

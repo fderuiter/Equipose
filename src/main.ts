@@ -4,7 +4,7 @@ import {App} from './app/app';
 import {appConfig} from './app/app.config';
 
 bootstrapApplication(App, appConfig)
-  .then((appRef) => {
+  .then(() => {
     if (isDevMode()) {
       // Integrated in-browser accessibility audit tool
       import('axe-core').then((axe) => {

@@ -98,7 +98,7 @@ strata = {
           const det = f.levelDetails?.find(d => d.name === lvl);
           return det && det.expectedProbability !== undefined ? det.expectedProbability : 'None';
         }).join(', ');
-        code += `    "${FormattingUtil.escapeString(f.id)}": {"levels": [${f.levels.map(l => `"${FormattingUtil.escapeString(l)}"`).join(', ')}], "expected_probs": [${probsStr}]},\n`;
+        code += `    "${FormattingUtil.escapeString(f.id)}": {"levels": [${levelsStr}], "expected_probs": [${probsStr}]},\n`;
       });
       code += `}
 
@@ -1032,7 +1032,6 @@ for (s_idx in seq_len(total_sample_size)) {
     if (language === 'STATA') {
       const F = strata.length;
       const C = validPool.length;
-      const A = arms.length;
 
       let code = `
   // Stata Minimization State

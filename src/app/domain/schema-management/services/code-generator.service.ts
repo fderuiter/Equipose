@@ -53,7 +53,7 @@ export class CodeGeneratorService {
       output = strategy.generate(config, metadata, mode);
     }
 
-    let header = '';
+    let header: string;
     const manifest = this.methodologySpec.generateManifest(config, metadata);
     if (language === 'R' || language === 'Python') {
       header = this.methodologySpec.formatAsLineComments(manifest, '#');

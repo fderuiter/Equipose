@@ -1,10 +1,7 @@
 import { RandomizationConfig, GeneratedSchema } from '../../../../core/models/randomization.model';
-import { generateRandomizationSchema } from '../../../../randomization-engine/core/randomization-algorithm';
 import { FormattingUtil } from '../formatting.util';
 import { ReproducibilityUtil } from '../reproducibility.util';
-import { R_TEMPLATE, SAS_TEMPLATE, PYTHON_TEMPLATE, STATA_TEMPLATE } from './templates';
 import { LogicIR, LogicIRTask, SubjectIdToken } from './ir.model';
-import { PRECISION_EPSILON, PRECISION_SCALE } from '../../../../../core/constants/precision.config';
 
 import { simplifyRatios, getTotalRatio } from '../../../../shared/statistical/ratio-simplification';
 import { formatStratumCode } from '../../../../shared/statistical/stratum-format';
@@ -138,7 +135,7 @@ export class CodeTranspiler {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
       const n = schema.length;
       colNames.forEach(col => {
-        let vals: string[] = [];
+        let vals: string[];
         const isNum = (col === "BlockNumber" || col === "BlockSize");
         if (col === "SubjectID") {
           vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.subjectId)}"`);
@@ -205,7 +202,7 @@ export class CodeTranspiler {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
       schemaRows += `schema = {\n`;
       colNames.forEach(col => {
-        let vals: string[] = [];
+        let vals: string[];
         if (col === "SubjectID") {
           vals = schema.map(row => `"${FormattingUtil.escapeString(row.subjectId)}"`);
         } else if (col === "Site") {
@@ -228,7 +225,7 @@ export class CodeTranspiler {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
       schemaRows += `schema_list[[1]] <- data.frame(\n`;
       colNames.forEach(col => {
-        let vals: string[] = [];
+        let vals: string[];
         if (col === "SubjectID") {
           vals = schema.map(row => `"${FormattingUtil.escapeString(row.subjectId)}"`);
         } else if (col === "Site") {

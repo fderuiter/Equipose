@@ -1,4 +1,4 @@
-import { Component, computed, effect, signal, inject, ChangeDetectionStrategy, DestroyRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, computed, effect, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
@@ -7,9 +7,8 @@ import { GeneratedSchema } from '../../core/models/randomization.model';
 import { ViewportService } from '../../../core/services/viewport.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { MethodologySpecificationService } from '../services/methodology-specification.service';
-import { DateUtil } from '../../../core/utils/date.util';
 import { ExportService } from '../services/export.service';
-import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
@@ -73,7 +72,6 @@ export class ResultsGridComponent {
   private readonly toast = inject(ToastService);
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly exportService = inject(ExportService);
-  private readonly destroyRef = inject(DestroyRef);
   /**
    * Tracks the row whose kebab menu is currently open so the shared menu
    * template can reference the correct data payload.
@@ -247,7 +245,7 @@ export class ResultsGridComponent {
   }
 
   /** Opens the kebab context menu for a specific data row. */
-  openRowMenu(row: GeneratedSchema, event: MouseEvent): void {
+  openRowMenu(row: GeneratedSchema, _event: MouseEvent): void {
     this.activeMenuRow.set(row);
     const popover = document.getElementById('shared-row-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {
@@ -326,7 +324,7 @@ export class ResultsGridComponent {
   }
 
   /** Records which column's filter panel is currently active. */
-  openColumnFilter(column: string, event: MouseEvent): void {
+  openColumnFilter(column: string, _event: MouseEvent): void {
     this.activeFilterColumn.set(column);
     const popover = document.getElementById('shared-filter-menu') as any;
     if (popover && typeof popover.showPopover === 'function') {

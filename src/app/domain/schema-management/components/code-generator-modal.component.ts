@@ -88,7 +88,7 @@ export class CodeGeneratorModalComponent implements OnInit {
       if (this.exportMode() === 'BOTH') {
         // Pre-generate and cache/verify both outputs before enabling downloads!
         const staticCode = this.codeGenService.generateStatic(this.activeTab(), config, metadata);
-        const dynamicCode = this.codeGenService.generateDynamic(this.activeTab(), config, metadata);
+        this.codeGenService.generateDynamic(this.activeTab(), config, metadata);
 
         code = `/* BOTH MODES SELECTED (ZIP BUNDLE) */\n\n`;
         code += `/* You have selected to export both the Static Data Manifest and the Dynamic Algorithmic Generator. */\n`;

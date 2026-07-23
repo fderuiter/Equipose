@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { SchemaViewStateService } from '../services/schema-view-state.service';
-import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { AppTooltipDirective } from '../../../core/directives/tooltip.directive';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 

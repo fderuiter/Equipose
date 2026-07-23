@@ -3,7 +3,7 @@ import { RandomizationResult } from '../../core/models/randomization.model';
 import { MethodologySpecificationService } from './methodology-specification.service';
 import { DateUtil } from '../../../core/utils/date.util';
 import { APP_VERSION } from '../../../../environments/version';
-import { ThemeService, ArmColorTokens } from '../../../core/services/theme.service';
+import { ThemeService } from '../../../core/services/theme.service';
 import { OpenXmlWriter } from '../../../core/utils/openxml.util';
 import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 import jsPDF from 'jspdf';

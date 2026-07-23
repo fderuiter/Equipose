@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { generateRandomizationSchema } from '../src/app/domain/randomization-engine/core/randomization-algorithm.ts';
-import { RandomizationConfig } from '../src/app/core/models/randomization.model.ts';
+import { RandomizationConfig } from '../src/app/domain/core/models/randomization.model.ts';
 
 const CONFIGS: Record<string, RandomizationConfig> = {
   standard_block: {

@@ -1,5 +1,4 @@
 import { execFile } from 'child_process';
-import { join } from 'path';
 import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
