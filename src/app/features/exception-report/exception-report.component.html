@@ -1,0 +1,227 @@
+
+<div class="bg-base py-16 sm:py-20 exception-report-container">
+  <div class="mx-auto max-w-4xl px-6 lg:px-8">
+    <h1>SAS &amp; Stata Cross-Environment Exception Report</h1>
+<p><strong>Document ID:</strong> EQUIPOSE-EXCEPT-001<br><strong>Version:</strong> 1.0<br><strong>Date:</strong> 2025-05-08<br><strong>Status:</strong> Approved<br><strong>Classification:</strong> Regulatory Validation Artefact</p>
+<hr>
+<h2>1. Executive Summary</h2>
+<p>Equipose generates validated SAS (<code>.sas</code>) and Stata (<code>.do</code>) randomization scripts
+as part of its 21 CFR Part 11–compliant export artefact set. Full mathematical
+result equivalence verification for these languages in CI/CD pipelines is not
+feasible without access to licensed SAS software and a licensed Stata installation.</p>
+<p>This document records the formal <strong>Exception</strong> granted for SAS and Stata
+cross-environment mathematical validation, defines the compensating controls
+that maintain regulatory compliance, and specifies the conditions under which
+this exception may be re-evaluated.</p>
+<hr>
+<h2>2. Scope</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>In Scope</th>
+<th>Out of Scope</th>
+<th>CI Job</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SAS syntax correctness (static analysis)</td>
+<td>✅</td>
+<td></td>
+<td><code>sas_static_validation</code></td>
+</tr>
+<tr>
+<td>Stata syntax correctness (static analysis)</td>
+<td>✅</td>
+<td></td>
+<td>unit tests</td>
+</tr>
+<tr>
+<td>Mathematical result equivalence — SAS</td>
+<td></td>
+<td>✅ (exception granted)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Mathematical result equivalence — Stata</td>
+<td></td>
+<td>✅ (exception granted)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>R mathematical result equivalence</td>
+<td>✅</td>
+<td></td>
+<td><code>cross_env_equivalence</code></td>
+</tr>
+<tr>
+<td>Python mathematical result equivalence</td>
+<td>✅</td>
+<td></td>
+<td><code>cross_env_equivalence</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Justification for Exception</h2>
+<h3>3.1 SAS</h3>
+<p>SAS Institute software requires a paid commercial licence. Installation of a
+licensed SAS runtime in GitHub Actions (or any CI environment) is not permitted
+under SAS licensing terms without a specific CI/CD licence agreement. Therefore,
+automated execution and assertion of SAS program output is not possible in the
+public CI pipeline.</p>
+<h3>3.2 Stata</h3>
+<p>StataCorp Stata requires a paid commercial licence. Providing Stata executables
+in CI violates StataCorp&#39;s redistribution policy. Automated execution is
+therefore not feasible in the public repository&#39;s CI environment.</p>
+<hr>
+<h2>4. Compensating Controls</h2>
+<p>The following controls ensure that the SAS and Stata outputs are trustworthy
+despite the absence of automated execution validation:</p>
+<h3>4.1 Static Syntax Validation (CI — Automated)</h3>
+<p>The <code>ci.yml</code> pipeline includes two layers of automated static validation:</p>
+<p><strong>Layer 1 — Security scan (<code>security_scan</code> job):</strong>
+Checks for usage of <code>Math.random()</code> in the randomization engine.</p>
+<p><strong>Layer 2 — SAS static syntax validator (<code>sas_static_validation</code> job):</strong>
+The script <code>scripts/validate-sas-syntax.mjs</code> runs against every <code>.sas</code> file
+exported by the <code>code_generation_fixtures</code> job and verifies:</p>
+<ul>
+<li>All five required header comment fields are present (<code>Randomization Schema Generation in SAS</code>, <code>Protocol:</code>, <code>App Version:</code>, <code>Generated At:</code>,
+<code>PRNG Algorithm:</code>)</li>
+<li>The <code>Generated At:</code> value is a valid ISO 8601 timestamp</li>
+<li>A <code>%let seed = &lt;number&gt;;</code> statement is present</li>
+<li>Every <code>/*</code> block comment has a matching <code>*/</code> (no unclosed comments)</li>
+<li>Every <code>data &lt;name&gt;;</code> step is closed by <code>run;</code></li>
+<li>Every <code>proc &lt;name&gt;</code> step is closed by <code>run;</code> or <code>quit;</code></li>
+<li>Every <code>%macro</code> definition is closed by a matching <code>%mend</code></li>
+</ul>
+<p>See <code>docs/explanation/adr/0001-sas-static-validation-strategy.md</code> for the full decision
+record explaining the choice of approach.</p>
+<p><strong>Layer 3 — Unit tests (<code>CodeGeneratorService</code>):</strong>
+The generated SAS and Stata code is produced by the <code>CodeGeneratorService</code>,
+which is covered by <strong>unit tests</strong> that verify:</p>
+<ul>
+<li>Correct PRNG seed embedding (<code>%let seed = &lt;N&gt;;</code> / <code>set seed &lt;N&gt;</code>)</li>
+<li>Correct protocol ID embedding</li>
+<li>Correct ISO 8601 timestamp embedding</li>
+<li>Correct version string embedding</li>
+</ul>
+<p>These unit tests are tagged <code>[REQ-21CFR11-001]</code> through <code>[REQ-21CFR11-004]</code> in
+the Validation Traceability Matrix (see <code>Validation_Traceability_Matrix.md</code>).</p>
+<h3>4.2 Algorithm Parity via Shared Fixture</h3>
+<p>The underlying randomization algorithm (<code>randomization-algorithm.ts</code>) is
+language-agnostic. Cross-environment equivalence is validated in CI for R and
+Python against a shared fixture (<code>scripts/cross-env/</code>). Because SAS and Stata
+use the same deterministic Fisher-Yates/seedrandom output as their input data,
+the generated SAS/Stata <strong>code</strong> and the underlying <strong>schema</strong> are equivalent
+by construction.</p>
+<p><strong>Important Notice:</strong> The static validation and script generation feature set does
+not provide bit-for-bit PRNG sequence parity between the web UI (which uses MT19937)
+and the SAS/Stata implementations (which use Mersenne Twister). The statistical
+allocation properties and structural rules are identical, but bit-for-bit parity
+with the UI is not expected.</p>
+<h3>4.3 Manual Validation Procedure (Periodic)</h3>
+<p>The SAS and Stata scripts generated by Equipose <strong>must</strong> be independently
+executed and validated by the end-user organisation&#39;s biostatistics team before
+use in a regulated clinical trial. The following manual validation steps are
+recommended:</p>
+<ol>
+<li>Generate a reference schema in Equipose using a known seed and configuration.</li>
+<li>Export the SAS and Stata scripts.</li>
+<li>Execute the scripts in the target licensed SAS/Stata environment.</li>
+<li>Compare the output randomization list against the reference schema
+(Subject ID ↔ Treatment Arm) row-by-row.</li>
+<li>Document the comparison result in a Validation Execution Record (VER).</li>
+</ol>
+<h3>4.4 Audit Trail Artefacts</h3>
+<p>Every generated SAS/Stata script embeds:</p>
+<ul>
+<li>Application version (<code>APP_VERSION</code>)</li>
+<li>ISO 8601 generation timestamp</li>
+<li>Protocol identifier</li>
+<li>PRNG seed</li>
+</ul>
+<p>These fields are verified by the E2E audit-trail tests (<code>tests_e2e/audit-trail.spec.ts</code>),
+tagged <code>[REQ-21CFR11-001]</code> through <code>[REQ-21CFR11-004]</code>.</p>
+<h3>4.5 Configuration Constants</h3>
+<ul>
+<li><strong>Validation Vector:</strong> <code>[&#39;B&#39;, &#39;B&#39;, &#39;A&#39;, &#39;A&#39;, &#39;A&#39;, &#39;B&#39;, &#39;B&#39;, &#39;A&#39;]</code></li>
+<li><strong>Precision Parity:</strong> <code>1000000000000</code></li>
+</ul>
+<hr>
+<h2>5. Risk Assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Residual Risk with Controls</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SAS script produces incorrect allocations due to code generation bug</td>
+<td>Low</td>
+<td>High</td>
+<td><strong>Low</strong> — unit tests validate code generation logic</td>
+</tr>
+<tr>
+<td>Stata script produces incorrect allocations due to code generation bug</td>
+<td>Low</td>
+<td>High</td>
+<td><strong>Low</strong> — unit tests validate code generation logic</td>
+</tr>
+<tr>
+<td>End-user executes unvalidated SAS/Stata script without manual check</td>
+<td>Medium</td>
+<td>High</td>
+<td><strong>Medium</strong> — mitigated by documentation and disclaimer</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Exception Expiry Conditions</h2>
+<p>This exception will be re-evaluated if any of the following occur:</p>
+<ul>
+<li>SAS Institute releases a freely distributable, CI-compatible SAS runtime.</li>
+<li>A commercial SAS/Stata CI runner becomes available and is adopted by this project.</li>
+<li>A community-maintained open-source SAS or Stata interpreter achieves sufficient
+mathematical equivalence to the commercial versions for validated use.</li>
+</ul>
+<hr>
+<h2>7. Approval</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Signature</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Validation Author</td>
+<td>Equipose Maintainer</td>
+<td><em>on file</em></td>
+<td>2025-05-08</td>
+</tr>
+<tr>
+<td>QA Reviewer</td>
+<td><em>pending</em></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. References</h2>
+<ul>
+<li>21 CFR Part 11 – Electronic Records; Electronic Signatures (FDA, 2003)</li>
+<li>ICH E9 – Statistical Principles for Clinical Trials (1998)</li>
+<li>ICH E6(R2) – Good Clinical Practice (2016)</li>
+<li>GAMP 5 – Risk-Based Approach to Compliant GxP Computerised Systems (ISPE, 2008)</li>
+<li>Equipose <code>docs/reference/ARCHITECTURE_REFERENCE.md</code> §12 – Code Generation Service</li>
+<li>Equipose <code>docs/explanation/adr/0001-sas-static-validation-strategy.md</code> – SAS Validation Strategy ADR</li>
+<li>Equipose <code>scripts/validate-sas-syntax.mjs</code> – Static SAS Syntax Validator</li>
+<li>Equipose <code>Validation_Traceability_Matrix.md</code> – Requirements Traceability Matrix</li>
+</ul>
+
+  </div>
+</div>
