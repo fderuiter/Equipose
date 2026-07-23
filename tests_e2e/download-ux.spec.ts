@@ -14,7 +14,7 @@ test.describe('Download UX Smoke Tests', () => {
     await expect(resultsSection).toBeVisible();
 
     // 2. Assert CSV button is visible and enabled
-    const csvButton = resultsSection.getByRole('button', { name: /CSV/i });
+    const csvButton = resultsSection.getByRole('button', { name: 'Export as CSV', exact: true });
     await expect(csvButton).toBeVisible();
     await expect(csvButton).toBeEnabled();
 

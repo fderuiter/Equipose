@@ -445,7 +445,7 @@ test.describe('21 CFR Part 11 – Audit Trail: results grid metadata stamping', 
     await generateSchemaFromPreset(page, 'Standard');
 
     const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-    const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
+    const csvButton = page.locator('#results-section').getByRole('button', { name: 'Export as CSV', exact: true });
     await csvButton.dispatchEvent('click');
     const download = await downloadPromise;
 
