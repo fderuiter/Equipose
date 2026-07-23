@@ -18,7 +18,7 @@ import { DateUtil } from './core/utils/date.util';
   template: `
     <!-- Skip to main content (accessibility) -->
     <a href="#main-content"
-       class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-indigo-700 focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+       class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-indigo-700 focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset">
       Skip to main content
     </a>
 
@@ -57,7 +57,7 @@ import { DateUtil } from './core/utils/date.util';
               <button
                 type="button"
                 (click)="toggleThemeMenu($event)"
-                class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-indigo-100 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+                class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-indigo-100 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset"
                 aria-label="Toggle colour theme"
                 appTooltip="Toggle colour theme"
                 [attr.aria-expanded]="themeMenuOpen()"
@@ -115,7 +115,7 @@ import { DateUtil } from './core/utils/date.util';
             <button
               type="button"
               (click)="toggleThemeMenu($event)"
-              class="flex items-center rounded-lg p-2 text-indigo-100 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+              class="flex items-center rounded-lg p-2 text-indigo-100 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset"
               aria-label="Toggle colour theme"
               appTooltip="Toggle colour theme"
               [attr.aria-expanded]="themeMenuOpen()"
@@ -141,7 +141,7 @@ import { DateUtil } from './core/utils/date.util';
             <button
               type="button"
               (click)="mobileMenuOpen.set(!mobileMenuOpen())"
-              class="flex items-center rounded-lg p-2 text-indigo-100 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-white/30"
+              class="flex items-center rounded-lg p-2 text-indigo-100 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset"
               [attr.aria-expanded]="mobileMenuOpen()"
               aria-controls="mobile-menu"
               aria-label="Toggle navigation menu"

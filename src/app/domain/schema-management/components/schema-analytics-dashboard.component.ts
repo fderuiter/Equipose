@@ -111,7 +111,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                       [id]="'legend-item-' + chart.id + '-' + idx"
                       (click)="chart.clickHandler({ name: category.name })"
                       (keydown)="handleKeydown($event, chart, category, idx)"
-                      class="flex items-center gap-1.5 px-2 py-1 text-sm rounded-md border cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                      class="flex items-center gap-1.5 px-2 py-1 text-sm rounded-md border cursor-pointer focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset transition-colors"
                       [class]="viewState.activeFilter()?.variableId === chart.id && viewState.activeFilter()?.value === category.name
                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium'
                         : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'"
