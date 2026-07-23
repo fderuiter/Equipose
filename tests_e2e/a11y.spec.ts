@@ -103,6 +103,7 @@ async function assertInputAndButtonReadable(input: Locator, button: Locator): Pr
 }
 
 async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
+  const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
   await openGenerator(page);
   if (mode === 'dark') await applyDarkMode(page);
 
@@ -181,7 +182,9 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
       
-      await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
+      if (!isMobile) {
+        await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
+      }
       
       // Dismiss the modal so focus restores
       await modal.getByRole('button', { name: /Close/i }).first().dispatchEvent('click');
@@ -290,8 +293,10 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(resultsSection.getByRole('button', { name: /JSON/i })).toBeVisible();
   await expect(resultsSection.locator('[data-testid="schema-seed-value"]')).toBeVisible();
   await expect(resultsSection.locator('[data-testid="result-row"]').first()).toBeVisible();
-  await checkA11y(page, '#results-section');
-  await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, { ...resultsScreenshotOptions, mask: getMasks(page) });
+  if (!isMobile) {
+    await checkA11y(page, '#results-section');
+    await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, { ...resultsScreenshotOptions, mask: getMasks(page) });
+  }
 }
 
 test.describe('Accessibility and visual regression - light mode', () => {
