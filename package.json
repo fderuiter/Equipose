@@ -7,7 +7,7 @@
     "start": "ng serve",
     "start:pwa": "ng serve --configuration pwa",
     "dev": "ng serve --port=3000",
-    "build": "ng build && node scripts/generate-manifest.js",
+    "build": "ng build && node scripts/generate-manifest.js && node scripts/generate-sitemap.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:unit": "vitest run --exclude 'tests_e2e/**'",
