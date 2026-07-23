@@ -97,7 +97,7 @@ test.describe('Results Grid Operations', () => {
   // ---------------------------------------------------------------------------
   test('should trigger a CSV download when the CSV button is clicked', async ({ page }) => {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
-    const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
+    const csvButton = page.locator('#results-section').getByRole('button', { name: 'Export as CSV', exact: true });
     // Use evaluate to bypass any CSS pointer-events: none
     await csvButton.evaluate((node: HTMLElement) => node.click());
     const download = await downloadPromise;
@@ -106,7 +106,7 @@ test.describe('Results Grid Operations', () => {
 
   test('CSV filename should contain "blinded" when the schema is blinded', async ({ page }) => {
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
-    const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
+    const csvButton = page.locator('#results-section').getByRole('button', { name: 'Export as CSV', exact: true });
     await csvButton.evaluate((node: HTMLElement) => node.click());
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toContain('blinded');

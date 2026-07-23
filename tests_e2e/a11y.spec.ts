@@ -211,16 +211,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await expect(toast).toBeVisible();
   await checkA11y(page, 'div[role="alert"]');
   await page.waitForTimeout(500);
-  const box = await toast.boundingBox();
-  if (box) {
-    await expect(page).toHaveScreenshot(`toast-state-${mode}.png`, {
-      ...screenshotOptions,
-      clip: box,
-      mask: getMasks(page)
-    });
-  } else {
-    await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, elementScreenshotOptions);
-  }
+  await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, elementScreenshotOptions);
 }
 
 async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
@@ -300,10 +291,10 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   if (mode === 'dark') await applyDarkMode(page);
   const resultsSection = page.locator('#results-section');
   await expect(resultsSection).toBeVisible();
-  await expect(resultsSection.getByRole('button', { name: /CSV/i })).toBeVisible();
-  await expect(resultsSection.getByRole('button', { name: /Excel/i })).toBeVisible();
+  await expect(resultsSection.getByRole('button', { name: 'Export as CSV', exact: true })).toBeVisible();
+  await expect(resultsSection.getByRole('button', { name: 'Export as Excel', exact: true })).toBeVisible();
   await expect(resultsSection.getByRole('button', { name: 'Export as PDF', exact: true })).toBeVisible();
-  await expect(resultsSection.getByRole('button', { name: /JSON/i })).toBeVisible();
+  await expect(resultsSection.getByRole('button', { name: /^(Export JSON|JSON export)/i })).toBeVisible();
   await expect(resultsSection.locator('[data-testid="schema-seed-value"]')).toBeVisible();
   await expect(resultsSection.locator('[data-testid="result-row"]').first()).toBeVisible();
   if (!isMobile) {
