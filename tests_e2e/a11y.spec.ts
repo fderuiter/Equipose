@@ -345,4 +345,81 @@ test.describe('Accessibility and visual regression - high contrast mode', () => 
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'high-contrast');
   });
+
+  test('focused inputs, select menus, textareas, and buttons display solid outline under forced-colors', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    await page.goto('http://127.0.0.1:4200');
+    await assertLandingVisible(page);
+
+    // Let's load the generator page where inputs, selects, and buttons are readily available
+    await openGenerator(page);
+    await loadPreset(page, 'Simple');
+
+    // 1. Assert on active focused Input
+    const inputLoc = page.locator('#protocolId');
+    await inputLoc.focus();
+    const inputStyle = await inputLoc.evaluate((el) => {
+      const computed = window.getComputedStyle(el as HTMLElement);
+      return {
+        outlineWidth: computed.outlineWidth,
+        outlineStyle: computed.outlineStyle,
+        outlineColor: computed.outlineColor
+      };
+    });
+    expect(parseFloat(inputStyle.outlineWidth)).toBeGreaterThan(0);
+    expect(inputStyle.outlineStyle).not.toBe('none');
+    expect(inputStyle.outlineStyle).not.toBe('hidden');
+    expect(inputStyle.outlineColor).toBeTruthy();
+
+    // 2. Assert on active focused Select
+    const selectLoc = page.locator('#phase');
+    await selectLoc.focus();
+    const selectStyle = await selectLoc.evaluate((el) => {
+      const computed = window.getComputedStyle(el as HTMLElement);
+      return {
+        outlineWidth: computed.outlineWidth,
+        outlineStyle: computed.outlineStyle,
+        outlineColor: computed.outlineColor
+      };
+    });
+    expect(parseFloat(selectStyle.outlineWidth)).toBeGreaterThan(0);
+    expect(selectStyle.outlineStyle).not.toBe('none');
+    expect(selectStyle.outlineStyle).not.toBe('hidden');
+    expect(selectStyle.outlineColor).toBeTruthy();
+
+    // 3. Assert on active focused Button
+    const buttonLoc = page.getByRole('button', { name: /^Next$/i }).first();
+    await buttonLoc.focus();
+    const buttonStyle = await buttonLoc.evaluate((el) => {
+      const computed = window.getComputedStyle(el as HTMLElement);
+      return {
+        outlineWidth: computed.outlineWidth,
+        outlineStyle: computed.outlineStyle,
+        outlineColor: computed.outlineColor
+      };
+    });
+    expect(parseFloat(buttonStyle.outlineWidth)).toBeGreaterThan(0);
+    expect(buttonStyle.outlineStyle).not.toBe('none');
+    expect(buttonStyle.outlineStyle).not.toBe('hidden');
+    expect(buttonStyle.outlineColor).toBeTruthy();
+
+    // 4. Assert on active focused Textarea
+    const textareaStyle = await page.evaluate(() => {
+      const el = document.createElement('textarea');
+      document.body.appendChild(el);
+      el.focus();
+      const computed = window.getComputedStyle(el);
+      const res = {
+        outlineWidth: computed.outlineWidth,
+        outlineStyle: computed.outlineStyle,
+        outlineColor: computed.outlineColor
+      };
+      document.body.removeChild(el);
+      return res;
+    });
+    expect(parseFloat(textareaStyle.outlineWidth)).toBeGreaterThan(0);
+    expect(textareaStyle.outlineStyle).not.toBe('none');
+    expect(textareaStyle.outlineStyle).not.toBe('hidden');
+    expect(textareaStyle.outlineColor).toBeTruthy();
+  });
 });

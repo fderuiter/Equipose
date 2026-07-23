@@ -155,4 +155,22 @@
   [data-testid="mc-chart"] .bg-purple-500 {
     background-color: CanvasText !important;
   }
+
+  /* Restore standard focus outline on interactive elements */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):focus-visible,
+  select:focus,
+  select:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  button:focus,
+  button:focus-visible,
+  [type='button']:focus,
+  [type='button']:focus-visible,
+  [type='submit']:focus,
+  [type='submit']:focus-visible,
+  [type='reset']:focus,
+  [type='reset']:focus-visible {
+    outline: 2px solid CanvasText !important;
+  }
 }
