@@ -22,7 +22,7 @@ module.exports = defineConfig([
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
         }
       ],
       '@typescript-eslint/no-empty-function': 'off',
@@ -33,7 +33,7 @@ module.exports = defineConfig([
       '@angular-eslint/no-input-rename': 'off',
       '@angular-eslint/use-lifecycle-interface': 'off',
       '@angular-eslint/prefer-inject': 'off',
-      'no-useless-assignment': 'off',
+      'no-useless-assignment': 'error',
       '@angular-eslint/directive-selector': 'off',
       'prefer-const': 'off',
       '@typescript-eslint/no-this-alias': 'off',

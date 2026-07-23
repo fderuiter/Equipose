@@ -29,7 +29,7 @@ export class ZipWriter {
         } else {
           f.compressedData = f.data;
         }
-      } catch (_e) {
+      } catch {
         f.compressedData = f.data;
       }
     }
@@ -110,7 +110,7 @@ export class ZipWriter {
     view.setUint16(offset, this.files.length, true); offset += 2;
     view.setUint32(offset, centralDirSize, true); offset += 4;
     view.setUint32(offset, centralDirStart, true); offset += 4;
-    view.setUint16(offset, 0, true); offset += 2;
+    view.setUint16(offset, 0, true);
     
     return out;
   }

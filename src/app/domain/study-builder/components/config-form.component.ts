@@ -260,11 +260,10 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     });
     
     effect(() => {
-      if (this.form.value) {
-        untracked(() => {
-          this.facade.clearResults();
-        });
-      }
+      if (this.form.value) {}
+      untracked(() => {
+        this.facade.clearResults();
+      });
     });
     
     this.lastCapsValueStr = JSON.stringify(this.form.get('capsGroup.stratumCaps')?.value);
@@ -344,11 +343,10 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
     effect(() => {
       // Track whole form value changes
-      if (this.form.value) {
-        untracked(() => {
-          this.triggerAutoSave();
-        });
-      }
+      if (this.form.value) {}
+      untracked(() => {
+        this.triggerAutoSave();
+      });
     });
   }
 

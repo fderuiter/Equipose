@@ -135,7 +135,7 @@ export class CodeTranspiler {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
       const n = schema.length;
       colNames.forEach(col => {
-        let vals: string[] = [];
+        let vals: string[];
         const isNum = (col === "BlockNumber" || col === "BlockSize");
         if (col === "SubjectID") {
           vals = schema.map(row => `"${FormattingUtil.escapeSasString(row.subjectId)}"`);
@@ -202,7 +202,7 @@ export class CodeTranspiler {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
       schemaRows += `schema = {\n`;
       colNames.forEach(col => {
-        let vals: string[] = [];
+        let vals: string[];
         if (col === "SubjectID") {
           vals = schema.map(row => `"${FormattingUtil.escapeString(row.subjectId)}"`);
         } else if (col === "Site") {
@@ -225,7 +225,7 @@ export class CodeTranspiler {
       const colNames = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode", ...(config.strata || []).map(s => s.id)];
       schemaRows += `schema_list[[1]] <- data.frame(\n`;
       colNames.forEach(col => {
-        let vals: string[] = [];
+        let vals: string[];
         if (col === "SubjectID") {
           vals = schema.map(row => `"${FormattingUtil.escapeString(row.subjectId)}"`);
         } else if (col === "Site") {

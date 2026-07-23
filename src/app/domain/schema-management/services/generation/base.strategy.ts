@@ -113,7 +113,7 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
       this.configObject.customizeDataSetup(data, resolvedConfig, ir, method, schema);
     }
 
-    let algorithmicLogic = '';
+    let algorithmicLogic: string;
     if (mode === 'STATIC') {
       algorithmicLogic = CodeTranspiler.formatStaticSchema(this.language, resolvedConfig, schema);
     } else {

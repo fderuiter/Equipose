@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/app/core/forms/signal-form-directives.ts",
+    "src/app/domain/randomization-engine/core/randomization-algorithm.ts",
+    "src/app/domain/schema-management/services/generation/formatting.util.ts"
+  ],
+  "ignoreDependencies": [
+    "@semantic-release/*",
+    "jscpd",
+    "markdown-link-check",
+    "@angular-eslint/builder",
+    "@types/pdf-parse"
+  ],
+  "exclude": ["types"]
+}
