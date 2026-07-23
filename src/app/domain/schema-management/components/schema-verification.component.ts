@@ -41,7 +41,7 @@ export type VerificationStatus = 'idle' | 'pass' | 'fail' | 'error';
             <path stroke-linecap="round" stroke-linejoin="round"
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 class="text-lg font-semibold text-main">Verify RTSM Schema Reproducibility</h2>
+          <h1 class="text-lg font-semibold text-main">Verify RTSM Schema Reproducibility</h1>
         </div>
         <p class="text-muted text-sm leading-relaxed">
           Upload a previously exported Randomization Result JSON file. Use the
@@ -209,7 +209,7 @@ export class SchemaVerificationComponent {
 
   constructor() {
     inject(SeoService).setPage({
-      title: 'Verify RTSM Schema Reproducibility | Equipose',
+      title: 'Verify RTSM Schema Reproducibility',
       description: 'Upload a previously exported Equipose JSON schema to verify its reproducibility. The tool re-runs the algorithm and performs a strict row-by-row comparison.',
       canonicalPath: '/verify',
     });
