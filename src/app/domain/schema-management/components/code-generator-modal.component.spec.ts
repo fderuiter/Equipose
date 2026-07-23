@@ -159,13 +159,16 @@ describe('CodeGeneratorModalComponent (domain)', () => {
 
     const verifyDownloadFilename = async (language: 'R' | 'SAS' | 'Python' | 'STATA', expectedFilename: string) => {
       const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
 
       await component.setActiveTab(language);
       component.downloadCode();
 
       const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchorEl.getAttribute('download')).toBe(expectedFilename);
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
     };
 
     it('should use randomization_schema.R as the filename for R code', async () => {
@@ -185,13 +188,16 @@ describe('CodeGeneratorModalComponent (domain)', () => {
     });
 
     it('should call URL.createObjectURL with a Blob', async () => {
-      vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
+      const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
 
       await component.setActiveTab('R');
       component.downloadCode();
 
       expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
     });
   });
 
@@ -345,8 +351,9 @@ describe('CodeGeneratorModalComponent (domain)', () => {
     });
 
     it('should offensively normalize to STATIC in downloadCode() when set to a non-static mode', async () => {
+      vi.useFakeTimers();
       const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
       globalThis.URL.createObjectURL = vi.fn(() => "mock://url") as unknown as (obj: Blob | MediaSource) => string;
       globalThis.URL.revokeObjectURL = vi.fn() as unknown as (url: string) => void;
 
@@ -360,7 +367,12 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchorEl.getAttribute('download')).toBe('randomization_schema.R');
 
+      // Flush any pending macro tasks (the 100ms setTimeout)
+      vi.advanceTimersByTime(100);
+
       appendSpy.mockRestore();
+      removeSpy.mockRestore();
+      vi.useRealTimers();
     });
   });
 });

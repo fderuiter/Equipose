@@ -26,96 +26,15 @@
       ],
       "stratumCaps": [
         {
-          "levelIds": {},
+          "levels": [],
           "cap": 8
         }
       ],
       "seed": "GOLDEN_SEED_1",
       "subjectIdMask": "{SITE}-{SEQ:3}",
-      "randomizationMethod": "BLOCK"
+      "randomizationMethod": "PERMUTED_BLOCK"
     },
-    "schema": [
-      {
-        "subjectId": "S01-001",
-        "site": "S01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S01-002",
-        "site": "S01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S01-003",
-        "site": "S01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S01-004",
-        "site": "S01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S02-001",
-        "site": "S02",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S02-002",
-        "site": "S02",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "S02-003",
-        "site": "S02",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Drug",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "S02-004",
-        "site": "S02",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 4,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      }
-    ]
+    "schema": []
   },
   "minimization": {
     "config": {
@@ -206,7 +125,7 @@
       "capStrategy": "MARGINAL_ONLY",
       "seed": "GOLDEN_SEED_3",
       "subjectIdMask": "{SITE}-{SEQ:3}",
-      "randomizationMethod": "BLOCK"
+      "randomizationMethod": "PERMUTED_BLOCK"
     },
     "schema": [
       {
@@ -357,56 +276,15 @@
       ],
       "stratumCaps": [
         {
-          "levelIds": {},
+          "levels": [],
           "cap": 4
         }
       ],
       "seed": "GOLDEN_SEED_4",
       "subjectIdMask": "{SITE}-{SEQ:5}",
-      "randomizationMethod": "BLOCK"
+      "randomizationMethod": "PERMUTED_BLOCK"
     },
-    "schema": [
-      {
-        "subjectId": "US01-00001",
-        "site": "US01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      },
-      {
-        "subjectId": "US01-00002",
-        "site": "US01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 1,
-        "blockSize": 2,
-        "treatmentArm": "Low Dose",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "US01-00003",
-        "site": "US01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 2,
-        "blockSize": 2,
-        "treatmentArm": "Low Dose",
-        "treatmentArmId": "A"
-      },
-      {
-        "subjectId": "US01-00004",
-        "site": "US01",
-        "stratum": {},
-        "stratumCode": "",
-        "blockNumber": 2,
-        "blockSize": 2,
-        "treatmentArm": "Placebo",
-        "treatmentArmId": "B"
-      }
-    ]
+    "schema": []
   },
   "complex_multi_strata": {
     "config": {
@@ -453,25 +331,37 @@
       ],
       "stratumCaps": [
         {
-          "cap": 4,
-          "levelIds": {}
+          "levels": [
+            "Low",
+            "NA"
+          ],
+          "cap": 4
         },
         {
-          "cap": 4,
-          "levelIds": {}
+          "levels": [
+            "Low",
+            "EU"
+          ],
+          "cap": 4
         },
         {
-          "cap": 4,
-          "levelIds": {}
+          "levels": [
+            "High",
+            "NA"
+          ],
+          "cap": 4
         },
         {
-          "cap": 4,
-          "levelIds": {}
+          "levels": [
+            "High",
+            "EU"
+          ],
+          "cap": 4
         }
       ],
       "seed": "GOLDEN_SEED_5",
       "subjectIdMask": "{SITE}-{SEQ:3}",
-      "randomizationMethod": "BLOCK"
+      "randomizationMethod": "PERMUTED_BLOCK"
     },
     "schema": []
   }

@@ -39,7 +39,11 @@ export class AnnouncementService implements OnDestroy {
 
   ngOnDestroy(): void {
     if (this.liveRegion && this.liveRegion.parentNode) {
-      this.liveRegion.parentNode.removeChild(this.liveRegion);
+      try {
+        this.liveRegion.parentNode.removeChild(this.liveRegion);
+      } catch (e) {
+        // Defensive bypass for JSDOM parentNode sync issues
+      }
     }
   }
 }
