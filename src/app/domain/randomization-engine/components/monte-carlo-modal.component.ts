@@ -114,8 +114,8 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                 </div>
                 @if (results.attritionRate > 0) {
                   <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 text-center border border-purple-100 dark:border-purple-800/40">
-                    <p class="text-2xl font-bold text-purple-700 dark:text-purple-300" data-testid="retained-subjects-value">{{ results.totalRetainedSubjects | number }}</p>
-                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">Retained Subjects ({{ results.attritionRate }}% dropout)</p>
+                    <p class="text-2xl font-bold text-purple-800 dark:text-purple-200" data-testid="retained-subjects-value">{{ results.totalRetainedSubjects | number }}</p>
+                    <p class="text-xs text-purple-700 dark:text-purple-300 mt-1">Retained Subjects ({{ results.attritionRate }}% dropout)</p>
                   </div>
                 }
                 <div [class]="deviationCardClass(results.attritionRate)">
@@ -136,7 +136,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                       </div>
                       <!-- Expected bar -->
                       <div class="flex items-center gap-2">
-                        <span class="text-xs w-20 text-right text-disabled">Expected</span>
+                        <span class="text-xs w-20 text-right text-muted">Expected</span>
                         <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                           <div
                             class="bg-indigo-300 dark:bg-indigo-600/60 h-full rounded-full transition-all duration-500 border-r border-indigo-400 dark:border-indigo-400"
@@ -147,7 +147,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                       </div>
                       <!-- Actual bar -->
                       <div class="flex items-center gap-2">
-                        <span class="text-xs w-20 text-right text-disabled">Actual</span>
+                        <span class="text-xs w-20 text-right text-muted">Actual</span>
                         <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                           <div
                             class="bg-indigo-600 dark:bg-indigo-400 h-full rounded-full transition-all duration-500 border-r border-indigo-700 dark:border-indigo-200"
@@ -159,7 +159,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                       <!-- Post-attrition bar (only when attrition > 0) -->
                       @if (results.attritionRate > 0) {
                         <div class="flex items-center gap-2">
-                          <span class="text-xs w-20 text-right text-purple-500 dark:text-purple-400">Retained</span>
+                          <span class="text-xs w-20 text-right text-purple-700 dark:text-purple-300">Retained</span>
                           <div class="flex-1 bg-subtle rounded-full h-4 overflow-hidden border border-border-strong dark:border-slate-600">
                             <div
                               class="bg-purple-500 dark:bg-purple-400 h-full rounded-full transition-all duration-500 border-r border-purple-700 dark:border-purple-200"
@@ -167,7 +167,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                               data-testid="mc-retained-bar"
                             ></div>
                           </div>
-                          <span class="text-xs w-20 text-purple-600 dark:text-purple-300 tabular-nums">{{ arm.retainedCount | number }}</span>
+                          <span class="text-xs w-20 text-purple-700 dark:text-purple-200 tabular-nums">{{ arm.retainedCount | number }}</span>
                         </div>
                       }
                     </div>
@@ -186,7 +186,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                   @if (results.attritionRate > 0) {
                     <div class="flex items-center gap-1.5">
                       <div class="w-3 h-3 rounded-full bg-purple-500 dark:bg-purple-400"></div>
-                      <span class="text-xs text-purple-600 dark:text-purple-400">Post-Attrition (Retained)</span>
+                      <span class="text-xs text-purple-700 dark:text-purple-300">Post-Attrition (Retained)</span>
                     </div>
                   }
                 </div>
@@ -202,7 +202,7 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                   <th scope="col" class="px-4 py-2 text-right font-semibold text-gray-600 dark:text-slate-300">Expected</th>
                   <th scope="col" class="px-4 py-2 text-right font-semibold text-gray-600 dark:text-slate-300">Actual</th>
                   @if (results.attritionRate > 0) {
-                    <th scope="col" class="px-4 py-2 text-right font-semibold text-purple-600 dark:text-purple-400">Retained</th>
+                    <th scope="col" class="px-4 py-2 text-right font-semibold text-purple-700 dark:text-purple-300">Retained</th>
                   }
                   <th scope="col" class="px-4 py-2 text-right font-semibold text-gray-600 dark:text-slate-300">Deviation</th>
                 </tr>
@@ -210,12 +210,12 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
               <tbody class="divide-y divide-gray-100 dark:divide-slate-700/50 bg-surface">
                 @for (arm of results.arms; track arm.armId) {
                   <tr>
-                    <th scope="row" class="px-4 py-2 font-medium text-main text-left">{{ arm.armName }} <span class="text-disabled">({{ arm.armId }})</span></th>
+                    <th scope="row" class="px-4 py-2 font-medium text-main text-left">{{ arm.armName }} <span class="text-muted">({{ arm.armId }})</span></th>
                     <td class="px-4 py-2 text-right text-gray-600 dark:text-slate-300">{{ arm.ratio }}</td>
                     <td class="px-4 py-2 text-right tabular-nums text-gray-600 dark:text-slate-300">{{ arm.expectedCount | number }}</td>
                     <td class="px-4 py-2 text-right tabular-nums text-gray-600 dark:text-slate-300">{{ arm.actualCount | number }}</td>
                     @if (results.attritionRate > 0) {
-                      <td class="px-4 py-2 text-right tabular-nums text-purple-600 dark:text-purple-300">{{ arm.retainedCount | number }}</td>
+                      <td class="px-4 py-2 text-right tabular-nums text-purple-700 dark:text-purple-200">{{ arm.retainedCount | number }}</td>
                     }
                     <td class="px-4 py-2 text-right tabular-nums font-semibold" [class]="deviationClass(arm)">{{ deviation(arm) | number:'1.4-4' }}%</td>
                   </tr>

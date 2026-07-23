@@ -1,6 +1,6 @@
 import { test, expect, Locator, Page } from '@playwright/test';
 import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin, FocusAuditor } from './a11y';
-import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator } from './generator-helpers';
+import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator, goToReviewStep } from './generator-helpers';
 
 const fontSmoothingStyle = `
   * {
@@ -294,6 +294,94 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, { ...resultsScreenshotOptions, mask: getMasks(page) });
 }
 
+async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
+  const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
+  if (isMobile) {
+    return;
+  }
+
+  await openGenerator(page);
+  if (mode === 'dark') {
+    await applyDarkMode(page);
+  }
+
+  await loadPreset(page, 'Simple');
+  await goToReviewStep(page);
+
+  // 1. Capture standard completed state (attritionRate = 0)
+  const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
+  await mcBtn.focus();
+  await mcBtn.dispatchEvent('click');
+
+  const modal = page.locator('div[role="dialog"]').filter({ hasText: 'Statistical QA' });
+  await expect(modal).toBeVisible({ timeout: 5000 });
+
+  // Wait for background worker to finish simulation
+  await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
+  await expect(modal.getByTestId('mc-confidence-statement')).toBeVisible({ timeout: 30000 });
+
+  // A11y check for standard completed modal state
+  await checkA11y(page, 'div[role="dialog"]');
+
+  // Take screenshot of standard completed state
+  await expect(page).toHaveScreenshot(`monte-carlo-standard-${mode}.png`, {
+    ...screenshotOptions,
+    mask: getMasks(page),
+    timeout: 15000
+  });
+
+  // Close the modal
+  await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
+  await expect(modal).toBeHidden({ timeout: 5000 });
+
+  // 2. Capture high-attrition warning state
+  // Set up the monkey patch on Worker in the page context before running
+  await page.evaluate(() => {
+    const originalPostMessage = Worker.prototype.postMessage;
+    Worker.prototype.postMessage = function (message: any, transfer?: any) {
+      if (message && message.command === 'START_MONTE_CARLO') {
+        const originalOnMessage = this.onmessage;
+        this.onmessage = function (event: MessageEvent) {
+          if (event.data && event.data.type === 'MONTE_CARLO_SUCCESS') {
+            const payload = event.data.payload;
+            if (payload && payload.arms && payload.arms.length > 0) {
+              payload.attritionRate = 20; // Ensure attrition rate > 0
+              const firstArm = payload.arms[0];
+              firstArm.expectedRetainedCount = 10000;
+              firstArm.retainedCount = 10300; // 3% deviation! (> 2% threshold)
+            }
+          }
+          if (originalOnMessage) {
+            originalOnMessage.apply(this, [event]);
+          }
+        };
+      }
+      return originalPostMessage.apply(this, arguments as any);
+    };
+  });
+
+  await mcBtn.focus();
+  await mcBtn.dispatchEvent('click');
+
+  await expect(modal).toBeVisible({ timeout: 5000 });
+  await expect(modal.getByText(/Simulating trials/i)).toBeHidden({ timeout: 30000 });
+  await expect(modal.getByTestId('mc-attrition-warning')).toBeVisible({ timeout: 30000 });
+
+  // A11y check for warning modal state
+  await checkA11y(page, 'div[role="dialog"]');
+
+  // Take screenshot of warning completed state
+  await expect(page).toHaveScreenshot(`monte-carlo-warning-${mode}.png`, {
+    ...screenshotOptions,
+    mask: getMasks(page),
+    timeout: 15000
+  });
+
+  // Close the modal
+  await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
+  await expect(modal).toBeHidden({ timeout: 5000 });
+}
+
 test.describe('Accessibility and visual regression - light mode', () => {
   test.beforeEach(async ({ page }) => {
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
@@ -305,6 +393,10 @@ test.describe('Accessibility and visual regression - light mode', () => {
 
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'light');
+  });
+
+  test('Monte Carlo modal should pass accessibility and screenshot baselines', async ({ page }) => {
+    await runMonteCarloVisualChecks(page, 'light');
   });
 });
 
@@ -329,6 +421,10 @@ test.describe('Accessibility and visual regression - dark mode', () => {
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'dark');
   });
+
+  test('Monte Carlo modal should pass accessibility and screenshot baselines', async ({ page }) => {
+    await runMonteCarloVisualChecks(page, 'dark');
+  });
 });
 
 test.describe('Accessibility and visual regression - high contrast mode', () => {
@@ -344,5 +440,9 @@ test.describe('Accessibility and visual regression - high contrast mode', () => 
 
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'high-contrast');
+  });
+
+  test('Monte Carlo modal should pass accessibility and screenshot baselines', async ({ page }) => {
+    await runMonteCarloVisualChecks(page, 'high-contrast');
   });
 });
