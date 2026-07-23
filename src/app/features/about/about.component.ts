@@ -26,7 +26,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
               Changelog →
             </a>
           </div>
-          <h2 class="text-3xl font-bold tracking-tight text-main sm:text-4xl">About Equipose</h2>
+          <h1 class="text-3xl font-bold tracking-tight text-main sm:text-4xl">About Equipose</h1>
           <p class="mt-6 text-lg leading-8 text-muted">
             Equipose is a free, open-source tool designed to help biostatisticians, clinical trial managers, and contract
             research organisations (CROs) rapidly design, simulate, and export stratified block randomization schemas for
@@ -62,7 +62,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
 
         <!-- What is stratified block randomization -->
         <div class="mx-auto mt-20 max-w-2xl lg:mx-0">
-          <h3 class="text-2xl font-bold tracking-tight text-main">What is Stratified Block Randomization?</h3>
+          <h2 class="text-2xl font-bold tracking-tight text-main">What is Stratified Block Randomization?</h2>
           <p class="mt-4 text-base leading-7 text-muted">
             Stratified block randomization is a statistical method used in clinical trial design to ensure that treatment
             groups are balanced across key prognostic factors - such as clinical site, age group, disease severity, or
@@ -79,7 +79,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
 
         <!-- Who it is for -->
         <div class="mx-auto mt-16 max-w-2xl lg:mx-0">
-          <h3 class="text-2xl font-bold tracking-tight text-main">Who Is Equipose For?</h3>
+          <h2 class="text-2xl font-bold tracking-tight text-main">Who Is Equipose For?</h2>
           <ul class="mt-4 space-y-3 text-base leading-7 text-muted list-disc list-inside">
             <li><strong class="text-gray-800 dark:text-slate-300">Biostatisticians</strong> designing randomization schemas and drafting Statistical Analysis Plans (SAPs).</li>
             <li><strong class="text-gray-800 dark:text-slate-300">Clinical Trial Managers</strong> who need a quick, reproducible simulation of allocation sequences.</li>
@@ -90,7 +90,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
 
         <!-- Zero trust privacy -->
         <div class="mx-auto mt-16 max-w-2xl lg:mx-0">
-          <h3 class="text-2xl font-bold tracking-tight text-main">Zero-Trust Privacy</h3>
+          <h2 class="text-2xl font-bold tracking-tight text-main">Zero-Trust Privacy</h2>
           <p class="mt-4 text-base leading-7 text-muted">
             Equipose is built on a zero-trust architecture. Every computation - from randomization to code generation -
             runs entirely inside your browser using WebAssembly-class JavaScript. No protocol identifiers, study names,
@@ -101,7 +101,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
 
         <!-- Technology Stack -->
         <div class="mx-auto mt-16 max-w-2xl lg:mx-0">
-          <h3 class="text-2xl font-bold tracking-tight text-main">Technology Stack</h3>
+          <h2 class="text-2xl font-bold tracking-tight text-main">Technology Stack</h2>
           <p class="mt-4 text-base leading-7 text-muted">
             Equipose is built entirely with open-source, industry-standard tooling:
           </p>
@@ -117,7 +117,7 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
 
         <!-- Cite Equipose -->
         <div class="mx-auto mt-16 max-w-2xl lg:mx-0">
-          <h3 class="text-2xl font-bold tracking-tight text-main">Cite Equipose</h3>
+          <h2 class="text-2xl font-bold tracking-tight text-main">Cite Equipose</h2>
           <p class="mt-4 text-base leading-7 text-muted">
             If you use Equipose in your research or clinical trial documentation, please cite it as follows:
           </p>
@@ -152,7 +152,7 @@ export class AboutComponent {
 
   constructor() {
     inject(SeoService).setPage({
-      title: 'About Equipose — RTSM & IRT Randomization Design',
+      title: 'About Equipose',
       description: 'Learn about Equipose, the free open-source stratified block randomization tool for RTSM and IRT workflows. Built for biostatisticians, CROs, and clinical trial managers.',
       canonicalPath: '/about',
       keywords: 'RTSM, IRT, IWRS, Randomization, Clinical Trials, RTSM design utility, IRT randomization tool',

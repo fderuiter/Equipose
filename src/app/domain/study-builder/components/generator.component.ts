@@ -38,7 +38,7 @@ type ResultsTab = 'grid' | 'balance';
       <!-- Intro -->
       <div [class]="domainTheme.layout().cardClasses">
         <div class="flex items-start justify-between gap-4 mb-3">
-          <h2 class="text-lg font-semibold text-main" data-testid="generator-heading">Build Your RTSM Randomization Schema</h2>
+          <h1 class="text-lg font-semibold text-main" data-testid="generator-heading">Build Your RTSM Randomization Schema</h1>
           <a routerLink="/about"
              class="shrink-0 text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
              aria-label="Learn more about Equipose">
@@ -249,7 +249,7 @@ export class GeneratorComponent implements OnInit {
 
   constructor() {
     inject(SeoService).setPage({
-      title: 'Randomization Generator | Equipose',
+      title: 'Build Your RTSM Randomization Schema',
       description: 'Generate a statistically sound, reproducible RTSM stratified block randomization schema for your clinical trial. Export to R, Python, SAS, or Stata.',
       canonicalPath: '/generator',
     });
