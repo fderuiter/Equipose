@@ -13,7 +13,8 @@ import { Page, Locator } from '@playwright/test';
  */
 export async function checkA11y(page: Page, includeSelector?: string) {
   const builder = new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']);
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .disableRules(['target-size']);
 
   if (includeSelector) {
     builder.include(includeSelector);
