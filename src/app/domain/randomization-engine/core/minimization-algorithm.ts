@@ -1,6 +1,6 @@
 import { sampleLevel, selectWeightedArm } from "../../shared/statistical/weighted-sampling";
 import { RandomizationConfig, GeneratedSchema, TreatmentArm } from '../../core/models/randomization.model';
-import {  PRECISION_SCALE } from '../../../core/constants/precision.config';
+import { PRECISION_SCALE } from '../../../core/constants/precision.config';
 import { generateSubjectId } from './subject-id-engine';
 import { SubjectRegistry } from './subject-registry';
 

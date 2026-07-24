@@ -78,7 +78,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
 
     // Trigger CSV download
     const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
-    const csvButton = page.locator('#results-section').getByRole('button', { name: /CSV/i });
+    const csvButton = page.locator('#results-section').getByRole('button', { name: 'Export as CSV', exact: true });
     await csvButton.evaluate((node: HTMLElement) => node.click());
     await downloadPromise;
 
