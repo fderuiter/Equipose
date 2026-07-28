@@ -221,14 +221,27 @@ export class RandomizationEngineFacade {
       this.monteCarloError.set(null);
       this.announcementService.announce('Simulation stopped by user.', 'polite');
       
-      // Stop the worker somehow if possible. If not, just clear the callbacks.
       this.pendingMonteCarloCallbacks.clear();
-      // To truly stop it we might need to recreate the worker, but for state sync this is enough.
+      
+      // To truly stop the computation and free resources, we terminate and recreate the worker.
+      if (this.worker) {
+        try {
+          if (typeof this.worker.terminate === 'function') {
+            this.worker.terminate();
+          }
+        } catch (e) {
+          console.error('Error terminating worker during cancel:', e);
+        }
+        this.worker = null;
+        this.initWorker();
+      }
     }
   }
 
   closeMonteCarloModal(): void {
-
+    if (this.isMonteCarloRunning()) {
+      this.cancelMonteCarlo();
+    }
     this.monteCarloResults.set(null);
     this.monteCarloProgress.set(0);
     this.isMonteCarloRunning.set(false);
