@@ -22,11 +22,10 @@ import { DateUtil } from './core/utils/date.util';
       Skip to main content
     </a>
 
-    @if (updateService.updateAvailable()) {
-      <app-update-banner />
-    }
-    <div class="min-h-screen flex flex-col bg-base text-main font-sans transition-colors duration-200"
-         [class.pt-10]="updateService.updateAvailable()">
+    <div class="min-h-screen flex flex-col bg-base text-main font-sans transition-colors duration-200">
+      @if (updateService.updateAvailable()) {
+        <app-update-banner />
+      }
       <header class="bg-indigo-700 dark:bg-slate-800 text-white shadow-md dark:shadow-slate-900/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <!-- Brand -->

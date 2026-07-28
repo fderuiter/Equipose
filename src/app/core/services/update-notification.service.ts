@@ -10,24 +10,31 @@ import { Injectable, signal } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class UpdateNotificationService {
+  /** True when the update banner is forced via query param mock trigger. */
+  readonly isMockUpdate = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mock-update') === 'true';
+
   /** True when a new application version has been detected and is ready. */
   readonly updateAvailable = signal(false);
 
   private waitingWorker: ServiceWorker | null = null;
 
   constructor() {
+    if (this.isMockUpdate) {
+      this.updateAvailable.set(true);
+    }
+
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then((reg) => {
         if (!reg) return;
 
         if (reg.waiting) {
-          if (navigator.webdriver) return;
+          if (navigator.webdriver && !this.isMockUpdate) return;
           this.waitingWorker = reg.waiting;
           this.updateAvailable.set(true);
         }
 
         reg.addEventListener('updatefound', () => {
-          if (navigator.webdriver) return;
+          if (navigator.webdriver && !this.isMockUpdate) return;
           const newWorker = reg.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
@@ -43,10 +50,10 @@ export class UpdateNotificationService {
       let refreshing = false;
       const hasInitialController = !!navigator.serviceWorker.controller;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!hasInitialController || navigator.webdriver) return;
+        if (!hasInitialController || (navigator.webdriver && !this.isMockUpdate)) return;
         if (!refreshing) {
           refreshing = true;
-          document.location.reload();
+          window.location.reload();
         }
       });
 
@@ -59,16 +66,20 @@ export class UpdateNotificationService {
 
   /** Tell the waiting worker to activate, which will trigger the reload. */
   activateUpdate(): void {
+    if (this.isMockUpdate) {
+      window.location.reload();
+      return;
+    }
     if (this.waitingWorker) {
       this.waitingWorker.postMessage({ type: 'SKIP_WAITING' });
     } else {
-      document.location.reload();
+      window.location.reload();
     }
   }
 
   /** Force the update banner to show up (e.g. on chunk loading error) */
   requireUpdate(): void {
-    if (typeof navigator !== 'undefined' && navigator.webdriver) return;
+    if (typeof navigator !== 'undefined' && navigator.webdriver && !this.isMockUpdate) return;
     this.updateAvailable.set(true);
   }
 
