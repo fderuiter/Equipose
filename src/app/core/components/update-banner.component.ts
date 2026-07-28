@@ -21,7 +21,9 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
     <div
       role="status"
       aria-live="polite"
-      class="fixed top-0 inset-x-0 z-[9999] flex items-center justify-between gap-4 bg-indigo-700 dark:bg-indigo-800 text-white px-4 py-2.5 text-sm shadow-lg"
+      class="sticky top-0 w-full z-40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-indigo-700 dark:bg-indigo-800 text-white px-4 py-2.5 text-sm shadow-lg"
+      [class.transition-none]="updateService.isMockUpdate"
+      [class.animate-none]="updateService.isMockUpdate"
     >
       <div class="flex items-center gap-2.5">
         <!-- Download / refresh icon -->
@@ -35,6 +37,7 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
           type="button"
           (click)="updateService.activateUpdate()"
           class="rounded-md bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset px-3 py-1 font-medium transition-colors"
+          [class.transition-none]="updateService.isMockUpdate"
         >
           Reload &amp; Update
         </button>
@@ -44,6 +47,7 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
           aria-label="Dismiss update notification"
           appTooltip="Dismiss update notification"
           class="rounded-md p-1 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset transition-colors"
+          [class.transition-none]="updateService.isMockUpdate"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
