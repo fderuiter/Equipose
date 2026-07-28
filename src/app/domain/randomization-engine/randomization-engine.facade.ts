@@ -278,6 +278,19 @@ export class RandomizationEngineFacade {
 
       this.worker.onerror = (err: ErrorEvent) => {
         console.error('Randomization worker error:', err);
+
+        // Terminate and nullify the worker reference instantly
+        if (this.worker) {
+          try {
+            if (typeof this.worker.terminate === 'function') {
+              this.worker.terminate();
+            }
+          } catch (e) {
+            console.error('Error terminating worker:', e);
+          }
+          this.worker = null;
+        }
+
         // Reject all pending callbacks
         this.pendingCallbacks.forEach(cb =>
           cb.reject({ error: { error: 'Worker encountered an unexpected error.' } })
@@ -288,6 +301,12 @@ export class RandomizationEngineFacade {
           mc.onError({ error: { error: 'Worker encountered an unexpected error.' } })
         );
         this.pendingMonteCarloCallbacks.clear();
+
+        // Close Monte Carlo simulation modal if active
+        if (this.isMonteCarloRunning()) {
+          this.isMonteCarloRunning.set(false);
+          this.closeMonteCarloModal();
+        }
       };
     } catch {
       // Worker construction failed (e.g. in environments that block workers)

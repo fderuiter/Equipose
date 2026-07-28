@@ -63,6 +63,10 @@ class FakeWorker {
   simulateMessage(data: unknown) {
     this.onmessage?.({ data } as MessageEvent);
   }
+
+  simulateError(msg = 'Script error') {
+    this.onerror?.({ message: msg } as ErrorEvent);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -194,5 +198,29 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
     fakeWorker.simulateMessage({ id: genId, type: 'GENERATION_SUCCESS', payload: mockResult });
     await flushMicrotasks();
     expect(facade.results()).toMatchObject({ metadata: expect.objectContaining({ protocolId: 'TEST-123' }) });
+  });
+
+  it('should abort cleanly, turn off the active state, and close the modal when runMonteCarlo is called while the worker is failed', () => {
+    // Force worker reference to be null (failed state)
+    (facade as any).worker = null;
+
+    facade.runMonteCarlo(mockConfig);
+
+    expect(facade.isMonteCarloRunning()).toBe(false);
+    expect(facade.monteCarloProgress()).toBe(0);
+    expect(facade.monteCarloResults()).toBeNull();
+  });
+
+  it('should abort cleanly, turn off active state, and close the modal if the worker fails during a Monte Carlo simulation', () => {
+    facade.runMonteCarlo(mockConfig);
+    expect(facade.isMonteCarloRunning()).toBe(true);
+
+    // Simulate worker error event
+    fakeWorker.simulateError('fatal worker crash');
+
+    expect(facade.isMonteCarloRunning()).toBe(false);
+    expect(facade.monteCarloProgress()).toBe(0);
+    expect(facade.monteCarloResults()).toBeNull();
+    expect((facade as any).worker).toBeNull();
   });
 });
