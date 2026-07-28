@@ -296,6 +296,26 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     expect(pendingCallbacks().size).toBe(0);
   });
 
+  it('should nullify the background worker reference immediately after an error occurs', () => {
+    expect((facade as any).worker).not.toBeNull();
+    fakeWorker.simulateError('fatal worker crash');
+    expect((facade as any).worker).toBeNull();
+  });
+
+  it('should fallback to synchronous generation path for subsequent requests after a worker error has occurred', async () => {
+    // 1. Simulate worker failure
+    fakeWorker.simulateError('fatal worker crash');
+    expect((facade as any).worker).toBeNull();
+
+    // 2. Subsequent generateSchema call should run synchronously on main thread fallback
+    facade.generateSchema(mockConfig);
+    await flushMicrotasks();
+
+    expect(facade.results()).toBeTruthy();
+    expect(facade.isGenerating()).toBe(false);
+    expect(facade.error()).toBeNull();
+  });
+
   it('should fall back to synchronous pure function if Worker constructor throws', async () => {
     // 1. Reset facade and stub Worker to throw
     vi.stubGlobal('Worker', vi.fn().mockImplementation(function() {
