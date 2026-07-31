@@ -128,4 +128,38 @@ describe('GlobalErrorHandler', () => {
       }
     }
   });
+
+  it('should not trigger browser reload if window.location.hostname is 127.0.0.1', () => {
+    delete (window as any).location;
+    window.location = {
+      ...originalLocation,
+      hostname: '127.0.0.1',
+      reload: mockReload
+    } as any;
+
+    try {
+      const error = new Error('Failed to fetch dynamically imported module: ...');
+      errorHandler.handleError(error);
+      expect(mockReload).not.toHaveBeenCalled();
+    } finally {
+      window.location = originalLocation;
+    }
+  });
+
+  it('should not trigger browser reload if window.location.hostname ends with .localhost', () => {
+    delete (window as any).location;
+    window.location = {
+      ...originalLocation,
+      hostname: 'app.localhost',
+      reload: mockReload
+    } as any;
+
+    try {
+      const error = new Error('Failed to fetch dynamically imported module: ...');
+      errorHandler.handleError(error);
+      expect(mockReload).not.toHaveBeenCalled();
+    } finally {
+      window.location = originalLocation;
+    }
+  });
 });
