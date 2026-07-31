@@ -94,7 +94,15 @@ import { ButtonComponent } from '../../../core/components/ui/button.component';
                 </div>
                 <div>
                   <h4 class="text-lg font-semibold {{ domainTheme.getSemanticColor('error').textClass }} mb-2">Simulation Failed</h4>
-                  <p class="text-sm {{ domainTheme.getSemanticColor('error').textClass }}">{{ errorMsg }}</p>
+                  <p class="text-sm {{ domainTheme.getSemanticColor('error').textClass }} mb-4">{{ errorMsg }}</p>
+                  <app-button
+                    type="button"
+                    variant="primary"
+                    (onClick)="openBridgeToCode()"
+                    data-testid="bridge-to-code-redirect-btn"
+                  >
+                    Bridge to Code
+                  </app-button>
                 </div>
               </div>
             }
@@ -324,6 +332,14 @@ export class MonteCarloModalComponent {
     if (this.modalDialog?.nativeElement) {
       this.modalDialog.nativeElement.close();
     }
+  }
+
+  openBridgeToCode(): void {
+    const config = this.facade.lastMonteCarloConfig();
+    if (config) {
+      this.facade.openCodeGenerator(config);
+    }
+    this.closeModal();
   }
 
   onCancel(event: Event): void {

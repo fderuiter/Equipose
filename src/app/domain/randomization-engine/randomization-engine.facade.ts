@@ -56,6 +56,7 @@ export class RandomizationEngineFacade {
   readonly monteCarloProgress = signal(0);
   readonly monteCarloResults = signal<MonteCarloSuccessPayload | null>(null);
   readonly monteCarloError = signal<string | null>(null);
+  readonly lastMonteCarloConfig = signal<RandomizationConfig | null>(null);
   
   constructor() {
     if (this.isBrowser) {
@@ -151,7 +152,7 @@ export class RandomizationEngineFacade {
     this.error.set(null);
   }
 
-  openCodeGenerator(config: RandomizationConfig, language: 'R' | 'SAS' | 'Python' | 'STATA'): void {
+  openCodeGenerator(config: RandomizationConfig, language?: 'R' | 'SAS' | 'Python' | 'STATA'): void {
     let finalConfig = config;
     if (!config.seed) {
       const currentResults = this.results();
@@ -162,7 +163,9 @@ export class RandomizationEngineFacade {
       }
     }
     this.config.set(finalConfig);
-    this.codeLanguage.set(language);
+    if (language) {
+      this.codeLanguage.set(language);
+    }
     this.showCodeGenerator.set(true);
   }
 
@@ -175,10 +178,17 @@ export class RandomizationEngineFacade {
     this.monteCarloProgress.set(0);
     this.monteCarloResults.set(null);
     this.monteCarloError.set(null);
+    this.lastMonteCarloConfig.set(config);
 
     if (!this.worker) {
       this.isMonteCarloRunning.set(false);
-      this.closeMonteCarloModal();
+      this.monteCarloProgress.set(0);
+      this.monteCarloResults.set(null);
+      this.monteCarloError.set('Web Worker execution is blocked or unavailable in this environment. Please run the validation script locally.');
+      this.announcementService.announce(
+        'Simulation blocked. Secure browser environment restrictions prevent background execution. Please use the "Bridge to Code" button to copy and run the script locally.',
+        'assertive'
+      );
       return;
     }
 
