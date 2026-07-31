@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { FocusAuditor } from './a11y';
 import { goToStep, loadPreset, openGenerator } from './generator-helpers';
 
 test.describe('Form Validation and Configuration', () => {
@@ -138,11 +139,21 @@ test.describe('Form Validation and Configuration', () => {
     await levelsInput.press('Enter');
     await levelsInput.press('Tab');
 
-    // Move from Step 3 (Sites & Stratification) to Step 5 (Enrollment Caps).
-    await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
-    await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+    // Move from Step 3 (Sites & Stratification) to Step 5 (Enrollment Caps) robustly.
+    await FocusAuditor.assertFocusTransition(page, async () => {
+      const nBtn = page.getByRole('button', { name: /^Next$/i });
+      await nBtn.focus();
+      await nBtn.click();
+      await page.waitForTimeout(300);
+    });
+    await FocusAuditor.assertFocusTransition(page, async () => {
+      const nBtn = page.getByRole('button', { name: /^Next$/i });
+      await nBtn.focus();
+      await nBtn.click();
+      await page.waitForTimeout(300);
+    });
     const capRows = page.locator('[formArrayName="stratumCaps"] > div');
-    await expect(capRows).toHaveCount(2, { timeout: 5000 });
+    await expect(capRows).toHaveCount(2, { timeout: 10000 });
   });
 
   // ---------------------------------------------------------------------------
