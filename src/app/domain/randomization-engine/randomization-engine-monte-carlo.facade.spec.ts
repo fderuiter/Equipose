@@ -5,6 +5,7 @@ import { RandomizationConfig } from '../core/models/randomization.model';
 import { StudyPresets } from '../core/presets/study-presets';
 import { vi } from 'vitest';
 import type { MonteCarloProgressPayload, MonteCarloSuccessPayload } from './worker/worker-protocol';
+import { AnnouncementService } from '../../core/services/announcement.service';
 
 /** Flush all pending microtasks so async signals settle. */
 const flushMicrotasks = async () => await new Promise(r => setTimeout(r, 0));
@@ -200,15 +201,29 @@ describe('RandomizationEngineFacade – Monte Carlo', () => {
     expect(facade.results()).toMatchObject({ metadata: expect.objectContaining({ protocolId: 'TEST-123' }) });
   });
 
-  it('should abort cleanly, turn off the active state, and close the modal when runMonteCarlo is called while the worker is failed', () => {
-    // Force worker reference to be null (failed state)
+  it('should set an error, announce via screen reader, and preserve configuration when runMonteCarlo is called while the worker is blocked or failed', () => {
+    // Force worker reference to be null (failed/blocked state)
     (facade as any).worker = null;
+    const announcementService = TestBed.inject(AnnouncementService);
+    const announceSpy = vi.spyOn(announcementService, 'announce');
 
     facade.runMonteCarlo(mockConfig);
 
     expect(facade.isMonteCarloRunning()).toBe(false);
     expect(facade.monteCarloProgress()).toBe(0);
     expect(facade.monteCarloResults()).toBeNull();
+
+    // Check error signal
+    expect(facade.monteCarloError()).toBe('Web Worker execution is blocked or unavailable in this environment. Please run the validation script locally.');
+
+    // Check auditory announcement
+    expect(announceSpy).toHaveBeenCalledWith(
+      'Simulation blocked. Secure browser environment restrictions prevent background execution. Please use the "Bridge to Code" button to copy and run the script locally.',
+      'assertive'
+    );
+
+    // Check preserved config
+    expect(facade.lastMonteCarloConfig()).toEqual(mockConfig);
   });
 
   it('should abort cleanly, turn off active state, and close the modal if the worker fails during a Monte Carlo simulation', () => {
