@@ -24,6 +24,8 @@ describe('ZipWriter', () => {
     expect(view.getUint32(offset, true)).toBe(0x04034b50); // Local Header Signature
     const f1VersionNeeded = view.getUint16(offset + 4, true);
     const f1CompressionMethod = view.getUint16(offset + 8, true);
+    expect([10, 20]).toContain(f1VersionNeeded);
+    expect([0, 8]).toContain(f1CompressionMethod);
     const f1Crc = view.getUint32(offset + 14, true);
     const f1CompressedSize = view.getUint32(offset + 18, true);
     const f1UncompressedSize = view.getUint32(offset + 22, true);
@@ -48,6 +50,8 @@ describe('ZipWriter', () => {
     expect(view.getUint32(offset, true)).toBe(0x04034b50); // Local Header Signature
     const f2VersionNeeded = view.getUint16(offset + 4, true);
     const f2CompressionMethod = view.getUint16(offset + 8, true);
+    expect([10, 20]).toContain(f2VersionNeeded);
+    expect([0, 8]).toContain(f2CompressionMethod);
     const f2Crc = view.getUint32(offset + 14, true);
     const f2CompressedSize = view.getUint32(offset + 18, true);
     const f2UncompressedSize = view.getUint32(offset + 22, true);
@@ -77,7 +81,6 @@ describe('ZipWriter', () => {
     offset += 46 + f1NameLength;
 
     // --- Central Directory 2 ---
-    const cd2StartOffset = offset;
     expect(view.getUint32(offset, true)).toBe(0x02014b50); // Central Directory File Header Signature
     expect(view.getUint32(offset + 16, true)).toBe(f2Crc);
     expect(view.getUint32(offset + 20, true)).toBe(f2CompressedSize);
