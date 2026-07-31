@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => {
     mockSetFontSize: vi.fn(),
     mockSetFont: vi.fn(),
     mockSetTextColor: vi.fn(),
-    mockAutoTable: vi.fn((doc: any, options: any) => {
+    mockAutoTable: vi.fn((_doc: any, options: any) => {
       if (options && typeof options.didDrawPage === 'function') {
         options.didDrawPage({ pageNumber: 1 });
       }
