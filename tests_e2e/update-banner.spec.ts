@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Update Banner Sticky Layout and Query Mocking', () => {
   test('should display the update banner when mock-update=true is appended to URL', async ({ page }) => {

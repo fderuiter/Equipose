@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { Page } from '@playwright/test';
 import { openGenerator, loadPreset, goToStep } from './generator-helpers';
 
 async function verifyPayload(page: Page, expectedStrategy: string, checkFn?: (config: any) => void) {
