@@ -190,7 +190,13 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
       
-      if (!isMobile) {
+      if (isMobile) {
+        await expect(modal).toHaveScreenshot(`code-generator-modal-${mode}.png`, {
+          ...elementScreenshotOptions,
+          maxDiffPixelRatio: 0.20,
+          mask: getMasks(page)
+        });
+      } else {
         await expect(page).toHaveScreenshot(`code-generator-modal-${mode}.png`, { ...screenshotOptions, mask: getMasks(page) });
       }
       
@@ -216,12 +222,10 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await expect(toast).toBeVisible();
   await checkA11y(page, 'div[role="alert"]');
   await page.waitForTimeout(500);
-  if (!isMobile) {
-    await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, {
-      ...elementScreenshotOptions,
-      maxDiffPixelRatio: 0.20
-    });
-  }
+  await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, {
+    ...elementScreenshotOptions,
+    maxDiffPixelRatio: 0.20
+  });
 }
 
 async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
@@ -307,7 +311,14 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
   await expect(resultsSection.getByRole('button', { name: /^(Export JSON|JSON export)/i })).toBeVisible();
   await expect(resultsSection.locator('[data-testid="schema-seed-value"]')).toBeVisible();
   await expect(resultsSection.locator('[data-testid="result-row"]').first()).toBeVisible();
-  if (!isMobile) {
+  if (isMobile) {
+    await checkA11y(page, '#results-section');
+    await expect(resultsSection).toHaveScreenshot(`results-grid-${mode}.png`, {
+      ...elementScreenshotOptions,
+      maxDiffPixelRatio: 0.20,
+      mask: getMasks(page)
+    });
+  } else {
     await checkA11y(page, '#results-section');
     await expect(page).toHaveScreenshot(`results-grid-${mode}.png`, { ...resultsScreenshotOptions, mask: getMasks(page) });
   }
@@ -315,8 +326,58 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
 
 async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
   const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
+
   if (isMobile) {
-    return;
+    await page.addInitScript(() => {
+      const originalPostMessage = Worker.prototype.postMessage;
+      Worker.prototype.postMessage = function (message: any, transfer?: any) {
+        if (message && message.command === 'START_MONTE_CARLO') {
+          const self = this;
+          const state = (window as any).__MC_MOCK_STATE__ || 'standard';
+          setTimeout(() => {
+            if (state === 'standard') {
+              const successPayload = {
+                totalIterations: 10000,
+                totalSubjectsSimulated: 100000,
+                totalRetainedSubjects: 100000,
+                attritionRate: 0,
+                arms: [
+                  { armId: 'arm-1', armName: 'Treatment A', ratio: 1, expectedCount: 50000, actualCount: 50012, expectedRetainedCount: 50000, retainedCount: 50012 },
+                  { armId: 'arm-2', armName: 'Control B', ratio: 1, expectedCount: 50000, actualCount: 49988, expectedRetainedCount: 50000, retainedCount: 49988 }
+                ]
+              };
+              self.onmessage?.({
+                data: {
+                  id: message.id,
+                  type: 'MONTE_CARLO_SUCCESS',
+                  payload: successPayload
+                }
+              } as MessageEvent);
+            } else if (state === 'warning') {
+              const warningPayload = {
+                totalIterations: 10000,
+                totalSubjectsSimulated: 100000,
+                totalRetainedSubjects: 80000,
+                attritionRate: 20,
+                arms: [
+                  { armId: 'arm-1', armName: 'Treatment A', ratio: 1, expectedCount: 50000, actualCount: 50012, expectedRetainedCount: 10000, retainedCount: 10300 },
+                  { armId: 'arm-2', armName: 'Control B', ratio: 1, expectedCount: 50000, actualCount: 49988, expectedRetainedCount: 10000, retainedCount: 9985 }
+                ]
+              };
+              self.onmessage?.({
+                data: {
+                  id: message.id,
+                  type: 'MONTE_CARLO_SUCCESS',
+                  payload: warningPayload
+                }
+              } as MessageEvent);
+            }
+          }, 100);
+          return;
+        }
+        return originalPostMessage.apply(this, arguments as any);
+      };
+    });
   }
 
   await openGenerator(page);
@@ -326,6 +387,10 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
 
   await loadPreset(page, 'Simple');
   await goToReviewStep(page);
+
+  if (isMobile) {
+    await page.evaluate(() => { (window as any).__MC_MOCK_STATE__ = 'standard'; });
+  }
 
   // 1. Capture standard completed state (attritionRate = 0)
   const mcBtn = page.getByRole('button', { name: /Run Statistical QA/i });
@@ -343,41 +408,53 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
   await checkA11y(page, 'div[role="dialog"]');
 
   // Take screenshot of standard completed state
-  await expect(page).toHaveScreenshot(`monte-carlo-standard-${mode}.png`, {
-    ...screenshotOptions,
-    mask: getMasks(page),
-    timeout: 15000
-  });
+  if (isMobile) {
+    await expect(modal).toHaveScreenshot(`monte-carlo-standard-${mode}.png`, {
+      ...elementScreenshotOptions,
+      maxDiffPixelRatio: 0.20,
+      mask: getMasks(page)
+    });
+  } else {
+    await expect(page).toHaveScreenshot(`monte-carlo-standard-${mode}.png`, {
+      ...screenshotOptions,
+      mask: getMasks(page),
+      timeout: 15000
+    });
+  }
 
   // Close the modal
   await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
   await expect(modal).toBeHidden({ timeout: 5000 });
 
   // 2. Capture high-attrition warning state
-  // Set up the monkey patch on Worker in the page context before running
-  await page.evaluate(() => {
-    const originalPostMessage = Worker.prototype.postMessage;
-    Worker.prototype.postMessage = function (message: any, transfer?: any) {
-      if (message && message.command === 'START_MONTE_CARLO') {
-        const originalOnMessage = this.onmessage;
-        this.onmessage = function (event: MessageEvent) {
-          if (event.data && event.data.type === 'MONTE_CARLO_SUCCESS') {
-            const payload = event.data.payload;
-            if (payload && payload.arms && payload.arms.length > 0) {
-              payload.attritionRate = 20; // Ensure attrition rate > 0
-              const firstArm = payload.arms[0];
-              firstArm.expectedRetainedCount = 10000;
-              firstArm.retainedCount = 10300; // 3% deviation! (> 2% threshold)
+  if (!isMobile) {
+    // Set up the monkey patch on Worker in the page context before running
+    await page.evaluate(() => {
+      const originalPostMessage = Worker.prototype.postMessage;
+      Worker.prototype.postMessage = function (message: any, transfer?: any) {
+        if (message && message.command === 'START_MONTE_CARLO') {
+          const originalOnMessage = this.onmessage;
+          this.onmessage = function (event: MessageEvent) {
+            if (event.data && event.data.type === 'MONTE_CARLO_SUCCESS') {
+              const payload = event.data.payload;
+              if (payload && payload.arms && payload.arms.length > 0) {
+                payload.attritionRate = 20; // Ensure attrition rate > 0
+                const firstArm = payload.arms[0];
+                firstArm.expectedRetainedCount = 10000;
+                firstArm.retainedCount = 10300; // 3% deviation! (> 2% threshold)
+              }
             }
-          }
-          if (originalOnMessage) {
-            originalOnMessage.apply(this, [event]);
-          }
-        };
-      }
-      return originalPostMessage.apply(this, arguments as any);
-    };
-  });
+            if (originalOnMessage) {
+              originalOnMessage.apply(this, [event]);
+            }
+          };
+        }
+        return originalPostMessage.apply(this, arguments as any);
+      };
+    });
+  } else {
+    await page.evaluate(() => { (window as any).__MC_MOCK_STATE__ = 'warning'; });
+  }
 
   await mcBtn.focus();
   await mcBtn.dispatchEvent('click');
@@ -390,11 +467,19 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
   await checkA11y(page, 'div[role="dialog"]');
 
   // Take screenshot of warning completed state
-  await expect(page).toHaveScreenshot(`monte-carlo-warning-${mode}.png`, {
-    ...screenshotOptions,
-    mask: getMasks(page),
-    timeout: 15000
-  });
+  if (isMobile) {
+    await expect(modal).toHaveScreenshot(`monte-carlo-warning-${mode}.png`, {
+      ...elementScreenshotOptions,
+      maxDiffPixelRatio: 0.20,
+      mask: getMasks(page)
+    });
+  } else {
+    await expect(page).toHaveScreenshot(`monte-carlo-warning-${mode}.png`, {
+      ...screenshotOptions,
+      mask: getMasks(page),
+      timeout: 15000
+    });
+  }
 
   // Close the modal
   await modal.getByTestId('modal-close-footer').locator('button').dispatchEvent('click');
@@ -403,7 +488,7 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
 
 test.describe('Accessibility and visual regression - light mode', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit') {
+    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile-chrome') {
       test.slow();
     }
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
@@ -426,7 +511,7 @@ test.describe('Accessibility and visual regression - dark mode', () => {
   test.use({ colorScheme: 'dark' });
 
   test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit') {
+    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile-chrome') {
       test.slow();
     }
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
@@ -456,7 +541,7 @@ test.describe('Accessibility and visual regression - high contrast mode', () => 
   test.use({ forcedColors: 'active', colorScheme: 'dark' });
 
   test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit') {
+    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile-chrome') {
       test.slow();
     }
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
