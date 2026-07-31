@@ -100,6 +100,7 @@ export class ResultsGridComponent {
 
   isRowMenuOpen = signal<boolean>(false);
   isFilterMenuOpen = signal<boolean>(false);
+  isPdfExporting = signal<boolean>(false);
 
   /**
    * Reactive data pipeline for the flat view:
@@ -461,7 +462,7 @@ export class ResultsGridComponent {
     }, 100);
   }
 
-  exportPdf() {
+  async exportPdf() {
     const data = this.state.results();
     if (!data) return;
 
@@ -470,6 +471,14 @@ export class ResultsGridComponent {
       return;
     }
 
-    this.exportService.exportPdf(data, this.isUnblinded());
+    this.isPdfExporting.set(true);
+    try {
+      await this.exportService.exportPdf(data, this.isUnblinded());
+    } catch (err) {
+      this.toast.showError('Failed to generate PDF. Please try again.');
+      console.error(err);
+    } finally {
+      this.isPdfExporting.set(false);
+    }
   }
 }
