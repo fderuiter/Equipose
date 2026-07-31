@@ -215,13 +215,16 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await page.evaluate(() => {
     const globalToastService = (window as any).toastService;
     if (globalToastService) {
+      globalToastService.toasts.set([]);
       globalToastService.showError('Contrast validation toast state');
     } else {
       const configFormElement = document.querySelector('app-config-form');
-      const configFormComponent = (window as { ng?: { getComponent?: (node: Element | null) => unknown } }).ng
-        ?.getComponent?.(configFormElement);
-      const maybeToastService = (configFormComponent as { toastService?: { showError: (message: string) => void } } | undefined)?.toastService;
-      maybeToastService?.showError('Contrast validation toast state');
+      const configFormComponent = (window as any).ng?.getComponent?.(configFormElement);
+      const maybeToastService = configFormComponent?.toastService;
+      if (maybeToastService) {
+        maybeToastService.toasts.set([]);
+        maybeToastService.showError('Contrast validation toast state');
+      }
     }
   });
   const toast = page.locator('div[role="alert"]').first();
