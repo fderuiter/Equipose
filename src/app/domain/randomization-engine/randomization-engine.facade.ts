@@ -321,14 +321,13 @@ export class RandomizationEngineFacade {
         this.pendingCallbacks.clear();
 
         this.pendingMonteCarloCallbacks.forEach(mc =>
-          mc.onError({ error: { error: 'Worker encountered an unexpected error.' } })
+          mc.onError({ error: { error: 'Web Worker execution is blocked or unavailable in this environment. Please run the validation script locally.' } })
         );
         this.pendingMonteCarloCallbacks.clear();
 
-        // Close Monte Carlo simulation modal if active
+        // If Monte Carlo was active, ensure running state is disabled but do NOT close the modal
         if (this.isMonteCarloRunning()) {
           this.isMonteCarloRunning.set(false);
-          this.closeMonteCarloModal();
         }
       };
     } catch {
