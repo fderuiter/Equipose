@@ -16,7 +16,8 @@
  * @regulatory 21_CFR_PART11_DATA_INTEGRITY
  */
 
-import { test, expect, Request } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { Request } from '@playwright/test';
 import { generateSchemaFromPreset, openGenerator } from './generator-helpers';
 
 const LOCAL_PORT = '4200';
@@ -163,5 +164,26 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     await openGenerator(page);
 
     expect(externalRequests).toHaveLength(0);
+  });
+
+  test('triggers failure when a Web Worker attempts an external network call [expect-violation]', async ({ page }) => {
+    await page.goto(LOCAL_ORIGIN);
+    await page.evaluate(() => {
+      new Worker('/assets/dummy-worker.js');
+    });
+    // Wait a short duration for the worker to run and the message to propagate
+    await page.waitForTimeout(1000);
+  });
+
+  test('triggers failure when an external WebSocket connection attempt is made [expect-violation]', async ({ page }) => {
+    await page.goto(LOCAL_ORIGIN);
+    await page.evaluate(() => {
+      try {
+        new WebSocket('ws://unauthorized-websocket.com/feed');
+      } catch (e) {
+        // Suppress expected client-side exception so the evaluation completes
+      }
+    });
+    await page.waitForTimeout(1000);
   });
 });
