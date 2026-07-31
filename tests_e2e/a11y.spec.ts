@@ -487,10 +487,8 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
 }
 
 test.describe('Accessibility and visual regression - light mode', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile-chrome') {
-      test.slow();
-    }
+  test.beforeEach(async ({ page }) => {
+    test.slow();
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
   });
 
@@ -510,10 +508,8 @@ test.describe('Accessibility and visual regression - light mode', () => {
 test.describe('Accessibility and visual regression - dark mode', () => {
   test.use({ colorScheme: 'dark' });
 
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile-chrome') {
-      test.slow();
-    }
+  test.beforeEach(async ({ page }) => {
+    test.slow();
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
     await page.addInitScript(() => {
       try {
@@ -540,10 +536,8 @@ test.describe('Accessibility and visual regression - dark mode', () => {
 test.describe('Accessibility and visual regression - high contrast mode', () => {
   test.use({ forcedColors: 'active', colorScheme: 'dark' });
 
-  test.beforeEach(async ({ page }, testInfo) => {
-    if (testInfo.project.name === 'firefox' || testInfo.project.name === 'webkit' || testInfo.project.name === 'mobile-chrome') {
-      test.slow();
-    }
+  test.beforeEach(async ({ page }) => {
+    test.slow();
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
   });
 
