@@ -775,6 +775,7 @@ describe('ConfigFormComponent (domain)', () => {
       expect(component.arms.at(0).get('ratio')?.value).toBe(2);
       expect(component.arms.at(1).get('name')?.value).toBe('Arm B');
       expect(component.arms.at(1).get('ratio')?.value).toBe(3);
+      expect(localStorage.getItem('draft-trial-config')).toBeNull();
     });
   });
 });

@@ -1071,6 +1071,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       // After patching, trigger a validity check
       this.form.updateValueAndValidity({ emitEvent: false });
       
+      this.clearDraft();
     } catch (e) {
       console.warn('Failed to hydrate draft config, clearing it.', e);
       this.clearDraft();
