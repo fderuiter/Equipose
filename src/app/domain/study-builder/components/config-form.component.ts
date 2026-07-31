@@ -351,6 +351,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      (window as any).toastService = this.toastService;
+    }
     this.store.setStrata(this.strata.value as StratumFormValue[]);
     this.syncLevelDetails(this.strata.value as StratumFormValue[]);
     this.syncStratumCaps();
