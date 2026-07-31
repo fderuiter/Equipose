@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : undefined, // Force 1 worker in CI to prevent resource and port contention on the runners
   // In CI: emit both a blob (for shard merging) and a JSON (for RTM generation).
   reporter: process.env.CI ? [['blob'], ['line'], ['json', { outputFile: 'playwright-results.json' }]] : 'html',
   use: {
