@@ -30,8 +30,13 @@ export class GlobalErrorHandler implements ErrorHandler {
         updateService.requireUpdate();
 
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
-          if (typeof navigator !== 'undefined' && navigator.webdriver) {
-            console.warn('Chunk load error reload skipped in testing environment.');
+          const isTestOrDev =
+            (typeof navigator !== 'undefined' && navigator.webdriver) ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.endsWith('.localhost');
+
+          if (isTestOrDev) {
+            console.warn('Chunk load error reload skipped in testing/development environment.');
             return;
           }
 
