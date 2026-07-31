@@ -385,6 +385,11 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    this.saveDraft();
+  }
+
   get regulatoryGroup(): FormGroup { return this.form.get('regulatoryGroup') as FormGroup; }
   get metadataGroup(): FormGroup { return this.form.get('metadataGroup') as FormGroup; }
   get designGroup(): FormGroup { return this.form.get('designGroup') as FormGroup; }
