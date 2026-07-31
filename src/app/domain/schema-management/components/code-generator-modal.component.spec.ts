@@ -38,7 +38,9 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       generate: vi.fn().mockReturnValue('Mock Generated Code'),
       generateR: vi.fn().mockReturnValue('Mock R Code'),
       generatePython: vi.fn().mockReturnValue('Mock Python Code'),
-      generateSas: vi.fn().mockReturnValue('Mock SAS Code')
+      generateSas: vi.fn().mockReturnValue('Mock SAS Code'),
+      generateStatic: vi.fn().mockReturnValue('Mock Static Code'),
+      generateDynamic: vi.fn().mockReturnValue('Mock Dynamic Code')
     };
 
     TestBed.configureTestingModule({
@@ -185,6 +187,28 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       component.downloadCode();
 
       expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    });
+
+    it('should initiate ZIP file generation when exportMode is BOTH', async () => {
+      const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
+      const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+      component.exportMode.set('BOTH');
+      await component.setActiveTab('R');
+      await component.downloadCode();
+
+      expect((mockCodeGeneratorService as any).generateStatic).toHaveBeenCalledWith('R', mockConfig, undefined);
+      expect((mockCodeGeneratorService as any).generateDynamic).toHaveBeenCalledWith('R', mockConfig, undefined);
+
+      expect(appendSpy).toHaveBeenCalled();
+      const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
+      expect(anchorEl.getAttribute('download')).toBe('randomization_schema_bundle.zip');
+      expect(clickSpy).toHaveBeenCalled();
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
+      clickSpy.mockRestore();
     });
   });
 

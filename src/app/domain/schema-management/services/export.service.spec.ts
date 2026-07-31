@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ExportService } from './export.service';
 import { RandomizationResult } from '../../core/models/randomization.model';
+import { OpenXmlWriter } from '../../../core/utils/openxml.util';
 import { vi } from 'vitest';
 
 const buildMockResult = (): RandomizationResult => ({
@@ -110,6 +111,33 @@ describe('ExportService', () => {
       expect(removeChildSpy).not.toHaveBeenCalled();
       vi.advanceTimersByTime(100);
       expect(removeChildSpy).toHaveBeenCalled();
+    });
+
+    it('should render multi-tab structures and trigger file saves', async () => {
+      const addWorksheetSpy = vi.spyOn(OpenXmlWriter.prototype, 'addWorksheet');
+      const generateAsyncSpy = vi.spyOn(OpenXmlWriter.prototype, 'generateAsync');
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+      const mockResult = buildMockResult();
+      await service.exportXlsx(mockResult, true);
+
+      // Verify that multi-tab structure (worksheets) was built
+      expect(addWorksheetSpy).toHaveBeenCalledTimes(2);
+      expect(addWorksheetSpy.mock.calls[0][0]).toBe('Schema');
+      expect(addWorksheetSpy.mock.calls[1][0]).toBe('Audit & Configuration');
+
+      // Verify that ZIP/OpenXML generation is triggered
+      expect(generateAsyncSpy).toHaveBeenCalled();
+
+      // Verify a file save/download is triggered on the DOM
+      expect(appendChildSpy).toHaveBeenCalled();
+      const anchor = appendChildSpy.mock.calls[0][0] as HTMLAnchorElement;
+      expect(anchor.getAttribute('download')).toMatch(/\.xlsx$/);
+      expect(clickSpy).toHaveBeenCalled();
+
+      addWorksheetSpy.mockRestore();
+      generateAsyncSpy.mockRestore();
+      clickSpy.mockRestore();
     });
   });
 
