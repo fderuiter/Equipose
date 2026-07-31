@@ -30,6 +30,11 @@ export class GlobalErrorHandler implements ErrorHandler {
         updateService.requireUpdate();
 
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+          if (typeof navigator !== 'undefined' && navigator.webdriver) {
+            console.warn('Chunk load error reload skipped in testing environment.');
+            return;
+          }
+
           const now = Date.now();
           const lastReloadStr = sessionStorage.getItem('last-chunk-load-reload');
           const lastReload = lastReloadStr ? parseInt(lastReloadStr, 10) : 0;
