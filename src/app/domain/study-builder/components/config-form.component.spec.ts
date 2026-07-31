@@ -698,4 +698,83 @@ describe('ConfigFormComponent (domain)', () => {
       }
     });
   });
+
+  describe('Self-Healing Draft Recovery', () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    afterEach(() => {
+      localStorage.clear();
+    });
+
+    it('should synchronously save the form draft to localStorage on window beforeunload', () => {
+      component.form.get('metadataGroup.protocolId')?.setValue('SAVED-ON-UNLOAD');
+      
+      window.dispatchEvent(new Event('beforeunload'));
+      
+      const draftStr = localStorage.getItem('draft-trial-config');
+      expect(draftStr).toBeTruthy();
+      
+      const draft = JSON.parse(draftStr!);
+      expect(draft.state.form.metadataGroup.protocolId).toBe('SAVED-ON-UNLOAD');
+    });
+
+    it('should correctly restore state on hydration if a valid draft exists', () => {
+      const mockDraft = {
+        schemaVersion: 'v1',
+        state: {
+          form: {
+            metadataGroup: {
+              protocolId: 'RESTORED-ID',
+              studyName: 'Restored Study',
+              phase: 'I',
+              subjectIdMask: '{SITE}-{SEQ:3}',
+              seed: 'restored-seed'
+            },
+            regulatoryGroup: {
+              isAcknowledged: true
+            },
+            designGroup: {
+              randomizationMethod: 'BLOCK',
+              arms: [
+                { id: 'A', name: 'Arm A', ratio: 2 },
+                { id: 'B', name: 'Arm B', ratio: 3 }
+              ]
+            },
+            strataGroup: {
+              sitesStr: 'Site Restored',
+              strata: []
+            },
+            allocationGroup: {
+              blockSizesStr: '4, 8',
+              blockSelectionType: 'FIXED_SEQUENCE',
+              blockOverrides: []
+            },
+            capsGroup: {
+              capStrategy: 'MANUAL_MATRIX',
+              globalCap: 150,
+              stratumCaps: []
+            }
+          },
+          signals: {
+            currentStepIndex: 2
+          }
+        }
+      };
+
+      localStorage.setItem('draft-trial-config', JSON.stringify(mockDraft));
+      
+      (component as any).hydrateDraft();
+      
+      expect(component.form.get('metadataGroup.protocolId')?.value).toBe('RESTORED-ID');
+      expect(component.form.get('metadataGroup.studyName')?.value).toBe('Restored Study');
+      expect(component.currentStepIndex()).toBe(2);
+      expect(component.arms.length).toBe(2);
+      expect(component.arms.at(0).get('name')?.value).toBe('Arm A');
+      expect(component.arms.at(0).get('ratio')?.value).toBe(2);
+      expect(component.arms.at(1).get('name')?.value).toBe('Arm B');
+      expect(component.arms.at(1).get('ratio')?.value).toBe(3);
+    });
+  });
 });

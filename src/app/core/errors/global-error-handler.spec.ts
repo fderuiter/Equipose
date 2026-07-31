@@ -1,11 +1,13 @@
 import { GlobalErrorHandler } from './global-error-handler';
 import { TestBed } from '@angular/core/testing';
 import { UpdateNotificationService } from '../services/update-notification.service';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('GlobalErrorHandler', () => {
   let errorHandler: GlobalErrorHandler;
   let updateServiceMock: any;
+  let originalLocation: any;
+  let mockReload: any;
   
   beforeEach(() => {
     updateServiceMock = {
@@ -23,6 +25,24 @@ describe('GlobalErrorHandler', () => {
     
     // Silence console.error in tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Clear sessionStorage
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.clear();
+    }
+
+    // Safely mock location reload
+    originalLocation = window.location;
+    mockReload = vi.fn();
+    delete (window as any).location;
+    window.location = {
+      ...originalLocation,
+      reload: mockReload
+    } as any;
+  });
+
+  afterEach(() => {
+    window.location = originalLocation;
   });
 
   it('should call updateService.requireUpdate when chunk load error occurs', () => {
@@ -63,5 +83,29 @@ describe('GlobalErrorHandler', () => {
   it('should not throw if error is an object without a prototype', () => {
     const error = Object.create(null);
     expect(() => errorHandler.handleError(error)).not.toThrow();
+  });
+
+  it('should trigger browser reload on chunk load failure', () => {
+    const error = new Error('Failed to fetch dynamically imported module: ...');
+    errorHandler.handleError(error);
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not trigger browser reload on standard errors', () => {
+    const error = new Error('Standard JavaScript runtime error');
+    errorHandler.handleError(error);
+    expect(mockReload).not.toHaveBeenCalled();
+  });
+
+  it('should prevent reload loops if a second chunk load error occurs within 10 seconds', () => {
+    const error = new Error('Failed to fetch dynamically imported module: ...');
+    
+    // First error triggers reload
+    errorHandler.handleError(error);
+    expect(mockReload).toHaveBeenCalledTimes(1);
+
+    // Second error within 10 seconds should NOT trigger reload
+    errorHandler.handleError(error);
+    expect(mockReload).toHaveBeenCalledTimes(1); // Still 1
   });
 });
