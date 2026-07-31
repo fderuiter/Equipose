@@ -108,4 +108,24 @@ describe('GlobalErrorHandler', () => {
     errorHandler.handleError(error);
     expect(mockReload).toHaveBeenCalledTimes(1); // Still 1
   });
+
+  it('should not trigger browser reload if navigator.webdriver is true', () => {
+    const originalWebdriver = Object.getOwnPropertyDescriptor(navigator, 'webdriver');
+    Object.defineProperty(navigator, 'webdriver', {
+      value: true,
+      configurable: true
+    });
+
+    try {
+      const error = new Error('Failed to fetch dynamically imported module: ...');
+      errorHandler.handleError(error);
+      expect(mockReload).not.toHaveBeenCalled();
+    } finally {
+      if (originalWebdriver) {
+        Object.defineProperty(navigator, 'webdriver', originalWebdriver);
+      } else {
+        delete (navigator as any).webdriver;
+      }
+    }
+  });
 });
