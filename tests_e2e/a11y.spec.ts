@@ -222,7 +222,9 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       const configFormComponent = (window as any).ng?.getComponent?.(configFormElement);
       const maybeToastService = configFormComponent?.toastService;
       if (maybeToastService) {
-        maybeToastService.toasts.set([]);
+        if (maybeToastService.toasts && typeof maybeToastService.toasts.set === 'function') {
+          maybeToastService.toasts.set([]);
+        }
         maybeToastService.showError('Contrast validation toast state');
       }
     }
