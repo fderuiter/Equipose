@@ -2,6 +2,13 @@ import { test, expect, Locator, Page } from '@playwright/test';
 import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin, FocusAuditor } from './a11y';
 import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator, goToReviewStep } from './generator-helpers';
 
+/**
+ * a11y.spec.ts
+ * Automated accessibility audits, theme-specific visual regressions,
+ * and Monte Carlo simulation modal checks. Uses relaxed threshold options 
+ * and custom test slowness triggers to handle resource-constrained CI environments.
+ */
+
 const fontSmoothingStyle = `
   * {
     -webkit-font-smoothing: antialiased !important;
