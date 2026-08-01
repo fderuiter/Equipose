@@ -37,6 +37,7 @@ describe('GlobalErrorHandler', () => {
     delete (window as any).location;
     window.location = {
       ...originalLocation,
+      hostname: 'example.com',
       reload: mockReload
     } as any;
   });
@@ -151,6 +152,23 @@ describe('GlobalErrorHandler', () => {
     window.location = {
       ...originalLocation,
       hostname: 'app.localhost',
+      reload: mockReload
+    } as any;
+
+    try {
+      const error = new Error('Failed to fetch dynamically imported module: ...');
+      errorHandler.handleError(error);
+      expect(mockReload).not.toHaveBeenCalled();
+    } finally {
+      window.location = originalLocation;
+    }
+  });
+
+  it('should not trigger browser reload if window.location.hostname is localhost', () => {
+    delete (window as any).location;
+    window.location = {
+      ...originalLocation,
+      hostname: 'localhost',
       reload: mockReload
     } as any;
 
