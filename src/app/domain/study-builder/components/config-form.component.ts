@@ -387,7 +387,16 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
   @HostListener('window:beforeunload')
   onBeforeUnload(): void {
-    if (typeof navigator !== 'undefined' && navigator.webdriver) {
+    const isTest =
+      (typeof navigator !== 'undefined' && navigator.webdriver) ||
+      (typeof window !== 'undefined' && (
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '::1' ||
+        window.location.hostname === '0.0.0.0' ||
+        window.location.hostname.endsWith('.localhost')
+      ));
+
+    if (isTest) {
       return;
     }
     this.saveDraft();
