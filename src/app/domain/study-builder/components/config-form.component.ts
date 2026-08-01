@@ -390,6 +390,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     const isTest =
       (typeof navigator !== 'undefined' && navigator.webdriver) ||
       (typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1' ||
         window.location.hostname === '::1' ||
         window.location.hostname === '0.0.0.0' ||

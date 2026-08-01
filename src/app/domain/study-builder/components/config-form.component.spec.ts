@@ -700,6 +700,25 @@ describe('ConfigFormComponent (domain)', () => {
   });
 
   describe('Self-Healing Draft Recovery', () => {
+    let originalLocation: any;
+
+    beforeAll(() => {
+      originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        configurable: true,
+        value: { hostname: 'example.com' }
+      });
+    });
+
+    afterAll(() => {
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        configurable: true,
+        value: originalLocation
+      });
+    });
+
     beforeEach(() => {
       localStorage.clear();
     });
