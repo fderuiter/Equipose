@@ -32,6 +32,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
           const isTestOrDev =
             (typeof navigator !== 'undefined' && navigator.webdriver) ||
+            window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1' ||
             window.location.hostname.endsWith('.localhost');
 
