@@ -280,6 +280,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await levelsInput.press('Enter');
           await levelsInput.fill('semi;colon');  // semicolon
           await levelsInput.press('Enter');
+          await currentPage.waitForTimeout(500);
           await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
           await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
           await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
