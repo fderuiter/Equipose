@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { openGenerator } from './generator-helpers';
 import { FocusAuditor } from './a11y';
 

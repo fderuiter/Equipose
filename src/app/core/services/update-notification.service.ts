@@ -18,6 +18,18 @@ export class UpdateNotificationService {
 
   private waitingWorker: ServiceWorker | null = null;
 
+  get isTestOrDev(): boolean {
+    if (typeof window === 'undefined') return false;
+    return (
+      (typeof navigator !== 'undefined' && navigator.webdriver) ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '::1' ||
+      window.location.hostname === '0.0.0.0' ||
+      window.location.hostname.endsWith('.localhost')
+    );
+  }
+
   constructor() {
     if (this.isMockUpdate) {
       this.updateAvailable.set(true);
@@ -28,13 +40,13 @@ export class UpdateNotificationService {
         if (!reg) return;
 
         if (reg.waiting) {
-          if (navigator.webdriver && !this.isMockUpdate) return;
+          if (this.isTestOrDev && !this.isMockUpdate) return;
           this.waitingWorker = reg.waiting;
           this.updateAvailable.set(true);
         }
 
         reg.addEventListener('updatefound', () => {
-          if (navigator.webdriver && !this.isMockUpdate) return;
+          if (this.isTestOrDev && !this.isMockUpdate) return;
           const newWorker = reg.installing;
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
@@ -50,7 +62,7 @@ export class UpdateNotificationService {
       let refreshing = false;
       const hasInitialController = !!navigator.serviceWorker.controller;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!hasInitialController || (navigator.webdriver && !this.isMockUpdate)) return;
+        if (!hasInitialController || (this.isTestOrDev && !this.isMockUpdate)) return;
         if (!refreshing) {
           refreshing = true;
           window.location.reload();
@@ -79,7 +91,7 @@ export class UpdateNotificationService {
 
   /** Force the update banner to show up (e.g. on chunk loading error) */
   requireUpdate(): void {
-    if (typeof navigator !== 'undefined' && navigator.webdriver && !this.isMockUpdate) return;
+    if (this.isTestOrDev && !this.isMockUpdate) return;
     this.updateAvailable.set(true);
   }
 

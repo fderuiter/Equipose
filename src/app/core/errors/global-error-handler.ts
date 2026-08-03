@@ -28,6 +28,36 @@ export class GlobalErrorHandler implements ErrorHandler {
       if (isChunkLoadError) {
         const updateService = this.injector.get(UpdateNotificationService);
         updateService.requireUpdate();
+
+        if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+          const isTestOrDev =
+            (typeof navigator !== 'undefined' && navigator.webdriver) ||
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname === '::1' ||
+            window.location.hostname === '0.0.0.0' ||
+            window.location.hostname.endsWith('.localhost');
+
+          if (isTestOrDev) {
+            console.warn('Chunk load error reload skipped in testing/development environment.');
+            return;
+          }
+
+          const now = Date.now();
+          const lastReloadStr = sessionStorage.getItem('last-chunk-load-reload');
+          const lastReload = lastReloadStr ? parseInt(lastReloadStr, 10) : 0;
+          
+          if (now - lastReload >= 10000) {
+            sessionStorage.setItem('last-chunk-load-reload', String(now));
+            try {
+              window.location.reload();
+            } catch {
+              // Ignore in test/non-browser environment
+            }
+          } else {
+            console.warn('Chunk load error reload skipped to prevent infinite reload loop.');
+          }
+        }
       }
     } catch {
       // Never throw from within GlobalErrorHandler

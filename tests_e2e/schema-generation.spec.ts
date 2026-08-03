@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { generateSchemaFromPreset } from './generator-helpers';
 
 test.describe('Schema Generation Flow', () => {

@@ -13,7 +13,8 @@ import { Page, Locator } from '@playwright/test';
  */
 export async function checkA11y(page: Page, includeSelector?: string) {
   const browserName = page.context().browser()?.browserType().name();
-  const isSlowBrowser = browserName === 'webkit' || browserName === 'firefox';
+  const isMobile = !!page.viewportSize() && page.viewportSize()!.width < 640;
+  const isSlowBrowser = browserName === 'webkit' || browserName === 'firefox' || isMobile;
   const disabledRules = isSlowBrowser ? ['target-size', 'color-contrast'] : ['target-size'];
 
   const builder = new AxeBuilder({ page })

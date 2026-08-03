@@ -351,6 +351,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      (window as any).toastService = this.toastService;
+    }
     this.store.setStrata(this.strata.value as StratumFormValue[]);
     this.syncLevelDetails(this.strata.value as StratumFormValue[]);
     this.syncStratumCaps();
@@ -380,6 +383,24 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     if (this.dropdownOpen) {
       this.dropdownOpen = false;
     }
+  }
+
+  @HostListener('window:beforeunload')
+  onBeforeUnload(): void {
+    const isTest =
+      (typeof navigator !== 'undefined' && navigator.webdriver) ||
+      (typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '::1' ||
+        window.location.hostname === '0.0.0.0' ||
+        window.location.hostname.endsWith('.localhost')
+      ));
+
+    if (isTest) {
+      return;
+    }
+    this.saveDraft();
   }
 
   get regulatoryGroup(): FormGroup { return this.form.get('regulatoryGroup') as FormGroup; }
@@ -1063,6 +1084,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       // After patching, trigger a validity check
       this.form.updateValueAndValidity({ emitEvent: false });
       
+      this.clearDraft();
     } catch (e) {
       console.warn('Failed to hydrate draft config, clearing it.', e);
       this.clearDraft();

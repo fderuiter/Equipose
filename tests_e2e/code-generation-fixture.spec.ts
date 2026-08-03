@@ -1,4 +1,5 @@
-import { test as base, expect, Page } from '@playwright/test';
+import { test as base, expect } from './fixtures';
+import { Page } from '@playwright/test';
 import { execFile } from 'child_process';
 import { mkdir, readFile, rm, writeFile, copyFile } from 'fs/promises';
 import { join, resolve } from 'path';
@@ -280,6 +281,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
           await levelsInput.press('Enter');
           await levelsInput.fill('semi;colon');  // semicolon
           await levelsInput.press('Enter');
+          await currentPage.waitForTimeout(500);
           await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
           await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
           await currentPage.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
