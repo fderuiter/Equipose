@@ -56,11 +56,11 @@ export class ButtonComponent {
         variantClass = 'bg-transparent text-brand-600 border border-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:border-brand-400 dark:hover:bg-brand-900/50 disabled:opacity-50';
         break;
       case 'segmented':
-        variantClass = 'flex-1 text-sm disabled:opacity-50 border-border-strong';
+        variantClass = 'flex-1 text-sm disabled:opacity-50';
         if (this.segmentedActive) {
-          variantClass += ' bg-brand-600 text-white';
+          variantClass += ' bg-brand-600 text-white border-brand-600';
         } else {
-          variantClass += ' bg-surface text-main hover:bg-hover';
+          variantClass += ' bg-surface text-main border-border-strong hover:bg-hover';
         }
         if (this.segmentedPosition !== 'first') {
           variantClass += ' border-l';
