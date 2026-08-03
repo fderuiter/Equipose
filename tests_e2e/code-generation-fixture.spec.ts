@@ -1,4 +1,5 @@
-import { test as base, expect, Page } from '@playwright/test';
+import { test as base, expect } from './fixtures';
+import { Page } from '@playwright/test';
 import { execFile } from 'child_process';
 import { mkdir, readFile, rm, writeFile, copyFile } from 'fs/promises';
 import { join, resolve } from 'path';

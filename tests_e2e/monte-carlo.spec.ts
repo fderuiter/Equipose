@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { Page } from '@playwright/test';
 import { goBackToFirstStep, goToReviewStep, loadPreset, openGenerator } from './generator-helpers';
 import { FocusAuditor, FocusTrapPlugin } from './a11y';
 

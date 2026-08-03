@@ -1,4 +1,5 @@
-import { test, expect, Locator, Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import { Locator, Page } from '@playwright/test';
 import { checkA11y, FocusTrapPlugin, StructuralAriaPlugin, FocusAuditor } from './a11y';
 import { generateSchemaFromPreset, goToStep, loadPreset, openGenerator, goToReviewStep } from './generator-helpers';
 

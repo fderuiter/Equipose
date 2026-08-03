@@ -17,7 +17,7 @@
  * @regulatory 21_CFR_PART11_AUDIT_TRAIL
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { readFile } from 'fs/promises';
 import { PDFParse } from 'pdf-parse';
 import { generateSchemaFromPreset, openGenerator } from './generator-helpers';

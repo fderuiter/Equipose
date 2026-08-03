@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { generateSchemaFromPreset, openGenerator, loadPreset, goToReviewStep } from './generator-helpers';
 
 test.describe('Download UX Smoke Tests', () => {
