@@ -1,3 +1,43 @@
+# [1.36.0](https://github.com/fderuiter/Equipose/compare/v1.35.0...v1.36.0) (2026-08-03)
+
+
+### Bug Fixes
+
+* **a11y:** resolve race condition in focus restoration and trap with custom elements and outside click ([7f36b48](https://github.com/fderuiter/Equipose/commit/7f36b4882c290207d0dd867208c1ca6dadb7764e))
+* **e2e:** bypass programmatic window reload under webdriver during chunk failures ([3b8cf2f](https://github.com/fderuiter/Equipose/commit/3b8cf2f28920f7c88376e186ded1e4e37d514d23))
+* **e2e:** call test.slow() unconditionally for all projects in a11y.spec.ts to prevent timeout flakiness ([ea7880b](https://github.com/fderuiter/Equipose/commit/ea7880be59cf2f9c803bf1b2fe2e9d3786bb9e77))
+* **e2e:** prevent race condition between success and error toasts by clearing toasts first ([d5b9785](https://github.com/fderuiter/Equipose/commit/d5b978507de1d9c2b872509c59d4119d7db40c0a))
+* **e2e:** prevent WebKit internal reload crash and enhance asynchronous worker error propagation ([8885b25](https://github.com/fderuiter/Equipose/commit/8885b2587907a8bdabc8e8fb3b5c17a6312cda91))
+* **e2e:** programmatically clear active toasts before triggering contrast validation toast ([9228fe8](https://github.com/fderuiter/Equipose/commit/9228fe8bd155f61569c6ece5f758ceba8816e6d7))
+* **e2e:** resolve missing error toast in production build tests by exposing toastService globally ([47e2480](https://github.com/fderuiter/Equipose/commit/47e2480995495a578dfbd0fe472335bb80f83889))
+* **e2e:** resolve race condition in weird-chars scenario configuration ([a808e40](https://github.com/fderuiter/Equipose/commit/a808e409bd82bb44042adc6759f98dea2fe72533))
+* **e2e:** robustly bypass global error handler reloads on local and test environments ([2a7ebe3](https://github.com/fderuiter/Equipose/commit/2a7ebe337844a7120bf6fa5f8fc52e958d439ba2))
+* **e2e:** robustly bypass global error handler reloads on localhost ([70fe144](https://github.com/fderuiter/Equipose/commit/70fe1440004807f032f76571b394243a56cca6d1))
+* **e2e:** robustly bypass service worker reloads and add IPv6 loopbacks in test environments ([5e6fe0b](https://github.com/fderuiter/Equipose/commit/5e6fe0bacdaafa6076cb36594517ab048a8b5a56))
+* purge draft state from localStorage upon successful hydration to keep state clean ([c979534](https://github.com/fderuiter/Equipose/commit/c979534b186d5cd8cb630b47eb4784523dd605cb))
+* resolve angular test compilation errors in pdf layout and results grid unit tests ([8e9dd22](https://github.com/fderuiter/Equipose/commit/8e9dd226887003aee5a1bbcd25bd7dd2016de02f))
+* **study-builder:** add localhost loopback check to robustly bypass beforeunload draft saving ([9a26009](https://github.com/fderuiter/Equipose/commit/9a2600926f75e437f4c088575f85e3be72ab7591))
+* **study-builder:** bypass beforeunload draft auto-saving when running under automated tests ([e07e2b5](https://github.com/fderuiter/Equipose/commit/e07e2b5de0672aa6aee2caba2a966b0c567fb098))
+* **study-builder:** robustly bypass beforeunload draft saving on local E2E testbeds ([f7ad351](https://github.com/fderuiter/Equipose/commit/f7ad3513f02ca64d3ed78dff4f61d010a74c3957))
+
+
+### Features
+
+* **a11y:** custom focus manager overhaul & mobile theme menu support ([2b83930](https://github.com/fderuiter/Equipose/commit/2b8393003a09226055c26897e79f10f31970a0a3))
+* implement interactive code generator redirect when Web Workers are blocked or unavailable during Monte Carlo simulation ([46261c4](https://github.com/fderuiter/Equipose/commit/46261c457880dcbba4ea8f41e1863826886212ff))
+* implement mobile visual snapshots, accessibility audits, and Monte Carlo checks ([89c8c7f](https://github.com/fderuiter/Equipose/commit/89c8c7fc832a7b2379ae7f389b606af6caed8194))
+* implement reactive local self-healing and fallback for web workers ([2d5f88e](https://github.com/fderuiter/Equipose/commit/2d5f88e102c79fe56e1b9c74a5ef4235d742ea24))
+* implement reliable client-side export testing infrastructure ([#702](https://github.com/fderuiter/Equipose/issues/702)) ([4c9bd88](https://github.com/fderuiter/Equipose/commit/4c9bd88cbc5043a035d58922a297c8484833c19b))
+* implement self-healing runtime recovery with synchronous draft saving and loop prevention ([454992e](https://github.com/fderuiter/Equipose/commit/454992e7b8d37aae4b52fc71ca1c50044fe285b6))
+* implement sticky flow layout and query mocking for update banner ([b600392](https://github.com/fderuiter/Equipose/commit/b600392af9807a3cd277301fcb0f9c04bbf26231))
+* isolate PDF layout engine into a dynamic lazy-loaded module with interactive loading indicator ([a20faf9](https://github.com/fderuiter/Equipose/commit/a20faf9b2a8707e0cb1076f25c38823a57ebaf62))
+
+
+### Performance Improvements
+
+* **e2e:** disable color-contrast check on mobile viewport to prevent test timeout flakiness ([99d8c32](https://github.com/fderuiter/Equipose/commit/99d8c3238133b81f24e2396ca2d55929a7d144ad))
+* terminate and recreate web worker upon Monte Carlo cancellation to prevent CPU leak ([8896d2c](https://github.com/fderuiter/Equipose/commit/8896d2cb7de88b1631ffc726bb5f621a2b29234b))
+
 # [1.35.0](https://github.com/fderuiter/Equipose/compare/v1.34.0...v1.35.0) (2026-07-23)
 
 
