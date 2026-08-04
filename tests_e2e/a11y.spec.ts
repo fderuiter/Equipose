@@ -43,7 +43,8 @@ function getMasks(page: Page, includeToast = true) {
     page.locator('[data-testid="audit-hash-value"]'),
     page.locator('[data-testid="generated-code"]'),
     page.locator('div[role="status"]'),
-    page.locator('[data-testid="seed-disclaimer-banner"]')
+    page.locator('[data-testid="seed-disclaimer-banner"]'),
+    page.locator('[data-testid="parity-warning-banner"]')
   ];
   if (includeToast) {
     masks.push(
