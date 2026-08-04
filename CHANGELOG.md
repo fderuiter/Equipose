@@ -1,3 +1,10 @@
+# [1.37.0](https://github.com/fderuiter/Equipose/compare/v1.36.0...v1.37.0) (2026-08-04)
+
+
+### Features
+
+* add PRNG parity warnings to SAS/Stata UI and script templates ([#709](https://github.com/fderuiter/Equipose/issues/709)) ([f741448](https://github.com/fderuiter/Equipose/commit/f7414483fe0bae120f12b4691fa2acd261e638c7))
+
 # [1.36.0](https://github.com/fderuiter/Equipose/compare/v1.35.0...v1.36.0) (2026-08-03)
 
 
