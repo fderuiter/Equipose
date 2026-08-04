@@ -43,7 +43,8 @@ function getMasks(page: Page, includeToast = true) {
     page.locator('[data-testid="audit-hash-value"]'),
     page.locator('[data-testid="generated-code"]'),
     page.locator('div[role="status"]'),
-    page.locator('[data-testid="seed-disclaimer-banner"]')
+    page.locator('[data-testid="seed-disclaimer-banner"]'),
+    page.locator('[data-testid="parity-warning-banner"]')
   ];
   if (includeToast) {
     masks.push(
@@ -197,6 +198,10 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       await page.getByRole('tab', { name: /Stata/i }).dispatchEvent('click');
       await expect(modal.getByTestId('generated-code')).toBeVisible();
       await checkA11y(page, 'div[role="dialog"]');
+
+      // Click back to R tab so that the screenshot matches the baseline (which has R active)
+      await page.getByRole('tab', { name: /^R$/ }).dispatchEvent('click');
+      await expect(modal.getByTestId('generated-code')).toBeVisible();
       
       if (isMobile) {
         await expect(modal).toHaveScreenshot(`code-generator-modal-${mode}.png`, {

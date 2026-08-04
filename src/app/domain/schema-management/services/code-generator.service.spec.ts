@@ -87,6 +87,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('array arr_SubjectID');
       expect(code).toContain('do i = 1 to');
       expect(code).not.toContain('link build_block;');
+      expect(code).toContain('WARNING: This generated SAS script does not guarantee bit-for-bit sequence parity');
     });
 
     it('should generate static code for STATA', () => {
@@ -94,6 +95,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('schema_out = J(');
       expect(code).toContain('st_addvar("str100", "SubjectID")');
       expect(code).not.toContain('build_block(real scalar size)');
+      expect(code).toContain('WARNING: This generated Stata script does not guarantee bit-for-bit sequence parity');
     });
   });
 
@@ -117,6 +119,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('build_block:');
       expect(code).toContain('link build_block;');
       expect(code).not.toContain('array arr_SubjectID');
+      expect(code).toContain('WARNING: This generated SAS script does not guarantee bit-for-bit sequence parity');
     });
 
     it('should generate dynamic code for STATA', () => {
@@ -124,6 +127,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('build_block(real scalar size)');
       expect(code).toContain('task_caps = (');
       expect(code).not.toContain('schema_out[1, .] =');
+      expect(code).toContain('WARNING: This generated Stata script does not guarantee bit-for-bit sequence parity');
     });
   });
 
