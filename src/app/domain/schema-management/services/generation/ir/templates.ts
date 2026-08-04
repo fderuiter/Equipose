@@ -28,6 +28,7 @@ write.csv(schema, stdout(), row.names = FALSE)
 `;
 
 export const SAS_TEMPLATE = `
+/* WARNING: This generated SAS script does not guarantee bit-for-bit sequence parity with the client-side JavaScript engine. Please perform sequence parity verification before clinical trial validation. */
 /* Randomization Schema Generation in SAS */
 /* Protocol: {{protocolId}} */
 /* App Version: {{appVersion}} */
@@ -106,6 +107,7 @@ print(df.to_csv(index=False))
 `;
 
 export const STATA_TEMPLATE = `
+* WARNING: This generated Stata script does not guarantee bit-for-bit sequence parity with the client-side JavaScript engine. Please perform sequence parity verification before clinical trial validation.
 * Randomization Schema Configuration
 * Protocol: {{protocolId}}
 * App Version: {{appVersion}}

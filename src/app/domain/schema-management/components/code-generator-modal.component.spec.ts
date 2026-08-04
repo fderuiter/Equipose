@@ -1,5 +1,6 @@
 
-import { TestBed } from '@angular/core/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { CodeGeneratorModalComponent } from './code-generator-modal.component';
 import { RandomizationEngineFacade } from '../../randomization-engine/randomization-engine.facade';
 import { CodeGeneratorService } from '../services/code-generator.service';
@@ -350,6 +351,67 @@ describe('CodeGeneratorModalComponent (domain)', () => {
 
       await component.setExportMode('BOTH');
       expect(component.exportMode()).toBe('STATIC');
+    });
+  });
+
+  describe('PRNG Sequence Parity Warning Banner Rendering', () => {
+    let fixture: ComponentFixture<CodeGeneratorModalComponent>;
+    let renderedComponent: CodeGeneratorModalComponent;
+    let mockConfig: RandomizationConfig;
+
+    beforeEach(async () => {
+      mockConfig = {
+        protocolId: 'TEST-BANNER',
+        studyName: 'Banner Study',
+        phase: 'Phase III',
+        arms: [
+          { id: '1', name: 'Arm A', ratio: 1 },
+          { id: '2', name: 'Arm B', ratio: 1 }
+        ],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [2],
+        stratumCaps: [],
+        seed: 'banner_seed',
+        subjectIdMask: '[SiteID]-[001]'
+      };
+      (mockFacade as any).config.set(mockConfig);
+
+      fixture = TestBed.createComponent(CodeGeneratorModalComponent);
+      renderedComponent = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should render warning banner when activeTab is SAS', async () => {
+      renderedComponent.activeTab.set('SAS');
+      fixture.detectChanges();
+      const banner = fixture.debugElement.query(By.css('[data-testid="parity-warning-banner"]'));
+      expect(banner).not.toBeNull();
+      const text = banner.query(By.css('[data-testid="parity-warning-text"]')).nativeElement.textContent;
+      expect(text).toContain('SAS script does not guarantee bit-for-bit sequence parity');
+    });
+
+    it('should render warning banner when activeTab is STATA', async () => {
+      renderedComponent.activeTab.set('STATA');
+      fixture.detectChanges();
+      const banner = fixture.debugElement.query(By.css('[data-testid="parity-warning-banner"]'));
+      expect(banner).not.toBeNull();
+      const text = banner.query(By.css('[data-testid="parity-warning-text"]')).nativeElement.textContent;
+      expect(text).toContain('STATA script does not guarantee bit-for-bit sequence parity');
+    });
+
+    it('should NOT render warning banner when activeTab is R', async () => {
+      renderedComponent.activeTab.set('R');
+      fixture.detectChanges();
+      const banner = fixture.debugElement.query(By.css('[data-testid="parity-warning-banner"]'));
+      expect(banner).toBeNull();
+    });
+
+    it('should NOT render warning banner when activeTab is Python', async () => {
+      renderedComponent.activeTab.set('Python');
+      fixture.detectChanges();
+      const banner = fixture.debugElement.query(By.css('[data-testid="parity-warning-banner"]'));
+      expect(banner).toBeNull();
     });
   });
 });

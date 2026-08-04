@@ -8,6 +8,7 @@ import { RandomizationResult } from '@domain/core/models/randomization.model';
 import { FocusManagerDirective } from '@core/directives/focus-manager.directive';
 import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import { AnnouncementService } from '@core/services/announcement.service';
+import { ThemeService } from '@core/services/theme.service';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -24,6 +25,7 @@ export class CodeGeneratorModalComponent implements OnInit {
   public state = inject(RandomizationEngineFacade);
   private codeGenService = inject(CodeGeneratorService);
   private announcementService = inject(AnnouncementService);
+  public domainTheme = inject(ThemeService);
 
   activeTab = signal<'R' | 'SAS' | 'Python' | 'STATA'>('R');
   exportMode = signal<'STATIC' | 'DYNAMIC' | 'BOTH'>('STATIC');

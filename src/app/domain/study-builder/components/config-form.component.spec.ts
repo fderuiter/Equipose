@@ -797,4 +797,19 @@ describe('ConfigFormComponent (domain)', () => {
       expect(localStorage.getItem('draft-trial-config')).toBeNull();
     });
   });
+
+  describe('Dropdown Warning Indicators', () => {
+    it('should display a warning indicator next to the SAS Script and Stata Script export options when the code generation dropdown is open', async () => {
+      component.stepper.goTo(6);
+      component.dropdownOpen = true;
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      const sasIndicator = fixture.debugElement.query(By.css('[data-testid="sas-warning-indicator"]'));
+      const stataIndicator = fixture.debugElement.query(By.css('[data-testid="stata-warning-indicator"]'));
+
+      expect(sasIndicator).toBeTruthy();
+      expect(stataIndicator).toBeTruthy();
+    });
+  });
 });
