@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
-import { MT19937 } from './mt19937';
+import { MT19937Internal } from './mt19937';
 import { DeterminismProvider } from './determinism.provider';
 import { UnifiedValidationAuthority, ValidationFailure } from '../../core/validation/unified-validator';
 import {
@@ -288,7 +287,7 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
     ? config
     : { ...config, seed: generateCryptoSeed() };
 
-  const mt = new MT19937(MT19937.get31BitSeed(resolvedConfig.seed));
+  const mt = new MT19937Internal(MT19937Internal.get31BitSeed(resolvedConfig.seed));
   const rng = () => mt.random();
 
   // Generate all strata combinations

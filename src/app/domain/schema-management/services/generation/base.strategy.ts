@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import { RandomizationConfig, RandomizationResult } from '../../../core/models/randomization.model';
 import { generateRandomizationSchema, generateCryptoSeed } from '../../../randomization-engine/core/randomization-algorithm';
-import { MT19937 } from '../../../randomization-engine/core/mt19937';
+import { MT19937Internal } from '../../../randomization-engine/core/mt19937';
 import { DateUtil } from '../../../../core/utils/date.util';
 import { CodeTranspiler } from './ir/transpiler';
 import { APP_VERSION } from '../../../../../environments/version';
@@ -82,7 +81,7 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
       throw new StrataParsingError(this.language, e, resolvedConfig);
     }
 
-    const prng = new MT19937(ir.seedHash);
+    const prng = new MT19937Internal(ir.seedHash);
     const valVec = [];
     for (let i = 0; i < 100; i++) {
         valVec.push(prng.random_int());
