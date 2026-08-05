@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import { SubjectRegistry } from './subject-registry';
 import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';
-import { MT19937 } from './mt19937';
+import { MT19937Internal } from './mt19937';
 import { RandomizationConfig } from '../../core/models/randomization.model';
 import { StudyPresets } from '../../core/presets/study-presets';
 
 const seedRng = (seed: string) => {
-  const mt = new MT19937(MT19937.get31BitSeed(seed));
+  const mt = new MT19937Internal(MT19937Internal.get31BitSeed(seed));
   return () => mt.random();
 };
 

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
 import * as fc from 'fast-check';
 import { describe, it, expect } from 'vitest';
 import { generateMinimization } from './minimization-algorithm';
 import { SubjectRegistry } from './subject-registry';
-import { MT19937 } from './mt19937';
+import { MT19937Internal } from './mt19937';
 import { StratificationFactor, TreatmentArm } from '../../core/models/randomization.model';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,7 +98,7 @@ describe('generateMinimization - Property Tests', () => {
             levelDetails: f.levels.map(l => ({ name: l, marginalCap: undefined }))
           }))
         };
-        const mt = new MT19937(MT19937.get31BitSeed(config.seed));
+        const mt = new MT19937Internal(MT19937Internal.get31BitSeed(config.seed));
         const rng = () => mt.random();
         const registry = new SubjectRegistry(config as any);
         const schema = generateMinimization(config as any, rng, registry);
@@ -113,10 +112,10 @@ describe('generateMinimization - Property Tests', () => {
   it('produces deterministic results given the same seed and config', () => {
     fc.assert(
       fc.property(fullMinimizationConfigArbitrary, config => {
-        const mt1 = new MT19937(MT19937.get31BitSeed(config.seed));
+        const mt1 = new MT19937Internal(MT19937Internal.get31BitSeed(config.seed));
         const schema1 = generateMinimization(config, () => mt1.random(), new SubjectRegistry(config as any));
 
-        const mt2 = new MT19937(MT19937.get31BitSeed(config.seed));
+        const mt2 = new MT19937Internal(MT19937Internal.get31BitSeed(config.seed));
         const schema2 = generateMinimization(config as any, () => mt2.random(), new SubjectRegistry(config as any));
 
         expect(schema1.map(r => r.treatmentArmId)).toEqual(schema2.map(r => r.treatmentArmId));
@@ -129,7 +128,7 @@ describe('generateMinimization - Property Tests', () => {
   it('all subjects have a treatment arm from the configured arms', () => {
     fc.assert(
       fc.property(fullMinimizationConfigArbitrary, config => {
-        const mt = new MT19937(MT19937.get31BitSeed(config.seed));
+        const mt = new MT19937Internal(MT19937Internal.get31BitSeed(config.seed));
         const schema = generateMinimization(config as any, () => mt.random(), new SubjectRegistry(config as any));
         const armIds = new Set(config.arms.map(a => a.id));
 
@@ -143,7 +142,7 @@ describe('generateMinimization - Property Tests', () => {
   it('maintains subject ID uniqueness', () => {
     fc.assert(
       fc.property(fullMinimizationConfigArbitrary, config => {
-        const mt = new MT19937(MT19937.get31BitSeed(config.seed));
+        const mt = new MT19937Internal(MT19937Internal.get31BitSeed(config.seed));
         const schema = generateMinimization(config as any, () => mt.random(), new SubjectRegistry(config as any));
         const ids = schema.map(r => r.subjectId);
         const uniqueIds = new Set(ids);
@@ -175,7 +174,7 @@ describe('generateMinimization - Property Tests', () => {
 
     fc.assert(
       fc.property(marginalArb, config => {
-        const mt = new MT19937(MT19937.get31BitSeed(config.seed));
+        const mt = new MT19937Internal(MT19937Internal.get31BitSeed(config.seed));
         const schema = generateMinimization(config as any, () => mt.random(), new SubjectRegistry(config as any));
 
         for (const factor of config.strata) {
