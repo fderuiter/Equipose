@@ -812,4 +812,134 @@ describe('ConfigFormComponent (domain)', () => {
       expect(stataIndicator).toBeTruthy();
     });
   });
+
+  describe('Automated Schema Migration & Archiving Fallback', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      component.clearIsolatedDraft();
+    });
+
+    afterEach(() => {
+      localStorage.clear();
+    });
+
+    it('should automatically migrate v1 drafts to v2 and translate legacy tokens in subjectIdMask', () => {
+      const mockLegacyDraft = {
+        schemaVersion: 'v1',
+        state: {
+          form: {
+            metadataGroup: {
+              protocolId: 'MIGRATED-ID',
+              studyName: 'Migrated Study',
+              phase: 'II',
+              subjectIdMask: '[SiteID]-[StrataID]-[001]',
+              seed: 'migrated-seed'
+            },
+            regulatoryGroup: {
+              isAcknowledged: true
+            },
+            designGroup: {
+              randomizationMethod: 'BLOCK',
+              arms: [{ id: 'A', name: 'Arm A', ratio: 1 }]
+            },
+            strataGroup: {
+              sitesStr: '101',
+              strata: []
+            },
+            allocationGroup: {
+              blockSizesStr: '4',
+              blockSelectionType: 'RANDOM_POOL',
+              blockOverrides: []
+            },
+            capsGroup: {
+              capStrategy: 'PROPORTIONAL',
+              globalCap: 100,
+              stratumCaps: []
+            }
+          },
+          signals: {
+            currentStepIndex: 1
+          }
+        }
+      };
+
+      localStorage.setItem('draft-trial-config', JSON.stringify(mockLegacyDraft));
+
+      (component as any).hydrateDraft();
+
+      expect(component.form.get('metadataGroup.protocolId')?.value).toBe('MIGRATED-ID');
+      expect(component.form.get('metadataGroup.subjectIdMask')?.value).toBe('{SITE}-{STRATUM}-{SEQ:3}');
+      expect(component.currentStepIndex()).toBe(1);
+      expect(localStorage.getItem('draft-trial-config')).toBeNull();
+      expect(component.hasIsolatedDraft()).toBe(false);
+    });
+
+    it('should isolate the draft under fallback key if JSON parsing fails', () => {
+      const corruptData = '{corrupt-json';
+      localStorage.setItem('draft-trial-config', corruptData);
+
+      (component as any).hydrateDraft();
+
+      expect(localStorage.getItem('draft-trial-config')).toBeNull();
+      expect(localStorage.getItem('draft-trial-config-fallback')).toBe(corruptData);
+      expect(component.hasIsolatedDraft()).toBe(true);
+    });
+
+    it('should isolate the draft under fallback key if draft version is unsupported', () => {
+      const unknownVersionDraft = {
+        schemaVersion: 'v999',
+        state: {
+          form: {
+            metadataGroup: { protocolId: 'UNKNOWN-VERSION' }
+          }
+        }
+      };
+      const rawStr = JSON.stringify(unknownVersionDraft);
+      localStorage.setItem('draft-trial-config', rawStr);
+
+      (component as any).hydrateDraft();
+
+      expect(localStorage.getItem('draft-trial-config')).toBeNull();
+      expect(localStorage.getItem('draft-trial-config-fallback')).toBe(rawStr);
+      expect(component.hasIsolatedDraft()).toBe(true);
+    });
+
+    it('should allow exporting the isolated draft as a JSON file download', () => {
+      const fallbackData = JSON.stringify({ state: { form: { metadataGroup: { protocolId: 'EXPORT-TEST' } } } });
+      localStorage.setItem('draft-trial-config-fallback', fallbackData);
+      component.hasIsolatedDraft.set(true);
+
+      const mockAnchor = {
+        href: '',
+        download: '',
+        click: vi.fn()
+      };
+      const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any);
+      const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
+      const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+      component.exportIsolatedDraft();
+
+      expect(createElementSpy).toHaveBeenCalledWith('a');
+      expect(mockAnchor.href).toBe('blob:test');
+      expect(mockAnchor.download).toContain('equipose_isolated_draft_');
+      expect(mockAnchor.click).toHaveBeenCalled();
+      expect(createObjectURLSpy).toHaveBeenCalled();
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
+
+      createElementSpy.mockRestore();
+      createObjectURLSpy.mockRestore();
+      revokeObjectURLSpy.mockRestore();
+    });
+
+    it('should clear fallback draft from localStorage and update signal on clearIsolatedDraft', () => {
+      localStorage.setItem('draft-trial-config-fallback', 'some-data');
+      component.hasIsolatedDraft.set(true);
+
+      component.clearIsolatedDraft();
+
+      expect(localStorage.getItem('draft-trial-config-fallback')).toBeNull();
+      expect(component.hasIsolatedDraft()).toBe(false);
+    });
+  });
 });

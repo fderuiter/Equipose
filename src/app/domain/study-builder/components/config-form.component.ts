@@ -50,7 +50,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   private autoSaveTimeout: ReturnType<typeof setTimeout> | null = null;
   private draftCleared = false;
   private readonly DRAFT_KEY = 'draft-trial-config';
-  private readonly SCHEMA_VERSION = 'v1';
+  public readonly FALLBACK_KEY = 'draft-trial-config-fallback';
+  public readonly SCHEMA_VERSION = 'v2';
+  public readonly hasIsolatedDraft = signal<boolean>(false);
 
   ngOnDestroy(): void {
     if (this.autoSaveTimeout) {
@@ -239,6 +241,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     });
     
     if (isPlatformBrowser(this.platformId)) {
+      this.hasIsolatedDraft.set(localStorage.getItem(this.FALLBACK_KEY) !== null);
       this.hydrateDraft();
     }
 
@@ -1006,19 +1009,116 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  private runMigrationPipeline(draft: any): any {
+    let currentDraft = { ...draft };
+    const migrationSteps: Record<string, (d: any) => any> = {
+      'v1': (d: any) => {
+        const upgraded = JSON.parse(JSON.stringify(d));
+        if (upgraded.state?.form?.metadataGroup) {
+          let mask = upgraded.state.form.metadataGroup.subjectIdMask || '';
+          if (typeof mask === 'string') {
+            mask = mask
+              .replace(/\[SiteID\]/gi, '{SITE}')
+              .replace(/\[SITE\]/gi, '{SITE}')
+              .replace(/\[StrataID\]/gi, '{STRATUM}')
+              .replace(/\[STRATUM\]/gi, '{STRATUM}')
+              .replace(/\[001\]/g, '{SEQ:3}')
+              .replace(/\[0001\]/g, '{SEQ:4}');
+            upgraded.state.form.metadataGroup.subjectIdMask = mask;
+          }
+        }
+        upgraded.schemaVersion = 'v2';
+        return upgraded;
+      }
+    };
+
+    while (currentDraft.schemaVersion !== this.SCHEMA_VERSION) {
+      const step = migrationSteps[currentDraft.schemaVersion];
+      if (!step) {
+        throw new Error(`No migration step defined for version: ${currentDraft.schemaVersion}`);
+      }
+      currentDraft = step(currentDraft);
+    }
+    return currentDraft;
+  }
+
+  private isolateDraft(rawDraftStr: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem(this.FALLBACK_KEY, rawDraftStr);
+        this.hasIsolatedDraft.set(true);
+      } catch (e) {
+        console.warn('Failed to isolate legacy draft config', e);
+      }
+      localStorage.removeItem(this.DRAFT_KEY);
+    }
+  }
+
+  public exportIsolatedDraft(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const rawData = localStorage.getItem(this.FALLBACK_KEY);
+    if (!rawData) return;
+    try {
+      const blob = new Blob([rawData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = this.document.createElement('a');
+      a.href = url;
+      a.download = `equipose_isolated_draft_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to export isolated draft', e);
+    }
+  }
+
+  public clearIsolatedDraft(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    localStorage.removeItem(this.FALLBACK_KEY);
+    this.hasIsolatedDraft.set(false);
+  }
+
   private hydrateDraft(): void {
     try {
       const draftStr = localStorage.getItem(this.DRAFT_KEY);
       if (!draftStr) return;
       
-      const draft = JSON.parse(draftStr);
-      if (draft.schemaVersion !== this.SCHEMA_VERSION) {
-        this.clearDraft();
+      let draft: any;
+      try {
+        draft = JSON.parse(draftStr);
+      } catch (_e) {
+        this.isolateDraft(draftStr);
         return;
       }
-      
+
+      if (!draft || typeof draft !== 'object') {
+        this.isolateDraft(draftStr);
+        return;
+      }
+
+      if (!draft.schemaVersion) {
+        draft.schemaVersion = 'v1';
+      }
+
+      if (draft.schemaVersion !== this.SCHEMA_VERSION) {
+        try {
+          draft = this.runMigrationPipeline(draft);
+        } catch (e) {
+          console.warn('Draft migration failed, isolating draft.', e);
+          this.isolateDraft(draftStr);
+          return;
+        }
+      }
+
+      if (draft.schemaVersion !== this.SCHEMA_VERSION) {
+        this.isolateDraft(draftStr);
+        return;
+      }
+
       const state = draft.state;
-      if (!state) return;
+      if (!state) {
+        this.isolateDraft(draftStr);
+        return;
+      }
 
       // Restore signals first so that any synced computed/effects behave correctly
       if (state.signals) {
