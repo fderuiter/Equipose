@@ -3,6 +3,7 @@
   "entry": [
     "src/app/core/forms/signal-form-directives.ts",
     "src/app/domain/randomization-engine/core/randomization-algorithm.ts",
+    "src/app/domain/randomization-engine/core/mt19937.ts",
     "src/app/domain/schema-management/services/generation/formatting.util.ts"
   ],
   "ignoreDependencies": [

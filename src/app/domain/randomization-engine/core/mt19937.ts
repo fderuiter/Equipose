@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
-/**
- * @deprecated Use Web Crypto API (`crypto.getRandomValues`) for random number generation and `sha256Hex` from `crypto-hash.ts` for hashing.
- */
 class HashPRNG {
   private i = 0;
   private j = 0;
@@ -66,10 +62,7 @@ class HashPRNG {
   }
 }
 
-/**
- * @deprecated Use Web Crypto API (`crypto.getRandomValues`) for random number generation and `sha256Hex` from `crypto-hash.ts` for hashing.
- */
-export class MT19937 {
+export class MT19937Internal {
   private mt: Uint32Array;
   private mti: number;
 
@@ -131,7 +124,7 @@ export class MT19937 {
   }
 
   static get31BitSeed(str: string | undefined): number {
-    const hex128 = MT19937.get128BitHash(str);
+    const hex128 = MT19937Internal.get128BitHash(str);
     let hash = 2166136261;
     for (let i = 0; i < hex128.length; i++) {
       hash ^= hex128.charCodeAt(i);
@@ -141,3 +134,8 @@ export class MT19937 {
     return (hash >>> 0) % 2147483647;
   }
 }
+
+/**
+ * @deprecated Use Web Crypto API (`crypto.getRandomValues`) for random number generation and `sha256Hex` from `crypto-hash.ts` for hashing.
+ */
+export class MT19937 extends MT19937Internal {}
