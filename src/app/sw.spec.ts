@@ -26,7 +26,8 @@ describe('Service Worker Route Whitelisting for /index.html', () => {
 
       // Test route matching using the whitelisted regexes
       const hasMatch = (pathname: string) => {
-        return validRoutesRegex.some((regexStr: string) => new RegExp(regexStr).test(pathname)); // nosem
+        // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
+        return validRoutesRegex.some((regexStr: string) => new RegExp(regexStr).test(pathname));
       };
 
       // /index.html must match
