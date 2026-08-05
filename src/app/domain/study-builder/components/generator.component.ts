@@ -35,6 +35,46 @@ type ResultsTab = 'grid' | 'balance';
   ],
   template: `
     <div class="space-y-8" data-testid="generator-page">
+      @if (configForm.hasIsolatedDraft()) {
+        <!-- Isolated Draft Warning Banner -->
+        <div class="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm animate-fade-in" data-testid="isolated-draft-banner">
+          <div class="flex items-start gap-3">
+            <div class="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg text-amber-700 dark:text-amber-300 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-200">Unrecoverable Draft Detected</h3>
+              <p class="text-xs text-amber-700/80 dark:text-amber-300/80 mt-1">
+                A saved study draft could not be automatically migrated because its format is incompatible with the current application version. You can export the raw design JSON to prevent data loss.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <app-button
+              variant="bare"
+              (onClick)="configForm.exportIsolatedDraft()"
+              customClass="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-1.5 cursor-pointer"
+              data-testid="export-isolated-draft-btn"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export Raw JSON
+            </app-button>
+            <app-button
+              variant="bare"
+              (onClick)="configForm.clearIsolatedDraft()"
+              customClass="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-slate-700 cursor-pointer"
+              data-testid="clear-isolated-draft-btn"
+            >
+              Dismiss
+            </app-button>
+          </div>
+        </div>
+      }
+
       <!-- Intro -->
       <div [class]="domainTheme.layout().cardClasses">
         <div class="flex items-start justify-between gap-4 mb-3">
@@ -237,7 +277,7 @@ export class GeneratorComponent implements OnInit {
   }
 
   /** Reference to the embedded config form so we can drive preset loading. */
-  private readonly configForm = viewChild<ConfigFormComponent>('configForm');
+  public readonly configForm = viewChild<ConfigFormComponent>('configForm');
 
   private static readonly SCROLL_DELAY_MS = 100;
 
