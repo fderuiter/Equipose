@@ -1,3 +1,18 @@
+# [1.38.0](https://github.com/fderuiter/Equipose/compare/v1.37.0...v1.38.0) (2026-08-05)
+
+
+### Bug Fixes
+
+* **ci:** fix E2E tab switching race condition and resolve Semgrep RegExp warning ([987ebc9](https://github.com/fderuiter/Equipose/commit/987ebc9cfd234a1edc7f9b48a297674ea43f61a7))
+* **security:** replace invalid nosem comment with nosemgrep to fix Semgrep ReDoS warning ([0a7a067](https://github.com/fderuiter/Equipose/commit/0a7a0672d934498dfbe22391a98bf6871fc128a6))
+* skip service worker registration in testing and development ([ee93e34](https://github.com/fderuiter/Equipose/commit/ee93e34080455365bd11a8004e2e0e57da40472b))
+
+
+### Features
+
+* implement MIME Guard with client update broadcast and prompt ([37ef7a0](https://github.com/fderuiter/Equipose/commit/37ef7a0438f68a662a5af1db115796170eb39949))
+* **pwa:** whitelist /index.html in service worker dynamically at build-time ([0a404f5](https://github.com/fderuiter/Equipose/commit/0a404f55f2f2ec21d9472f3752da1deefdcd15e5))
+
 # [1.37.0](https://github.com/fderuiter/Equipose/compare/v1.36.0...v1.37.0) (2026-08-04)
 
 
