@@ -50,6 +50,15 @@ jobs:
           echo "Cloudflare secrets are not available. Skipping cleanup."
           exit 0
         fi
-        npx wrangler delete equipose-pr-${{ github.event.pull_request.number }}
+
+        TARGET_NAME="equipose-pr-${{ github.event.pull_request.number }}"
+
+        if [ "$TARGET_NAME" = "equipose" ]; then
+          echo "Error: Safety check triggered! Target deployment name matches production deployment name 'equipose'."
+          echo "Aborting execution to protect production resources."
+          exit 1
+        fi
+
+        pnpm exec wrangler delete --name "$TARGET_NAME"
     permissions:
       contents: read
