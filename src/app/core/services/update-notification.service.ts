@@ -114,6 +114,7 @@ export class UpdateNotificationService {
   private async cleanupOrphanedCaches(): Promise<void> {
     try {
       if (typeof window === 'undefined' || !('caches' in window)) return;
+      if (this.isTestOrDev && !this.isMockUpdate) return;
 
       // 1. Identify Latest Cache (Waiting or Active)
       const swResponse = await fetch('/sw.js');
