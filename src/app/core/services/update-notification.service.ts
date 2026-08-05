@@ -59,6 +59,13 @@ export class UpdateNotificationService {
         });
       });
 
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'MIME_TYPE_VIOLATION') {
+          if (this.isTestOrDev && !this.isMockUpdate) return;
+          this.updateAvailable.set(true);
+        }
+      });
+
       let refreshing = false;
       const hasInitialController = !!navigator.serviceWorker.controller;
       navigator.serviceWorker.addEventListener('controllerchange', () => {

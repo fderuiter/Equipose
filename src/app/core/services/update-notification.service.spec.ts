@@ -102,4 +102,80 @@ describe('UpdateNotificationService', () => {
     expect(service.isMockUpdate).toBe(true);
     expect(service.updateAvailable()).toBe(true);
   });
+
+  it('should set updateAvailable to true when a MIME_TYPE_VIOLATION message is received and isTestOrDev is false', () => {
+    let messageCallback: ((event: any) => void) | null = null;
+
+    vi.stubGlobal('location', {
+      search: '',
+      hostname: 'example.com',
+      reload: vi.fn()
+    });
+
+    vi.stubGlobal('navigator', {
+      serviceWorker: {
+        getRegistration: () => Promise.resolve(null),
+        addEventListener: vi.fn((event, callback) => {
+          if (event === 'message') {
+            messageCallback = callback;
+          }
+        })
+      }
+    });
+
+    TestBed.configureTestingModule({
+      providers: [UpdateNotificationService]
+    });
+    service = TestBed.inject(UpdateNotificationService);
+
+    expect(messageCallback).not.toBeNull();
+    expect(service.updateAvailable()).toBe(false);
+
+    // Call the callback to simulate receiving the message
+    if (messageCallback) {
+      (messageCallback as any)({
+        data: { type: 'MIME_TYPE_VIOLATION' }
+      });
+    }
+
+    expect(service.updateAvailable()).toBe(true);
+  });
+
+  it('should NOT set updateAvailable to true when a MIME_TYPE_VIOLATION message is received and isTestOrDev is true', () => {
+    let messageCallback: ((event: any) => void) | null = null;
+
+    vi.stubGlobal('location', {
+      search: '',
+      hostname: 'localhost',
+      reload: vi.fn()
+    });
+
+    vi.stubGlobal('navigator', {
+      serviceWorker: {
+        getRegistration: () => Promise.resolve(null),
+        addEventListener: vi.fn((event, callback) => {
+          if (event === 'message') {
+            messageCallback = callback;
+          }
+        })
+      }
+    });
+
+    TestBed.configureTestingModule({
+      providers: [UpdateNotificationService]
+    });
+    service = TestBed.inject(UpdateNotificationService);
+
+    expect(messageCallback).not.toBeNull();
+    expect(service.updateAvailable()).toBe(false);
+
+    // Call the callback to simulate receiving the message
+    if (messageCallback) {
+      (messageCallback as any)({
+        data: { type: 'MIME_TYPE_VIOLATION' }
+      });
+    }
+
+    expect(service.updateAvailable()).toBe(false);
+  });
 });
