@@ -145,6 +145,31 @@ self.addEventListener('fetch', (event) => {
         return fetch(event.request);
       }
 
+      const url = new URL(event.request.url);
+      const isStaticAsset = url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+      
+      if (isStaticAsset) {
+        return fetch(event.request).then((response) => {
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            self.clients.matchAll({ type: 'window' }).then((clients) => {
+              clients.forEach((client) => {
+                client.postMessage({
+                  type: 'MIME_TYPE_VIOLATION',
+                  url: event.request.url
+                });
+              });
+            });
+            return new Response('Not Found', {
+              status: 404,
+              statusText: 'Not Found',
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          }
+          return response;
+        });
+      }
+
       return fetch(event.request);
     }).catch(() => {
       // Offline fallback
