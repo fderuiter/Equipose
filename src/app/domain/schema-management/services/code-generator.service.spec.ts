@@ -90,6 +90,18 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('WARNING: This generated SAS script does not guarantee bit-for-bit sequence parity');
     });
 
+    it('should generate static code for SAS with minimization config', () => {
+      const configWithCaps = {
+        ...minimizationConfig,
+        stratumCaps: [
+          { levelIds: { age: '<65' }, cap: 50 },
+          { levelIds: { age: '>=65' }, cap: 50 }
+        ]
+      };
+      const code = service.generateStatic('SAS', configWithCaps);
+      expect(code).toContain('array arr_SubjectID');
+    });
+
     it('should generate static code for STATA', () => {
       const code = service.generateStatic('STATA', standardBlockConfig);
       expect(code).toContain('schema_out = J(');
