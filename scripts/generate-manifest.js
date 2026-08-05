@@ -57,6 +57,9 @@ const swRegexes = validRoutes.map(routePath => {
   return '^/' + routePath.replace(/:[a-zA-Z0-9_]+/g, '[^/]+') + '/?$';
 });
 
+// Append regular expression strictly matching /index.html for direct access offline whitelisting
+swRegexes.push('^/index\\.html$');
+
 const cacheVersion = hash.digest('hex');
 const cacheName = `app-cache-v${cacheVersion}`;
 
