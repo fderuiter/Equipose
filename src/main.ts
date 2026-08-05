@@ -42,7 +42,16 @@ bootstrapApplication(App, appConfig)
       }).catch(err => console.error('Failed to load axe-core:', err));
     }
 
-    if (!isDevMode() && 'serviceWorker' in navigator) {
+    const isTestOrDev = typeof window !== 'undefined' && (
+      (typeof navigator !== 'undefined' && navigator.webdriver) ||
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '::1' ||
+      window.location.hostname === '0.0.0.0' ||
+      window.location.hostname.endsWith('.localhost')
+    );
+
+    if (!isDevMode() && 'serviceWorker' in navigator && !isTestOrDev) {
       const registerSW = () => {
         navigator.serviceWorker.register('/sw.js').then((registration) => {
           registration.update();
