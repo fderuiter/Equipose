@@ -22,11 +22,11 @@ type ScriptFixture = {
 const artifactRoot = resolve(process.cwd(), 'artifacts', 'code-generation-fixtures');
 const execFileAsync = promisify(execFile);
 
-const languageTabs: { language: Language; tabName: RegExp; extension: string }[] = [
-  { language: 'R', tabName: /^R$/i, extension: 'R' },
-  { language: 'Python', tabName: /^Python$/i, extension: 'py' },
-  { language: 'SAS', tabName: /^SAS$/i, extension: 'sas' },
-  { language: 'Stata', tabName: /^Stata$/i, extension: 'do' },
+const languageTabs: { language: Language; tabName: RegExp; extension: string; marker: string }[] = [
+  { language: 'R', tabName: /^R$/i, extension: 'R', marker: 'init_mt' },
+  { language: 'Python', tabName: /^Python$/i, extension: 'py', marker: 'import pandas as pd' },
+  { language: 'SAS', tabName: /^SAS$/i, extension: 'sas', marker: '%let seed' },
+  { language: 'Stata', tabName: /^Stata$/i, extension: 'do', marker: 'mata:' },
 ];
 
 const test = base.extend<ScriptFixture>({
@@ -55,11 +55,12 @@ const test = base.extend<ScriptFixture>({
       const codeBlock = modal.getByTestId('generated-code');
       await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
 
-      for (const { language, tabName, extension } of languageTabs) {
+      for (const { language, tabName, extension, marker } of languageTabs) {
         await modal.getByRole('tab', { name: tabName }).dispatchEvent('click');
         await page.waitForTimeout(200);
 
         await expect(codeBlock).toContainText(new RegExp(scenario.protocolId), { timeout: 10_000 });
+        await expect(codeBlock).toContainText(marker, { timeout: 10_000 });
 
         const downloadPromise = page.waitForEvent('download', { timeout: 10_000 });
         await modal.getByRole('button', { name: /Download/i }).first().dispatchEvent('click');
