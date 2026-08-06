@@ -24,5 +24,6 @@ Welcome to the central documentation hub for Equipose. This documentation is org
 *Understanding-oriented discussions that clarify concepts and background.*
 
 - [Architecture Concepts - Equipose](explanation/ARCHITECTURE_CONCEPTS.md)
+- [Standardized Persona Framework and Validation Strategy](explanation/PERSONA_STRATEGY.md)
 - [SAS & Stata Cross-Environment Exception Report](explanation/SAS_Stata_Exception_Report.md)
 - [ADR 0001 — SAS Script Static Validation Strategy](explanation/adr/0001-sas-static-validation-strategy.md)
