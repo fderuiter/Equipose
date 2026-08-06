@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 
 /**
  * UpdateNotificationService
@@ -17,6 +17,18 @@ export class UpdateNotificationService {
   readonly updateAvailable = signal(false);
 
   private waitingWorker: ServiceWorker | null = null;
+
+  /** Set of active block keys from client-side tasks. */
+  readonly activeBlocks = signal<Set<string>>(new Set());
+
+  /** Derived signal whether any reload blocks are currently registered. */
+  readonly isBlocked = computed(() => this.activeBlocks().size > 0);
+
+  /** True when a reload has been intercepted and deferred. */
+  readonly isDeferred = signal(false);
+
+  private refreshing = false;
+  private forceReload = false;
 
   get isTestOrDev(): boolean {
     if (typeof window === 'undefined') return false;
@@ -66,13 +78,17 @@ export class UpdateNotificationService {
         }
       });
 
-      let refreshing = false;
       const hasInitialController = !!navigator.serviceWorker.controller;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!hasInitialController || (this.isTestOrDev && !this.isMockUpdate)) return;
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
+        if (!this.refreshing) {
+          if (this.isBlocked() && !this.forceReload) {
+            this.isDeferred.set(true);
+            this.updateAvailable.set(true);
+          } else {
+            this.refreshing = true;
+            window.location.reload();
+          }
         }
       });
 
@@ -81,10 +97,39 @@ export class UpdateNotificationService {
         this.cleanupOrphanedCaches();
       }, 2000);
     }
+
+    // Effect to auto-reload deferred tabs once blocking state ends
+    effect(() => {
+      if (this.isDeferred() && !this.isBlocked()) {
+        if (!this.refreshing) {
+          this.refreshing = true;
+          window.location.reload();
+        }
+      }
+    });
+  }
+
+  /** Registers a block key that prevents reload. */
+  registerBlock(key: string): void {
+    this.activeBlocks.update(blocks => {
+      const next = new Set(blocks);
+      next.add(key);
+      return next;
+    });
+  }
+
+  /** Unregisters a block key. */
+  unregisterBlock(key: string): void {
+    this.activeBlocks.update(blocks => {
+      const next = new Set(blocks);
+      next.delete(key);
+      return next;
+    });
   }
 
   /** Tell the waiting worker to activate, which will trigger the reload. */
   activateUpdate(): void {
+    this.forceReload = true;
     if (this.isMockUpdate) {
       window.location.reload();
       return;

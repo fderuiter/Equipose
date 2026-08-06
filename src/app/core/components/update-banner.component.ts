@@ -30,7 +30,13 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 text-indigo-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        <span>A new version of Equipose is available.</span>
+        <span>
+          @if (updateService.isDeferred()) {
+            An update is ready and will apply once the simulation finishes.
+          } @else {
+            A new version of Equipose is available.
+          }
+        </span>
       </div>
       <div class="flex items-center gap-2 flex-shrink-0">
         <button
@@ -39,7 +45,7 @@ import { AppTooltipDirective } from '../directives/tooltip.directive';
           class="rounded-md bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset px-3 py-1 font-medium transition-colors"
           [class.transition-none]="updateService.isMockUpdate"
         >
-          Reload &amp; Update
+          {{ updateService.isDeferred() ? 'Reload Now' : 'Reload & Update' }}
         </button>
         <button
           type="button"
