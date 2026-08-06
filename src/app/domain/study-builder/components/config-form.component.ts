@@ -1065,6 +1065,27 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     this.hasIsolatedDraft.set(false);
   }
 
+  private getSessionLock(): boolean {
+    try {
+      if (typeof sessionStorage !== 'undefined' && sessionStorage) {
+        return sessionStorage.getItem(this.LOCK_KEY) === 'true';
+      }
+    } catch (_e) {}
+    return false;
+  }
+
+  private setSessionLock(value: boolean): void {
+    try {
+      if (typeof sessionStorage !== 'undefined' && sessionStorage) {
+        if (value) {
+          sessionStorage.setItem(this.LOCK_KEY, 'true');
+        } else {
+          sessionStorage.removeItem(this.LOCK_KEY);
+        }
+      }
+    } catch (_e) {}
+  }
+
   private hydrateDraft(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -1073,28 +1094,28 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       if (!draftStr) return;
 
       // Check for rendering crash lock
-      if (sessionStorage.getItem(this.LOCK_KEY) === 'true') {
+      if (this.getSessionLock()) {
         console.warn('Crash loop detected! Clearing corrupt draft.');
         this.clearDraft();
-        sessionStorage.removeItem(this.LOCK_KEY);
+        this.setSessionLock(false);
         return;
       }
 
       // Set crash lock before we start loading/parsing/rendering
-      sessionStorage.setItem(this.LOCK_KEY, 'true');
+      this.setSessionLock(true);
       
       let draft: any;
       try {
         draft = JSON.parse(draftStr);
       } catch (_e) {
         this.isolateDraft(draftStr);
-        sessionStorage.removeItem(this.LOCK_KEY);
+        this.setSessionLock(false);
         return;
       }
 
       if (!draft || typeof draft !== 'object') {
         this.isolateDraft(draftStr);
-        sessionStorage.removeItem(this.LOCK_KEY);
+        this.setSessionLock(false);
         return;
       }
 
@@ -1108,21 +1129,21 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
         } catch (e) {
           console.warn('Draft migration failed, isolating draft.', e);
           this.isolateDraft(draftStr);
-          sessionStorage.removeItem(this.LOCK_KEY);
+          this.setSessionLock(false);
           return;
         }
       }
 
       if (draft.schemaVersion !== this.SCHEMA_VERSION) {
         this.isolateDraft(draftStr);
-        sessionStorage.removeItem(this.LOCK_KEY);
+        this.setSessionLock(false);
         return;
       }
 
       const state = draft.state;
       if (!state) {
         this.isolateDraft(draftStr);
-        sessionStorage.removeItem(this.LOCK_KEY);
+        this.setSessionLock(false);
         return;
       }
 
@@ -1194,14 +1215,12 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
       // Clear the session crash lock after form rendering is complete
       setTimeout(() => {
-        if (isPlatformBrowser(this.platformId)) {
-          sessionStorage.removeItem(this.LOCK_KEY);
-        }
+        this.setSessionLock(false);
       }, 0);
     } catch (e) {
       console.warn('Failed to hydrate draft config, clearing it.', e);
       this.clearDraft();
-      sessionStorage.removeItem(this.LOCK_KEY);
+      this.setSessionLock(false);
     }
   }
 
