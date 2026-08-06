@@ -1,15 +1,27 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "equipose",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-05-12",
   "observability": {
     "enabled": true
   },
   "assets": {
     "directory": "dist/app/browser",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "not_found_handling": "none"
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "rules": [
+    {
+      "type": "Text",
+      "globs": [
+        "**/_headers"
+      ],
+      "fallthrough": true
+    }
   ]
 }
