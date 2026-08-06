@@ -99,14 +99,16 @@ export class UpdateNotificationService {
     }
 
     // Effect to auto-reload deferred tabs once blocking state ends
-    effect(() => {
-      if (this.isDeferred() && !this.isBlocked()) {
-        if (!this.refreshing) {
-          this.refreshing = true;
-          window.location.reload();
+    if (typeof window !== 'undefined') {
+      effect(() => {
+        if (this.isDeferred() && !this.isBlocked()) {
+          if (!this.refreshing) {
+            this.refreshing = true;
+            window.location.reload();
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   /** Registers a block key that prevents reload. */

@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID, signal, effect } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
   RandomizationConfig,
@@ -59,19 +59,12 @@ export class RandomizationEngineFacade {
   readonly monteCarloError = signal<string | null>(null);
   readonly lastMonteCarloConfig = signal<RandomizationConfig | null>(null);
   
+  private readonly updateService = inject(UpdateNotificationService);
+
   constructor() {
     if (this.isBrowser) {
       this.initWorker();
     }
-
-    const updateService = inject(UpdateNotificationService);
-    effect(() => {
-      if (this.isMonteCarloRunning()) {
-        updateService.registerBlock('monte-carlo-simulation');
-      } else {
-        updateService.unregisterBlock('monte-carlo-simulation');
-      }
-    });
   }
 
   // -------------------------------------------------------------------------
@@ -185,6 +178,7 @@ export class RandomizationEngineFacade {
 
   runMonteCarlo(config: RandomizationConfig, attritionRate = 0): void {
     this.isMonteCarloRunning.set(true);
+    this.updateService.registerBlock('monte-carlo-simulation');
     this.monteCarloProgress.set(0);
     this.monteCarloResults.set(null);
     this.monteCarloError.set(null);
@@ -192,6 +186,7 @@ export class RandomizationEngineFacade {
 
     if (!this.worker) {
       this.isMonteCarloRunning.set(false);
+      this.updateService.unregisterBlock('monte-carlo-simulation');
       this.monteCarloProgress.set(0);
       this.monteCarloResults.set(null);
       this.monteCarloError.set('Web Worker execution is blocked or unavailable in this environment. Please run the validation script locally.');
@@ -215,11 +210,13 @@ export class RandomizationEngineFacade {
       onSuccess: (r: MonteCarloSuccessPayload) => {
         this.monteCarloResults.set(r);
         this.isMonteCarloRunning.set(false);
+        this.updateService.unregisterBlock('monte-carlo-simulation');
         this.monteCarloProgress.set(100);
         this.announcementService.announce('Simulation complete. Results are available.', 'polite');
       },
       onError: (e: unknown) => {
         this.isMonteCarloRunning.set(false);
+        this.updateService.unregisterBlock('monte-carlo-simulation');
         const errPayload = e as { error?: { error?: string } };
         const errorMsg = errPayload?.error?.error || 'Worker encountered an unexpected error.';
         this.monteCarloError.set(errorMsg);
@@ -236,6 +233,7 @@ export class RandomizationEngineFacade {
   cancelMonteCarlo(): void {
     if (this.isMonteCarloRunning()) {
       this.isMonteCarloRunning.set(false);
+      this.updateService.unregisterBlock('monte-carlo-simulation');
       this.monteCarloProgress.set(0);
       this.monteCarloResults.set(null);
       this.monteCarloError.set(null);
@@ -265,6 +263,7 @@ export class RandomizationEngineFacade {
     this.monteCarloResults.set(null);
     this.monteCarloProgress.set(0);
     this.isMonteCarloRunning.set(false);
+    this.updateService.unregisterBlock('monte-carlo-simulation');
     this.monteCarloError.set(null);
   }
 
@@ -338,6 +337,7 @@ export class RandomizationEngineFacade {
         // If Monte Carlo was active, ensure running state is disabled but do NOT close the modal
         if (this.isMonteCarloRunning()) {
           this.isMonteCarloRunning.set(false);
+          this.updateService.unregisterBlock('monte-carlo-simulation');
         }
       };
     } catch {
