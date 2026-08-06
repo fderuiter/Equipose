@@ -1011,6 +1011,10 @@ jobs:
         echo "=== Updated SAS_Stata_Exception_Report.md (preview) ==="
         head -40 docs/explanation/SAS_Stata_Exception_Report.md
 
+    - name: Verify Documentation is Up-to-Date
+      run: |
+        git diff --exit-code docs/
+
     - name: Upload updated documentation artifact
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
       with:
@@ -1020,7 +1024,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [setup, e2e, code_generation_fixtures, python_script_execution_check, sas_static_validation, stata_static_validation, metadata_validation, merge_reports, traceability_matrix, script_validation_report, cross_env_equivalence, sbom, security_scan, lint_actions]
+    needs: [setup, e2e, code_generation_fixtures, python_script_execution_check, sas_static_validation, stata_static_validation, metadata_validation, merge_reports, traceability_matrix, script_validation_report, cross_env_equivalence, sbom, security_scan, lint_actions, architecture_documentation_sync]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: write

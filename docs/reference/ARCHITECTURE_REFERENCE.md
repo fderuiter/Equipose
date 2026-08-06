@@ -235,7 +235,7 @@ classDiagram
     }
 
     class RandomizationResult {
-        +{ protocolId: string; studyName: string; phase: string; seed: string; generatedAt: string; strata: StratificationFactor[]; config: RandomizationConfig; auditHash: string; } metadata
+        +[ protocolId: string, studyName: string, phase: string, seed: string, generatedAt: string, strata: StratificationFactor[], config: RandomizationConfig, auditHash: string, ] metadata
         +GeneratedSchema[] schema
     }
 ```
@@ -594,11 +594,15 @@ graph LR
     RE_MODELS["domain/core/models ✅"]
     TARGET_0["*/domain/randomization-engine/core/* ❌"]
     SB -. blocked .-> TARGET_0
-    TARGET_1["*/domain/randomization-engine/worker/* ❌"]
+    TARGET_1["@domain/randomization-engine/core/* ❌"]
     SB -. blocked .-> TARGET_1
+    TARGET_2["*/domain/randomization-engine/worker/* ❌"]
+    SB -. blocked .-> TARGET_2
+    TARGET_3["@domain/randomization-engine/worker/* ❌"]
+    SB -. blocked .-> TARGET_3
     ALGO_FILE["randomization-engine/core/**"]
-    TARGET_2["@angular/* ❌"]
-    ALGO_FILE -. blocked .-> TARGET_2
+    TARGET_4["@angular/* ❌"]
+    ALGO_FILE -. blocked .-> TARGET_4
 
     SB --> RE_FACADE
     SB --> RE_MODELS

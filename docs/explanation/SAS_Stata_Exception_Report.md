@@ -136,7 +136,7 @@ tagged `[REQ-21CFR11-001]` through `[REQ-21CFR11-004]`.
 
 ### 4.5 Configuration Constants
 
-- **Validation Vector:** `['B', 'B', 'A', 'A', 'A', 'B', 'B', 'A']`
+- **Validation Vector:** `['A', 'B', 'B', 'A', 'B', 'A', 'A', 'B']`
 - **Precision Parity:** `1000000000000`
 
 
