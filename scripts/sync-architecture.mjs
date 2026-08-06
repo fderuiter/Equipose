@@ -30,7 +30,13 @@ function generateDataModelDiagram() {
           let type = member.type ? fileContent.substring(member.type.pos, member.type.end).trim() : 'any';
           type = type.replace(/\s+/g, ' '); // flatten newlines for mermaid
           const optional = member.questionToken ? '?' : '';
-          classDiagram += `        +${type.replace(/</g, '~').replace(/>/g, '~')} ${propName}${optional}\n`;
+          const sanitizedType = type
+            .replace(/</g, '~')
+            .replace(/>/g, '~')
+            .replace(/\{/g, '[')
+            .replace(/\}/g, ']')
+            .replace(/;/g, ',');
+          classDiagram += `        +${sanitizedType} ${propName}${optional}\n`;
         }
       });
       classDiagram += `    }\n\n`;
