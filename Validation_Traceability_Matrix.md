@@ -1,6 +1,6 @@
 # Validation Traceability Matrix
 
-> **Generated:** 2026-08-06T14:34:16.600Z  
+> **Generated:** 2026-08-06T16:10:12.392Z  
 > **Status:** Test results not provided — status shown as UNKNOWN  
 > **Requirements covered:** 13 / 16  
 > **Tagged test cases:** 36  
@@ -95,10 +95,10 @@
 
 ## SAS & Stata Cross-Environment Note
 
-Mathematical result validation for SAS and Stata is deferred to the end-user 
+Mathematical result validation for SAS and Stata is deferred to the end-user
 environment per the formal Exception Report. See `docs/explanation/SAS_Stata_Exception_Report.md`.
 
-Static syntax validation of generated SAS scripts is automated in CI via the 
-`sas_static_validation` job (`scripts/validate-sas-syntax.mjs`). 
+Static syntax validation of generated SAS scripts is automated in CI via the
+`sas_static_validation` job (`scripts/validate-sas-syntax.mjs`).
 See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the validation strategy ADR.
 

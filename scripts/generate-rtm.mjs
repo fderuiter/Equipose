@@ -532,10 +532,10 @@ lines.push('| `REQ-SBOM` | Supply-Chain Security – Software Bill of Materials 
 lines.push('| `REQ-EXPORT` | Export Artifact Provenance Requirements |\n');
 lines.push('---\n');
 lines.push('## SAS & Stata Cross-Environment Note\n');
-lines.push('Mathematical result validation for SAS and Stata is deferred to the end-user ');
+lines.push('Mathematical result validation for SAS and Stata is deferred to the end-user');
 lines.push('environment per the formal Exception Report. See `docs/explanation/SAS_Stata_Exception_Report.md`.\n');
-lines.push('Static syntax validation of generated SAS scripts is automated in CI via the ');
-lines.push('`sas_static_validation` job (`scripts/validate-sas-syntax.mjs`). ');
+lines.push('Static syntax validation of generated SAS scripts is automated in CI via the');
+lines.push('`sas_static_validation` job (`scripts/validate-sas-syntax.mjs`).');
 lines.push('See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the validation strategy ADR.\n');
 
 const resolvedOutputPath = isAbsolute(outputPath) ? outputPath : join(repoRoot, outputPath);
