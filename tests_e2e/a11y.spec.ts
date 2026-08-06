@@ -17,6 +17,43 @@ const fontSmoothingStyle = `
     font-smoothing: antialiased !important;
     transition: none !important;
     animation: none !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  body, html, p, span, h1, h2, h3, h4, h5, h6, pre, code, button, td, th {
+    text-rendering: optimizeLegibility !important;
+    font-kerning: normal !important;
+    -webkit-text-size-adjust: 100% !important;
+  }
+  [role="tablist"], .nav-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+  }
+  [role="tab"], .nav-link {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  [data-testid="generated-code"] {
+    overflow: hidden !important;
+  }
+  app-toast, [role="alert"], .toast, .alert {
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+  }
+  app-results-grid, #results-section, .table-responsive, [role="grid"], .grid-container, .ngx-datatable, .grid-wrapper, table {
+    overflow: hidden !important;
+  }
+  app-monte-carlo-modal, [role="dialog"], .modal-content, .warning, .alert-warning, [data-testid="mc-attrition-warning"], [data-testid="mc-confidence-statement"] {
+    text-rendering: optimizeLegibility !important;
   }
 `;
 
@@ -206,7 +243,6 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
       if (isMobile) {
         await expect(modal).toHaveScreenshot(`code-generator-modal-${mode}.png`, {
           ...elementScreenshotOptions,
-          maxDiffPixelRatio: 0.20,
           mask: getMasks(page)
         });
       } else {
@@ -246,8 +282,7 @@ async function runTransientStateChecks(page: Page, mode: 'light' | 'dark' | 'hig
   await checkA11y(page, 'div[role="alert"]');
   await page.waitForTimeout(500);
   await expect(toast).toHaveScreenshot(`toast-state-${mode}.png`, {
-    ...elementScreenshotOptions,
-    maxDiffPixelRatio: 0.20
+    ...elementScreenshotOptions
   });
 }
 
@@ -338,7 +373,6 @@ async function runThemeCoverage(page: Page, mode: 'light' | 'dark' | 'high-contr
     await checkA11y(page, '#results-section');
     await expect(resultsSection).toHaveScreenshot(`results-grid-${mode}.png`, {
       ...elementScreenshotOptions,
-      maxDiffPixelRatio: 0.20,
       mask: getMasks(page)
     });
   } else {
@@ -434,7 +468,6 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
   if (isMobile) {
     await expect(modal).toHaveScreenshot(`monte-carlo-standard-${mode}.png`, {
       ...elementScreenshotOptions,
-      maxDiffPixelRatio: 0.20,
       mask: getMasks(page)
     });
   } else {
@@ -493,7 +526,6 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
   if (isMobile) {
     await expect(modal).toHaveScreenshot(`monte-carlo-warning-${mode}.png`, {
       ...elementScreenshotOptions,
-      maxDiffPixelRatio: 0.20,
       mask: getMasks(page)
     });
   } else {
