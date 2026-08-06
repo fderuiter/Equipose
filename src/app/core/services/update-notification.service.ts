@@ -147,18 +147,36 @@ export class UpdateNotificationService {
       }
 
       let activeCacheName: string | null = null;
+      let maxScore = -1;
+      let candidates: string[] = [];
+
       for (const key of cacheKeys) {
         if (!key.startsWith('app-cache-v')) continue;
 
-        const cache = await window.caches.open(key);
-        for (const url of loadedUrls) {
-          const match = await cache.match(url);
-          if (match) {
-            activeCacheName = key;
-            break;
+        let score = 0;
+        try {
+          const cache = await window.caches.open(key);
+          for (const url of loadedUrls) {
+            const match = await cache.match(url);
+            if (match) {
+              score++;
+            }
           }
+        } catch {
+          // Keep the current score if cache operations fail
         }
-        if (activeCacheName) break;
+
+        if (score > maxScore) {
+          maxScore = score;
+          candidates = [key];
+        } else if (score === maxScore) {
+          candidates.push(key);
+        }
+      }
+
+      if (candidates.length > 0) {
+        candidates.sort((a, b) => b.localeCompare(a));
+        activeCacheName = candidates[0];
       }
 
       // 3. Preservation & Safe Deletion
