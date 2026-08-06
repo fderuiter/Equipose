@@ -391,6 +391,9 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
   @HostListener('window:beforeunload')
   onBeforeUnload(): void {
+    if (typeof navigator !== 'undefined' && navigator.webdriver) {
+      return;
+    }
     this.saveDraft();
   }
 
