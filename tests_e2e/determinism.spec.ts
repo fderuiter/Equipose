@@ -13,7 +13,7 @@ test.describe('Determinism Test Suite', () => {
     await page.locator('input#subjectIdMask').clear();
     await page.fill('input#subjectIdMask', 'DET-{SITE}-{SEQ:3}');
     
-    await page.fill('input#seed', 'deterministic-seed-2026');
+    await page.fill('input#seed', 'deterministicseed2026');
     await page.keyboard.press('Tab');
     await page.locator("button:has-text('Next'):visible").first().dispatchEvent('click');
 
@@ -80,6 +80,6 @@ test.describe('Determinism Test Suite', () => {
     const hash = await auditHashElement.innerText();
     console.log(`Generated Hash: ${hash}`);
     
-    expect(hash).toBe('bee2b6a37476...0a4dc268d78e');
+    expect(hash).toBe('463fb6beeea3...c9421b5a559e');
   });
 });
