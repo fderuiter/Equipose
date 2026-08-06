@@ -16,7 +16,7 @@ const CONFIGS: Record<string, RandomizationConfig> = {
     strata: [],
     blockSizes: [4],
     stratumCaps: [{ levels: [], cap: 8 }],
-    seed: 'GOLDEN_SEED_1',
+    seed: 'GOLDENSEED1',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'PERMUTED_BLOCK'
   },
@@ -32,7 +32,7 @@ const CONFIGS: Record<string, RandomizationConfig> = {
     strata: [{ id: 'age', name: 'Age', levels: ['<65', '>=65'] }],
     blockSizes: [],
     stratumCaps: [],
-    seed: 'GOLDEN_SEED_2',
+    seed: 'GOLDENSEED2',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'MINIMIZATION',
     minimizationConfig: { p: 0.8, totalSampleSize: 10 }
@@ -52,7 +52,7 @@ const CONFIGS: Record<string, RandomizationConfig> = {
     blockSizes: [3],
     stratumCaps: [],
     capStrategy: 'MARGINAL_ONLY',
-    seed: 'GOLDEN_SEED_3',
+    seed: 'GOLDENSEED3',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'PERMUTED_BLOCK'
   },
@@ -68,7 +68,7 @@ const CONFIGS: Record<string, RandomizationConfig> = {
     strata: [],
     blockSizes: [2],
     stratumCaps: [{ levels: [], cap: 4 }],
-    seed: 'GOLDEN_SEED_4',
+    seed: 'GOLDENSEED4',
     subjectIdMask: '{SITE}-{SEQ:5}',
     randomizationMethod: 'PERMUTED_BLOCK'
   },
@@ -92,7 +92,7 @@ const CONFIGS: Record<string, RandomizationConfig> = {
       { levels: ['High', 'NA'], cap: 4 },
       { levels: ['High', 'EU'], cap: 4 }
     ],
-    seed: 'GOLDEN_SEED_5',
+    seed: 'GOLDENSEED5',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'PERMUTED_BLOCK'
   }

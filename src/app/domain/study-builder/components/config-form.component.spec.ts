@@ -487,18 +487,35 @@ describe('ConfigFormComponent (domain)', () => {
   describe('metadata fields', () => {
     it('should preserve seed and subjectIdMask values after metadata edits', () => {
       expect(component.form.get('metadataGroup.subjectIdMask')?.value).toBe('{SITE}-{STRATUM}-{SEQ:3}');
-      component.form.get('metadataGroup.seed')?.setValue('my-custom-seed');
+      component.form.get('metadataGroup.seed')?.setValue('mycustomseed');
       component.form.get('metadataGroup.subjectIdMask')?.setValue('{SITE}-{SEQ:4}');
 
-      expect(component.form.get('metadataGroup.seed')?.value).toBe('my-custom-seed');
+      expect(component.form.get('metadataGroup.seed')?.value).toBe('mycustomseed');
       expect(component.form.get('metadataGroup.subjectIdMask')?.value).toBe('{SITE}-{SEQ:4}');
     });
 
     it('should keep the form valid after metadata field edits', () => {
       expect(component.form.valid).toBe(true);
-      component.form.get('metadataGroup.seed')?.setValue('seed-42');
+      component.form.get('metadataGroup.seed')?.setValue('seed4242');
       component.form.get('metadataGroup.subjectIdMask')?.setValue('{SITE}-{STRATUM}-{SEQ:3}');
       expect(component.form.valid).toBe(true);
+    });
+
+    it('should be invalid if seed is under 8 characters', () => {
+      component.form.get('metadataGroup.seed')?.setValue('short1');
+      expect(component.form.get('metadataGroup.seed')?.invalid).toBe(true);
+      expect(component.form.get('metadataGroup.seed')?.errors?.['minlength']).toBeTruthy();
+    });
+
+    it('should be invalid if seed is non-alphanumeric', () => {
+      component.form.get('metadataGroup.seed')?.setValue('validlength-withhyphen');
+      expect(component.form.get('metadataGroup.seed')?.invalid).toBe(true);
+      expect(component.form.get('metadataGroup.seed')?.errors?.['pattern']).toBeTruthy();
+    });
+
+    it('should be valid if seed is empty', () => {
+      component.form.get('metadataGroup.seed')?.setValue('');
+      expect(component.form.get('metadataGroup.seed')?.valid).toBe(true);
     });
   });
   describe('Algorithm-switch scenarios', () => {

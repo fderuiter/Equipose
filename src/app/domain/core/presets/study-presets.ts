@@ -34,7 +34,7 @@ const SimplePreset: RandomizationConfig = {
   sites: ['Site01'],
   strata: [],
   stratumCaps: [],
-  seed: 'simple-seed-123',
+  seed: 'simpleseed123',
   subjectIdMask: '{SITE}-{SEQ:3}',
   randomizationMethod: 'BLOCK'
 };
@@ -53,7 +53,7 @@ const StandardPreset: RandomizationConfig = {
     { id: 'age', name: 'Age Group', levels: ['<65', '>=65'] }
   ],
   stratumCaps: [],
-  seed: 'standard-seed-456',
+  seed: 'standardseed456',
   subjectIdMask: '{SITE}-{SEQ:4}',
   randomizationMethod: 'BLOCK'
 };
@@ -74,7 +74,7 @@ const ComplexPreset: RandomizationConfig = {
     { id: 'gender', name: 'Gender', levels: ['M', 'F'] }
   ],
   stratumCaps: [],
-  seed: 'complex-seed-789',
+  seed: 'complexseed789',
   subjectIdMask: '{SITE}-{SEQ:5}',
   randomizationMethod: 'BLOCK',
   globalBlockStrategy: {
@@ -97,7 +97,7 @@ const MinimalPreset: RandomizationConfig = {
     { id: 'age', name: 'Age Group', levels: ['<65', '>=65'] }
   ],
   stratumCaps: [],
-  seed: 'min-seed-123',
+  seed: 'minseed123',
   subjectIdMask: '{SITE}-{SEQ:4}',
   randomizationMethod: 'MINIMIZATION',
   minimizationConfig: { totalSampleSize: 100, p: 0.8 }
