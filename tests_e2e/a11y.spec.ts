@@ -541,6 +541,79 @@ async function runMonteCarloVisualChecks(page: Page, mode: 'light' | 'dark' | 'h
   await expect(modal).toBeHidden({ timeout: 5000 });
 }
 
+async function runStep3AndStep5VisualChecks(page: Page, mode: 'light' | 'dark' | 'high-contrast'): Promise<void> {
+  await openGenerator(page);
+  if (mode === 'dark') await applyDarkMode(page);
+
+  // 1. Transition to Step 3 (Sites & Stratification)
+  await loadPreset(page, 'Simple');
+  await goToStep(page, 2); // Go to Step 2 to change to minimization first
+  await page.getByRole('radio', { name: 'Minimization' }).dispatchEvent('click');
+  await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click');
+
+  // We are now on Step 3
+  await page.getByRole('button', { name: /\+ Add Factor/i }).dispatchEvent('click');
+  const strataRows = page.locator('[formArrayName="strata"] > div');
+  await expect(strataRows).toHaveCount(1, { timeout: 5000 });
+
+  const firstStratumRow = strataRows.first();
+  const levelsInput = firstStratumRow.locator('app-tag-input input').first();
+  await levelsInput.waitFor({ state: 'visible', timeout: 10000 });
+  await levelsInput.fill('Level1');
+  await levelsInput.press('Enter');
+  await levelsInput.fill('Level2');
+  await levelsInput.press('Enter');
+  await levelsInput.press('Tab');
+
+  // Trigger probability error (must sum to 100%)
+  const minimizationInputs = firstStratumRow.locator('input[type="number"]');
+  await minimizationInputs.nth(0).fill('60');
+  await minimizationInputs.nth(0).blur();
+  await minimizationInputs.nth(1).fill('30');
+  await minimizationInputs.nth(1).blur();
+
+  // Focus the first input to display the validation tooltip
+  await minimizationInputs.nth(0).focus();
+  const tooltip = page.locator('div[role="tooltip"]').first();
+  await expect(tooltip).toBeVisible();
+
+  // Take visual regression screenshot of Step 3 tooltip
+  await expect(tooltip).toHaveScreenshot(`step3-probability-tooltip-${mode}.png`, elementScreenshotOptions);
+
+  // Fix probability to allow proceeding
+  await minimizationInputs.nth(0).focus();
+  await minimizationInputs.nth(0).fill('70');
+  await minimizationInputs.nth(0).blur();
+
+  // Move to Step 5 (Enrollment Caps) to establish visited state
+  await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click'); // to step 4
+  await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click'); // to step 5
+
+  // Verify we are on Step 5
+  await expect(page.locator('li#step-header-5')).toHaveClass(/bg-indigo-50/);
+
+  // Go back to Step 3 (Sites & Stratification)
+  await page.getByRole('button', { name: /^Previous$/i }).dispatchEvent('click'); // to step 4
+  await page.getByRole('button', { name: /^Previous$/i }).dispatchEvent('click'); // to step 3
+
+  // Modify stratification factors to dirty the caps
+  await levelsInput.fill('Level3');
+  await levelsInput.press('Enter');
+  await levelsInput.press('Tab');
+
+  // Transition back to Step 5 (Enrollment Caps)
+  await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click'); // to step 4
+  await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click'); // to step 5
+
+  // Verify stratification changed warning toast is displayed
+  const warningToast = page.locator('div[role="alert"]').first();
+  await expect(warningToast).toBeVisible({ timeout: 10000 });
+  await expect(warningToast).toContainText('Stratification changed in a previous step.');
+
+  // Take visual regression screenshot of Step 5 warning toast
+  await expect(warningToast).toHaveScreenshot(`step5-reset-warning-toast-${mode}.png`, elementScreenshotOptions);
+}
+
 test.describe('Accessibility and visual regression - light mode', () => {
   test.beforeEach(async ({ page }) => {
     test.slow();
@@ -553,6 +626,10 @@ test.describe('Accessibility and visual regression - light mode', () => {
 
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'light');
+  });
+
+  test('Step 3 probability error tooltip and Step 5 stratification reset warning toast should match screenshots', async ({ page }) => {
+    await runStep3AndStep5VisualChecks(page, 'light');
   });
 
   test('Monte Carlo modal should pass accessibility and screenshot baselines', async ({ page }) => {
@@ -583,6 +660,10 @@ test.describe('Accessibility and visual regression - dark mode', () => {
     await runTransientStateChecks(page, 'dark');
   });
 
+  test('Step 3 probability error tooltip and Step 5 stratification reset warning toast should match screenshots', async ({ page }) => {
+    await runStep3AndStep5VisualChecks(page, 'dark');
+  });
+
   test('Monte Carlo modal should pass accessibility and screenshot baselines', async ({ page }) => {
     await runMonteCarloVisualChecks(page, 'dark');
   });
@@ -602,6 +683,10 @@ test.describe('Accessibility and visual regression - high contrast mode', () => 
 
   test('transient states should remain visible and accessible', async ({ page }) => {
     await runTransientStateChecks(page, 'high-contrast');
+  });
+
+  test('Step 3 probability error tooltip and Step 5 stratification reset warning toast should match screenshots', async ({ page }) => {
+    await runStep3AndStep5VisualChecks(page, 'high-contrast');
   });
 
   test('Monte Carlo modal should pass accessibility and screenshot baselines', async ({ page }) => {

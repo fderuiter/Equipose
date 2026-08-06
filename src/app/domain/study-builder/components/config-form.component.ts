@@ -141,6 +141,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
             this.hasVisitedCapsStep.set(true);
             if (shouldWarn) {
               this.capsResetWarning.set(true);
+              this.toastService.showWarning('Stratification changed in a previous step. Cap combinations were refreshed and proportional/marginal inputs were reset.');
             }
           }
           this.cdr.markForCheck();
