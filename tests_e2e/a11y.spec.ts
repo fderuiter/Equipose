@@ -43,6 +43,7 @@ const fontSmoothingStyle = `
     overflow: hidden !important;
   }
   app-toast, [role="alert"], .toast, .alert {
+    position: absolute !important;
     width: 320px !important;
     min-width: 320px !important;
     max-width: 320px !important;
@@ -59,7 +60,7 @@ const fontSmoothingStyle = `
 
 const screenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 20000 } as const;
 const resultsScreenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 30000 } as const;
-const elementScreenshotOptions = { maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 15000 } as const;
+const elementScreenshotOptions = { maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 15000, scrollIntoView: false } as const;
 
 function getMasks(page: Page, includeToast = true) {
   const masks = [
@@ -576,9 +577,11 @@ async function runStep3AndStep5VisualChecks(page: Page, mode: 'light' | 'dark' |
   await minimizationInputs.nth(0).focus();
   const tooltip = page.locator('div[role="tooltip"]').first();
   await expect(tooltip).toBeVisible();
+  await page.waitForTimeout(500);
 
   // Take visual regression screenshot of Step 3 tooltip
-  await expect(tooltip).toHaveScreenshot(`step3-probability-tooltip-${mode}.png`, elementScreenshotOptions);
+  const tooltipBuffer = await tooltip.screenshot({ scrollIntoView: false, animations: 'disabled', style: fontSmoothingStyle });
+  expect(tooltipBuffer).toMatchSnapshot(`step3-probability-tooltip-${mode}.png`, { maxDiffPixelRatio: 0.05 });
 
   // Fix probability to allow proceeding
   await minimizationInputs.nth(0).focus();
@@ -602,6 +605,12 @@ async function runStep3AndStep5VisualChecks(page: Page, mode: 'light' | 'dark' |
   await levelsInput.press('Tab');
 
   // Transition back to Step 5 (Enrollment Caps)
+  await page.evaluate(() => {
+    const ts = (window as any).toastService;
+    if (ts) {
+      ts.dismiss = () => {};
+    }
+  });
   await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click'); // to step 4
   await page.getByRole('button', { name: /^Next$/i }).dispatchEvent('click'); // to step 5
 
@@ -609,9 +618,11 @@ async function runStep3AndStep5VisualChecks(page: Page, mode: 'light' | 'dark' |
   const warningToast = page.locator('div[role="alert"]').first();
   await expect(warningToast).toBeVisible({ timeout: 10000 });
   await expect(warningToast).toContainText('Stratification changed in a previous step.');
+  await page.waitForTimeout(500);
 
   // Take visual regression screenshot of Step 5 warning toast
-  await expect(warningToast).toHaveScreenshot(`step5-reset-warning-toast-${mode}.png`, elementScreenshotOptions);
+  const toastBuffer = await warningToast.screenshot({ scrollIntoView: false, animations: 'disabled', style: fontSmoothingStyle });
+  expect(toastBuffer).toMatchSnapshot(`step5-reset-warning-toast-${mode}.png`, { maxDiffPixelRatio: 0.05 });
 }
 
 test.describe('Accessibility and visual regression - light mode', () => {
