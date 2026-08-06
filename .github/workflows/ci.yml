@@ -29,6 +29,8 @@ jobs:
           cdn.playwright.dev:443
           playwright.download.prss.microsoft.com:443
           storage.googleapis.com:443
+          pypi.org:443
+          files.pythonhosted.org:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -179,6 +181,8 @@ jobs:
           playwright.azureedge.net:443
           archive.ubuntu.com:80
           security.ubuntu.com:80
+          pypi.org:443
+          files.pythonhosted.org:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -257,6 +261,8 @@ jobs:
           playwright.azureedge.net:443
           archive.ubuntu.com:80
           security.ubuntu.com:80
+          pypi.org:443
+          files.pythonhosted.org:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -681,6 +687,8 @@ jobs:
           playwright.azureedge.net:443
           archive.ubuntu.com:80
           security.ubuntu.com:80
+          pypi.org:443
+          files.pythonhosted.org:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
@@ -795,6 +803,8 @@ jobs:
           playwright.azureedge.net:443
           archive.ubuntu.com:80
           security.ubuntu.com:80
+          pypi.org:443
+          files.pythonhosted.org:443
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
