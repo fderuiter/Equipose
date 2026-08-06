@@ -1,5 +1,6 @@
 import { ErrorHandler, Injectable, inject, Injector } from '@angular/core';
 import { UpdateNotificationService } from '../services/update-notification.service';
+import { SanitizingLogger } from '../utils/sanitizing-logger.util';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
@@ -39,7 +40,7 @@ export class GlobalErrorHandler implements ErrorHandler {
             window.location.hostname.endsWith('.localhost');
 
           if (isTestOrDev) {
-            console.warn('Chunk load error reload skipped in testing/development environment.');
+            SanitizingLogger.warn('Chunk load error reload skipped in testing/development environment.');
             return;
           }
 
@@ -55,7 +56,7 @@ export class GlobalErrorHandler implements ErrorHandler {
               // Ignore in test/non-browser environment
             }
           } else {
-            console.warn('Chunk load error reload skipped to prevent infinite reload loop.');
+            SanitizingLogger.warn('Chunk load error reload skipped to prevent infinite reload loop.');
           }
         }
       }
@@ -64,6 +65,6 @@ export class GlobalErrorHandler implements ErrorHandler {
     }
 
     // Call the default behavior to log to console
-    console.error(error);
+    SanitizingLogger.error(error);
   }
 }

@@ -9,6 +9,7 @@ import { FocusManagerDirective } from '@core/directives/focus-manager.directive'
 import { AppTooltipDirective } from '@core/directives/tooltip.directive';
 import { AnnouncementService } from '@core/services/announcement.service';
 import { ThemeService } from '@core/services/theme.service';
+import { SanitizingLogger } from '@core/utils/sanitizing-logger.util';
 
 /**
  * ⚡ Bolt Performance Optimization:
@@ -107,7 +108,7 @@ export class CodeGeneratorModalComponent implements OnInit {
       }
       this.generatedCode.set(code);
     } catch (e) {
-      console.error('Error generating code:', e);
+      SanitizingLogger.error('Error generating code:', e);
       if (e instanceof CodeGenerationError) {
         this.errorState.set(e);
       } else {
@@ -175,7 +176,7 @@ export class CodeGeneratorModalComponent implements OnInit {
       message: err.message,
       context: err.context
     };
-    navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    navigator.clipboard.writeText(SanitizingLogger.copyRedactedPayload(payload));
     this.announcementService.announce('Copied error log to clipboard!', 'polite');
   }
 
@@ -249,7 +250,7 @@ export class CodeGeneratorModalComponent implements OnInit {
         }, 100);
       }
     } catch (e) {
-      console.error('Error downloading code:', e);
+      SanitizingLogger.error('Error downloading code:', e);
     }
   }
 }
