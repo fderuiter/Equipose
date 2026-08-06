@@ -309,6 +309,30 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       expect(component.errorState()).toBeNull();
       expect(component.currentCode).toBe('Good SAS code');
     });
+
+    it('should copy a copyable, redacted JSON diagnostics payload replacing sensitive values with explicit redaction markers', async () => {
+      const codeGenErr = new CodeGenerationError('Specific failure', mockConfig);
+      (mockCodeGeneratorService as any).generate.mockImplementation(() => { throw codeGenErr; });
+      await component.setActiveTab('R');
+
+      const clipboardWriteSpy = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: clipboardWriteSpy },
+        configurable: true,
+        writable: true
+      });
+
+      component.copyErrorLog();
+
+      expect(clipboardWriteSpy).toHaveBeenCalled();
+      const copiedText = clipboardWriteSpy.mock.calls[0][0];
+      const parsed = JSON.parse(copiedText);
+      expect(parsed.errorName).toBe('CodeGenerationError');
+      expect(parsed.message).toBe('Specific failure');
+      expect(parsed.context.seed).toBe('[REDACTED]');
+      expect(parsed.context.blockSizes).toBe('[REDACTED]');
+      expect(parsed.context.studyName).toBe('Error Test');
+    });
   });
 
   describe('Pocock-Simon Minimization specific behavior', () => {
