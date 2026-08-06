@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { FocusManagerDirective } from './focus-manager.directive';
 
 @Component({
@@ -30,12 +31,29 @@ class TestHostEmptyComponent {
   @ViewChild('containerEmpty') containerEmpty!: ElementRef<HTMLDivElement>;
 }
 
+@Component({
+  template: `
+    <div #containerForm id="form-container" appFocusManager>
+      <input id="input-test" type="text" value="some text" />
+      <textarea id="textarea-test">multi-line text</textarea>
+      <select id="select-test">
+        <option value="1">Option 1</option>
+      </select>
+    </div>
+  `,
+  imports: [FocusManagerDirective],
+  standalone: true
+})
+class TestHostWithFormElementsComponent {
+  @ViewChild('containerForm') containerForm!: ElementRef<HTMLDivElement>;
+}
+
 describe('FocusManagerDirective', () => {
   let fixture: ComponentFixture<TestHostComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TestHostComponent, TestHostEmptyComponent]
+      imports: [TestHostComponent, TestHostEmptyComponent, TestHostWithFormElementsComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestHostComponent);
@@ -134,5 +152,60 @@ describe('FocusManagerDirective', () => {
     const emptyContainer = document.getElementById('empty-container') as HTMLElement;
     expect(emptyContainer.getAttribute('tabindex')).toBe('-1');
     expect(document.activeElement).toBe(emptyContainer);
+  });
+
+  describe('Form Elements Bypass', () => {
+    let formFixture: ComponentFixture<TestHostWithFormElementsComponent>;
+
+    beforeEach(() => {
+      formFixture = TestBed.createComponent(TestHostWithFormElementsComponent);
+      formFixture.detectChanges();
+    });
+
+    it('should NOT intercept ArrowUp and ArrowDown keys when focusing a native input element', () => {
+      const input = document.getElementById('input-test') as HTMLInputElement;
+      input.focus();
+      expect(document.activeElement).toBe(input);
+
+      // We dispatch ArrowDown. If it is bypassed, focus does not shift.
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true });
+      const spyPreventDefault = vi.spyOn(event, 'preventDefault');
+      input.dispatchEvent(event);
+
+      // Focus should remain on the input
+      expect(document.activeElement).toBe(input);
+      // preventDefault should NOT have been called
+      expect(spyPreventDefault).not.toHaveBeenCalled();
+    });
+
+    it('should NOT intercept ArrowUp and ArrowDown keys when focusing a native textarea element', () => {
+      const textarea = document.getElementById('textarea-test') as HTMLTextAreaElement;
+      textarea.focus();
+      expect(document.activeElement).toBe(textarea);
+
+      const event = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true });
+      const spyPreventDefault = vi.spyOn(event, 'preventDefault');
+      textarea.dispatchEvent(event);
+
+      // Focus should remain on the textarea
+      expect(document.activeElement).toBe(textarea);
+      // preventDefault should NOT have been called
+      expect(spyPreventDefault).not.toHaveBeenCalled();
+    });
+
+    it('should NOT intercept ArrowUp and ArrowDown keys when focusing a native select element', () => {
+      const select = document.getElementById('select-test') as HTMLSelectElement;
+      select.focus();
+      expect(document.activeElement).toBe(select);
+
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true });
+      const spyPreventDefault = vi.spyOn(event, 'preventDefault');
+      select.dispatchEvent(event);
+
+      // Focus should remain on the select
+      expect(document.activeElement).toBe(select);
+      // preventDefault should NOT have been called
+      expect(spyPreventDefault).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,4 +1,5 @@
 import { Directive, ElementRef, OnInit, OnDestroy, inject, Input } from '@angular/core';
+import { isNativeFormField } from '../utils/keyboard-bypass.util';
 
 @Directive({
   selector: '[appFocusManager]',
@@ -134,6 +135,10 @@ export class FocusManagerDirective implements OnInit, OnDestroy {
       }
     } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       // Arrow-Key Navigation (Requirement 2)
+      if (isNativeFormField(document.activeElement) || isNativeFormField(e.target)) {
+        return;
+      }
+
       if (elements.length === 0) {
         e.preventDefault();
         return;
