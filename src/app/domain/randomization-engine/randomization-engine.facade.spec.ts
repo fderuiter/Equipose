@@ -3,6 +3,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { RandomizationEngineFacade } from './randomization-engine.facade';
 import { RandomizationConfig, RandomizationResult } from '../core/models/randomization.model';
 import { StudyPresets } from '../core/presets/study-presets';
+import { UpdateNotificationService } from '../../core/services/update-notification.service';
 import { vi } from 'vitest';
 
 /** Flush all pending microtasks so async signals settle. */
@@ -344,6 +345,26 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     // Because it dispatched to the fake worker, results are null and it is still generating
     expect(facade.results()).toBeNull();
     expect(facade.isGenerating()).toBe(true);
+  });
+
+  it('should automatically register and unregister block states with UpdateNotificationService', async () => {
+    const updateService = TestBed.inject(UpdateNotificationService);
+    const registerSpy = vi.spyOn(updateService, 'registerBlock');
+    const unregisterSpy = vi.spyOn(updateService, 'unregisterBlock');
+
+    expect(facade.isMonteCarloRunning()).toBe(false);
+
+    // Start Monte Carlo
+    facade.runMonteCarlo(mockConfig, 0);
+    expect(facade.isMonteCarloRunning()).toBe(true);
+    await flushMicrotasks();
+    expect(registerSpy).toHaveBeenCalledWith('monte-carlo-simulation');
+
+    // End/Cancel Monte Carlo
+    facade.cancelMonteCarlo();
+    expect(facade.isMonteCarloRunning()).toBe(false);
+    await flushMicrotasks();
+    expect(unregisterSpy).toHaveBeenCalledWith('monte-carlo-simulation');
   });
 });
 

@@ -475,4 +475,118 @@ describe('UpdateNotificationService', () => {
       expect(cachesMock.keys).not.toHaveBeenCalled();
     });
   });
+
+  describe('Modular Reload Guard and Deferred Reload', () => {
+    let reloadMock: any;
+    let swListeners: Record<string, any>;
+
+    beforeEach(() => {
+      reloadMock = vi.fn();
+      swListeners = {};
+
+      vi.stubGlobal('location', {
+        search: '',
+        hostname: 'example.com',
+        reload: reloadMock
+      });
+
+      vi.stubGlobal('navigator', {
+        serviceWorker: {
+          getRegistration: () => Promise.resolve(null),
+          addEventListener: vi.fn((event, callback) => {
+            swListeners[event] = callback;
+          }),
+          controller: {}
+        }
+      });
+    });
+
+    it('should register and unregister block states correctly', () => {
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      expect(service.isBlocked()).toBe(false);
+
+      service.registerBlock('test-block');
+      expect(service.isBlocked()).toBe(true);
+
+      service.registerBlock('another-block');
+      expect(service.isBlocked()).toBe(true);
+
+      service.unregisterBlock('test-block');
+      expect(service.isBlocked()).toBe(true);
+
+      service.unregisterBlock('another-block');
+      expect(service.isBlocked()).toBe(false);
+    });
+
+    it('should reload immediately on controllerchange if not blocked', () => {
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      expect(swListeners['controllerchange']).toBeDefined();
+
+      swListeners['controllerchange']();
+
+      expect(reloadMock).toHaveBeenCalled();
+      expect(service.isDeferred()).toBe(false);
+    });
+
+    it('should defer reload on controllerchange if blocked, and show update notification', () => {
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      service.registerBlock('test-block');
+      expect(service.isBlocked()).toBe(true);
+
+      swListeners['controllerchange']();
+
+      expect(reloadMock).not.toHaveBeenCalled();
+      expect(service.isDeferred()).toBe(true);
+      expect(service.updateAvailable()).toBe(true);
+    });
+
+    it('should automatically reload once blocked state is cleared', async () => {
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      service.registerBlock('test-block');
+      swListeners['controllerchange']();
+
+      expect(reloadMock).not.toHaveBeenCalled();
+      expect(service.isDeferred()).toBe(true);
+
+      // Clear the block and wait for effect
+      service.unregisterBlock('test-block');
+
+      // Let vitest process the effect
+      await new Promise<void>(resolve => setTimeout(resolve, 0));
+
+      expect(reloadMock).toHaveBeenCalled();
+    });
+
+    it('should allow manual override reload at any time even when blocked', () => {
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      service.registerBlock('test-block');
+      swListeners['controllerchange']();
+
+      expect(reloadMock).not.toHaveBeenCalled();
+
+      service.activateUpdate();
+
+      expect(reloadMock).toHaveBeenCalled();
+    });
+  });
 });

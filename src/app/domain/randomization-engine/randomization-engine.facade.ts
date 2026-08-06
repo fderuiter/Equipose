@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID, signal, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
   RandomizationConfig,
@@ -6,6 +6,7 @@ import {
 } from '../core/models/randomization.model';
 import { AnnouncementService } from '../../core/services/announcement.service';
 import { ToastService } from '../../core/services/toast.service';
+import { UpdateNotificationService } from '../../core/services/update-notification.service';
 import { computeAuditHash } from './core/crypto-hash';
 import { generateRandomizationSchema, generateCryptoSeed } from './core/randomization-algorithm';
 import { previewSubjectIdMask, validateSubjectIdMask } from './core/subject-id-engine';
@@ -62,6 +63,15 @@ export class RandomizationEngineFacade {
     if (this.isBrowser) {
       this.initWorker();
     }
+
+    const updateService = inject(UpdateNotificationService);
+    effect(() => {
+      if (this.isMonteCarloRunning()) {
+        updateService.registerBlock('monte-carlo-simulation');
+      } else {
+        updateService.unregisterBlock('monte-carlo-simulation');
+      }
+    });
   }
 
   // -------------------------------------------------------------------------
