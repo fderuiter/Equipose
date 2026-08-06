@@ -35,6 +35,7 @@ export function sanitize<T>(val: T, visited = new WeakMap<any, any>()): T {
 
   // 4. Handle RegExp objects
   if (val instanceof RegExp) {
+    // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp
     const clonedRegExp = new RegExp(val.source, val.flags);
     visited.set(val, clonedRegExp);
     return clonedRegExp as any;
