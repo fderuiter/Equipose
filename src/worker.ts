@@ -134,7 +134,7 @@ function applyHeaders(pathname: string, response: Response, rules: HeaderRule[])
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const pathname = url.pathname;
 

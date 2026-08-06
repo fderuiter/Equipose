@@ -6,6 +6,9 @@ const angular = require('angular-eslint');
 
 module.exports = defineConfig([
   {
+    ignores: ['src/worker.ts']
+  },
+  {
     files: ['**/*.ts'],
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: __dirname } },
     extends: [
