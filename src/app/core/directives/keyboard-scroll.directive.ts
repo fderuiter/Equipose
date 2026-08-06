@@ -1,14 +1,19 @@
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, HostListener, inject } from '@angular/core';
+import { isScrollBypassElement } from '../utils/keyboard-bypass.util';
 
 @Directive({
   selector: '[appKeyboardScroll]',
   standalone: true
 })
 export class KeyboardScrollDirective {
-  constructor(private el: ElementRef<HTMLElement>) {}
+  private el = inject(ElementRef<HTMLElement>);
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    if (isScrollBypassElement(document.activeElement) || isScrollBypassElement(event.target)) {
+      return;
+    }
+
     const el = this.el.nativeElement;
     const scrollAmount = 40; // Pixels to scroll
 
