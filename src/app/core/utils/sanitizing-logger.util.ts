@@ -120,7 +120,7 @@ export function sanitize<T>(val: T, visited = new WeakMap<any, any>()): T {
  */
 export function safeJsonStringify(val: any): string {
   const seen = new WeakSet();
-  return JSON.stringify(val, (key, value) => {
+  return JSON.stringify(val, (_key, value) => {
     if (value instanceof Error) {
       const errorObj: any = {
         name: value.name,
