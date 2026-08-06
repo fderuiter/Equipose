@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error - headersText is generated dynamically at build time
 import headersText from '../dist/app/browser/_headers';
 
 export interface Env {
