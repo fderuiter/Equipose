@@ -97,6 +97,15 @@ async function main() {
       console.error(`❌ CSP on ${path} is missing sha256 hashes for script-src`);
       return false;
     }
+    // Verify connect-src 'self' and ensure no Bugsnag or Cloudflare references
+    if (!csp.includes("connect-src 'self'")) {
+      console.error(`❌ CSP on ${path} must have connect-src 'self'`);
+      return false;
+    }
+    if (csp.includes("bugsnag") || csp.includes("cloudflare")) {
+      console.error(`❌ CSP on ${path} contains unauthorized telemetry domains (bugsnag or cloudflare)`);
+      return false;
+    }
     console.log(`✅ ${path} CSP rules are valid.`);
     return true;
   };
