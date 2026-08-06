@@ -1,0 +1,236 @@
+[
+  {
+    "Requirement ID": "REQ-21CFR11-001",
+    "Suite Name": "21 CFR Part 11 – Audit Trail: generated code artifact provenance",
+    "Test Name": "R script contains application semantic version",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-001",
+    "Suite Name": "",
+    "Test Name": "Python script contains application semantic version",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-001",
+    "Suite Name": "",
+    "Test Name": "SAS script contains application semantic version",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-001",
+    "Suite Name": "",
+    "Test Name": "Stata script contains application semantic version",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-002",
+    "Suite Name": "",
+    "Test Name": "R script contains a valid ISO 8601 generated-at timestamp",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-002",
+    "Suite Name": "",
+    "Test Name": "Python script contains a valid ISO 8601 generated-at timestamp",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-002",
+    "Suite Name": "",
+    "Test Name": "SAS script contains a valid ISO 8601 generated-at timestamp",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-002",
+    "Suite Name": "",
+    "Test Name": "Stata script contains a valid ISO 8601 generated-at timestamp",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-003",
+    "Suite Name": "",
+    "Test Name": "R script contains the trial protocol identifier",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-003",
+    "Suite Name": "",
+    "Test Name": "Python script contains the trial protocol identifier",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-003",
+    "Suite Name": "",
+    "Test Name": "SAS script contains the trial protocol identifier",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-003",
+    "Suite Name": "",
+    "Test Name": "Stata script contains the trial protocol identifier",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-003",
+    "Suite Name": "",
+    "Test Name": "results header displays the protocol identifier",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-004",
+    "Suite Name": "",
+    "Test Name": "R script contains the PRNG seed initialisation statement",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-004",
+    "Suite Name": "",
+    "Test Name": "Python script contains the PRNG seed initialisation statement",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-004",
+    "Suite Name": "",
+    "Test Name": "SAS script contains the PRNG seed initialisation statement",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-004",
+    "Suite Name": "",
+    "Test Name": "Stata script contains the PRNG seed initialisation statement",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-004",
+    "Suite Name": "21 CFR Part 11 – Audit Trail: results grid metadata stamping",
+    "Test Name": "results header displays the randomization seed used for the schema",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-005",
+    "Suite Name": "ExportService > exportXlsx",
+    "Test Name": "should embed SHA-256 audit hash in the exported XLSX file",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-006",
+    "Suite Name": "21 CFR Part 11 – Audit Trail: PDF export provenance",
+    "Test Name": "PDF export contains the application semantic version",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-006",
+    "Suite Name": "",
+    "Test Name": "PDF export contains a valid ISO 8601 generated-at timestamp",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-006",
+    "Suite Name": "",
+    "Test Name": "PDF export contains the trial protocol identifier",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-21CFR11-006",
+    "Suite Name": "",
+    "Test Name": "PDF export contains the PRNG seed value",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-EXPORT-001",
+    "Suite Name": "",
+    "Test Name": "CSV download filename contains a date component for traceability",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-EXPORT-002",
+    "Suite Name": "",
+    "Test Name": "PDF export filename matches the expected pattern",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-EXPORT-002",
+    "Suite Name": "",
+    "Test Name": "should trigger a PDF download when the PDF button is clicked",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-EXPORT-003",
+    "Suite Name": "ExportService > exportXlsx",
+    "Test Name": "should render multi-tab structures and trigger file saves",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E6-001",
+    "Suite Name": "generateRandomizationSchema – new token syntax",
+    "Test Name": "{RND:n} produces no duplicate subject IDs across the schema",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E6-002",
+    "Suite Name": "ExportService > exportCsv",
+    "Test Name": "should include site information in exported CSV records",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E9-001",
+    "Suite Name": "Standalone Script",
+    "Test Name": "Execute scripts/cross-env/verify_python_schema.py",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E9-001",
+    "Suite Name": "ICH E9 – Law of Large Numbers: allocation ratio convergence",
+    "Test Name": "1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E9-001",
+    "Suite Name": "",
+    "Test Name": "should generate a schema and display results grid",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E9-002",
+    "Suite Name": "ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded",
+    "Test Name": "per-stratum caps are never exceeded across 100 random seeds",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E9-003",
+    "Suite Name": "Standalone Script",
+    "Test Name": "Execute scripts/cross-env/verify_python_schema.py",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-ICH-E9-003",
+    "Suite Name": "ICH E9 – Block Balance: strict intra-block arm balance",
+    "Test Name": "every block has exactly the correct count of each arm for a 1:1 ratio with block size 4",
+    "Status": "PASS"
+  },
+  {
+    "Requirement ID": "REQ-SBOM-001",
+    "Suite Name": "CI Workflow",
+    "Test Name": "Job: sbom",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-ZERO-TRUST-001",
+    "Suite Name": "Zero-Trust Architecture: no outbound network requests",
+    "Test Name": "schema generation produces zero outbound XHR/Fetch requests to external servers",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-ZERO-TRUST-001",
+    "Suite Name": "",
+    "Test Name": "CSV export produces zero outbound requests to external servers",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-ZERO-TRUST-001",
+    "Suite Name": "",
+    "Test Name": "PDF export produces zero outbound requests to external servers",
+    "Status": "UNKNOWN"
+  }
+]

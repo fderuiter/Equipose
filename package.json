@@ -11,6 +11,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:unit": "vitest run --exclude 'tests_e2e/**'",
+    "test:coverage": "vitest run --coverage --exclude 'tests_e2e/**'",
+    "verify:compliance": "node scripts/generate-rtm.mjs --vitest-results vitest-results.json --local",
     "test:e2e:a11y": "playwright test tests_e2e/a11y.spec.ts",
     "lint:code": "ng lint",
     "lint:md": "node scripts/check-markdown-links.js && node scripts/check-orphaned-docs.js",

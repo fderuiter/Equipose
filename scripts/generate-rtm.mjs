@@ -41,6 +41,7 @@ const vitestResultsPath  = getArg('--vitest-results')     ?? null;
 const playwrightResultsPath = getArg('--playwright-results') ?? null;
 const ciResultsPath         = getArg('--ci-results')          ?? null;
 const outputPath         = getArg('--out')                 ?? 'Validation_Traceability_Matrix.md';
+const lenient            = args.includes('--lenient') || args.includes('--local');
 
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot   = join(dirname(__filename), '..');
@@ -412,7 +413,8 @@ for (const reqId of sortedReqIds) {
       const statusIcon = entry.status === 'PASS' ? '✅ PASS' : entry.status === 'SKIP' ? '⏭️ SKIP' : entry.status === 'UNKNOWN' ? '⬜ UNKNOWN' : '❌ FAIL';
       const safeTest = entry.testName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
       const safeSuite = entry.suiteName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
-      lines.push(`| \`${reqId}\` | ${desc} | \`${entry.file}\` | ${entry.line} | ${safeTest} | ${safeSuite} | ${statusIcon} |`);
+      const activeLink = `[${entry.file}:${entry.line}](${entry.file}#L${entry.line})`;
+      lines.push(`| \`${reqId}\` | ${desc} | ${activeLink} | ${entry.line} | ${safeTest} | ${safeSuite} | ${statusIcon} |`);
       
       const escapeCsv = (str) => `"${str.replace(/"/g, '""')}"`;
       csvRows.push(`${reqId},${escapeCsv(entry.suiteName)},${escapeCsv(entry.testName)},${entry.status}`);
@@ -455,3 +457,39 @@ const rtmCsvPath = join(dirname(resolvedOutputPath), 'rtm.csv');
 writeFileSync(rtmCsvPath, csvRows.join('\n') + '\n', 'utf-8');
 
 console.log(`[generate-rtm] Wrote ${resolvedOutputPath}, rtm.json and rtm.csv`);
+
+// ── Compliance Gate Verification ───────────────────────────────────────────────
+
+const complianceGaps = [];
+for (const reqId of Object.keys(REQUIREMENTS)) {
+  const testsForReq = byReq.get(reqId) ?? [];
+  const passingTests = testsForReq.filter(t => t.status === 'PASS');
+  if (passingTests.length === 0) {
+    complianceGaps.push({
+      reqId,
+      description: REQUIREMENTS[reqId],
+      totalTests: testsForReq.length,
+      statuses: [...new Set(testsForReq.map(t => t.status))]
+    });
+  }
+}
+
+if (complianceGaps.length > 0) {
+  console.error('\n❌ [Compliance Gate Failed] The following clinical requirements lack a mapped, passing test:');
+  for (const gap of complianceGaps) {
+    console.error(`  - ${gap.reqId}: ${gap.description}`);
+    if (gap.totalTests === 0) {
+      console.error(`    ↳ Status: MISSING (No tests are tagged with this requirement)`);
+    } else {
+      console.error(`    ↳ Status: Lacks passing tests (Total tagged: ${gap.totalTests}, Statuses found: ${gap.statuses.join(', ')})`);
+    }
+  }
+  if (lenient) {
+    console.warn('\n⚠️ [Compliance Gate Warning] Local or lenient mode enabled. Proceeding despite compliance gaps.\n');
+  } else {
+    console.error('\nBuild cannot proceed due to unmet clinical requirements.\n');
+    process.exit(1);
+  }
+} else {
+  console.log('\n✅ [Compliance Gate Passed] All clinical requirements are mapped to at least one passing test!\n');
+}

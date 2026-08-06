@@ -550,12 +550,13 @@ jobs:
     - name: Extract shared environment
       run: tar -xf shared-env.tar
 
-    - name: Run unit tests with JSON reporter
+    - name: Run unit tests with JSON reporter and coverage
       run: |
         ./node_modules/.bin/vitest run \
+          --coverage \
           --exclude 'tests_e2e/**' \
           --reporter=json \
-          --outputFile=vitest-results.json || true
+          --outputFile=vitest-results.json
 
     - name: Download Playwright JSON report
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
@@ -592,10 +593,14 @@ jobs:
         head -50 Validation_Traceability_Matrix.md
 
     - name: Upload Validation Traceability Matrix
+      if: always()
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
       with:
         name: validation-traceability-matrix
-        path: Validation_Traceability_Matrix.md
+        path: |
+          Validation_Traceability_Matrix.md
+          rtm.json
+          rtm.csv
         retention-days: 90
 
   script_validation_report:

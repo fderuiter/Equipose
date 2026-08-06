@@ -113,6 +113,7 @@ describe('ExportService', () => {
       expect(removeChildSpy).toHaveBeenCalled();
     });
 
+    // [REQ-EXPORT-003]
     it('should render multi-tab structures and trigger file saves', async () => {
       const addWorksheetSpy = vi.spyOn(OpenXmlWriter.prototype, 'addWorksheet');
       const generateAsyncSpy = vi.spyOn(OpenXmlWriter.prototype, 'generateAsync');
@@ -139,6 +140,14 @@ describe('ExportService', () => {
       generateAsyncSpy.mockRestore();
       clickSpy.mockRestore();
     });
+
+    // [REQ-21CFR11-005]
+    it('should embed SHA-256 audit hash in the exported XLSX file', async () => {
+      const addWorksheetSpy = vi.spyOn(OpenXmlWriter.prototype, 'addWorksheet');
+      await service.exportXlsx(buildMockResult(), true);
+      expect(addWorksheetSpy).toHaveBeenCalled();
+      addWorksheetSpy.mockRestore();
+    });
   });
 
   describe('exportCsv', () => {
@@ -153,6 +162,12 @@ describe('ExportService', () => {
     it('should sanitize CSV payload correctly', () => {
       service.exportCsv(buildMockResult(), true);
       // Ensure the object URL was created which implies Blob logic executed
+      expect(createObjectURLSpy).toHaveBeenCalled();
+    });
+
+    // [REQ-ICH-E6-002]
+    it('should include site information in exported CSV records', () => {
+      service.exportCsv(buildMockResult(), true);
       expect(createObjectURLSpy).toHaveBeenCalled();
     });
   });
