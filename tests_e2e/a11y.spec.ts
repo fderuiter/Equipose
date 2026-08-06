@@ -97,6 +97,24 @@ async function applyDarkMode(page: Page): Promise<void> {
   await page.evaluate(() => document.documentElement.classList.add('dark'));
 }
 
+async function injectCSSStabilization(page: Page): Promise<void> {
+  await page.addInitScript((cssContent) => {
+    const injectStyles = () => {
+      if (!document.getElementById('font-smoothing-style')) {
+        const style = document.createElement('style');
+        style.id = 'font-smoothing-style';
+        style.textContent = cssContent;
+        (document.head || document.documentElement).appendChild(style);
+      }
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectStyles);
+    } else {
+      injectStyles();
+    }
+  }, fontSmoothingStyle);
+}
+
 async function assertLandingVisible(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: /Equipose/i })).toBeVisible();
   await expect(page.getByRole('link', { name: /New Study/i })).toBeVisible();
@@ -629,6 +647,7 @@ test.describe('Accessibility and visual regression - light mode', () => {
   test.beforeEach(async ({ page }) => {
     test.slow();
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
+    await injectCSSStabilization(page);
   });
 
   test('pages should pass accessibility, visibility, and screenshot baselines', async ({ page }) => {
@@ -654,6 +673,7 @@ test.describe('Accessibility and visual regression - dark mode', () => {
   test.beforeEach(async ({ page }) => {
     test.slow();
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
+    await injectCSSStabilization(page);
     await page.addInitScript(() => {
       try {
         localStorage.setItem('theme-preference', 'Dark');
@@ -686,6 +706,7 @@ test.describe('Accessibility and visual regression - high contrast mode', () => 
   test.beforeEach(async ({ page }) => {
     test.slow();
     page.on('pageerror', err => console.log(`Page Error: ${err.message}`)); page.on('console', msg => console.log(`Console: ${msg.text()}`));
+    await injectCSSStabilization(page);
   });
 
   test('pages should pass accessibility, visibility, and screenshot baselines', async ({ page }) => {
