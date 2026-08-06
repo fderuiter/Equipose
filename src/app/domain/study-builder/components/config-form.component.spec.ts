@@ -721,10 +721,16 @@ describe('ConfigFormComponent (domain)', () => {
 
     beforeEach(() => {
       localStorage.clear();
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
     });
 
     afterEach(() => {
       localStorage.clear();
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
     });
 
     it('should synchronously save the form draft to localStorage on window beforeunload', () => {
@@ -739,7 +745,7 @@ describe('ConfigFormComponent (domain)', () => {
       expect(draft.state.form.metadataGroup.protocolId).toBe('SAVED-ON-UNLOAD');
     });
 
-    it('should correctly restore state on hydration if a valid draft exists', () => {
+    it('should correctly restore state on hydration if a valid draft exists and retain the draft in localStorage', () => {
       const mockDraft = {
         schemaVersion: 'v1',
         state: {
@@ -794,7 +800,46 @@ describe('ConfigFormComponent (domain)', () => {
       expect(component.arms.at(0).get('ratio')?.value).toBe(2);
       expect(component.arms.at(1).get('name')?.value).toBe('Arm B');
       expect(component.arms.at(1).get('ratio')?.value).toBe(3);
+      expect(localStorage.getItem('draft-trial-config')).not.toBeNull();
+    });
+
+    it('should set session crash lock during hydration and clear it after rendering completes', async () => {
+      const mockDraft = {
+        schemaVersion: 'v2',
+        state: {
+          form: {
+            metadataGroup: { protocolId: 'LOCK-TEST' }
+          }
+        }
+      };
+      localStorage.setItem('draft-trial-config', JSON.stringify(mockDraft));
+
+      (component as any).hydrateDraft();
+
+      expect(sessionStorage.getItem('draft-render-lock')).toBe('true');
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(sessionStorage.getItem('draft-render-lock')).toBeNull();
+    });
+
+    it('should detect a crash loop if crash lock is already set, clear draft, and not hydrate', () => {
+      const mockDraft = {
+        schemaVersion: 'v2',
+        state: {
+          form: {
+            metadataGroup: { protocolId: 'CRASH-ID' }
+          }
+        }
+      };
+      localStorage.setItem('draft-trial-config', JSON.stringify(mockDraft));
+      sessionStorage.setItem('draft-render-lock', 'true');
+
+      (component as any).hydrateDraft();
+
+      expect(component.form.get('metadataGroup.protocolId')?.value).not.toBe('CRASH-ID');
       expect(localStorage.getItem('draft-trial-config')).toBeNull();
+      expect(sessionStorage.getItem('draft-render-lock')).toBeNull();
     });
   });
 
@@ -816,11 +861,17 @@ describe('ConfigFormComponent (domain)', () => {
   describe('Automated Schema Migration & Archiving Fallback', () => {
     beforeEach(() => {
       localStorage.clear();
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
       component.clearIsolatedDraft();
     });
 
     afterEach(() => {
       localStorage.clear();
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+      }
     });
 
     it('should automatically migrate v1 drafts to v2 and translate legacy tokens in subjectIdMask', () => {
@@ -870,7 +921,7 @@ describe('ConfigFormComponent (domain)', () => {
       expect(component.form.get('metadataGroup.protocolId')?.value).toBe('MIGRATED-ID');
       expect(component.form.get('metadataGroup.subjectIdMask')?.value).toBe('{SITE}-{STRATUM}-{SEQ:3}');
       expect(component.currentStepIndex()).toBe(1);
-      expect(localStorage.getItem('draft-trial-config')).toBeNull();
+      expect(localStorage.getItem('draft-trial-config')).not.toBeNull();
       expect(component.hasIsolatedDraft()).toBe(false);
     });
 
