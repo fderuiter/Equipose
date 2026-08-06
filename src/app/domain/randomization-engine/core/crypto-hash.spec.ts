@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildHashPayload, sha256Hex, computeAuditHash } from './crypto-hash';
+import { buildHashPayload, sha256Hex, computeAuditHash, syncSha256 } from './crypto-hash';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { StudyPresets } from '../../core/presets/study-presets';
 
@@ -17,7 +17,7 @@ describe('buildHashPayload', () => {
     strata: [],
     blockSizes: [4],
     stratumCaps: [],
-    seed: 'seed_abc',
+    seed: 'seedabc123',
     subjectIdMask: '{SITE}-{SEQ:3}'
   });
 
@@ -94,7 +94,7 @@ describe('computeAuditHash', () => {
       protocolId: 'AUDIT-001',
       studyName: 'Audit Test',
       phase: 'Phase III',
-      seed: 'fixed_seed',
+      seed: 'fixedseed123',
       generatedAt: '2024-06-01T12:00:00.000Z',
       strata: [],
       config: StudyPresets.extend(StudyPresets.Simple, {
@@ -106,7 +106,7 @@ describe('computeAuditHash', () => {
         strata: [],
         blockSizes: [2],
         stratumCaps: [],
-        seed: 'fixed_seed',
+        seed: 'fixedseed123',
         subjectIdMask: '{SITE}-{SEQ:3}'
       }),
       auditHash: '' // excluded from hash computation
@@ -129,7 +129,7 @@ describe('computeAuditHash', () => {
   it('changes when the seed changes', async () => {
     const modified: RandomizationResult = {
       ...mockResult,
-      metadata: { ...mockResult.metadata, seed: 'different_seed', config: { ...mockResult.metadata.config, seed: 'different_seed' } }
+      metadata: { ...mockResult.metadata, seed: 'differentseed123', config: { ...mockResult.metadata.config, seed: 'differentseed123' } }
     };
     const h1 = await computeAuditHash(mockResult);
     const h2 = await computeAuditHash(modified);
@@ -181,3 +181,27 @@ describe('computeAuditHash', () => {
     expect(h1).not.toBe(h2);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// syncSha256
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('syncSha256', () => {
+  it('returns a 64-character hex string matching standard SHA-256', () => {
+    const hex = syncSha256('hello world');
+    expect(hex).toHaveLength(64);
+    expect(hex).toBe('b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9');
+  });
+
+  it('matches known SHA-256 value for empty string', () => {
+    const hex = syncSha256('');
+    expect(hex).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+  });
+
+  it('is deterministic for the same input', () => {
+    const h1 = syncSha256('test value');
+    const h2 = syncSha256('test value');
+    expect(h1).toBe(h2);
+  });
+});
+

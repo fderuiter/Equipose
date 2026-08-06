@@ -165,7 +165,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
         studyName: ['Demo Study', Validators.required],
         phase: ['III', Validators.required],
         subjectIdMask: ['{SITE}-{STRATUM}-{SEQ:3}', Validators.required],
-        seed: ['']
+        seed: ['', [Validators.minLength(8), Validators.pattern(/^[a-zA-Z0-9]+$/)]]
       }),
       designGroup: this.fb.group({
         randomizationMethod: ['BLOCK'],

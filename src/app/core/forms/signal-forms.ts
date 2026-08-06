@@ -346,7 +346,17 @@ export const Validators = {
   },
   requiredTrue: (c: AbstractControl) => (c.value === true ? null : { required: true }),
   min: (min: number) => (c: AbstractControl) => (c.value < min ? { min: { min, actual: c.value } } : null),
-  max: (max: number) => (c: AbstractControl) => (c.value > max ? { max: { max, actual: c.value } } : null)
+  max: (max: number) => (c: AbstractControl) => (c.value > max ? { max: { max, actual: c.value } } : null),
+  minLength: (minLen: number) => (c: AbstractControl) => {
+    const val = c.value;
+    if (val === null || val === undefined || val === '') return null;
+    return val.length < minLen ? { minlength: { requiredLength: minLen, actualLength: val.length } } : null;
+  },
+  pattern: (pattern: RegExp) => (c: AbstractControl) => {
+    const val = c.value;
+    if (val === null || val === undefined || val === '') return null;
+    return pattern.test(val) ? null : { pattern: { requiredPattern: pattern.toString(), actualValue: val } };
+  }
 };
 
 import { Injectable } from "@angular/core";

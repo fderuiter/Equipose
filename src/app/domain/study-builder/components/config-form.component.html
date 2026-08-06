@@ -88,6 +88,14 @@
           <div>
             <label for="seed" class="block text-sm mb-1">PRNG Seed (Optional)</label>
             <app-text-input inputId="seed" type="text" formControlName="seed" class="w-full rounded-lg border px-3 py-2.5"></app-text-input>
+            @if (metadataGroup.get('seed')?.invalid) {
+              @if (metadataGroup.get('seed')?.errors?.['minlength']) {
+                <p class="mt-1 text-xs {{ domainTheme.getSemanticColor('error').textClass }}">Seed must be at least 8 characters long.</p>
+              }
+              @if (metadataGroup.get('seed')?.errors?.['pattern']) {
+                <p class="mt-1 text-xs {{ domainTheme.getSemanticColor('error').textClass }}">Seed must contain only alphanumeric characters.</p>
+              }
+            }
           </div>
         </div>
       </div>

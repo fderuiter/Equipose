@@ -28,7 +28,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
       { levelIds: { age: '<65' }, cap: 10 },
       { levelIds: { age: '>=65' }, cap: 10 }
     ],
-    seed: 'standard_seed',
+    seed: 'standardseed',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'BLOCK',
     capStrategy: 'MANUAL_MATRIX'
@@ -46,7 +46,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
     strata: [{ id: 'age', name: 'Age', levels: ['<65', '>=65'] }],
     blockSizes: [],
     stratumCaps: [],
-    seed: 'min_seed',
+    seed: 'minseed123',
     subjectIdMask: '{SITE}-{SEQ:3}',
     randomizationMethod: 'MINIMIZATION',
     capStrategy: 'MANUAL_MATRIX',
