@@ -127,11 +127,9 @@
                 <dd class="tabular-nums text-slate-900 dark:text-slate-100">{{row.blockNumber}} <span class="text-muted">(Size: {{row.blockSize}})</span></dd>
                 <dt class="text-muted">Treatment Arm</dt>
                 <dd data-testid="result-arm-cell">
-                  @if (isUnblinded()) {
-                    <span class="font-semibold text-slate-900 dark:text-slate-100">{{row.treatmentArm}}</span>
-                  } @else {
-                    <span class="text-muted">*** BLINDED ***</span>
-                  }
+                  <span class="font-semibold text-slate-900 dark:text-slate-100" [class.text-muted]="!isUnblinded() && !personaValidator.canBypassBlinding()">
+                    {{ getMaskedTreatment(row.treatmentArm) }}
+                  </span>
                 </dd>
               </dl>
             </div>
@@ -279,15 +277,9 @@
                     <span class="text-muted"> (Size: {{row.blockSize}})</span>
                   </td>
                   <td data-testid="result-arm-cell" class="px-6 py-3 whitespace-nowrap text-sm">
-                    @if (isUnblinded()) {
-                      <span class="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
-                        {{row.treatmentArm}}
-                      </span>
-                    } @else {
-                      <span class="text-muted">
-                        *** BLINDED ***
-                      </span>
-                    }
+                    <span class="font-semibold text-slate-900 dark:text-slate-100 tabular-nums" [class.text-muted]="!isUnblinded() && !personaValidator.canBypassBlinding()">
+                      {{ getMaskedTreatment(row.treatmentArm) }}
+                    </span>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-center">
                     <app-button variant="bare" popovertarget="shared-row-menu" (onClick)="openRowMenu(row, $event)" [style.anchor-name]="'--row-anchor-' + row.subjectId" customClass="inline-flex items-center justify-center w-11 h-11 rounded-full text-muted hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset" [ariaLabel]="'Actions for subject ' + row.subjectId" [appTooltip]="'Actions for subject ' + row.subjectId">
@@ -375,15 +367,9 @@
                           <span class="text-muted"> (Size: {{$any(item).data.blockSize}})</span>
                         </td>
                         <td data-testid="result-arm-cell" class="px-6 py-5 whitespace-nowrap text-sm">
-                          @if (isUnblinded()) {
-                            <span class="font-semibold text-slate-900 dark:text-slate-100 tabular-nums">
-                              {{$any(item).data.treatmentArm}}
-                            </span>
-                          } @else {
-                            <span class="text-muted">
-                              *** BLINDED ***
-                            </span>
-                          }
+                          <span class="font-semibold text-slate-900 dark:text-slate-100 tabular-nums" [class.text-muted]="!isUnblinded() && !personaValidator.canBypassBlinding()">
+                            {{ getMaskedTreatment($any(item).data.treatmentArm) }}
+                          </span>
                         </td>
                         <td class="px-4 py-5 whitespace-nowrap text-center">
                           <app-button variant="bare"
@@ -408,11 +394,7 @@
                     @case ('summary') {
                       <tr class="border-t border-dashed border-border-strong bg-base/40">
                         <td [attr.colspan]="columnCount()" class="px-6 py-2 text-right text-xs font-mono text-muted">
-                          @if (isUnblinded()) {
-                            Balance: {{getSummaryBalanceText($any(item).tallies)}}
-                          } @else {
-                            Balance: {{$any(item).totalSubjects}} Subjects (Blinded)
-                          }
+                          {{ getSummaryBalance($any(item)) }}
                           @if ($any(item).isIncomplete) {
                             <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
                               &#9888; Incomplete Block

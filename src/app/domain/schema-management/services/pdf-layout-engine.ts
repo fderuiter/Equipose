@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { RandomizationResult } from '../../core/models/randomization.model';
 import { DateUtil } from '../../../core/utils/date.util';
 import { FileSecurityUtil } from '../../../core/utils/file-security.util';
+import { PersonaValidationService } from '../../core/validation/persona-validator.service';
 
 /**
  * Isolated PDF Generation function supporting structured content tags and standard 1.7 versioning.
@@ -12,8 +13,10 @@ export function generatePdf(
   result: RandomizationResult,
   isUnblinded: boolean,
   narrative: string,
-  appVersion: string
+  appVersion: string,
+  personaValidator?: PersonaValidationService
 ): void {
+  const validator = personaValidator || new PersonaValidationService();
   const doc = new (jsPDF as any)({
     orientation: 'portrait',
     unit: 'mm',
@@ -127,7 +130,7 @@ export function generatePdf(
       r.site,
       ...strataValues,
       `${r.blockNumber} (n=${r.blockSize})`,
-      isUnblinded ? r.treatmentArm : '*** BLINDED ***'
+      validator.getMaskedTreatment(r.treatmentArm, isUnblinded)
     ];
   });
 

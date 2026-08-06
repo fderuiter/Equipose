@@ -566,6 +566,14 @@ graph BT
 | `schema-generation.spec.ts` | Full end-to-end: Complex preset → generate → blinding toggle |
 | `zero-trust.spec.ts` | Ensures form inputs are properly sanitized to prevent XSS and malformed config injections |
 
+---
+
+## 7. Persona Framework & Validation Strategy
+
+Equipose implements a centralized programmatic authority to govern clinical data exposure, data blinding masks, and export permissions based on target user profiles. These rules are enforced entirely client-side to maintain our zero-trust, local-only architecture. For full specifications, persona permissions (Biostatistician, Trial Manager, Compliance Officer), and code-traceability details, refer to the [Persona & Validation Strategy Guide](./PERSONA_STRATEGY.md).
+
+---
+
 ### Running tests
 
 ```bash

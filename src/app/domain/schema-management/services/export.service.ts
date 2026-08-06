@@ -6,6 +6,7 @@ import { APP_VERSION } from '../../../../environments/version';
 import { ThemeService } from '../../../core/services/theme.service';
 import { OpenXmlWriter } from '../../../core/utils/openxml.util';
 import { FileSecurityUtil } from '../../../core/utils/file-security.util';
+import { PersonaValidationService } from '../../core/validation/persona-validator.service';
 
 /**
  * Unified Export Service providing native CSV and Excel exports.
@@ -15,6 +16,7 @@ import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 export class ExportService {
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly domainTheme = inject(ThemeService);
+  private readonly personaValidator = inject(PersonaValidationService);
 
   // ---------------------------------------------------------------------------
   // CSV Export
@@ -33,7 +35,7 @@ export class ExportService {
         ...strataValues,
         r.blockNumber.toString(),
         r.blockSize.toString(),
-        isUnblinded ? r.treatmentArm : '*** BLINDED ***'
+        this.personaValidator.getMaskedTreatment(r.treatmentArm, isUnblinded)
       ].map(val => FileSecurityUtil.sanitizeCsvValue(val));
     });
 
@@ -145,7 +147,7 @@ export class ExportService {
         ...strataFactors.map(f => schema.stratum[f.id] ?? ''),
         String(schema.blockNumber),
         String(schema.blockSize),
-        isUnblinded ? schema.treatmentArm : '*** BLINDED ***'
+        this.personaValidator.getMaskedTreatment(schema.treatmentArm, isUnblinded)
       ];
 
       const cells = rowValues.map((val, colIdx) => {
@@ -265,6 +267,6 @@ export class ExportService {
   async exportPdf(result: RandomizationResult, isUnblinded: boolean): Promise<void> {
     const narrative = this.methodologySpec.generateNarrative(result.metadata.config);
     const { generatePdf } = await import('./pdf-layout-engine');
-    generatePdf(result, isUnblinded, narrative, APP_VERSION);
+    generatePdf(result, isUnblinded, narrative, APP_VERSION, this.personaValidator);
   }
 }

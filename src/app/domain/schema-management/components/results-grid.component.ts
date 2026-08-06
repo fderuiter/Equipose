@@ -12,6 +12,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { FileSecurityUtil } from '../../../core/utils/file-security.util';
 import { ButtonComponent } from '../../../core/components/ui/button.component';
 import { TextInputComponent } from '../../../core/components/ui/text-input.component';
+import { PersonaValidationService } from '../../core/validation/persona-validator.service';
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { ToggleComponent } from '../../../core/components/ui/toggle.component';
@@ -72,6 +73,7 @@ export class ResultsGridComponent {
   private readonly toast = inject(ToastService);
   private readonly methodologySpec = inject(MethodologySpecificationService);
   private readonly exportService = inject(ExportService);
+  public readonly personaValidator = inject(PersonaValidationService);
   /**
    * Tracks the row whose kebab menu is currently open so the shared menu
    * template can reference the correct data payload.
@@ -388,8 +390,20 @@ export class ResultsGridComponent {
     return !!(this.filterState()[column]);
   }
 
+  getMaskedTreatment(treatmentArm: string): string {
+    return this.personaValidator.getMaskedTreatment(treatmentArm, this.isUnblinded());
+  }
+
+  getSummaryBalance(item: any): string {
+    const isUnblinded = this.isUnblinded() || this.personaValidator.canBypassBlinding();
+    if (isUnblinded) {
+      return `Balance: ${this.getSummaryBalanceText(item.tallies)}`;
+    }
+    return `Balance: ${item.totalSubjects} Subjects (Blinded)`;
+  }
+
   private isSimulationMode(protocolId: string): boolean {
-    return protocolId === 'Simulation' || protocolId === 'Draft';
+    return !this.personaValidator.canExportSchema(protocolId);
   }
 
   exportCsv() {
