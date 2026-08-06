@@ -1,3 +1,11 @@
+# [1.39.0](https://github.com/fderuiter/Equipose/compare/v1.38.0...v1.39.0) (2026-08-06)
+
+
+### Features
+
+* enforce safety check and package-pinned execution in preview cleanup workflow ([480e098](https://github.com/fderuiter/Equipose/commit/480e0986b438908d01ec92deae53371c8063a8da))
+* **study-builder:** implement draft schema migration pipeline with fallback isolation, warning banner, and JSON export ([9b5d21b](https://github.com/fderuiter/Equipose/commit/9b5d21bbde728a1f4eb827c9d11ef81f7c0632ce))
+
 # [1.38.0](https://github.com/fderuiter/Equipose/compare/v1.37.0...v1.38.0) (2026-08-05)
 
 
