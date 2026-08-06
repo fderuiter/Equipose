@@ -427,7 +427,100 @@ for (const reqId of sortedReqIds) {
   }
 }
 
+// ── Persona Scanning & Alignment Verification ─────────────────────────────────
+const PERSONA_INDEX = [
+  'Biostatistician',
+  'TrialManager',
+  'ComplianceOfficer'
+];
+
+const foundPersonas = new Map();
+for (const p of PERSONA_INDEX) {
+  foundPersonas.set(p, []);
+}
+
+const PERSONA_TAG_RE = /@persona:([a-zA-Z0-9_]+)/g;
+
+for (const file of allSpecFiles) {
+  const content = readFileSync(file, 'utf-8');
+  const fileLines = content.split('\n');
+  for (let i = 0; i < fileLines.length; i++) {
+    let match;
+    PERSONA_TAG_RE.lastIndex = 0;
+    while ((match = PERSONA_TAG_RE.exec(fileLines[i])) !== null) {
+      const personaName = match[1];
+      const relFile = relative(repoRoot, file).replace(/\\/g, '/');
+      
+      let testName = "Associated Unit Test";
+      let suiteName = "Persona Verification";
+      
+      for (let j = i; j < Math.min(i + 15, fileLines.length); j++) {
+        const testMatch = fileLines[j].match(/(?:test|it)\s*\(\s*['"`]([^'"`]+)['"`]/);
+        if (testMatch) {
+          testName = testMatch[1];
+          break;
+        }
+      }
+      if (testName === "Associated Unit Test") {
+        for (let j = i; j >= Math.max(0, i - 15); j--) {
+          const testMatch = fileLines[j].match(/(?:test|it)\s*\(\s*['"`]([^'"`]+)['"`]/);
+          if (testMatch) {
+            testName = testMatch[1];
+            break;
+          }
+        }
+      }
+      
+      for (let j = i; j >= 0; j--) {
+        const suiteMatch = fileLines[j].match(/(?:test\.describe|describe)\s*\(\s*['"`]([^'"`]+)['"`]/);
+        if (suiteMatch) {
+          suiteName = suiteMatch[1];
+          break;
+        }
+      }
+
+      if (foundPersonas.has(personaName)) {
+        foundPersonas.get(personaName).push({
+          file: relFile,
+          line: i + 1,
+          testName,
+          suiteName
+        });
+      } else {
+        console.error(`[generate-rtm] ERROR: Code-level persona annotation '@persona:${personaName}' is misaligned (not in requirements traceability index).`);
+        process.exit(1);
+      }
+    }
+  }
+}
+
+for (const [personaName, occurrences] of foundPersonas.entries()) {
+  if (occurrences.length === 0) {
+    console.error(`[generate-rtm] ERROR: Code-level persona annotation '@persona:${personaName}' is missing from the codebase.`);
+    process.exit(1);
+  }
+}
+
 lines.push('\n---\n');
+lines.push('## Persona Requirements Traceability Matrix\n');
+lines.push('| Persona | Guideline / Role | Test File | Line | Verified Test / Action | Suite |');
+lines.push('|---|---|---|---|---|---|');
+
+const GUIDELINES = {
+  'Biostatistician': 'Requires access to full unblinded allocations for verification & reporting',
+  'TrialManager': 'Requires secure blinded baseline & disables exports in Draft/Simulation mode',
+  'ComplianceOfficer': 'Requires automated RTM scans & verified persona logic during builds'
+};
+
+for (const [personaName, occurrences] of foundPersonas.entries()) {
+  const guideline = GUIDELINES[personaName] ?? 'Strategic profile verification';
+  for (const occ of occurrences) {
+    lines.push(`| \`@persona:${personaName}\` | ${guideline} | \`${occ.file}\` | ${occ.line} | ${occ.testName} | ${occ.suiteName} |`);
+  }
+}
+
+lines.push('\n---\n');
+
 lines.push('## Regulatory References\n');
 lines.push('| Tag Prefix | Regulatory Source |');
 lines.push('|---|---|');

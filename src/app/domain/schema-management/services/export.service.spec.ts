@@ -156,4 +156,23 @@ describe('ExportService', () => {
       expect(createObjectURLSpy).toHaveBeenCalled();
     });
   });
+
+  describe('Standardized Persona Validation Integration', () => {
+    // @persona:Biostatistician
+    it('should allow Biostatistician to export unblinded allocations', () => {
+      const validator = (service as any).personaValidator;
+      validator.activePersona.set('Biostatistician');
+      service.exportCsv(buildMockResult(), false);
+      expect(appendChildSpy).toHaveBeenCalled();
+    });
+
+    // @persona:TrialManager
+    it('should enforce Trial Manager blinded rules and verify simulation export configuration states', () => {
+      const validator = (service as any).personaValidator;
+      validator.activePersona.set('TrialManager');
+      expect(validator.canExportSchema('Simulation')).toBe(false);
+      expect(validator.canExportSchema('Formal')).toBe(true);
+    });
+  });
 });
+

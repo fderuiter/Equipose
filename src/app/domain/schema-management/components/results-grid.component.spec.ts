@@ -675,4 +675,30 @@ describe('ResultsGridComponent (domain)', () => {
       expect(component.truncatedAuditHash).toBe('aabbccdd0011...ccdd00112233');
     });
   });
+
+  describe('Standardized Persona Validation Framework Integration', () => {
+    // @persona:Biostatistician
+    it('should retrieve blinding configurations for Biostatistician and allow full view', () => {
+      component.personaValidator.activePersona.set('Biostatistician');
+      expect(component.getMaskedTreatment('Active Arm')).toBe('Active Arm');
+      expect(component.personaValidator.canBypassBlinding()).toBe(true);
+    });
+
+    // @persona:TrialManager
+    it('should enforce blinding configurations for Trial Manager and mask treatment arms unless toggled', () => {
+      component.personaValidator.activePersona.set('TrialManager');
+      component.viewState.isUnblinded.set(false);
+      expect(component.getMaskedTreatment('Active Arm')).toBe('*** BLINDED ***');
+      component.viewState.isUnblinded.set(true);
+      expect(component.getMaskedTreatment('Active Arm')).toBe('Active Arm');
+    });
+
+    // @persona:ComplianceOfficer
+    it('should allow Compliance Officer auditing of secure centralized authority behaviors', () => {
+      component.personaValidator.activePersona.set('ComplianceOfficer');
+      expect(component.personaValidator.canExportSchema('Simulation')).toBe(false);
+      expect(component.personaValidator.canExportSchema('Formal-Trial')).toBe(true);
+    });
+  });
 });
+
