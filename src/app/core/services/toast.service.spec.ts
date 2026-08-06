@@ -51,6 +51,12 @@ describe('ToastService (server/SSR platform – no overlay creation)', () => {
     expect(service.toasts()[0].type).toBe('info');
   });
 
+  it('showWarning() should add a toast with type "warning"', () => {
+    service.showWarning('This is a warning');
+    expect(service.toasts().length).toBe(1);
+    expect(service.toasts()[0].type).toBe('warning');
+  });
+
   it('each toast should receive a unique id', () => {
     service.showSuccess('First');
     service.showSuccess('Second');
@@ -87,6 +93,15 @@ describe('ToastService (server/SSR platform – no overlay creation)', () => {
   it('info toasts should auto-dismiss after 3000 ms', () => {
     vi.useFakeTimers();
     service.showInfo('Info auto-dismiss');
+    expect(service.toasts().length).toBe(1);
+
+    vi.advanceTimersByTime(3000);
+    expect(service.toasts().length).toBe(0);
+  });
+
+  it('warning toasts should auto-dismiss after 3000 ms', () => {
+    vi.useFakeTimers();
+    service.showWarning('Warning auto-dismiss');
     expect(service.toasts().length).toBe(1);
 
     vi.advanceTimersByTime(3000);

@@ -2,7 +2,7 @@ import { inject, Injectable, PLATFORM_ID, signal, ApplicationRef, createComponen
 import { isPlatformBrowser } from '@angular/common';
 import { ToastComponent } from '../components/toast.component';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface ToastMessage {
   id: string;
@@ -32,6 +32,10 @@ export class ToastService {
 
   showInfo(message: string): void {
     this.show(message, 'info');
+  }
+
+  showWarning(message: string): void {
+    this.show(message, 'warning');
   }
 
   dismiss(id: string): void {

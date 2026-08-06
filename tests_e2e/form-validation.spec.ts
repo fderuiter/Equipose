@@ -185,6 +185,9 @@ test.describe('Form Validation and Configuration', () => {
     await minimizationInputs.nth(1).fill('30');
     await minimizationInputs.nth(1).blur();
 
+    // Focus the invalid field to trigger its non-disruptive validation tooltip
+    await minimizationInputs.nth(0).focus();
+
     await expect(page.getByText('Probabilities must sum to exactly 100%.')).toBeVisible();
     await expect(page.getByRole('button', { name: /^Next$/i })).toBeDisabled();
   });
