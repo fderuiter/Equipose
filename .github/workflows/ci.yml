@@ -76,10 +76,10 @@ jobs:
         PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
 
     - name: Run Unit Tests
-      run: pnpm test --watch=false
+      run: pnpm test:unit --reporter=json --outputFile=vitest-results.json
 
     - name: Archive environment
-      run: tar -cf shared-env.tar node_modules pw-browsers dist
+      run: tar -cf shared-env.tar node_modules pw-browsers dist vitest-results.json
 
     - name: Upload shared environment
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
@@ -554,13 +554,6 @@ jobs:
 
     - name: Extract shared environment
       run: tar -xf shared-env.tar
-
-    - name: Run unit tests with JSON reporter
-      run: |
-        ./node_modules/.bin/vitest run \
-          --exclude 'tests_e2e/**' \
-          --reporter=json \
-          --outputFile=vitest-results.json
 
     - name: Download Playwright JSON report
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
