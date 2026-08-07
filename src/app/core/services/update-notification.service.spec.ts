@@ -60,7 +60,7 @@ describe('UpdateNotificationService', () => {
     expect(reloadMock).toHaveBeenCalled();
   });
 
-  it('should set updateAvailable to false when dismiss is called', () => {
+  it('should set bannerDismissed to true and showBanner to false when dismiss is called', () => {
     vi.stubGlobal('location', {
       search: '?mock-update=true',
       reload: vi.fn()
@@ -72,8 +72,11 @@ describe('UpdateNotificationService', () => {
     service = TestBed.inject(UpdateNotificationService);
 
     expect(service.updateAvailable()).toBe(true);
+    expect(service.showBanner()).toBe(true);
     service.dismiss();
-    expect(service.updateAvailable()).toBe(false);
+    expect(service.bannerDismissed()).toBe(true);
+    expect(service.showBanner()).toBe(false);
+    expect(service.updateAvailable()).toBe(true);
   });
 
   it('should ignore webdriver bypass when mock-update is active', () => {
@@ -587,6 +590,81 @@ describe('UpdateNotificationService', () => {
       service.activateUpdate();
 
       expect(reloadMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('checkForUpdates', () => {
+    it('should set updateAvailable and reset bannerDismissed in mock-update mode', async () => {
+      vi.stubGlobal('location', {
+        search: '?mock-update=true',
+        reload: vi.fn()
+      });
+      vi.stubGlobal('navigator', {
+        webdriver: false,
+        serviceWorker: {
+          getRegistration: () => Promise.resolve(null),
+          addEventListener: vi.fn()
+        }
+      });
+
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      service.dismiss();
+      expect(service.bannerDismissed()).toBe(true);
+
+      const checkPromise = service.checkForUpdates();
+      expect(service.isChecking()).toBe(true);
+
+      await checkPromise;
+
+      expect(service.isChecking()).toBe(false);
+      expect(service.updateAvailable()).toBe(true);
+      expect(service.bannerDismissed()).toBe(false);
+      expect(service.showBanner()).toBe(true);
+    });
+
+    it('should call reg.update and set updateAvailable when a waiting worker is detected', async () => {
+      const updateSpy = vi.fn();
+      const mockReg = {
+        update: updateSpy,
+        waiting: {
+          postMessage: vi.fn()
+        },
+        addEventListener: vi.fn()
+      };
+
+      vi.stubGlobal('location', {
+        search: '',
+        hostname: 'example.com'
+      });
+
+      vi.stubGlobal('navigator', {
+        serviceWorker: {
+          getRegistration: vi.fn().mockResolvedValue(mockReg),
+          addEventListener: vi.fn()
+        }
+      });
+
+      TestBed.configureTestingModule({
+        providers: [UpdateNotificationService]
+      });
+      service = TestBed.inject(UpdateNotificationService);
+
+      service.dismiss();
+      expect(service.bannerDismissed()).toBe(true);
+
+      const checkPromise = service.checkForUpdates();
+      expect(service.isChecking()).toBe(true);
+
+      await checkPromise;
+
+      expect(service.isChecking()).toBe(false);
+      expect(updateSpy).toHaveBeenCalled();
+      expect(service.updateAvailable()).toBe(true);
+      expect(service.bannerDismissed()).toBe(false);
     });
   });
 });
