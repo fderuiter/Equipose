@@ -446,22 +446,6 @@ jobs:
       contents: read
 
     steps:
-    - name: Harden Runner
-      uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411
-      with:
-        egress-policy: audit
-        allowed-endpoints: |-
-          github.com:443
-          api.github.com:443
-          objects.githubusercontent.com:443
-          registry.npmjs.org:443
-          registry.yarnpkg.com:443
-          nodejs.org:443
-          *.blob.core.windows.net:443
-          *.actions.githubusercontent.com:443
-          playwright.azureedge.net:443
-          archive.ubuntu.com:80
-          security.ubuntu.com:80
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
