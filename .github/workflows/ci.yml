@@ -560,6 +560,7 @@ jobs:
       with:
         name: playwright-report
         path: playwright-report/
+        merge-multiple: true
       continue-on-error: true
 
     - name: Generate Validation Traceability Matrix
@@ -598,6 +599,8 @@ jobs:
         fi
         if [ -f playwright-report/report.json ]; then
           PW_ARG="--playwright-results playwright-report/report.json"
+        elif [ -f playwright-report/playwright-report/report.json ]; then
+          PW_ARG="--playwright-results playwright-report/playwright-report/report.json"
         fi
         # shellcheck disable=SC2086
         node scripts/generate-rtm.mjs $VITEST_ARG $PW_ARG \
