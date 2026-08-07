@@ -308,7 +308,24 @@ if (vitestResultsPath && existsSync(vitestResultsPath)) {
   try {
     const raw = JSON.parse(readFileSync(vitestResultsPath, 'utf-8'));
     for (const suite of (raw.testResults ?? [])) {
-      const relFile = relative(repoRoot, suite.name).replace(/\\/g, '/');
+      let relFile = suite.name;
+      if (relFile) {
+        relFile = relFile.replace(/\\/g, '/');
+        if (isAbsolute(relFile)) {
+          relFile = relative(repoRoot, relFile).replace(/\\/g, '/');
+        } else {
+          const resolved = resolve(repoRoot, relFile);
+          if (existsSync(resolved)) {
+            relFile = relative(repoRoot, resolved).replace(/\\/g, '/');
+          } else {
+            const basename = relFile.split('/').pop();
+            const found = allSpecFiles.find(f => f.replace(/\\/g, '/').endsWith('/' + basename) || f.replace(/\\/g, '/').endsWith(relFile));
+            if (found) {
+              relFile = relative(repoRoot, found).replace(/\\/g, '/');
+            }
+          }
+        }
+      }
       for (const result of (suite.assertionResults ?? [])) {
         const line = result.location?.line;
         const status = result.status === 'passed' ? 'PASS' : result.status === 'skipped' ? 'SKIP' : 'FAIL';
@@ -334,9 +351,22 @@ if (playwrightResultsPath && existsSync(playwrightResultsPath)) {
           const lastResult = spec.tests?.[0]?.results?.slice(-1)?.[0];
           const status = lastResult?.status === 'passed' ? 'PASS' : lastResult?.status === 'skipped' ? 'SKIP' : 'FAIL';
           let relFile = currentFile;
-          if (relFile && !relFile.includes('/')) {
-            const found = allSpecFiles.find(f => f.endsWith(relFile));
-            if (found) relFile = relative(repoRoot, found).replace(/\\/g, '/');
+          if (relFile) {
+            relFile = relFile.replace(/\\/g, '/');
+            if (isAbsolute(relFile)) {
+              relFile = relative(repoRoot, relFile).replace(/\\/g, '/');
+            } else {
+              const resolved = resolve(repoRoot, relFile);
+              if (existsSync(resolved)) {
+                relFile = relative(repoRoot, resolved).replace(/\\/g, '/');
+              } else {
+                const basename = relFile.split('/').pop();
+                const found = allSpecFiles.find(f => f.replace(/\\/g, '/').endsWith('/' + basename) || f.replace(/\\/g, '/').endsWith(relFile));
+                if (found) {
+                  relFile = relative(repoRoot, found).replace(/\\/g, '/');
+                }
+              }
+            }
           }
           executedTests.push({ file: relFile, line: spec.line, suiteName: title, testName: spec.title, status });
         }
