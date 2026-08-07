@@ -16,6 +16,15 @@ export class UpdateNotificationService {
   /** True when a new application version has been detected and is ready. */
   readonly updateAvailable = signal(false);
 
+  /** True when the update banner has been dismissed by the user. */
+  readonly bannerDismissed = signal(false);
+
+  /** True when manually checking for updates. */
+  readonly isChecking = signal(false);
+
+  /** Derived signal whether the update banner should be visible. */
+  readonly showBanner = computed(() => this.updateAvailable() && !this.bannerDismissed());
+
   private waitingWorker: ServiceWorker | null = null;
 
   /** Set of active block keys from client-side tasks. */
@@ -147,11 +156,59 @@ export class UpdateNotificationService {
   requireUpdate(): void {
     if (this.isTestOrDev && !this.isMockUpdate) return;
     this.updateAvailable.set(true);
+    this.bannerDismissed.set(false);
   }
 
   /** Dismiss the banner without reloading (user can reload manually later). */
   dismiss(): void {
-    this.updateAvailable.set(false);
+    this.bannerDismissed.set(true);
+  }
+
+  /**
+   * Manually check for service worker updates.
+   */
+  async checkForUpdates(): Promise<void> {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+      return;
+    }
+
+    this.isChecking.set(true);
+
+    try {
+      if (this.isMockUpdate) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        this.updateAvailable.set(true);
+        this.bannerDismissed.set(false);
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        if (typeof reg.update === 'function') {
+          await reg.update();
+        }
+        if (reg.waiting) {
+          this.waitingWorker = reg.waiting;
+          this.updateAvailable.set(true);
+          this.bannerDismissed.set(false);
+        } else if (reg.installing) {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              this.waitingWorker = newWorker;
+              this.updateAvailable.set(true);
+              this.bannerDismissed.set(false);
+            }
+          });
+        }
+      }
+      // Add a small artificial delay so that checking status is visible
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    } catch (err) {
+      console.error('Error checking for updates:', err);
+    } finally {
+      this.isChecking.set(false);
+    }
   }
 
   /**

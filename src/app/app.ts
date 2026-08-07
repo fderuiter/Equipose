@@ -23,7 +23,7 @@ import { DateUtil } from './core/utils/date.util';
     </a>
 
     <div class="min-h-screen flex flex-col bg-base text-main font-sans transition-colors duration-200">
-      @if (updateService.updateAvailable()) {
+      @if (updateService.showBanner()) {
         <app-update-banner />
       }
       <header class="bg-indigo-700 dark:bg-slate-800 text-white shadow-md dark:shadow-slate-900/50">
@@ -294,6 +294,40 @@ import { DateUtil } from './core/utils/date.util';
                    class="inline-flex items-center gap-1 rounded-md bg-gray-50 dark:bg-slate-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-slate-300 ring-1 ring-gray-200 dark:ring-slate-600 hover:ring-indigo-400 transition-colors">
                   AGPL-3.0 License
                 </a>
+              </div>
+              <!-- Persistent Update Status Indicator -->
+              <div class="flex items-center gap-2 text-xs h-6 mt-0.5">
+                @if (updateService.isChecking()) {
+                  <span class="flex items-center gap-1.5 text-muted">
+                    <svg class="animate-spin h-3 w-3 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Checking...
+                  </span>
+                } @else if (updateService.updateAvailable()) {
+                  <span class="inline-flex items-center gap-1 rounded bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 font-medium text-amber-800 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    Update available
+                  </span>
+                  <button
+                    type="button"
+                    (click)="updateService.activateUpdate()"
+                    class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset rounded px-1 transition-colors"
+                  >
+                    Restart to update
+                  </button>
+                } @else {
+                  <span class="text-muted">System is up to date</span>
+                  <span class="text-muted/50">•</span>
+                  <button
+                    type="button"
+                    (click)="updateService.checkForUpdates()"
+                    class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset rounded px-1 transition-colors"
+                  >
+                    Check for updates
+                  </button>
+                }
               </div>
               <p class="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
