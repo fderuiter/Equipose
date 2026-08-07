@@ -20,6 +20,11 @@
  *     [--playwright-results path/to/playwright-results.json] \
  *     [--out Validation_Traceability_Matrix.md]
  *
+ * Robustness fixes:
+ *  - Supports quoted whitespace-separated parameters passed from CI/workflows.
+ *  - Normalizes absolute and relative file paths of Vitest and Playwright.
+ *  - Handles diagnostics and fallback parser reporting.
+ *
  * @regulatory RTM_GENERATION
  */
 
