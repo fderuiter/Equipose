@@ -31,7 +31,15 @@ import ts from 'typescript';
 
 // ── CLI arg parsing ────────────────────────────────────────────────────────────
 
-const args = process.argv.slice(2);
+const args = [];
+for (const arg of process.argv.slice(2)) {
+  if (arg.trim() === '') continue;
+  if (arg.includes(' ')) {
+    args.push(...arg.split(/\s+/));
+  } else {
+    args.push(arg);
+  }
+}
 const getArg = (flag) => {
   const idx = args.indexOf(flag);
   return idx !== -1 ? args[idx + 1] : null;
