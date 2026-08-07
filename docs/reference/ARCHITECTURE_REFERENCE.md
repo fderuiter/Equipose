@@ -254,23 +254,29 @@ the application that translates a `RandomizationConfig` object into runnable sou
 code. It is a pure, stateless service: given the same config, it always produces the
 same script text.
 
-### 12.1 Why code generation exists
+### 12.1 Why code generation exists and execution modes
 
-The web app's PRNG is Mersenne Twister (MT19937). R, SAS, and Stata use this exact
-PRNG by default, allowing a byte-identical reproduction of the web UI schema inside a validated
-statistical environment natively. Python uses the MT19937 implementation natively to guarantee exactly identical bitstream output.
+The application supports generating code for several statistical environments (R, Python, SAS, and Stata). This allows biostatisticians to run the randomization logic inside their organization's validated environment.
 
+To bridge the gap between web UI configuration and local execution, the platform provides two distinct execution modes:
 
-Instead, the generated scripts embed **all study parameters as literals** and use the
-language-native PRNG. The resulting schema is statistically identical in distribution
-(same block sizes, same ratios, same caps, same balance properties) but the
-subject-by-subject sequence differs. This is the intended workflow:
+#### 1. STATIC Mode
+* **Definition:** Hardcodes UI schemas (the subject-by-subject allocations) as literal values within the exported code.
+* **Sequence Parity:** Guarantees 100% bit-for-bit sequence parity with the Web UI through direct data embedding of the generated sequence.
+* **Use Case:** Crucial when a biostatistician or regulatory auditor needs a script that will output the exact same sequence as verified in the web UI.
 
-1. **Design phase** - use the web UI to quickly iterate and validate the study design.
-2. **Execution phase** - download and run the generated script inside your
-   organisation's validated environment to produce the **official** schema.
+#### 2. DYNAMIC Mode
+* **Definition:** Transpiles full runtime randomization logic (loops, sorting, and PRNG seeding) to execute natively inside SAS, Stata, R, or Python.
+* **Sequence Parity:**
+  * **R and Python:** Support native 100% bit-for-bit sequence parity because their PRNG streams and sorting operations can match the web application exactly.
+  * **SAS and Stata:** Bit-for-bit sequence parity with the Web UI is mathematically unachievable in dynamic mode due to language-specific sorting implementations, step-scoped seeding limits, and environment precision differences.
+* **Statistical Parity:** Fully guarantees statistical allocation balance, block constraints, and structural rules (same block sizes, same ratios, same caps, same balance properties) across all languages, including SAS and Stata.
 
-The exported script becomes the auditable source of truth for the trial.
+This aligns with the intended workflows:
+1. **Design phase** - use the web UI to quickly iterate, validate, and preview the study design.
+2. **Execution phase** - download and run the generated script inside your organization's validated environment to produce the official or validated schema using the appropriate mode.
+
+The exported script becomes the auditable, reproducible source of truth for the trial.
 
 ### 12.2 Cap strategy code generation paths
 
@@ -493,9 +499,22 @@ flowchart TD
 | **Algorithm** | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) |
 | **Seed type** | Arbitrary string | 31-bit integer | 31-bit integer | 31-bit integer | 31-bit integer |
 | **Seed source** | User input or random string | `hashCode(webSeed)` | `hashCode(webSeed)` | `hashCode(webSeed)` | `hashCode(webSeed)` |
-| **Sequence matches web?** | N/A | ✅ Identical | ✅ Identical | ✅ Identical | ✅ Identical |
+| **Sequence matches web?** | N/A | ✅ Identical (Dynamic & Static) | ✅ Identical (Dynamic & Static) | ❌ Non-Identical (Dynamic) / ✅ Identical (Static) | ❌ Non-Identical (Dynamic) / ✅ Identical (Static) |
 | **Balance properties match?** | N/A | ✅ Same | ✅ Same | ✅ Same | ✅ Same |
 | **Reproducible within language?** | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+#### Explanatory Notes on Parity and PRNG Limitations
+
+##### 1. Custom PRNG & Sorting Constraints in SAS and Stata (Dynamic Mode)
+While all environments use or emulate the Mersenne Twister (MT19937) algorithm, executing scripts in **DYNAMIC Mode** on SAS and Stata does not achieve bit-for-bit sequence parity with the Web UI. This is due to several structural and environmental limitations:
+* **Sorting Differences:** In SAS, block permutation relies on assigning a uniform random sort key using `_rand_sort = rand('uniform')` and sorting with `PROC SORT`. In Stata, block permutation similarly relies on generating uniform random numbers with `runiform()` and using `sort`. Because the sorting algorithms and floating-point comparison mechanisms in SAS and Stata differ fundamentally from Javascript's in-memory array manipulation, identical random sequences do not map to identical block shuffles.
+* **Seeding Scope:** SAS's `call streaminit(seed)` is step-scoped, resetting at the boundary of a DATA step, which restricts dynamic random sequence parity across complex iterative loops.
+* **Precision and Representation:** Floating-point representations and random-number generators natively differ in precision and behavior under certain environments (e.g., Mata vs SAS DATA step).
+
+For situations where absolute sequence parity is required in SAS or Stata, **STATIC Mode** must be used, as it embeds the exact Web UI-generated sequence as hardcoded literals.
+
+##### 2. Cross-Environment Developer Verification Scripts
+Cross-environment developer verification scripts (located in the repository under `scripts/cross-env/`, such as `verify_python_schema.py` and `verify_r_schema.R`) are designed to validate **structural allocation rules, block constraints, and overall balance properties** (e.g., ensuring same block sizes, same allocation ratios, and correct treatment arm caps are honored across environments). They do **not** assert or verify bit-for-bit, sequence-level match parity with the Web UI, preventing test breakage due to minor random-number generator or platform-level differences.
 
 ### 12.11 Code generation error hierarchy
 

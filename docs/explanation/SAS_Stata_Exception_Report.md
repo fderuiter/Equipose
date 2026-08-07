@@ -60,18 +60,16 @@ despite the absence of automated execution validation:
 
 ### 4.1 Static Syntax Validation (CI — Automated)
 
-The `ci.yml` pipeline includes two layers of automated static validation:
+The `ci.yml` pipeline includes automated validation layers to ensure exported code is safe and syntactically correct:
 
 **Layer 1 — Security scan (`security_scan` job):**
 Checks for usage of `Math.random()` in the randomization engine.
 
-**Layer 2 — SAS static syntax validator (`sas_static_validation` job):**
-The script `scripts/validate-sas-syntax.mjs` runs against every `.sas` file
-exported by the `code_generation_fixtures` job and verifies:
+**Layer 2 — Static syntax validation scripts:**
+The automated static validator scripts, specifically `scripts/validate-sas-syntax.mjs` and `scripts/validate-stata-syntax.mjs`, run against exported code. **Crucially, these static validator scripts are restricted to verifying syntax compliance and structural block boundaries.** They do not perform or assert numerical or sequence-level execution checks.
 
-- All five required header comment fields are present (`Randomization Schema
-  Generation in SAS`, `Protocol:`, `App Version:`, `Generated At:`,
-  `PRNG Algorithm:`)
+For SAS, the validator verifies:
+- All five required header comment fields are present (`Randomization Schema Generation in SAS`, `Protocol:`, `App Version:`, `Generated At:`, `PRNG Algorithm:`)
 - The `Generated At:` value is a valid ISO 8601 timestamp
 - A `%let seed = <number>;` statement is present
 - Every `/*` block comment has a matching `*/` (no unclosed comments)
@@ -79,35 +77,34 @@ exported by the `code_generation_fixtures` job and verifies:
 - Every `proc <name>` step is closed by `run;` or `quit;`
 - Every `%macro` definition is closed by a matching `%mend`
 
-See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the full decision
-record explaining the choice of approach.
+For Stata, the validator verifies that base syntax requirements, delimiter usages, and block structures are correct and adhere to regulatory templates.
+
+See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the full decision record explaining the choice of approach.
 
 **Layer 3 — Unit tests (`CodeGeneratorService`):**
-The generated SAS and Stata code is produced by the `CodeGeneratorService`,
-which is covered by **unit tests** that verify:
-
+The generated SAS and Stata code is produced by the `CodeGeneratorService`, which is covered by **unit tests** that verify:
 - Correct PRNG seed embedding (`%let seed = <N>;` / `set seed <N>`)
 - Correct protocol ID embedding
 - Correct ISO 8601 timestamp embedding
 - Correct version string embedding
 
-These unit tests are tagged `[REQ-21CFR11-001]` through `[REQ-21CFR11-004]` in
-the Validation Traceability Matrix (see `Validation_Traceability_Matrix.md`).
+These unit tests are tagged `[REQ-21CFR11-001]` through `[REQ-21CFR11-004]` in the Validation Traceability Matrix (see `Validation_Traceability_Matrix.md`).
 
-### 4.2 Algorithm Parity via Shared Fixture
+### 4.2 Execution Modes & Algorithm Parity
 
-The underlying randomization algorithm (`randomization-algorithm.ts`) is
-language-agnostic. Cross-environment equivalence is validated in CI for R and
-Python against a shared fixture (`scripts/cross-env/`). Because SAS and Stata
-use the same deterministic Fisher-Yates/seedrandom output as their input data,
-the generated SAS/Stata **code** and the underlying **schema** are equivalent
-by construction.
+To bridge the gap between web UI configuration and local execution, Equipose formalizes the execution options into two distinct modes, matching the architecture reference definitions:
 
-**Important Notice:** The static validation and script generation feature set does
-not provide bit-for-bit PRNG sequence parity between the web UI (which uses MT19937)
-and the SAS/Stata implementations (which use Mersenne Twister). The statistical
-allocation properties and structural rules are identical, but bit-for-bit parity
-with the UI is not expected.
+#### 1. STATIC Mode
+* **Definition:** Hardcodes UI schemas (the subject-by-subject allocations) as literal values within the exported code.
+* **Sequence Parity:** Guarantees **100% bit-for-bit sequence parity** with the Web UI by directly embedding the generated sequence into the script's data blocks.
+* **Use Case:** This is the recommended and primary mechanism when an organization or clinical trial protocol requires a SAS or Stata script that will output the exact same randomization sequence as verified in the web UI.
+
+#### 2. DYNAMIC Mode
+* **Definition:** Transpiles runtime randomization logic (loops, sorting, and PRNG seeding) to execute natively inside SAS or Stata.
+* **Sequence Parity:** **DYNAMIC SAS and Stata scripts do not support or provide native bit-for-bit PRNG sequence parity** with the Web UI. This limitation arises from environmental differences, platform floating-point precision differences, and language-specific sorting engines (such as SAS's `_rand_sort = rand('uniform')` and `PROC SORT`, and Stata's `runiform()` and `sort`).
+* **Statistical Parity:** Fully guarantees statistical allocation balance, block constraints, and structural rules (same block sizes, same allocation ratios, and correct treatment arm caps are honored across environments).
+
+Cross-environment equivalence for dynamic execution is validated in CI for R and Python against a shared fixture (`scripts/cross-env/`). However, because SAS and Stata in dynamic mode have mathematical limitations in sorting parity, the user must run the script in **STATIC Mode** if they require exact sequence-level matching, or execute manual validation for dynamic outputs.
 
 ### 4.3 Manual Validation Procedure (Periodic)
 
