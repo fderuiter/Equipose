@@ -1,3 +1,18 @@
+# [1.41.0](https://github.com/fderuiter/Equipose/compare/v1.40.0...v1.41.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **e2e:** inject visual stabilization stylesheet globally and align Chromium/Firefox baselines ([3b992e0](https://github.com/fderuiter/Equipose/commit/3b992e087f8f7edd763c808273c43c65a9c2e420))
+* **e2e:** update browser visual regression snapshots and resolve toast/tooltip screenshot stability ([4cd9549](https://github.com/fderuiter/Equipose/commit/4cd9549ba36dfd14ece826f9bc7e3029a45037e1))
+* **e2e:** update chromium and firefox step 5 warning toast visual regression snapshots to match CSS overrides ([ff5a75f](https://github.com/fderuiter/Equipose/commit/ff5a75f279d63bda4707813be2c10b634550c59c))
+
+
+### Features
+
+* decouple notifications, implement Step 3 validation tooltips and Step 5 stratification reset warning toasts with visual regression test coverage ([1b8762a](https://github.com/fderuiter/Equipose/commit/1b8762ab7e4a7323fcf93ca92730be5c54130777))
+* implement standardized persona validation framework and automated traceability matrix scans ([610d807](https://github.com/fderuiter/Equipose/commit/610d8070c304aa5ffb6d6dfa74d83ed7b86f86b0))
+
 # [1.40.0](https://github.com/fderuiter/Equipose/compare/v1.39.0...v1.40.0) (2026-08-07)
 
 
