@@ -1,6 +1,6 @@
 # Validation Traceability Matrix
 
-> **Generated:** 2026-08-06T14:32:55.189Z  
+> **Generated:** 2026-08-07T00:11:23.026Z  
 > **Status:** Test results loaded  
 > **Requirements covered:** 16 / 16  
 > **Tagged test cases:** 39  
@@ -57,7 +57,7 @@
 | `REQ-ICH-E9-002` | Stratification factors must be applied correctly to the randomization schedule (ICH E9 §2.3.3) | [src/app/domain/randomization-engine/core/statistical-validation.spec.ts:277](src/app/domain/randomization-engine/core/statistical-validation.spec.ts#L277) | 277 | per-stratum caps are never exceeded across 100 random seeds | ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded | ✅ PASS |
 | `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | [scripts/cross-env/verify_python_schema.py:3](scripts/cross-env/verify_python_schema.py#L3) | 3 | Execute scripts/cross-env/verify_python_schema.py | Standalone Script | ✅ PASS |
 | `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | [src/app/domain/randomization-engine/core/statistical-validation.spec.ts:184](src/app/domain/randomization-engine/core/statistical-validation.spec.ts#L184) | 184 | every block has exactly the correct count of each arm for a 1:1 ratio with block size 4 | ICH E9 – Block Balance: strict intra-block arm balance | ✅ PASS |
-| `REQ-SBOM-001` | A Software Bill of Materials (SBOM) must be generated for every production build | [.github/workflows/ci.yml:764](.github/workflows/ci.yml#L764) | 764 | Job: sbom | CI Workflow | ⬜ UNKNOWN |
+| `REQ-SBOM-001` | A Software Bill of Materials (SBOM) must be generated for every production build | [.github/workflows/ci.yml:769](.github/workflows/ci.yml#L769) | 769 | Job: sbom | CI Workflow | ⬜ UNKNOWN |
 | `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | [tests_e2e/zero-trust.spec.ts:52](tests_e2e/zero-trust.spec.ts#L52) | 52 | schema generation produces zero outbound XHR/Fetch requests to external servers | Zero-Trust Architecture: no outbound network requests | ⬜ UNKNOWN |
 | `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | [tests_e2e/zero-trust.spec.ts:69](tests_e2e/zero-trust.spec.ts#L69) | 69 | CSV export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
 | `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | [tests_e2e/zero-trust.spec.ts:90](tests_e2e/zero-trust.spec.ts#L90) | 90 | PDF export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
@@ -79,10 +79,7 @@
 
 ## SAS & Stata Cross-Environment Note
 
-Mathematical result validation for SAS and Stata is deferred to the end-user 
-environment per the formal Exception Report. See `docs/explanation/SAS_Stata_Exception_Report.md`.
+Mathematical result validation for SAS and Stata is deferred to the end-user environment per the formal Exception Report. See `docs/explanation/SAS_Stata_Exception_Report.md`.
 
-Static syntax validation of generated SAS scripts is automated in CI via the 
-`sas_static_validation` job (`scripts/validate-sas-syntax.mjs`). 
-See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the validation strategy ADR.
+Static syntax validation of generated SAS scripts is automated in CI via the `sas_static_validation` job (`scripts/validate-sas-syntax.mjs`). See `docs/explanation/adr/0001-sas-static-validation-strategy.md` for the validation strategy ADR.
 
