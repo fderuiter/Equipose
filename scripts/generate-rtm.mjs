@@ -308,6 +308,8 @@ if (vitestResultsPath && existsSync(vitestResultsPath)) {
   try {
     const raw = JSON.parse(readFileSync(vitestResultsPath, 'utf-8'));
     for (const suite of (raw.testResults ?? [])) {
+      // Normalize and resolve file paths relative to repoRoot to match the keys in fileReqBlocks.
+      // Handles absolute paths, relative paths, and falls back to matching spec file basenames.
       let relFile = suite.name;
       if (relFile) {
         relFile = relFile.replace(/\\/g, '/');
