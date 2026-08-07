@@ -555,10 +555,9 @@ jobs:
     - name: Extract shared environment
       run: tar -xf shared-env.tar
 
-    - name: Run unit tests with JSON reporter and coverage
+    - name: Run unit tests with JSON reporter
       run: |
         ./node_modules/.bin/vitest run \
-          --coverage \
           --exclude 'tests_e2e/**' \
           --reporter=json \
           --outputFile=vitest-results.json
