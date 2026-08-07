@@ -1,3 +1,25 @@
+# [1.40.0](https://github.com/fderuiter/Equipose/compare/v1.39.0...v1.40.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **security:** bypass dynamic RegExp warning in sanitizing-logger.util.ts ([524bd4d](https://github.com/fderuiter/Equipose/commit/524bd4d7921d2437bca31d3a1629858a307e156b))
+* **security:** bypass dynamic RegExp warning in worker patternToRegExp ([7020a1b](https://github.com/fderuiter/Equipose/commit/7020a1ba6c1e78bf2edc705d110a61bf596d648b))
+* **study-builder:** restore test environment check in window beforeunload to prevent E2E scenario state pollution ([67ef9ed](https://github.com/fderuiter/Equipose/commit/67ef9ed2504398b5170d8f3ed38edb961236739e))
+* **study-builder:** wrap sessionStorage accesses in safe helpers to prevent crashing on unhandled SecurityError or TypeError ([5546d01](https://github.com/fderuiter/Equipose/commit/5546d017597728b3d626165b031196e79cdbd99b))
+
+
+### Features
+
+* enforce strict 5% visual regression limit with custom CSS stabilization ([3acce53](https://github.com/fderuiter/Equipose/commit/3acce53a16a80293ff8ac0bf4c75093142a9ba69))
+* implement centralized sanitizing logger utility to redact clinical trial parameters in diagnostic logs and clipboards ([1395470](https://github.com/fderuiter/Equipose/commit/13954702da6b12d8b7f0c18d5b5462c0e5e7edc8))
+* implement Dynamic Worker Middleware for Asset Header Injection ([54bc2b1](https://github.com/fderuiter/Equipose/commit/54bc2b128adee273b91148bc078181f2730760ea))
+* implement score-based cache selection in update notification service with unit tests ([d5ff25f](https://github.com/fderuiter/Equipose/commit/d5ff25fda7fe18faf2a52d45e183b7e048178fc2))
+* implement session-based render lock and retain draft config ([7d18cf2](https://github.com/fderuiter/Equipose/commit/7d18cf262642f1905353b4e1d147a0659f2b7232))
+* implement shared keyboard navigation utilities and integrate into focus-manager and keyboard-scroll directives ([b0e2ef0](https://github.com/fderuiter/Equipose/commit/b0e2ef0308ed199ac1400fc41d01d56edb72f573))
+* implement synchronous SHA-256 seed hashing, unified validation, and form-level integration ([218582f](https://github.com/fderuiter/Equipose/commit/218582f35a2ce023512481c55effbd3b26589437))
+* **study-builder:** save draft on destroy and protect against saving post-clearance ([be9df79](https://github.com/fderuiter/Equipose/commit/be9df79a8d2a644ae31f0160ba8ad9d110b7ea2f))
+
 # [1.39.0](https://github.com/fderuiter/Equipose/compare/v1.38.0...v1.39.0) (2026-08-06)
 
 
