@@ -495,7 +495,7 @@ jobs:
       run: |
         npx playwright merge-reports --reporter html ./all-blob-reports
         mkdir -p playwright-report
-        npx playwright merge-reports --reporter json ./all-blob-reports > playwright-report/report.json
+        PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/report.json npx playwright merge-reports --reporter json ./all-blob-reports
 
     - name: Upload merged HTML report
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808

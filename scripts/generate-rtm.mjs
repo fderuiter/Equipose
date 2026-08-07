@@ -337,6 +337,10 @@ if (vitestResultsPath && existsSync(vitestResultsPath)) {
     vitestLoaded = true;
   } catch (e) {
     console.warn('[generate-rtm] Could not parse Vitest results:', e.message);
+    try {
+      const content = readFileSync(vitestResultsPath, 'utf-8');
+      console.warn('[generate-rtm] First 500 chars of Vitest results file:', content.slice(0, 500));
+    } catch (err) {}
   }
 }
 
@@ -377,6 +381,10 @@ if (playwrightResultsPath && existsSync(playwrightResultsPath)) {
     playwrightLoaded = true;
   } catch (e) {
     console.warn('[generate-rtm] Could not parse Playwright results:', e.message);
+    try {
+      const content = readFileSync(playwrightResultsPath, 'utf-8');
+      console.warn('[generate-rtm] First 500 chars of Playwright results file:', content.slice(0, 500));
+    } catch (err) {}
   }
 }
 
