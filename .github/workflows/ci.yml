@@ -591,6 +591,7 @@ jobs:
         if [ -f playwright-report/report.json ]; then
           PW_ARG="--playwright-results playwright-report/report.json"
         fi
+        # shellcheck disable=SC2086
         node scripts/generate-rtm.mjs $VITEST_ARG $PW_ARG \
           --ci-results job-statuses.json \
           --out Validation_Traceability_Matrix.md
