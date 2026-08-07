@@ -582,6 +582,22 @@ jobs:
           "lint_actions": "${{ needs.lint_actions.result }}"
         }
         EOF
+        echo "=== Current Directory ==="
+        pwd
+        echo "=== Listing files ==="
+        ls -la
+        if [ -d playwright-report ]; then
+          echo "=== Listing playwright-report/ ==="
+          ls -la playwright-report/
+          if [ -f playwright-report/report.json ]; then
+            echo "=== Head of playwright-report/report.json ==="
+            head -n 50 playwright-report/report.json
+          else
+            echo "!!! report.json is missing inside playwright-report/ !!!"
+          fi
+        else
+          echo "!!! playwright-report/ directory is missing !!!"
+        fi
         VITEST_ARG=""
         PW_ARG=""
         if [ -f vitest-results.json ]; then
