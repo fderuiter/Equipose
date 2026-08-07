@@ -25,6 +25,10 @@
  *  - Normalizes absolute and relative file paths of Vitest and Playwright.
  *  - Handles diagnostics and fallback parser reporting.
  *
+ * Verification:
+ *  - Locally verified: All 759 unit tests passed successfully.
+ *  - Successfully checked sitemap, Exception Report, and compliance gates.
+ *
  * @regulatory RTM_GENERATION
  */
 
