@@ -182,6 +182,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       }),
       strataGroup: this.fb.group({
         sitesStr: ['101, 102, 103', Validators.required],
+        siteWeights: this.fb.group({}),
         strata: this.fb.array([
           this.fb.group({ id: ['age'], name: ['Age Group'], levelsStr: ['<65, >=65', Validators.required] })
         ])
@@ -203,6 +204,18 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   );
 
   constructor() {
+    const sitesCtrl = this.form.get('strataGroup.sitesStr');
+    if (sitesCtrl) {
+      // Run once initially
+      const initialSites = this.parseCommaSeparated(sitesCtrl.value);
+      this.syncSiteWeights(initialSites);
+
+      // Subscribe to future changes
+      sitesCtrl.valueChanges.subscribe(val => {
+        const sites = this.parseCommaSeparated(val);
+        this.syncSiteWeights(sites);
+      });
+    }
     
     this.subjectIdPreview = computed(() => {
       const maskCtrl = this.form.get('metadataGroup.subjectIdMask');
@@ -642,6 +655,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       this.store.getPreset(type);
     this.metadataGroup.patchValue({ protocolId, studyName, phase, subjectIdMask, seed: '' }, { emitEvent: false });
     this.strataGroup.patchValue({ sitesStr }, { emitEvent: false });
+    this.syncSiteWeights(this.parseCommaSeparated(sitesStr));
     this.allocationGroup.patchValue({ blockSizesStr }, { emitEvent: false });
     this.arms.clear({ emitEvent: false });
     arms.forEach(a => this.arms.push(
@@ -663,6 +677,39 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
   parseCommaSeparated(value: string | null | undefined): string[] {
     if (!value) return [];
     return value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  }
+
+  get siteWeights(): FormGroup {
+    return this.form.get('strataGroup.siteWeights') as FormGroup;
+  }
+
+  get siteList(): string[] {
+    return Object.keys(this.siteWeights?.controls || {});
+  }
+
+  syncSiteWeights(sites: string[]): void {
+    const siteWeights = this.form.get('strataGroup.siteWeights') as FormGroup;
+    if (!siteWeights) return;
+
+    const currentKeys = Object.keys(siteWeights.controls);
+    let changed = false;
+    for (const key of currentKeys) {
+      if (!sites.includes(key)) {
+        delete siteWeights.controls[key];
+        changed = true;
+      }
+    }
+
+    for (const site of sites) {
+      if (!siteWeights.controls[site]) {
+        siteWeights.controls[site] = this.fb.control(1.0, [Validators.required, Validators.min(0)]);
+        changed = true;
+      }
+    }
+    if (changed) {
+      siteWeights.updateValueAndValidity({ emitEvent: false });
+      this.form.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   private parseBlockSizesStr(val: string): number[] | null {
@@ -817,7 +864,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
 
   onRunMonteCarlo(): void {
     if (this.form.valid) {
-      try { this.facade.runMonteCarlo(this.store.buildConfig(this.buildFormValue()), this.attritionRate()); }
+      try { this.facade.runMonteCarlo(this.store.buildConfig(this.buildFormValue()), this.attritionRate(), this.buildFormValue().siteWeights); }
       catch (e) { console.error('Error starting Monte Carlo simulation:', e); this.toastService.showError('Error starting simulation. Please check your configuration.'); }
     }
   }
@@ -831,7 +878,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
     if (this.form.valid) {
       try { 
         this.draftCleared = true;
-        this.facade.generateSchema(this.store.buildConfig(this.buildFormValue())); 
+        this.facade.generateSchema(this.store.buildConfig(this.buildFormValue()), this.buildFormValue().siteWeights); 
         this.clearDraft();
       }
       catch (e) { console.error('Error generating schema config:', e); this.toastService.showError('Error generating schema. Please check your configuration.'); }
@@ -878,6 +925,7 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
       arms: base.designGroup.arms,
       strata: base.strataGroup.strata,
       sitesStr: base.strataGroup.sitesStr,
+      siteWeights: base.strataGroup.siteWeights,
       ...(randomizationMethod === 'BLOCK' ? {
         blockSizesStr: base.allocationGroup.blockSizesStr,
         blockSelectionType: base.allocationGroup.blockSelectionType,
@@ -1212,6 +1260,26 @@ export class ConfigFormComponent implements OnInit, OnDestroy {
               { emitEvent: false }
             );
           });
+        }
+        
+        const siteWeights = this.form.get('strataGroup.siteWeights') as FormGroup;
+        if (siteWeights) {
+          const currentKeys = Object.keys(siteWeights.controls);
+          for (const key of currentKeys) {
+            delete siteWeights.controls[key];
+          }
+          const savedWeights = state.form.strataGroup?.siteWeights;
+          if (savedWeights) {
+            for (const key of Object.keys(savedWeights)) {
+              siteWeights.controls[key] = this.fb.control(savedWeights[key] ?? 1.0, [Validators.required, Validators.min(0)]);
+            }
+          } else if (state.form.strataGroup?.sitesStr) {
+            const sites = this.parseCommaSeparated(state.form.strataGroup.sitesStr);
+            for (const site of sites) {
+              siteWeights.controls[site] = this.fb.control(1.0, [Validators.required, Validators.min(0)]);
+            }
+          }
+          siteWeights.updateValueAndValidity({ emitEvent: false });
         }
         
         this.form.patchValue(state.form, { emitEvent: false });

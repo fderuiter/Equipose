@@ -79,18 +79,18 @@ export class RandomizationEngineFacade {
     return validateSubjectIdMask(mask);
   }
 
-  generateSchema(newConfig: RandomizationConfig): void {
+  generateSchema(newConfig: RandomizationConfig, siteWeights?: Record<string, number>): void {
     this.config.set(newConfig);
     this.isGenerating.set(true);
     this.error.set(null);
     this.results.set(null);
 
     if (this.worker) {
-      this.dispatchToWorker(newConfig);
+      this.dispatchToWorker(newConfig, siteWeights);
     } else {
       // SSR or Worker unavailable – fall back to synchronous in-thread pure function
       try {
-        const res = generateRandomizationSchema(newConfig);
+        const res = generateRandomizationSchema(newConfig, siteWeights);
         // Hashing remains async
         computeAuditHash(res).then(hash => {
           const resultWithHash: RandomizationResult = {
@@ -110,7 +110,7 @@ export class RandomizationEngineFacade {
     }
   }
 
-  generateSchemaAsync(config: RandomizationConfig): Promise<RandomizationResult> {
+  generateSchemaAsync(config: RandomizationConfig, siteWeights?: Record<string, number>): Promise<RandomizationResult> {
     if (this.worker) {
       return new Promise((resolve, reject) => {
         const id = crypto.randomUUID();
@@ -134,12 +134,12 @@ export class RandomizationEngineFacade {
             reject(new Error(message));
           }
         });
-        const command: GenerationCommand = { id, command: 'START_GENERATION', payload: config };
+        const command: GenerationCommand = { id, command: 'START_GENERATION', payload: { config, siteWeights } };
         this.worker!.postMessage(command);
       });
     } else {
       try {
-        const res = generateRandomizationSchema(config);
+        const res = generateRandomizationSchema(config, siteWeights);
         return computeAuditHash(res).then(hash => ({
           ...res,
           metadata: { ...res.metadata, auditHash: hash }
@@ -176,7 +176,7 @@ export class RandomizationEngineFacade {
     this.showCodeGenerator.set(false);
   }
 
-  runMonteCarlo(config: RandomizationConfig, attritionRate = 0): void {
+  runMonteCarlo(config: RandomizationConfig, attritionRate = 0, siteWeights?: Record<string, number>): void {
     this.isMonteCarloRunning.set(true);
     this.updateService.registerBlock('monte-carlo-simulation');
     this.monteCarloProgress.set(0);
@@ -225,7 +225,7 @@ export class RandomizationEngineFacade {
       }
     });
 
-    const command: MonteCarloCommand = { id, command: 'START_MONTE_CARLO', payload: { config, attritionRate } };
+    const command: MonteCarloCommand = { id, command: 'START_MONTE_CARLO', payload: { config, attritionRate, siteWeights } };
     this.worker.postMessage(command);
   }
 
@@ -346,7 +346,7 @@ export class RandomizationEngineFacade {
     }
   }
 
-  private dispatchToWorker(config: RandomizationConfig): void {
+  private dispatchToWorker(config: RandomizationConfig, siteWeights?: Record<string, number>): void {
     const id = crypto.randomUUID();
 
     this.pendingCallbacks.set(id, {
@@ -370,7 +370,7 @@ export class RandomizationEngineFacade {
       }
     });
 
-    const command: GenerationCommand = { id, command: 'START_GENERATION', payload: config };
+    const command: GenerationCommand = { id, command: 'START_GENERATION', payload: { config, siteWeights } };
     this.worker!.postMessage(command);
   }
 }

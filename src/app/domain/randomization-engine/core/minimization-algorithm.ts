@@ -44,10 +44,50 @@ function computeImbalanceScore(
   return totalScore;
 }
 
+export function selectSiteWithWeights(
+  sites: string[],
+  siteWeights: Record<string, number> | undefined,
+  rng: () => number
+): string {
+  if (!siteWeights) {
+    const siteIdx = Math.floor(rng() * sites.length);
+    return sites[siteIdx];
+  }
+
+  const weights = sites.map(site => siteWeights[site] ?? 1.0);
+
+  if (weights.some(w => w < 0)) {
+    throw new Error('Site weights must be non-negative.');
+  }
+
+  const sum = weights.reduce((a, b) => a + b, 0);
+  if (sum <= 0) {
+    const siteIdx = Math.floor(rng() * sites.length);
+    return sites[siteIdx];
+  }
+
+  const cumulativeProbabilities: number[] = [];
+  let cumulativeSum = 0;
+  for (const w of weights) {
+    cumulativeSum += w / sum;
+    cumulativeProbabilities.push(cumulativeSum);
+  }
+
+  const r = rng();
+  for (let i = 0; i < sites.length; i++) {
+    if (r <= cumulativeProbabilities[i]) {
+      return sites[i];
+    }
+  }
+
+  return sites[sites.length - 1];
+}
+
 export function generateMinimization(
   config: RandomizationConfig,
   rng: () => number,
-  registry: SubjectRegistry
+  registry: SubjectRegistry,
+  siteWeights?: Record<string, number>
 ): GeneratedSchema[] {
   const { arms, strata, sites, minimizationConfig } = config;
   const p = minimizationConfig?.p ?? 0.8;
@@ -187,9 +227,8 @@ export function generateMinimization(
     }
 
     // Determine available sites (all sites are uniformly available for now, since no site caps exist)
-    // Select site uniformly
-    const siteIdx = Math.floor(rng() * sites.length);
-    const site = sites[siteIdx];
+    // Select site using weights if configured
+    const site = selectSiteWithWeights(sites, siteWeights, rng);
 
     const subjectProfile: Record<string, string> = {};
     const stratum: Record<string, string> = {};

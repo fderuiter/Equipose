@@ -213,7 +213,7 @@ describe('RandomizationEngineFacade – browser (Worker) path', () => {
     expect(fakeWorker.postMessage).toHaveBeenCalledTimes(1);
     const msg = fakeWorker.postMessage.mock.calls[0][0];
     expect(msg.command).toBe('START_GENERATION');
-    expect(msg.payload).toEqual(mockConfig);
+    expect(msg.payload).toEqual({ config: mockConfig, siteWeights: undefined });
   });
 
   it('should include a unique correlation id in each postMessage call', () => {
