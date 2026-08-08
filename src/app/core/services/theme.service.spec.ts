@@ -177,15 +177,15 @@ describe('ThemeService', () => {
   it('should add density-compact class and remove density-comfortable when density is Compact', () => {
     service.setDensity('Compact');
     TestBed.tick();
-    expect(mockDocument.documentElement.classList.add).withContext('Should add density-compact').toHaveBeenCalledWith('density-compact');
-    expect(mockDocument.documentElement.classList.remove).withContext('Should remove density-comfortable').toHaveBeenCalledWith('density-comfortable');
+    expect(mockDocument.documentElement.classList.add).toHaveBeenCalledWith('density-compact');
+    expect(mockDocument.documentElement.classList.remove).toHaveBeenCalledWith('density-comfortable');
   });
 
   it('should add density-comfortable class and remove density-compact when density is Comfortable', () => {
     service.setDensity('Comfortable');
     TestBed.tick();
-    expect(mockDocument.documentElement.classList.add).withContext('Should add density-comfortable').toHaveBeenCalledWith('density-comfortable');
-    expect(mockDocument.documentElement.classList.remove).withContext('Should remove density-compact').toHaveBeenCalledWith('density-compact');
+    expect(mockDocument.documentElement.classList.add).toHaveBeenCalledWith('density-comfortable');
+    expect(mockDocument.documentElement.classList.remove).toHaveBeenCalledWith('density-compact');
   });
 
   it('should dynamically update layout tokens based on density mode', () => {
