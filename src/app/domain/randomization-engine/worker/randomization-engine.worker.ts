@@ -10,7 +10,6 @@ import type {
   MonteCarloSuccessPayload,
   WorkerResponse
 } from './worker-protocol';
-import type { RandomizationConfig } from '../../core/models/randomization.model';
 
 /**
  * Truly-discriminated command union: TypeScript narrows `payload` by `command` value,
