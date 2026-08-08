@@ -56,6 +56,9 @@ const fontSmoothingStyle = `
   app-monte-carlo-modal, [role="dialog"], .modal-content, .warning, .alert-warning, [data-testid="mc-attrition-warning"], [data-testid="mc-confidence-statement"] {
     text-rendering: optimizeLegibility !important;
   }
+  [data-testid="footer-update-indicator"] {
+    display: none !important;
+  }
 `;
 
 const screenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 20000 } as const;

@@ -296,7 +296,7 @@ import { DateUtil } from './core/utils/date.util';
                 </a>
               </div>
               <!-- Persistent Update Status Indicator -->
-              <div class="flex items-center gap-2 text-xs h-6 mt-0.5">
+              <div data-testid="footer-update-indicator" class="flex items-center gap-2 text-xs h-6 mt-0.5">
                 @if (updateService.isChecking()) {
                   <span class="flex items-center gap-1.5 text-muted">
                     <svg class="animate-spin h-3 w-3 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
