@@ -22,3 +22,9 @@
 
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
+
+/sitemap.xml
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/robots.txt
+  Cache-Control: no-cache, no-store, must-revalidate

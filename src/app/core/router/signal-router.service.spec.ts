@@ -68,4 +68,33 @@ describe('SignalRouter', () => {
     expect(service.path()).toBe('/changed');
     expect(service.queryParams()).toEqual({ foo: 'bar' });
   });
+
+  it('should trim trailing slashes from the path computed signal but keep / for root', () => {
+    window.history.replaceState(null, '', '/about/');
+    const newService = TestBed.runInInjectionContext(() => new SignalRouter());
+    expect(newService.path()).toBe('/about');
+    expect(window.location.pathname).toBe('/about');
+  });
+
+  it('should preserve single slash / for root path', () => {
+    window.history.replaceState(null, '', '/');
+    const newService = TestBed.runInInjectionContext(() => new SignalRouter());
+    expect(newService.path()).toBe('/');
+    expect(window.location.pathname).toBe('/');
+  });
+
+  it('should trim trailing slashes during programmatic navigation', () => {
+    service.navigate('/generator/');
+    expect(service.path()).toBe('/generator');
+    expect(window.location.pathname).toBe('/generator');
+  });
+
+  it('should trim trailing slashes while keeping query parameters and hash fragments intact', () => {
+    service.navigate('/verify/?mode=test#results');
+    expect(service.path()).toBe('/verify');
+    expect(service.queryParams()).toEqual({ mode: 'test' });
+    expect(window.location.pathname).toBe('/verify');
+    expect(window.location.search).toBe('?mode=test');
+    expect(window.location.hash).toBe('#results');
+  });
 });
