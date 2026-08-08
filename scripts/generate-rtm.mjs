@@ -501,6 +501,131 @@ for (const [personaName, occurrences] of foundPersonas.entries()) {
   }
 }
 
+// ── Strategic Pillar Scanning & Alignment Verification ─────────────────────────
+const VALID_PILLARS = [
+  'Zero-Trust',
+  'Reproducibility',
+  'Scientific Validity'
+];
+
+const PILLAR_MAPPING = {
+  'Zero-Trust': 'Zero-Trust',
+  'ZeroTrust': 'Zero-Trust',
+  'Reproducibility': 'Reproducibility',
+  'Scientific Validity': 'Scientific Validity',
+  'ScientificValidity': 'Scientific Validity'
+};
+
+const foundPillars = new Map();
+for (const p of VALID_PILLARS) {
+  foundPillars.set(p, []);
+}
+
+function findPillarTagsInLine(line) {
+  const tags = [];
+  let idx = -1;
+  while ((idx = line.indexOf('@pillar:', idx + 1)) !== -1) {
+    let rest = line.substring(idx + '@pillar:'.length).trim();
+    if (rest.endsWith('*/')) {
+      rest = rest.substring(0, rest.length - 2).trim();
+    }
+    
+    // Check if it starts with one of the valid tags
+    const validTags = ['Zero-Trust', 'ZeroTrust', 'Reproducibility', 'Scientific Validity', 'ScientificValidity'];
+    let found = false;
+    for (const vt of validTags) {
+      if (rest.startsWith(vt)) {
+        const nextChar = rest.substring(vt.length, vt.length + 1);
+        if (!nextChar || /[^a-zA-Z0-9_\-]/.test(nextChar)) {
+          tags.push(vt);
+          found = true;
+          break;
+        }
+      }
+    }
+    
+    if (!found) {
+      // Extract candidate tag
+      const match = rest.match(/^([a-zA-Z0-9_\-\s]+)/);
+      if (match) {
+        tags.push(match[1].trim());
+      } else {
+        tags.push(rest);
+      }
+    }
+  }
+  return tags;
+}
+
+for (const file of allSpecFiles) {
+  const content = readFileSync(file, 'utf-8');
+  const fileLines = content.split('\n');
+  for (let i = 0; i < fileLines.length; i++) {
+    const tags = findPillarTagsInLine(fileLines[i]);
+    for (const tag of tags) {
+      const canonicalPillar = PILLAR_MAPPING[tag];
+      if (!canonicalPillar) {
+        console.error(`[generate-rtm] ERROR: Code-level pillar annotation '@pillar:${tag}' is misspelled or unrecognized.`);
+        process.exit(1);
+      }
+      
+      const relFile = relative(repoRoot, file).replace(/\\/g, '/');
+      
+      let testName = "Associated Unit Test";
+      let suiteName = "Pillar Verification";
+      
+      for (let j = i; j < Math.min(i + 15, fileLines.length); j++) {
+        const testMatch = fileLines[j].match(/(?:test|it)\s*\(\s*['"`]([^'"`]+)['"`]/);
+        if (testMatch) {
+          testName = testMatch[1];
+          break;
+        }
+      }
+      if (testName === "Associated Unit Test") {
+        for (let j = i; j >= Math.max(0, i - 15); j--) {
+          const testMatch = fileLines[j].match(/(?:test|it)\s*\(\s*['"`]([^'"`]+)['"`]/);
+          if (testMatch) {
+            testName = testMatch[1];
+            break;
+          }
+        }
+      }
+      
+      for (let j = i; j >= 0; j--) {
+        const suiteMatch = fileLines[j].match(/(?:test\.describe|describe)\s*\(\s*['"`]([^'"`]+)['"`]/);
+        if (suiteMatch) {
+          suiteName = suiteMatch[1];
+          break;
+        }
+      }
+
+      let status = 'UNKNOWN';
+      const matchingTest = executedTests.find(t => 
+        t.file === relFile && 
+        (t.testName === testName || (t.testName && t.testName.includes(testName)) || (testName && testName.includes(t.testName)))
+      );
+      if (matchingTest) {
+        status = matchingTest.status;
+      }
+
+      foundPillars.get(canonicalPillar).push({
+        file: relFile,
+        line: i + 1,
+        testName,
+        suiteName,
+        status
+      });
+    }
+  }
+}
+
+for (const [pillarName, occurrences] of foundPillars.entries()) {
+  if (occurrences.length === 0) {
+    console.error(`[generate-rtm] ERROR: Code-level pillar annotation for strategic pillar '${pillarName}' is missing or has zero tests associated with it.`);
+    process.exit(1);
+  }
+}
+
 lines.push('\n---\n');
 lines.push('## Persona Requirements Traceability Matrix\n');
 lines.push('| Persona | Guideline / Role | Test File | Line | Verified Test / Action | Suite |');
@@ -516,6 +641,20 @@ for (const [personaName, occurrences] of foundPersonas.entries()) {
   const guideline = GUIDELINES[personaName] ?? 'Strategic profile verification';
   for (const occ of occurrences) {
     lines.push(`| \`@persona:${personaName}\` | ${guideline} | \`${occ.file}\` | ${occ.line} | ${occ.testName} | ${occ.suiteName} |`);
+  }
+}
+
+lines.push('\n---\n');
+lines.push('## Strategic Pillar Traceability Matrix\n');
+lines.push('| Strategic Pillar | Test File | Line | Verified Test | Suite | Status |');
+lines.push('|---|---|---|---|---|---|');
+
+for (const [pillarName, occurrences] of foundPillars.entries()) {
+  for (const occ of occurrences) {
+    const statusIcon = occ.status === 'PASS' ? '✅ PASS' : occ.status === 'SKIP' ? '⏭️ SKIP' : occ.status === 'UNKNOWN' ? '⬜ UNKNOWN' : '❌ FAIL';
+    const safeTest = occ.testName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+    const safeSuite = occ.suiteName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+    lines.push(`| \`${pillarName}\` | \`${occ.file}\` | ${occ.line} | ${safeTest} | ${safeSuite} | ${statusIcon} |`);
   }
 }
 

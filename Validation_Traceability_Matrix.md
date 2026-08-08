@@ -1,7 +1,7 @@
 # Validation Traceability Matrix
 
-> **Generated:** 2026-08-06T16:10:12.392Z  
-> **Status:** Test results not provided — status shown as UNKNOWN  
+> **Generated:** 2026-08-08T04:03:18.202Z  
+> **Status:** Test results loaded  
 > **Requirements covered:** 13 / 16  
 > **Tagged test cases:** 36  
 
@@ -49,18 +49,18 @@
 | `REQ-EXPORT-002` | PDF export must trigger a file download containing a properly named randomization artifact | `tests_e2e/audit-trail.spec.ts` | 420 | PDF export filename matches the expected pattern |  | ⬜ UNKNOWN |
 | `REQ-EXPORT-002` | PDF export must trigger a file download containing a properly named randomization artifact | `tests_e2e/results-operations.spec.ts` | 120 | should trigger a PDF download when the PDF button is clicked |  | ⬜ UNKNOWN |
 | `REQ-EXPORT-003` | Excel export must produce a two-sheet workbook (Schema + Audit & Configuration) | — | — | *(no tests tagged)* | — | ⚠️ NO COVERAGE |
-| `REQ-ICH-E6-001` | GCP – Subject IDs must be unique and fully traceable to site and block (ICH E6 §4.9) | `src/app/domain/randomization-engine/core/randomization-algorithm.spec.ts` | 657 | {RND:n} produces no duplicate subject IDs across the schema |  | ⬜ UNKNOWN |
+| `REQ-ICH-E6-001` | GCP – Subject IDs must be unique and fully traceable to site and block (ICH E6 §4.9) | `src/app/domain/randomization-engine/core/randomization-algorithm.spec.ts` | 657 | {RND:n} produces no duplicate subject IDs across the schema | generateRandomizationSchema – new token syntax | ✅ PASS |
 | `REQ-ICH-E6-002` | Site information must be captured and present in all exported records (ICH E6 §4.1) | — | — | *(no tests tagged)* | — | ⚠️ NO COVERAGE |
-| `REQ-ICH-E9-001` | Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3) | `scripts/cross-env/verify_python_schema.py` | 2 | Execute scripts/cross-env/verify_python_schema.py | Standalone Script | ⬜ UNKNOWN |
-| `REQ-ICH-E9-001` | Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 144 | 1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials | ICH E9 – Law of Large Numbers: allocation ratio convergence | ⬜ UNKNOWN |
+| `REQ-ICH-E9-001` | Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3) | `scripts/cross-env/verify_python_schema.py` | 2 | Execute scripts/cross-env/verify_python_schema.py | Standalone Script | ✅ PASS |
+| `REQ-ICH-E9-001` | Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 145 | 1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials | ICH E9 – Law of Large Numbers: allocation ratio convergence | ✅ PASS |
 | `REQ-ICH-E9-001` | Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3) | `tests_e2e/schema-generation.spec.ts` | 11 | should generate a schema and display results grid |  | ⬜ UNKNOWN |
-| `REQ-ICH-E9-002` | Stratification factors must be applied correctly to the randomization schedule (ICH E9 §2.3.3) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 277 | per-stratum caps are never exceeded across 100 random seeds | ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded | ⬜ UNKNOWN |
-| `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | `scripts/cross-env/verify_python_schema.py` | 3 | Execute scripts/cross-env/verify_python_schema.py | Standalone Script | ⬜ UNKNOWN |
-| `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 184 | every block has exactly the correct count of each arm for a 1:1 ratio with block size 4 | ICH E9 – Block Balance: strict intra-block arm balance | ⬜ UNKNOWN |
-| `REQ-SBOM-001` | A Software Bill of Materials (SBOM) must be generated for every production build | `.github/workflows/ci.yml` | 759 | Job: sbom | CI Workflow | ⬜ UNKNOWN |
-| `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 52 | schema generation produces zero outbound XHR/Fetch requests to external servers | Zero-Trust Architecture: no outbound network requests | ⬜ UNKNOWN |
-| `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 69 | CSV export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
-| `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 90 | PDF export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
+| `REQ-ICH-E9-002` | Stratification factors must be applied correctly to the randomization schedule (ICH E9 §2.3.3) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 278 | per-stratum caps are never exceeded across 100 random seeds | ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded | ✅ PASS |
+| `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | `scripts/cross-env/verify_python_schema.py` | 3 | Execute scripts/cross-env/verify_python_schema.py | Standalone Script | ✅ PASS |
+| `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 185 | every block has exactly the correct count of each arm for a 1:1 ratio with block size 4 | ICH E9 – Block Balance: strict intra-block arm balance | ✅ PASS |
+| `REQ-SBOM-001` | A Software Bill of Materials (SBOM) must be generated for every production build | `.github/workflows/ci.yml` | 743 | Job: sbom | CI Workflow | ⬜ UNKNOWN |
+| `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 53 | schema generation produces zero outbound XHR/Fetch requests to external servers | Zero-Trust Architecture: no outbound network requests | ⬜ UNKNOWN |
+| `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 71 | CSV export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
+| `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 92 | PDF export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
 
 ---
 
@@ -77,6 +77,17 @@
 | `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/schema-management/services/export.service.spec.ts` | 169 | should enforce Trial Manager blinded rules and verify simulation export configuration states | Standardized Persona Validation Integration |
 | `@persona:ComplianceOfficer` | Requires automated RTM scans & verified persona logic during builds | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 40 | should support Compliance Officer persona and secure baseline behaviors | PersonaValidationService |
 | `@persona:ComplianceOfficer` | Requires automated RTM scans & verified persona logic during builds | `src/app/domain/schema-management/components/results-grid.component.spec.ts` | 696 | should allow Compliance Officer auditing of secure centralized authority behaviors | Standardized Persona Validation Framework Integration |
+
+---
+
+## Strategic Pillar Traceability Matrix
+
+| Strategic Pillar | Test File | Line | Verified Test | Suite | Status |
+|---|---|---|---|---|---|
+| `Zero-Trust` | `tests_e2e/zero-trust.spec.ts` | 52 | schema generation produces zero outbound XHR/Fetch requests to external servers | Zero-Trust Architecture: no outbound network requests | ⬜ UNKNOWN |
+| `Zero-Trust` | `tests_e2e/zero-trust.spec.ts` | 70 | CSV export produces zero outbound requests to external servers | Zero-Trust Architecture: no outbound network requests | ⬜ UNKNOWN |
+| `Reproducibility` | `tests_e2e/determinism.spec.ts` | 5 | generates identical Audit Hash for the same seed across Chromium, WebKit, and Firefox | Determinism Test Suite | ⬜ UNKNOWN |
+| `Scientific Validity` | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 144 | 1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials | ICH E9 – Law of Large Numbers: allocation ratio convergence | ✅ PASS |
 
 ---
 

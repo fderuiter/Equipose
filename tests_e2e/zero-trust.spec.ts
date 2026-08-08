@@ -49,6 +49,7 @@ function isExternalRequest(req: Request): boolean {
 
 test.describe('Zero-Trust Architecture: no outbound network requests', () => {
   // [REQ-ZERO-TRUST-001]
+  // @pillar:Zero-Trust
   test('schema generation produces zero outbound XHR/Fetch requests to external servers', async ({ page }) => {
     const externalRequests: string[] = [];
 
@@ -66,6 +67,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
   });
 
   // [REQ-ZERO-TRUST-001]
+  // @pillar:ZeroTrust
   test('CSV export produces zero outbound requests to external servers', async ({ page }) => {
     const externalRequests: string[] = [];
 

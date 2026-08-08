@@ -2,6 +2,7 @@ import { test, expect } from './fixtures';
 import { openGenerator, loadPreset } from './generator-helpers';
 
 test.describe('Determinism Test Suite', () => {
+  // @pillar:Reproducibility
   test('generates identical Audit Hash for the same seed across Chromium, WebKit, and Firefox', async ({ page }) => {
     test.setTimeout(60000);
     page.on('console', msg => console.log('BROWSER CONSOLE:', msg.text()));

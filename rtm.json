@@ -151,21 +151,21 @@
   },
   {
     "Requirement ID": "REQ-ICH-E6-001",
-    "Suite Name": "",
+    "Suite Name": "generateRandomizationSchema – new token syntax",
     "Test Name": "{RND:n} produces no duplicate subject IDs across the schema",
-    "Status": "UNKNOWN"
+    "Status": "PASS"
   },
   {
     "Requirement ID": "REQ-ICH-E9-001",
     "Suite Name": "Standalone Script",
     "Test Name": "Execute scripts/cross-env/verify_python_schema.py",
-    "Status": "UNKNOWN"
+    "Status": "PASS"
   },
   {
     "Requirement ID": "REQ-ICH-E9-001",
     "Suite Name": "ICH E9 – Law of Large Numbers: allocation ratio convergence",
     "Test Name": "1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials",
-    "Status": "UNKNOWN"
+    "Status": "PASS"
   },
   {
     "Requirement ID": "REQ-ICH-E9-001",
@@ -177,19 +177,19 @@
     "Requirement ID": "REQ-ICH-E9-002",
     "Suite Name": "ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded",
     "Test Name": "per-stratum caps are never exceeded across 100 random seeds",
-    "Status": "UNKNOWN"
+    "Status": "PASS"
   },
   {
     "Requirement ID": "REQ-ICH-E9-003",
     "Suite Name": "Standalone Script",
     "Test Name": "Execute scripts/cross-env/verify_python_schema.py",
-    "Status": "UNKNOWN"
+    "Status": "PASS"
   },
   {
     "Requirement ID": "REQ-ICH-E9-003",
     "Suite Name": "ICH E9 – Block Balance: strict intra-block arm balance",
     "Test Name": "every block has exactly the correct count of each arm for a 1:1 ratio with block size 4",
-    "Status": "UNKNOWN"
+    "Status": "PASS"
   },
   {
     "Requirement ID": "REQ-SBOM-001",
