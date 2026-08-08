@@ -31,6 +31,13 @@ REQ-ICH-E9-001,"","should generate a schema and display results grid",UNKNOWN
 REQ-ICH-E9-002,"ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded","per-stratum caps are never exceeded across 100 random seeds",UNKNOWN
 REQ-ICH-E9-003,"Standalone Script","Execute scripts/cross-env/verify_python_schema.py",UNKNOWN
 REQ-ICH-E9-003,"ICH E9 – Block Balance: strict intra-block arm balance","every block has exactly the correct count of each arm for a 1:1 ratio with block size 4",UNKNOWN
+REQ-IRB-001,"","code generator modal produces zero outbound requests to external servers",UNKNOWN
+REQ-IRB-001,"","landing page loads with zero outbound requests to external servers",UNKNOWN
+REQ-IRB-001,"","generator page navigation with full form produces zero outbound requests",UNKNOWN
+REQ-IRB-002,"","should allow Biostatistician to bypass blinding and view full treatment allocations",UNKNOWN
+REQ-IRB-002,"","should restrict Trial Manager treatment visibility based on unblinded state",UNKNOWN
+REQ-IRB-002,"","should disable structural schema exports when in draft simulation mode",UNKNOWN
+REQ-IRB-002,"","should support Compliance Officer persona and secure baseline behaviors",UNKNOWN
 REQ-SBOM-001,"CI Workflow","Job: sbom",UNKNOWN
 REQ-ZERO-TRUST-001,"Zero-Trust Architecture: no outbound network requests","schema generation produces zero outbound XHR/Fetch requests to external servers",UNKNOWN
 REQ-ZERO-TRUST-001,"","CSV export produces zero outbound requests to external servers",UNKNOWN

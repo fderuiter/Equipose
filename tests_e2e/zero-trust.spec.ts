@@ -107,6 +107,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     expect(externalRequests).toHaveLength(0);
   });
 
+  // [REQ-IRB-001]
   test('code generator modal produces zero outbound requests to external servers', async ({ page }) => {
     const externalRequests: string[] = [];
 
@@ -137,6 +138,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     expect(externalRequests).toHaveLength(0);
   });
 
+  // [REQ-IRB-001]
   test('landing page loads with zero outbound requests to external servers', async ({ page }) => {
     const externalRequests: string[] = [];
 
@@ -152,6 +154,7 @@ test.describe('Zero-Trust Architecture: no outbound network requests', () => {
     expect(externalRequests).toHaveLength(0);
   });
 
+  // [REQ-IRB-001]
   test('generator page navigation with full form produces zero outbound requests', async ({ page }) => {
     const externalRequests: string[] = [];
 

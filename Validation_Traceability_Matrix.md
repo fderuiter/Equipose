@@ -1,9 +1,9 @@
 # Validation Traceability Matrix
 
-> **Generated:** 2026-08-06T16:10:12.392Z  
+> **Generated:** 2026-08-08T04:09:03.705Z  
 > **Status:** Test results not provided — status shown as UNKNOWN  
-> **Requirements covered:** 13 / 16  
-> **Tagged test cases:** 36  
+> **Requirements covered:** 15 / 18  
+> **Tagged test cases:** 43  
 
 ---
 
@@ -11,10 +11,10 @@
 
 | Metric | Value |
 |---|---|
-| Total regulatory requirements | 16 |
-| Requirements with ≥1 test | 13 |
+| Total regulatory requirements | 18 |
+| Requirements with ≥1 test | 15 |
 | Requirements with no test coverage | 3 |
-| Total tagged test cases | 36 |
+| Total tagged test cases | 43 |
 
 ---
 
@@ -57,10 +57,33 @@
 | `REQ-ICH-E9-002` | Stratification factors must be applied correctly to the randomization schedule (ICH E9 §2.3.3) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 277 | per-stratum caps are never exceeded across 100 random seeds | ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded | ⬜ UNKNOWN |
 | `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | `scripts/cross-env/verify_python_schema.py` | 3 | Execute scripts/cross-env/verify_python_schema.py | Standalone Script | ⬜ UNKNOWN |
 | `REQ-ICH-E9-003` | Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4) | `src/app/domain/randomization-engine/core/statistical-validation.spec.ts` | 184 | every block has exactly the correct count of each arm for a 1:1 ratio with block size 4 | ICH E9 – Block Balance: strict intra-block arm balance | ⬜ UNKNOWN |
-| `REQ-SBOM-001` | A Software Bill of Materials (SBOM) must be generated for every production build | `.github/workflows/ci.yml` | 759 | Job: sbom | CI Workflow | ⬜ UNKNOWN |
+| `REQ-IRB-001` | Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration | `tests_e2e/zero-trust.spec.ts` | 111 | code generator modal produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
+| `REQ-IRB-001` | Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration | `tests_e2e/zero-trust.spec.ts` | 142 | landing page loads with zero outbound requests to external servers |  | ⬜ UNKNOWN |
+| `REQ-IRB-001` | Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration | `tests_e2e/zero-trust.spec.ts` | 158 | generator page navigation with full form produces zero outbound requests |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 18 | should allow Biostatistician to bypass blinding and view full treatment allocations |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 27 | should restrict Trial Manager treatment visibility based on unblinded state |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 36 | should disable structural schema exports when in draft simulation mode |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 45 | should support Compliance Officer persona and secure baseline behaviors |  | ⬜ UNKNOWN |
+| `REQ-SBOM-001` | A Software Bill of Materials (SBOM) must be generated for every production build | `.github/workflows/ci.yml` | 743 | Job: sbom | CI Workflow | ⬜ UNKNOWN |
 | `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 52 | schema generation produces zero outbound XHR/Fetch requests to external servers | Zero-Trust Architecture: no outbound network requests | ⬜ UNKNOWN |
 | `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 69 | CSV export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
 | `REQ-ZERO-TRUST-001` | No subject or schema data may be transmitted to external servers (zero-trust architecture) | `tests_e2e/zero-trust.spec.ts` | 90 | PDF export produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
+
+---
+
+## IRB Compliance Traceability Matrix
+
+This section tracks key Institutional Review Board (IRB) ethical requirements. Each requirement maps directly to automated testing blocks to provide clinical compliance officers with verifiable proof of zero-trust security and participant data blinding.
+
+| Requirement ID | Justification / Description | Test File | Line | Verified Test / Action | Suite | Status |
+|---|---|---|---|---|---|---|
+| `REQ-IRB-001` | Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration | `tests_e2e/zero-trust.spec.ts` | 111 | code generator modal produces zero outbound requests to external servers |  | ⬜ UNKNOWN |
+| `REQ-IRB-001` | Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration | `tests_e2e/zero-trust.spec.ts` | 142 | landing page loads with zero outbound requests to external servers |  | ⬜ UNKNOWN |
+| `REQ-IRB-001` | Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration | `tests_e2e/zero-trust.spec.ts` | 158 | generator page navigation with full form produces zero outbound requests |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 18 | should allow Biostatistician to bypass blinding and view full treatment allocations |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 27 | should restrict Trial Manager treatment visibility based on unblinded state |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 36 | should disable structural schema exports when in draft simulation mode |  | ⬜ UNKNOWN |
+| `REQ-IRB-002` | Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 45 | should support Compliance Officer persona and secure baseline behaviors |  | ⬜ UNKNOWN |
 
 ---
 
@@ -71,11 +94,11 @@
 | `@persona:Biostatistician` | Requires access to full unblinded allocations for verification & reporting | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 16 | should allow Biostatistician to bypass blinding and view full treatment allocations | PersonaValidationService |
 | `@persona:Biostatistician` | Requires access to full unblinded allocations for verification & reporting | `src/app/domain/schema-management/components/results-grid.component.spec.ts` | 680 | should retrieve blinding configurations for Biostatistician and allow full view | Standardized Persona Validation Framework Integration |
 | `@persona:Biostatistician` | Requires access to full unblinded allocations for verification & reporting | `src/app/domain/schema-management/services/export.service.spec.ts` | 161 | should allow Biostatistician to export unblinded allocations | Standardized Persona Validation Integration |
-| `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 24 | should restrict Trial Manager treatment visibility based on unblinded state | PersonaValidationService |
-| `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 32 | should disable structural schema exports when in draft simulation mode | PersonaValidationService |
+| `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 25 | should restrict Trial Manager treatment visibility based on unblinded state | PersonaValidationService |
+| `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 34 | should disable structural schema exports when in draft simulation mode | PersonaValidationService |
 | `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/schema-management/components/results-grid.component.spec.ts` | 687 | should enforce blinding configurations for Trial Manager and mask treatment arms unless toggled | Standardized Persona Validation Framework Integration |
 | `@persona:TrialManager` | Requires secure blinded baseline & disables exports in Draft/Simulation mode | `src/app/domain/schema-management/services/export.service.spec.ts` | 169 | should enforce Trial Manager blinded rules and verify simulation export configuration states | Standardized Persona Validation Integration |
-| `@persona:ComplianceOfficer` | Requires automated RTM scans & verified persona logic during builds | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 40 | should support Compliance Officer persona and secure baseline behaviors | PersonaValidationService |
+| `@persona:ComplianceOfficer` | Requires automated RTM scans & verified persona logic during builds | `src/app/domain/core/validation/persona-validator.service.spec.ts` | 43 | should support Compliance Officer persona and secure baseline behaviors | PersonaValidationService |
 | `@persona:ComplianceOfficer` | Requires automated RTM scans & verified persona logic during builds | `src/app/domain/schema-management/components/results-grid.component.spec.ts` | 696 | should allow Compliance Officer auditing of secure centralized authority behaviors | Standardized Persona Validation Framework Integration |
 
 ---
@@ -90,6 +113,7 @@
 | `REQ-ZERO-TRUST` | Equipose Zero-Trust Architecture Requirement |
 | `REQ-SBOM` | Supply-Chain Security – Software Bill of Materials |
 | `REQ-EXPORT` | Export Artifact Provenance Requirements |
+| `REQ-IRB` | Institutional Review Board (IRB) Privacy & Blinding Controls |
 
 ---
 

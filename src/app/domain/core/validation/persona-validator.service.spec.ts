@@ -14,6 +14,7 @@ describe('PersonaValidationService', () => {
   });
 
   // @persona:Biostatistician
+  // [REQ-IRB-002]
   it('should allow Biostatistician to bypass blinding and view full treatment allocations', () => {
     service.activePersona.set('Biostatistician');
     expect(service.canBypassBlinding()).toBe(true);
@@ -22,6 +23,7 @@ describe('PersonaValidationService', () => {
   });
 
   // @persona:TrialManager
+  // [REQ-IRB-002]
   it('should restrict Trial Manager treatment visibility based on unblinded state', () => {
     service.activePersona.set('TrialManager');
     expect(service.canBypassBlinding()).toBe(false);
@@ -30,6 +32,7 @@ describe('PersonaValidationService', () => {
   });
 
   // @persona:TrialManager
+  // [REQ-IRB-002]
   it('should disable structural schema exports when in draft simulation mode', () => {
     service.activePersona.set('TrialManager');
     expect(service.canExportSchema('Simulation')).toBe(false);
@@ -38,6 +41,7 @@ describe('PersonaValidationService', () => {
   });
 
   // @persona:ComplianceOfficer
+  // [REQ-IRB-002]
   it('should support Compliance Officer persona and secure baseline behaviors', () => {
     service.activePersona.set('ComplianceOfficer');
     expect(service.canBypassBlinding()).toBe(false);

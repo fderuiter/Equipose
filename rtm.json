@@ -192,6 +192,48 @@
     "Status": "UNKNOWN"
   },
   {
+    "Requirement ID": "REQ-IRB-001",
+    "Suite Name": "",
+    "Test Name": "code generator modal produces zero outbound requests to external servers",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-IRB-001",
+    "Suite Name": "",
+    "Test Name": "landing page loads with zero outbound requests to external servers",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-IRB-001",
+    "Suite Name": "",
+    "Test Name": "generator page navigation with full form produces zero outbound requests",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-IRB-002",
+    "Suite Name": "",
+    "Test Name": "should allow Biostatistician to bypass blinding and view full treatment allocations",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-IRB-002",
+    "Suite Name": "",
+    "Test Name": "should restrict Trial Manager treatment visibility based on unblinded state",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-IRB-002",
+    "Suite Name": "",
+    "Test Name": "should disable structural schema exports when in draft simulation mode",
+    "Status": "UNKNOWN"
+  },
+  {
+    "Requirement ID": "REQ-IRB-002",
+    "Suite Name": "",
+    "Test Name": "should support Compliance Officer persona and secure baseline behaviors",
+    "Status": "UNKNOWN"
+  },
+  {
     "Requirement ID": "REQ-SBOM-001",
     "Suite Name": "CI Workflow",
     "Test Name": "Job: sbom",

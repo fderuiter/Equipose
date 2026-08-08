@@ -64,6 +64,8 @@ const REQUIREMENTS = {
   'REQ-EXPORT-001': 'CSV/XLSX export filename must contain an 8-digit date component for per-generation traceability',
   'REQ-EXPORT-002': 'PDF export must trigger a file download containing a properly named randomization artifact',
   'REQ-EXPORT-003': 'Excel export must produce a two-sheet workbook (Schema + Audit & Configuration)',
+  'REQ-IRB-001': 'Zero-trust client-side network isolation safeguarding trial data from unauthorized external exfiltration',
+  'REQ-IRB-002': 'Client-side data blinding and persona-based authorization preventing unauthorized exposure of study allocations',
 };
 
 // ── File discovery ─────────────────────────────────────────────────────────────
@@ -371,6 +373,16 @@ for (const t of executedTests) {
 }
 
 const sortedReqIds = [...byReq.keys()].sort();
+
+// Validate that all registered IRB requirements have coverage
+for (const [reqId, tests] of byReq.entries()) {
+  if (reqId.startsWith('REQ-IRB-') && tests.length === 0) {
+    console.error(`[generate-rtm] ERROR: IRB Compliance Requirement '${reqId}' has 0 test coverage!`);
+    console.error(`All IRB compliance requirements must be covered by verified tests to prevent deployment safety violations.`);
+    process.exit(1);
+  }
+}
+
 const totalReqs = sortedReqIds.length;
 const coveredReqs = sortedReqIds.filter(id => (byReq.get(id) ?? []).length > 0).length;
 const totalTests = executedTests.filter(t => t.line && getReqId(t.file, t.line)).length;
@@ -502,6 +514,28 @@ for (const [personaName, occurrences] of foundPersonas.entries()) {
 }
 
 lines.push('\n---\n');
+lines.push('## IRB Compliance Traceability Matrix\n');
+lines.push('This section tracks key Institutional Review Board (IRB) ethical requirements. Each requirement maps directly to automated testing blocks to provide clinical compliance officers with verifiable proof of zero-trust security and participant data blinding.\n');
+lines.push('| Requirement ID | Justification / Description | Test File | Line | Verified Test / Action | Suite | Status |');
+lines.push('|---|---|---|---|---|---|---|');
+
+for (const reqId of sortedReqIds) {
+  if (!reqId.startsWith('REQ-IRB-')) continue;
+  const entries = byReq.get(reqId) ?? [];
+  const desc = REQUIREMENTS[reqId] ?? '*(undocumented requirement)*';
+  if (entries.length === 0) {
+    lines.push(`| \`${reqId}\` | ${desc} | — | — | *(no tests tagged)* | — | ⚠️ NO COVERAGE |`);
+  } else {
+    for (const entry of entries) {
+      const statusIcon = entry.status === 'PASS' ? '✅ PASS' : entry.status === 'SKIP' ? '⏭️ SKIP' : entry.status === 'UNKNOWN' ? '⬜ UNKNOWN' : '❌ FAIL';
+      const safeTest = entry.testName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+      const safeSuite = entry.suiteName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
+      lines.push(`| \`${reqId}\` | ${desc} | \`${entry.file}\` | ${entry.line} | ${safeTest} | ${safeSuite} | ${statusIcon} |`);
+    }
+  }
+}
+
+lines.push('\n---\n');
 lines.push('## Persona Requirements Traceability Matrix\n');
 lines.push('| Persona | Guideline / Role | Test File | Line | Verified Test / Action | Suite |');
 lines.push('|---|---|---|---|---|---|');
@@ -529,7 +563,8 @@ lines.push('| `REQ-ICH-E6` | ICH E6(R2) – Good Clinical Practice (GCP) |');
 lines.push('| `REQ-21CFR11` | 21 CFR Part 11 – Electronic Records; Electronic Signatures |');
 lines.push('| `REQ-ZERO-TRUST` | Equipose Zero-Trust Architecture Requirement |');
 lines.push('| `REQ-SBOM` | Supply-Chain Security – Software Bill of Materials |');
-lines.push('| `REQ-EXPORT` | Export Artifact Provenance Requirements |\n');
+lines.push('| `REQ-EXPORT` | Export Artifact Provenance Requirements |');
+lines.push('| `REQ-IRB` | Institutional Review Board (IRB) Privacy & Blinding Controls |\n');
 lines.push('---\n');
 lines.push('## SAS & Stata Cross-Environment Note\n');
 lines.push('Mathematical result validation for SAS and Stata is deferred to the end-user');
