@@ -1,3 +1,15 @@
+# [1.42.0](https://github.com/fderuiter/Equipose/compare/v1.41.0...v1.42.0) (2026-08-08)
+
+
+### Bug Fixes
+
+* **e2e:** hide footer update indicator during visual regression checks to preserve layout baselines ([ec1a4d2](https://github.com/fderuiter/Equipose/commit/ec1a4d278feba1c322d7241835c60013f6bddef6))
+
+
+### Features
+
+* implement persistent footer update status indicator and manual check logic ([5616a65](https://github.com/fderuiter/Equipose/commit/5616a65244934d2c468f6d6035bc9aff6dee8974))
+
 # [1.41.0](https://github.com/fderuiter/Equipose/compare/v1.40.0...v1.41.0) (2026-08-07)
 
 
