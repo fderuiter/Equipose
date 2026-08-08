@@ -156,3 +156,77 @@
     background-color: CanvasText !important;
   }
 }
+
+@custom-variant compact (&:where(.density-compact, .density-compact *));
+
+/* ──────────────────────────────────────────────────────────────────────────
+   VISUAL DENSITY: COMPACT MODE OVERRIDES
+   ────────────────────────────────────────────────────────────────────────── */
+.density-compact {
+  /* Dynamic compression of typography scales */
+  --text-xs: 0.55rem;
+  --text-sm: 0.65rem;
+  --text-base: 0.78rem;
+  --text-lg: 0.94rem;
+  --text-xl: 1.13rem;
+  --text-2xl: 1.36rem;
+  --text-3xl: 1.63rem;
+  --text-4xl: 1.95rem;
+}
+
+/* Standalone form controls, selectors, buttons, inputs, textareas */
+.density-compact :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea, .form-control) {
+  padding-top: 0.35rem !important;    /* ~35% reduction from 10px */
+  padding-bottom: 0.35rem !important;
+  padding-left: 0.45rem !important;    /* ~40% reduction from 12px */
+  padding-right: 0.45rem !important;
+  margin-top: 0.3rem !important;
+  margin-bottom: 0.3rem !important;
+}
+
+/* Buttons */
+.density-compact :where(button, [type='button'], [type='submit'], [type='reset'], .app-button) {
+  padding-top: 0.35rem !important;
+  padding-bottom: 0.35rem !important;
+  padding-left: 0.45rem !important;
+  padding-right: 0.45rem !important;
+}
+
+/* Multi-step wizard spacing compression */
+.density-compact :where(.space-y-6 > :not([hidden]) ~ :not([hidden])) {
+  margin-top: 0.9rem !important;      /* 40% reduction from 1.5rem */
+}
+.density-compact :where(.space-y-4 > :not([hidden]) ~ :not([hidden])) {
+  margin-top: 0.6rem !important;      /* 40% reduction from 1rem */
+}
+
+/* Horizontal & vertical paddings on elements within wizard & dashboards */
+.density-compact :where(.pt-4) { padding-top: 0.7rem !important; }
+.density-compact :where(.pb-4) { padding-bottom: 0.7rem !important; }
+.density-compact :where(.py-8) { padding-top: 1.3rem !important; padding-bottom: 1.3rem !important; }
+.density-compact :where(.py-6) { padding-top: 1.0rem !important; padding-bottom: 1.0rem !important; }
+
+/* Wizard Stepper header list & items */
+.density-compact ol.grid {
+  gap: 0.35rem !important;            /* 30% reduction from 8px */
+}
+.density-compact ol.grid li {
+  padding-top: 0.35rem !important;    /* ~30% reduction */
+  padding-bottom: 0.35rem !important;
+  padding-left: 0.5rem !important;   /* ~33% reduction */
+  padding-right: 0.5rem !important;
+}
+
+/* Results grid & balance tables headers & cell paddings */
+.density-compact th {
+  padding-top: 0.45rem !important;    /* ~55% reduction from 16px */
+  padding-bottom: 0.45rem !important;
+  padding-left: 0.75rem !important;   /* 50% reduction from 24px */
+  padding-right: 0.75rem !important;
+}
+.density-compact td {
+  padding-top: 0.3rem !important;     /* 60% reduction from 12px */
+  padding-bottom: 0.3rem !important;
+  padding-left: 0.75rem !important;    /* 50% reduction from 24px */
+  padding-right: 0.75rem !important;
+}
