@@ -66,6 +66,7 @@ export default defineConfig({
   },
   plugins: [angularTemplateInliner()],
   test: {
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     includeTaskLocation: true,
     globals: true,
     environment: 'jsdom',
