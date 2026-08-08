@@ -138,10 +138,10 @@ import {SeoService} from '../../core/services/seo.service';
 export class LandingComponent {
   constructor() {
     inject(SeoService).setPage({
-      title: 'Equipose — RTSM & IRT Randomization Design Tool',
+      title: 'Equipose — Pocock-Simon Minimization & Covariate-Adaptive Allocation',
       description: 'Free, browser-based stratified block randomization utility for clinical trials. Design, simulate, and export balanced allocation schemas for RTSM, IRT, and IWRS workflows.',
       canonicalPath: '/',
-      keywords: 'RTSM, IRT, IWRS, Randomization, Clinical Trials, RTSM design utility, IRT randomization tool',
+      keywords: 'RTSM, IRT, IWRS, Randomization, Clinical Trials, RTSM design utility, IRT randomization tool, Pocock-Simon minimization, covariate-adaptive allocation, clinical randomization',
     });
   }
 
@@ -189,6 +189,11 @@ export class LandingComponent {
       title: 'Zero-Trust Privacy',
       desc: 'Every computation runs entirely in your browser. No study data, subject IDs, or allocation sequences are ever transmitted to any server.',
       icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    },
+    {
+      title: 'Pocock-Simon Minimization',
+      desc: 'Utilize covariate-adaptive allocation to balance treatment arms dynamically across key prognostic factors and clinical characteristics.',
+      icon: 'M3 12h18M12 3v18',
     },
   ];
 }
