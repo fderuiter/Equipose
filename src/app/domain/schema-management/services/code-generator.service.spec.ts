@@ -132,6 +132,13 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('link build_block;');
       expect(code).not.toContain('array arr_SubjectID');
       expect(code).toContain('WARNING: This generated SAS script does not guarantee bit-for-bit sequence parity');
+      expect(code).toContain('declare hash site_counts()');
+      expect(code).toContain("site_counts.defineKey('Site')");
+      expect(code).toContain('site_counts.find()');
+      expect(code).toContain('site_counts.delete()');
+      expect(code).toContain('drop rc site_seq_count;');
+      expect(code).not.toContain('site_idx');
+      expect(code).not.toContain('array site_counts');
     });
 
     it('should generate dynamic code for STATA', () => {

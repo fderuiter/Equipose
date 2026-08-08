@@ -61,8 +61,14 @@ export const SAS_CONFIG: LanguageConfig = {
       algorithmicLogic += `  array task_caps[${numTasks}] _temporary_ (${ir.tasks.map((t: any) => t.cap).join(' ')});\n`;
       algorithmicLogic += `  array task_counts[${numTasks}] _temporary_ (${ir.tasks.map(() => 0).join(' ')});\n`;
       algorithmicLogic += `  array task_block_num[${numTasks}] _temporary_ (${ir.tasks.map(() => 1).join(' ')});\n`;
-      algorithmicLogic += `  array site_counts[1000] _temporary_;\n`;
-      algorithmicLogic += `  do _init = 1 to 1000; site_counts[_init] = 0; end;\n`;
+      algorithmicLogic += `  length site_seq_count 8;\n`;
+      algorithmicLogic += `  if _N_ = 1 then do;\n`;
+      algorithmicLogic += `     declare hash site_counts();\n`;
+      algorithmicLogic += `     rc = site_counts.defineKey('Site');\n`;
+      algorithmicLogic += `     rc = site_counts.defineData('site_seq_count');\n`;
+      algorithmicLogic += `     rc = site_counts.defineDone();\n`;
+      algorithmicLogic += `     call missing(site_seq_count);\n`;
+      algorithmicLogic += `  end;\n`;
       
       algorithmicLogic += `  added_in_pass = 1;\n`;
       algorithmicLogic += `  do while(added_in_pass = 1);\n`;
@@ -77,11 +83,10 @@ export const SAS_CONFIG: LanguageConfig = {
          for (const s of config.strata || []) {
              strataStr += `${FormattingUtil.escapeSasString(s.id)}="${FormattingUtil.escapeSasString(task.stratumDetails[s.id])}"; `;
          }
-         const siteIdx = config.sites!.indexOf(task.site) + 1;
          if (i === 0) {
-             algorithmicLogic += `        if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}site_idx = ${siteIdx}; end;\n`;
+             algorithmicLogic += `        if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}end;\n`;
          } else {
-             algorithmicLogic += `        else if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}site_idx = ${siteIdx}; end;\n`;
+             algorithmicLogic += `        else if t_idx = ${t} then do; Site = "${FormattingUtil.escapeSasString(task.site)}"; StratumCode = "${FormattingUtil.escapeSasString(task.stratumCode)}"; ${strataStr}end;\n`;
          }
       });
       
@@ -94,31 +99,29 @@ export const SAS_CONFIG: LanguageConfig = {
       algorithmicLogic += `        link build_block;\n`;
       
       algorithmicLogic += `        do i = 1 to size;\n`;
-      algorithmicLogic += `           Treatment = blk[i]; BlockNumber = task_block_num[t_idx]; BlockSize = size;
-`;
-      algorithmicLogic += `           site_counts[site_idx] = site_counts[site_idx] + 1;
-`;
-      algorithmicLogic += `           seq_count = site_counts[site_idx];
-`;
+      algorithmicLogic += `           Treatment = blk[i]; BlockNumber = task_block_num[t_idx]; BlockSize = size;\n`;
+      algorithmicLogic += `           if site_counts.find() ne 0 then do;\n`;
+      algorithmicLogic += `              site_seq_count = 1;\n`;
+      algorithmicLogic += `              rc = site_counts.add();\n`;
+      algorithmicLogic += `           end;\n`;
+      algorithmicLogic += `           else do;\n`;
+      algorithmicLogic += `              site_seq_count = site_seq_count + 1;\n`;
+      algorithmicLogic += `              rc = site_counts.replace();\n`;
+      algorithmicLogic += `           end;\n`;
+      algorithmicLogic += `           seq_count = site_seq_count;\n`;
       
       algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('SAS', ir.subjectIdTokens, 'Site', 'StratumCode', 'seq_count');
       
-      algorithmicLogic += `           output;
-`;
-      algorithmicLogic += `           task_counts[t_idx] = task_counts[t_idx] + 1;
-`;
-      algorithmicLogic += `           if task_counts[t_idx] >= task_caps[t_idx] then leave;
-`;
-      algorithmicLogic += `        end;
-`;
-      algorithmicLogic += `        task_block_num[t_idx] = task_block_num[t_idx] + 1;
-`;
-      algorithmicLogic += `      end;
-`;
-      algorithmicLogic += `    end;
-`;
-      algorithmicLogic += `  end;
-`;
+      algorithmicLogic += `           output;\n`;
+      algorithmicLogic += `           task_counts[t_idx] = task_counts[t_idx] + 1;\n`;
+      algorithmicLogic += `           if task_counts[t_idx] >= task_caps[t_idx] then leave;\n`;
+      algorithmicLogic += `        end;\n`;
+      algorithmicLogic += `        task_block_num[t_idx] = task_block_num[t_idx] + 1;\n`;
+      algorithmicLogic += `      end;\n`;
+      algorithmicLogic += `    end;\n`;
+      algorithmicLogic += `  end;\n`;
+      algorithmicLogic += `  rc = site_counts.delete();\n`;
+      algorithmicLogic += `  drop rc site_seq_count;\n`;
       
       return algorithmicLogic;
     }
