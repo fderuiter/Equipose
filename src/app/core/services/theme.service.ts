@@ -4,6 +4,7 @@ import { DOCUMENT } from '@angular/common';
 import { injectMediaQuery } from '../utils/media-query';
 
 export type ThemeMode = 'Light' | 'Dark' | 'System';
+export type DensityMode = 'Comfortable' | 'Compact';
 
 export interface ArmColorTokens {
   bgClass: string;
@@ -34,8 +35,10 @@ export class ThemeService {
   private readonly document = inject(DOCUMENT);
 
   private readonly STORAGE_KEY = 'theme-preference';
+  private readonly DENSITY_STORAGE_KEY = 'density-preference';
 
   readonly mode = signal<ThemeMode>('System');
+  readonly density = signal<DensityMode>('Comfortable');
   private readonly systemPrefersDark = injectMediaQuery('(prefers-color-scheme: dark)');
 
   readonly isDark = computed(() => {
@@ -83,20 +86,25 @@ export class ThemeService {
     }
   });
 
-  private readonly _layout = signal<LayoutTokens>({
-    cardClasses: 'bg-surface rounded-xl shadow-sm border border-border-subtle p-6',
-    cardBase: 'bg-surface shadow-sm border border-border-subtle',
-    cardPadding: 'p-6',
-    borderRadius: 'rounded-xl'
+  readonly layout = computed(() => {
+    const isCompact = this.density() === 'Compact';
+    return {
+      cardClasses: `bg-surface rounded-xl shadow-sm border border-border-subtle ${isCompact ? 'p-4' : 'p-6'}`,
+      cardBase: 'bg-surface shadow-sm border border-border-subtle',
+      cardPadding: isCompact ? 'p-4' : 'p-6',
+      borderRadius: 'rounded-xl'
+    };
   });
-
-  readonly layout = computed(() => this._layout());
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       const saved = localStorage.getItem(this.STORAGE_KEY) as ThemeMode | null;
       if (saved === 'Light' || saved === 'Dark' || saved === 'System') {
         this.mode.set(saved);
+      }
+      const savedDensity = localStorage.getItem(this.DENSITY_STORAGE_KEY) as DensityMode | null;
+      if (savedDensity === 'Comfortable' || savedDensity === 'Compact') {
+        this.density.set(savedDensity);
       }
     }
 
@@ -109,12 +117,31 @@ export class ThemeService {
         html.classList.remove('dark');
       }
     });
+
+    effect(() => {
+      const dens = this.density();
+      const html = this.document.documentElement;
+      if (dens === 'Compact') {
+        html.classList.add('density-compact');
+        html.classList.remove('density-comfortable');
+      } else {
+        html.classList.add('density-comfortable');
+        html.classList.remove('density-compact');
+      }
+    });
   }
 
   setMode(mode: ThemeMode): void {
     this.mode.set(mode);
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem(this.STORAGE_KEY, mode);
+    }
+  }
+
+  setDensity(density: DensityMode): void {
+    this.density.set(density);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.DENSITY_STORAGE_KEY, density);
     }
   }
 

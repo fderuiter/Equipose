@@ -148,4 +148,50 @@ describe('ThemeService', () => {
     // Still light because mode is explicitly 'Light'
     expect(service.isDark()).toBe(false);
   });
+
+  it('should default to Comfortable density mode when no saved preference exists', () => {
+    expect(service.density()).toBe('Comfortable');
+  });
+
+  it('should load saved Compact density mode from localStorage on construction', () => {
+    localStorage.setItem('density-preference', 'Compact');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ThemeService,
+        { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: DOCUMENT, useValue: mockDocument }
+      ]
+    });
+    const newService = TestBed.inject(ThemeService);
+    expect(newService.density()).toBe('Compact');
+  });
+
+  it('should save density to localStorage when setDensity is called', () => {
+    service.setDensity('Compact');
+    expect(localStorage.getItem('density-preference')).toBe('Compact');
+    service.setDensity('Comfortable');
+    expect(localStorage.getItem('density-preference')).toBe('Comfortable');
+  });
+
+  it('should add density-compact class and remove density-comfortable when density is Compact', () => {
+    service.setDensity('Compact');
+    TestBed.tick();
+    expect(mockDocument.documentElement.classList.add).withContext('Should add density-compact').toHaveBeenCalledWith('density-compact');
+    expect(mockDocument.documentElement.classList.remove).withContext('Should remove density-comfortable').toHaveBeenCalledWith('density-comfortable');
+  });
+
+  it('should add density-comfortable class and remove density-compact when density is Comfortable', () => {
+    service.setDensity('Comfortable');
+    TestBed.tick();
+    expect(mockDocument.documentElement.classList.add).withContext('Should add density-comfortable').toHaveBeenCalledWith('density-comfortable');
+    expect(mockDocument.documentElement.classList.remove).withContext('Should remove density-compact').toHaveBeenCalledWith('density-compact');
+  });
+
+  it('should dynamically update layout tokens based on density mode', () => {
+    service.setDensity('Comfortable');
+    expect(service.layout().cardPadding).toBe('p-6');
+    service.setDensity('Compact');
+    expect(service.layout().cardPadding).toBe('p-4');
+  });
 });

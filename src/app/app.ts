@@ -106,6 +106,44 @@ import { DateUtil } from './core/utils/date.util';
                 </div>
               }
             </div>
+
+            <!-- Density Toggle -->
+            <div class="relative ml-2">
+              <button
+                type="button"
+                (click)="toggleDensityMenu($event)"
+                class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-indigo-100 dark:text-slate-300 hover:bg-indigo-600 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-focus-offset"
+                aria-label="Toggle visual density"
+                appTooltip="Toggle visual density"
+                [attr.aria-expanded]="densityMenuOpen()"
+                aria-haspopup="true"
+              >
+                @if (theme.density() === 'Comfortable') {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16M4 9h16M4 13h16M4 17h16M4 21h16" />
+                  </svg>
+                }
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              @if (densityMenuOpen()) {
+                <div role="menu" aria-label="Choose visual density" appFocusManager
+                     class="absolute right-0 top-full mt-1 w-36 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-md shadow-lg ring-1 ring-black/5 dark:ring-white/10 z-50 overflow-hidden">
+                  <button type="button" role="menuitem" (click)="setDensity('Comfortable')" class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors" [class.font-semibold]="theme.density() === 'Comfortable'">
+                    Comfortable
+                  </button>
+                  <button type="button" role="menuitem" (click)="setDensity('Compact')" class="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors" [class.font-semibold]="theme.density() === 'Compact'">
+                    Compact
+                  </button>
+                </div>
+              }
+            </div>
           </nav>
 
           <!-- Mobile controls (visible only on mobile) -->
@@ -245,6 +283,25 @@ import { DateUtil } from './core/utils/date.util';
                   </button>
                 </div>
               </div>
+
+              <!-- Mobile density options -->
+              <div class="pt-2 border-t border-indigo-600/50 dark:border-slate-600">
+                <p class="px-3 pb-1.5 text-xs font-semibold text-indigo-200 dark:text-slate-400 uppercase tracking-wider">Visual Density</p>
+                <div class="flex gap-2 px-3">
+                  <button type="button" (click)="setDensity('Comfortable'); mobileMenuOpen.set(false)"
+                    class="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors"
+                    [class]="theme.density() === 'Comfortable' ? 'bg-white/20 text-white' : 'text-indigo-200 hover:bg-indigo-600'"
+                    aria-label="Comfortable density">
+                    Comfortable
+                  </button>
+                  <button type="button" (click)="setDensity('Compact'); mobileMenuOpen.set(false)"
+                    class="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium transition-colors"
+                    [class]="theme.density() === 'Compact' ? 'bg-white/20 text-white' : 'text-indigo-200 hover:bg-indigo-600'"
+                    aria-label="Compact density">
+                    Compact
+                  </button>
+                </div>
+              </div>
             </div>
           </nav>
         }
@@ -357,6 +414,7 @@ export class App {
   readonly appVersion = APP_VERSION;
 
   readonly themeMenuOpen = signal(false);
+  readonly densityMenuOpen = signal(false);
   readonly mobileMenuOpen = signal(false);
 
   constructor() {
@@ -387,14 +445,26 @@ export class App {
     this.themeMenuOpen.set(!this.themeMenuOpen());
   }
 
+  setDensity(density: 'Comfortable' | 'Compact'): void {
+    this.theme.setDensity(density);
+    this.densityMenuOpen.set(false);
+  }
+
+  toggleDensityMenu(event: Event): void {
+    event.stopPropagation();
+    this.densityMenuOpen.set(!this.densityMenuOpen());
+  }
+
   @HostListener('document:click')
   onDocumentClick(): void {
     this.themeMenuOpen.set(false);
+    this.densityMenuOpen.set(false);
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.themeMenuOpen.set(false);
+    this.densityMenuOpen.set(false);
     this.mobileMenuOpen.set(false);
   }
 }
