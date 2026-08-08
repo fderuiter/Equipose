@@ -1,3 +1,10 @@
+# [1.44.0](https://github.com/fderuiter/Equipose/compare/v1.43.0...v1.44.0) (2026-08-08)
+
+
+### Features
+
+* implement Pocock-Simon Minimization SEO meta tags, landing feature card, and About H2 section ([187d280](https://github.com/fderuiter/Equipose/commit/187d280603be95adcd8d2c55d21e486390a1bc41))
+
 # [1.43.0](https://github.com/fderuiter/Equipose/compare/v1.42.0...v1.43.0) (2026-08-08)
 
 
