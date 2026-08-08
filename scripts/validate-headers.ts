@@ -77,6 +77,14 @@ async function main() {
   const swResult = await checkHeaders('/sw.js', 'no-cache, no-store, must-revalidate');
   allPass = swResult.ok && allPass;
 
+  // 3b. sitemap.xml
+  const sitemapResult = await checkHeaders('/sitemap.xml', 'no-cache, no-store, must-revalidate');
+  allPass = sitemapResult.ok && allPass;
+
+  // 3c. robots.txt
+  const robotsResult = await checkHeaders('/robots.txt', 'no-cache, no-store, must-revalidate');
+  allPass = robotsResult.ok && allPass;
+
   // Validate CSP on root and index.html
   const checkCsp = (headers: Headers, path: string) => {
     const csp = headers.get('content-security-policy');

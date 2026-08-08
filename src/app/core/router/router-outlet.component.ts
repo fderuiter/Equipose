@@ -13,7 +13,10 @@ export class RouterOutletComponent {
   private router = inject(SignalRouter);
   
   currentComponent = computed(() => {
-    const currentPath = this.router.path().replace(/^\//, '') || '';
+    let currentPath = this.router.path().replace(/^\//, '') || '';
+    if (currentPath.length > 0 && currentPath.endsWith('/')) {
+      currentPath = currentPath.slice(0, -1);
+    }
     
     // Exact match
     let match = routes.find(r => r.path === currentPath);

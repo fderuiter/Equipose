@@ -6,7 +6,11 @@ export class SignalRouter {
   
   public path = computed(() => {
     const parsed = new URL(this.currentUrl(), window.location.origin || 'http://localhost');
-    return parsed.pathname;
+    let pathname = parsed.pathname;
+    if (pathname.length > 1 && pathname.endsWith('/')) {
+      pathname = pathname.slice(0, -1);
+    }
+    return pathname;
   });
 
   public queryParams = computed(() => {
@@ -19,6 +23,14 @@ export class SignalRouter {
   });
 
   constructor() {
+    const initialUrl = new URL(window.location.href);
+    if (initialUrl.pathname.length > 1 && initialUrl.pathname.endsWith('/')) {
+      const normalizedPath = initialUrl.pathname.slice(0, -1);
+      const target = normalizedPath + initialUrl.search + initialUrl.hash;
+      window.history.replaceState(null, '', target);
+      this.currentUrl.set(window.location.href);
+    }
+
     window.addEventListener('popstate', () => {
       this.currentUrl.set(window.location.href);
     });
@@ -35,9 +47,18 @@ export class SignalRouter {
       });
     }
     
-    const targetUrl = parsed.pathname + parsed.search + parsed.hash;
+    let pathname = parsed.pathname;
+    if (pathname.length > 1 && pathname.endsWith('/')) {
+      pathname = pathname.slice(0, -1);
+    }
+    
+    const targetUrl = pathname + parsed.search + parsed.hash;
     const currentParsed = new URL(this.currentUrl(), window.location.origin || 'http://localhost');
-    const currentUrlRelative = currentParsed.pathname + currentParsed.search + currentParsed.hash;
+    let currentPathname = currentParsed.pathname;
+    if (currentPathname.length > 1 && currentPathname.endsWith('/')) {
+      currentPathname = currentPathname.slice(0, -1);
+    }
+    const currentUrlRelative = currentPathname + currentParsed.search + currentParsed.hash;
     
     if (targetUrl !== currentUrlRelative) {
       window.history.pushState(null, '', targetUrl);
