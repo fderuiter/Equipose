@@ -77,6 +77,17 @@ import {RegulatoryNoticeComponent} from '../../core/components/regulatory-notice
           </p>
         </div>
 
+        <!-- Covariate-Adaptive Minimization -->
+        <div class="mx-auto mt-16 max-w-2xl lg:mx-0">
+          <h2 class="text-2xl font-bold tracking-tight text-main">Covariate-Adaptive Minimization</h2>
+          <p class="mt-4 text-base leading-7 text-muted">
+            Covariate-adaptive minimization, utilizing the pioneering Pocock-Simon algorithm, is a dynamic treatment allocation method used in clinical trials to achieve optimal balance across multiple prognostic factors. Unlike traditional stratified block randomization, which can suffer from the "dimensionality curse" when many stratification factors are introduced, minimization dynamically calculates the imbalance of baseline characteristics (covariates) for each new subject. It then assigns treatment to minimize this overall imbalance across the prognostic factors.
+          </p>
+          <p class="mt-4 text-base leading-7 text-muted">
+            The Pocock-Simon minimization algorithm evaluates the cumulative marginal totals for each treatment arm to compute the total imbalance. By utilizing a biased-coin probability parameter (typically denoted as <em>p</em>), the system retains a degree of randomization while aggressively driving the cumulative distributions of covariates toward perfect balance, ensuring statistical comparability of the treatment arms.
+          </p>
+        </div>
+
         <!-- Who it is for -->
         <div class="mx-auto mt-16 max-w-2xl lg:mx-0">
           <h2 class="text-2xl font-bold tracking-tight text-main">Who Is Equipose For?</h2>
@@ -155,7 +166,7 @@ export class AboutComponent {
       title: 'About Equipose',
       description: 'Learn about Equipose, the free open-source stratified block randomization tool for RTSM and IRT workflows. Built for biostatisticians, CROs, and clinical trial managers.',
       canonicalPath: '/about',
-      keywords: 'RTSM, IRT, IWRS, Randomization, Clinical Trials, RTSM design utility, IRT randomization tool',
+      keywords: 'RTSM, IRT, IWRS, Randomization, Clinical Trials, RTSM design utility, IRT randomization tool, Pocock-Simon minimization, covariate-adaptive allocation methodology, biostatistics',
     });
 
     this.bibtex =
