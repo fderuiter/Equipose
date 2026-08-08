@@ -1,3 +1,15 @@
+# [1.43.0](https://github.com/fderuiter/Equipose/compare/v1.42.0...v1.43.0) (2026-08-08)
+
+
+### Bug Fixes
+
+* **worker:** remove unused import causing workers build failure ([a04bf8e](https://github.com/fderuiter/Equipose/commit/a04bf8eb37e90db9084e43136987bd2c255baadd))
+
+
+### Features
+
+* **sas:** implement dynamic SAS Hash Objects for site tracking and bypass index translation ([bfaa94c](https://github.com/fderuiter/Equipose/commit/bfaa94c4cf6a8f8fef38091e80e3b29fa3d720c9))
+
 # [1.42.0](https://github.com/fderuiter/Equipose/compare/v1.41.0...v1.42.0) (2026-08-08)
 
 
