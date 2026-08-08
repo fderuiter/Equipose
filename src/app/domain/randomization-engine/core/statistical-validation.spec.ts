@@ -141,6 +141,7 @@ describe('ICH E9 – Law of Large Numbers: allocation ratio convergence', () => 
   const ITERATIONS = 200;
 
   // [REQ-ICH-E9-001]
+  // @pillar:Scientific Validity
   it('1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials', () => {
     const totals = runMonteCarlo(ONE_TO_ONE_CONFIG, ITERATIONS);
     const grandTotal = Object.values(totals).reduce((s, n) => s + n, 0);
