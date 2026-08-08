@@ -40,7 +40,7 @@ class RealLogicWorker {
   postMessage(data: any) {
     if (data.command === 'START_GENERATION') {
       try {
-        const result = generateRandomizationSchema(data.payload);
+        const result = generateRandomizationSchema(data.payload.config, data.payload.siteWeights);
         // Simulate async worker delay
         setTimeout(() => {
           this.onmessage?.({

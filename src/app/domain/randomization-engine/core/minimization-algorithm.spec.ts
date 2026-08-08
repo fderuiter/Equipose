@@ -1,6 +1,6 @@
 import { SubjectRegistry } from './subject-registry';
 import { describe, it, expect } from 'vitest';
-import { generateMinimization } from './minimization-algorithm';
+import { generateMinimization, selectSiteWithWeights } from './minimization-algorithm';
 import { MT19937Internal } from './mt19937';
 import { RandomizationConfig } from '../../core/models/randomization.model';
 import { StudyPresets } from '../../core/presets/study-presets';
@@ -312,6 +312,39 @@ describe('Minimization Algorithm - Detailed Fixes', () => {
       expect(maleCount).toBe(5);
       expect(femaleCount).toBe(45);
       expect(schema.length).toBe(50);
+    });
+  });
+
+  describe('selectSiteWithWeights', () => {
+    it('falls back to uniform selection if siteWeights is undefined', () => {
+      const rng = () => 0.5;
+      const site = selectSiteWithWeights(['SiteA', 'SiteB'], undefined, rng);
+      expect(site).toBe('SiteB'); // 0.5 * 2 = 1.0 -> index 1
+    });
+
+    it('selects site correctly according to custom site recruitment weights', () => {
+      // SiteA has weight 9, SiteB has weight 1.
+      // SiteA should be selected for r <= 0.9, SiteB for r > 0.9.
+      const rngSiteA = () => 0.4;
+      const rngSiteB = () => 0.95;
+
+      const siteWeights = { SiteA: 9, SiteB: 1 };
+
+      expect(selectSiteWithWeights(['SiteA', 'SiteB'], siteWeights, rngSiteA)).toBe('SiteA');
+      expect(selectSiteWithWeights(['SiteA', 'SiteB'], siteWeights, rngSiteB)).toBe('SiteB');
+    });
+
+    it('falls back to uniform selection if all site weights are zero', () => {
+      const rng = () => 0.1;
+      const siteWeights = { SiteA: 0, SiteB: 0 };
+      const site = selectSiteWithWeights(['SiteA', 'SiteB'], siteWeights, rng);
+      expect(site).toBe('SiteA'); // index 0
+    });
+
+    it('throws an error if any negative site weight is provided', () => {
+      const rng = () => 0.5;
+      const siteWeights = { SiteA: -1, SiteB: 2 };
+      expect(() => selectSiteWithWeights(['SiteA', 'SiteB'], siteWeights, rng)).toThrow('Site weights must be non-negative.');
     });
   });
 });

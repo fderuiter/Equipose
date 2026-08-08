@@ -282,7 +282,18 @@ function generateMarginalOnly(
  *
  * @throws {Error} When a block size is not a multiple of the total arm ratio.
  */
-export function generateRandomizationSchema(config: RandomizationConfig): RandomizationResult {
+export function generateRandomizationSchema(
+  config: RandomizationConfig,
+  siteWeights?: Record<string, number>
+): RandomizationResult {
+  if (siteWeights) {
+    for (const key of Object.keys(siteWeights)) {
+      if (siteWeights[key] < 0) {
+        throw new Error('Site weights must be non-negative.');
+      }
+    }
+  }
+
   const resolvedConfig = config.seed
     ? config
     : { ...config, seed: generateCryptoSeed() };
@@ -344,7 +355,7 @@ export function generateRandomizationSchema(config: RandomizationConfig): Random
   const usedSubjectIds = new Set<string>();
 
   if (internalConfig.randomizationMethod === 'MINIMIZATION') {
-    schema.push(...generateMinimization(internalConfig, rng, registry));
+    schema.push(...generateMinimization(internalConfig, rng, registry, siteWeights));
   } else if (internalConfig.capStrategy === 'MARGINAL_ONLY') {
     generateMarginalOnly(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
   } else {

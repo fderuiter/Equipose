@@ -25,8 +25,13 @@ export interface WorkerResponse<T = unknown> {
   payload: T;
 }
 
+export interface GenerationPayload {
+  config: RandomizationConfig;
+  siteWeights?: Record<string, number>;
+}
+
 /** Strongly-typed command for starting schema generation. */
-export type GenerationCommand = WorkerCommand<RandomizationConfig>;
+export type GenerationCommand = WorkerCommand<GenerationPayload>;
 
 /** Strongly-typed success response containing the generated result. */
 export type GenerationSuccessResponse = WorkerResponse<RandomizationResult>;
@@ -42,6 +47,7 @@ export interface MonteCarloPayload {
   config: RandomizationConfig;
   /** Required attrition/dropout rate as a percentage (0–50). Pass 0 for no attrition. */
   attritionRate: number;
+  siteWeights?: Record<string, number>;
 }
 
 /** Strongly-typed command for starting a Monte Carlo simulation. */

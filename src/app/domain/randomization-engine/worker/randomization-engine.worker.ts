@@ -4,6 +4,7 @@ import { generateRandomizationSchema, generateCryptoSeed } from '../core/randomi
 import { mulberry32 } from './attrition-prng';
 import { getTotalRatio } from '../../shared/statistical/ratio-simplification';
 import type {
+  GenerationPayload,
   MonteCarloPayload,
   MonteCarloProgressPayload,
   MonteCarloSuccessPayload,
@@ -16,7 +17,7 @@ import type { RandomizationConfig } from '../../core/models/randomization.model'
  * eliminating the need for unsafe `as` casts in the message handler.
  */
 type IncomingCommand =
-  | { id: string; command: 'START_GENERATION'; payload: RandomizationConfig }
+  | { id: string; command: 'START_GENERATION'; payload: GenerationPayload }
   | { id: string; command: 'START_MONTE_CARLO'; payload: MonteCarloPayload };
 
 addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
@@ -24,7 +25,7 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
 
   if (command === 'START_GENERATION') {
     try {
-      const result = generateRandomizationSchema(payload);
+      const result = generateRandomizationSchema(payload.config, payload.siteWeights);
       const response: WorkerResponse = {
         id,
         type: 'GENERATION_SUCCESS',
@@ -46,7 +47,7 @@ addEventListener('message', (event: MessageEvent<IncomingCommand>) => {
   }
 });
 
-function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload): void {
+function runMonteCarlo(id: string, { config, attritionRate, siteWeights }: MonteCarloPayload): void {
   const TOTAL_ITERATIONS = 10_000;
   const PROGRESS_INTERVAL = 500;
   // NaN guard: non-finite values (e.g. NaN from empty input) are normalized to 0.
@@ -74,7 +75,7 @@ function runMonteCarlo(id: string, { config, attritionRate }: MonteCarloPayload)
     const iterationConfig = { ...config, seed: generateCryptoSeed() };
 
     try {
-      const result = generateRandomizationSchema(iterationConfig);
+      const result = generateRandomizationSchema(iterationConfig, siteWeights);
 
       // Deterministic PRNG for attrition: seeded by the iteration index so that
       // results are perfectly reproducible for any given attrition rate value.

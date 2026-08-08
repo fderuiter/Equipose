@@ -163,6 +163,34 @@
           <app-tag-input aria-labelledby="sitesLabel" [control]="strataGroup.get('sitesStr')!" placeholder="Type a site ID and press Enter…" />
         </section>
 
+        <section class="rounded-lg border p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40">
+          <h3 class="text-sm font-semibold">Site Recruitment Weights</h3>
+          <p class="text-xs text-gray-500" aria-hidden="true">Configure numerical weights to simulate realistic skewed enrollment across sites. Negative site weights are not allowed.</p>
+          @if (strataGroup.get('siteWeights')?.invalid) {
+            <p class="text-xs text-red-600 font-medium">Please correct negative or invalid site weights before proceeding.</p>
+          }
+          <div formGroupName="siteWeights" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            @for (siteName of siteList; track siteName) {
+              <div class="space-y-1">
+                <label [for]="'weight-' + siteName" class="block text-xs font-medium text-gray-700 dark:text-gray-300">{{ siteName }}</label>
+                <div class="relative rounded-md shadow-sm">
+                  <app-text-input
+                    [inputId]="'weight-' + siteName"
+                    type="number"
+                    [formControlName]="siteName"
+                    min="0"
+                    step="0.1"
+                    class="w-full rounded-lg border px-3 py-1.5 text-sm"
+                  ></app-text-input>
+                </div>
+                @if (siteWeights.get(siteName)?.invalid) {
+                  <p class="text-[11px] text-red-600 mt-1">Weight must be positive (>= 0).</p>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
         <section>
           <div class="flex justify-between items-center mb-2">
             <div>
