@@ -360,21 +360,21 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       expect(component.isMinimization()).toBe(true);
     });
 
-    it('should normalize exportMode to STATIC on initialization for minimization', async () => {
+    it('should not normalize exportMode to STATIC on initialization for minimization', async () => {
       component.exportMode.set('DYNAMIC');
       await component.ngOnInit();
-      expect(component.exportMode()).toBe('STATIC');
+      expect(component.exportMode()).toBe('DYNAMIC');
     });
 
-    it('should not allow switching exportMode away from STATIC when isMinimization is true', async () => {
+    it('should allow switching exportMode away from STATIC when isMinimization is true', async () => {
       await component.ngOnInit();
       expect(component.exportMode()).toBe('STATIC');
 
       await component.setExportMode('DYNAMIC');
-      expect(component.exportMode()).toBe('STATIC');
+      expect(component.exportMode()).toBe('DYNAMIC');
 
       await component.setExportMode('BOTH');
-      expect(component.exportMode()).toBe('STATIC');
+      expect(component.exportMode()).toBe('BOTH');
     });
   });
 
@@ -435,6 +435,52 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       renderedComponent.activeTab.set('Python');
       fixture.detectChanges();
       const banner = fixture.debugElement.query(By.css('[data-testid="parity-warning-banner"]'));
+      expect(banner).toBeNull();
+    });
+  });
+
+  describe('Concurrency Warning Banner Rendering', () => {
+    let fixture: ComponentFixture<CodeGeneratorModalComponent>;
+    let renderedComponent: CodeGeneratorModalComponent;
+    let mockConfig: RandomizationConfig;
+
+    beforeEach(async () => {
+      mockConfig = {
+        protocolId: 'TEST-BANNER-MIN',
+        studyName: 'Banner Study Minimization',
+        phase: 'Phase III',
+        randomizationMethod: 'MINIMIZATION',
+        arms: [
+          { id: '1', name: 'Arm A', ratio: 1 },
+          { id: '2', name: 'Arm B', ratio: 1 }
+        ],
+        sites: ['Site1'],
+        strata: [],
+        blockSizes: [2],
+        stratumCaps: [],
+        seed: 'banner_seed_min',
+        subjectIdMask: '[SiteID]-[001]'
+      };
+      (mockFacade as any).config.set(mockConfig);
+
+      fixture = TestBed.createComponent(CodeGeneratorModalComponent);
+      renderedComponent = fixture.componentInstance;
+      fixture.detectChanges();
+    });
+
+    it('should render concurrency warning banner when exportMode is DYNAMIC', async () => {
+      renderedComponent.exportMode.set('DYNAMIC');
+      fixture.detectChanges();
+      const banner = fixture.debugElement.query(By.css('[data-testid="concurrency-warning-banner"]'));
+      expect(banner).not.toBeNull();
+      const text = banner.query(By.css('[data-testid="concurrency-warning-text"]')).nativeElement.textContent;
+      expect(text).toContain('runs sequentially and requires proper synchronization');
+    });
+
+    it('should NOT render concurrency warning banner when exportMode is STATIC', async () => {
+      renderedComponent.exportMode.set('STATIC');
+      fixture.detectChanges();
+      const banner = fixture.debugElement.query(By.css('[data-testid="concurrency-warning-banner"]'));
       expect(banner).toBeNull();
     });
   });

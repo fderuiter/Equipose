@@ -20,7 +20,7 @@ export const PYTHON_CONFIG: LanguageConfig = {
   },
   components: {
     initialization: (ir) => {
-      let logic = `import re\nschema = []\nseq_count = 0\n`;
+      let logic = `import re\nimport threading\n\n# Global thread synchronization lock to prevent race conditions in multi-user environments\nlock = threading.Lock()\n\nschema = []\nseq_count = 0\n`;
       const hasRnd = ir.subjectIdTokens.some(t => t.type === 'rnd');
       if (hasRnd) {
         logic += `ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"\n`;

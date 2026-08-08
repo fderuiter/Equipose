@@ -88,7 +88,11 @@ export class AlgorithmRegistry {
     });
 
     if (language === 'Python') {
-      let code = `
+      let code = `import threading
+
+# Global thread synchronization lock to prevent race conditions in multi-user environments
+lock = threading.Lock()
+
 # Strata configuration
 strata = {
 `;
@@ -292,62 +296,64 @@ for s_idx in range(total_sample_size):
     if not valid_subject:
         break
 
-    # Calculate imbalance scores
-    arm_scores = []
-    min_score = None
-    for arm in arms:
-        score = compute_imbalance_score(arm["id"], site, subject_profile)
-        arm_scores.append(score)
-        if min_score is None or score < min_score:
-            min_score = score
+    # Thread-safe critical section for marginal state lookup and update
+    with lock:
+        # Calculate imbalance scores
+        arm_scores = []
+        min_score = None
+        for arm in arms:
+            score = compute_imbalance_score(arm["id"], site, subject_profile)
+            arm_scores.append(score)
+            if min_score is None or score < min_score:
+                min_score = score
 
-    preferred = []
-    non_preferred = []
-    for i, arm in enumerate(arms):
-        if arm_scores[i] == min_score:
-            preferred.append(arm)
-        else:
-            non_preferred.append(arm)
+        preferred = []
+        non_preferred = []
+        for i, arm in enumerate(arms):
+            if arm_scores[i] == min_score:
+                preferred.append(arm)
+            else:
+                non_preferred.append(arm)
 
-    if len(preferred) == len(arms) or not non_preferred:
-        assigned_arm = select_weighted_arm(preferred)
-    else:
-        r = int(get_rand() * PRECISION_SCALE)
-        p_scaled = round(p_minimization * PRECISION_SCALE)
-        if r < p_scaled:
+        if len(preferred) == len(arms) or not non_preferred:
             assigned_arm = select_weighted_arm(preferred)
         else:
-            assigned_arm = select_weighted_arm(non_preferred)
+            r = int(get_rand() * PRECISION_SCALE)
+            p_scaled = round(p_minimization * PRECISION_SCALE)
+            if r < p_scaled:
+                assigned_arm = select_weighted_arm(preferred)
+            else:
+                assigned_arm = select_weighted_arm(non_preferred)
 
-    # Update marginals
-    for f in strata:
-        lvl = subject_profile[f]
-        marginals[f"{site}|{f}|{lvl}|{assigned_arm['id']}"] += 1
+        # Update marginals
+        for f in strata:
+            lvl = subject_profile[f]
+            marginals[f"{site}|{f}|{lvl}|{assigned_arm['id']}"] += 1
 
-    # Register subject
-    register_subject(subject_profile)
+        # Register subject
+        register_subject(subject_profile)
 
-    # Increment site subject counts
-    site_subject_counts[site] += 1
-    seq_count = site_subject_counts[site]
+        # Increment site subject counts
+        site_subject_counts[site] += 1
+        seq_count = site_subject_counts[site]
 
-    stratum_code = format_stratum_code(subject_profile)
+        stratum_code = format_stratum_code(subject_profile)
 
-    # Generate Subject ID using tokens
+        # Generate Subject ID using tokens
 `;
       const pythonIdLogic = CodeTranspiler.generateSubjectIdAndChecksumLogic('Python', ir.subjectIdTokens, 'site', 'stratum_code', 'seq_count');
-      code += pythonIdLogic.replace(/^ {16}/gm, '    ');
+      code += pythonIdLogic.replace(/^ {16}/gm, '        ');
       code += `
-    row = {
-        "SubjectID": subj_id,
-        "Site": site,
-        "Treatment": assigned_arm["name"],
-        "BlockNumber": 0,
-        "BlockSize": 0,
-        "StratumCode": stratum_code
-    }
-    row.update(subject_profile)
-    schema.append(row)
+        row = {
+            "SubjectID": subj_id,
+            "Site": site,
+            "Treatment": assigned_arm["name"],
+            "BlockNumber": 0,
+            "BlockSize": 0,
+            "StratumCode": stratum_code
+        }
+        row.update(subject_profile)
+        schema.append(row)
 `;
       return code;
     }

@@ -124,6 +124,8 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).toContain('def build_block');
       expect(code).toContain('tasks = [');
       expect(code).not.toContain('"SubjectID": [');
+      expect(code).toContain('import threading');
+      expect(code).toContain('lock = threading.Lock()');
     });
 
     it('should generate dynamic code for SAS', () => {
@@ -160,11 +162,14 @@ describe('CodeGeneratorService Dual-Mode', () => {
     });
 
     it('should generate dynamic minimization code for Python', () => {
-      const code = service.generateDynamic('Python', minimizationConfig);
-      expect(code).toContain('p_minimization = 0.8');
-      expect(code).toContain('total_sample_size = 100');
-      expect(code).toContain('def sample_level');
-      expect(code).toContain('def compute_imbalance_score');
+       const code = service.generateDynamic('Python', minimizationConfig);
+       expect(code).toContain('p_minimization = 0.8');
+       expect(code).toContain('total_sample_size = 100');
+       expect(code).toContain('def sample_level');
+       expect(code).toContain('def compute_imbalance_score');
+       expect(code).toContain('import threading');
+       expect(code).toContain('lock = threading.Lock()');
+       expect(code).toContain('with lock:');
     });
 
     it('should generate dynamic minimization code for SAS', () => {
@@ -266,6 +271,25 @@ describe('CodeGeneratorService Dual-Mode', () => {
       } finally {
         renderSpy.mockRestore();
       }
+    });
+  });
+
+  describe('Standardized Concurrency & Sequence-Parity Warning', () => {
+    it('should include warning comment block for R', () => {
+      const code = service.generateStatic('R', standardBlockConfig);
+      expect(code).toContain('WARNING: SEQUENCE-PARITY & MULTI-USER INTEGRATION SAFETY');
+    });
+    it('should include warning comment block for Python', () => {
+      const code = service.generateStatic('Python', standardBlockConfig);
+      expect(code).toContain('WARNING: SEQUENCE-PARITY & MULTI-USER INTEGRATION SAFETY');
+    });
+    it('should include warning comment block for SAS', () => {
+      const code = service.generateStatic('SAS', standardBlockConfig);
+      expect(code).toContain('WARNING: SEQUENCE-PARITY & MULTI-USER INTEGRATION SAFETY');
+    });
+    it('should include warning comment block for STATA', () => {
+      const code = service.generateStatic('STATA', standardBlockConfig);
+      expect(code).toContain('WARNING: SEQUENCE-PARITY & MULTI-USER INTEGRATION SAFETY');
     });
   });
 });
