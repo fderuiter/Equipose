@@ -477,7 +477,7 @@ jobs:
       run: tar -xf shared-env.tar
 
     - name: Run ADR validation
-      run: pnpm run lint:adr
+      run: node scripts/validate-adr.js
 
   merge_reports:
     runs-on: ubuntu-latest
