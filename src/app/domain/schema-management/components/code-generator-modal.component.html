@@ -36,15 +36,15 @@
                       <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [ariaChecked]="exportMode() === 'STATIC' ? 'true' : 'false'">
                         Static Manifest
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" [disabled]="isMinimization()" segmentedPosition="middle" role="radio" [ariaChecked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
+                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [ariaChecked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
                         Dynamic Generator
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" [disabled]="isMinimization()" segmentedPosition="last" role="radio" [ariaChecked]="exportMode() === 'BOTH' ? 'true' : 'false'">                        Both (ZIP Bundle)
+                      <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [ariaChecked]="exportMode() === 'BOTH' ? 'true' : 'false'">                        Both (ZIP Bundle)
                       </app-button>
                     </nav>
-                    @if (isMinimization()) {
+                    @if (isMinimization() && exportMode() === 'STATIC') {
                       <p class="text-xs text-amber-600 dark:text-amber-400 mt-1 max-w-sm">
-                        Dynamic export is not yet available for Pocock-Simon minimization. A static manifest preserves the generated allocation sequence.
+                        A static manifest preserves the generated allocation sequence. Select "Dynamic Generator" to generate a dynamic Pocock-Simon minimization simulation script.
                       </p>
                     }
                   </div>
@@ -96,6 +96,20 @@
                     </div>
                   </div>
                 } @else {
+                  @if (isMinimization() && exportMode() !== 'STATIC') {
+                    <div class="mb-4 rounded-lg border {{ domainTheme.getSemanticColor('warning').borderClass }} {{ domainTheme.getSemanticColor('warning').bgLightClass }} {{ domainTheme.getSemanticColor('warning').textClass }} p-4 text-sm" data-testid="concurrency-warning-banner">
+                      <div class="flex items-start gap-2.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div>
+                          <p class="font-semibold" data-testid="concurrency-warning-title">Concurrency & Multi-User Integration Safety Warning</p>
+                          <p class="mt-1 leading-relaxed" data-testid="concurrency-warning-text">This generated dynamic minimization script runs sequentially and requires proper synchronization in concurrent environments. Ensure that sequence-parity is maintained and concurrent access to the marginal counts state is properly locked (e.g., using standard threading/mutex primitives) to avoid state corruption and statistical allocation bias.</p>
+                        </div>
+                      </div>
+                    </div>
+                  }
+
                   @if (activeTab() === 'SAS' || activeTab() === 'STATA') {
                     <div class="mb-4 rounded-lg border {{ domainTheme.getSemanticColor('warning').borderClass }} {{ domainTheme.getSemanticColor('warning').bgLightClass }} {{ domainTheme.getSemanticColor('warning').textClass }} p-4 text-sm" data-testid="parity-warning-banner">
                       <div class="flex items-start gap-2.5">

@@ -61,7 +61,21 @@ export class CodeGeneratorService {
       header = this.methodologySpec.formatAsSasComment(manifest);
     }
 
-    const finalOutput = `${header}\n\n${output}`;
+    const warningText = `WARNING: SEQUENCE-PARITY & MULTI-USER INTEGRATION SAFETY
+This script is generated to facilitate clinical trial randomization.
+When deploying/integrating this code into multi-user clinical environments:
+1. Ensure strict sequence-parity is maintained across concurrent allocation requests.
+2. Concurrent access to the randomization/marginal counts state must be synchronized to prevent data race conditions, marginal state corruption, and silent allocation bias.
+3. Use appropriate native thread-locking/mutex primitives (or external transactions) to wrap critical sections of state lookup and modification.`;
+
+    let warningBlock: string;
+    if (language === 'R' || language === 'Python') {
+      warningBlock = warningText.split('\n').map(line => `# ${line}`).join('\n');
+    } else {
+      warningBlock = warningText.split('\n').map(line => `/* ${line} */`).join('\n');
+    }
+
+    const finalOutput = `${header}\n\n${warningBlock}\n\n${output}`;
 
     // Static mapping guard runs after generation
     StaticMappingGuard.verify(language, config, finalOutput);
