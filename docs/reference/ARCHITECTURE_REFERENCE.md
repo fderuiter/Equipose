@@ -611,17 +611,22 @@ graph LR
     SB["domain/study-builder/**"]
     RE_FACADE["RandomizationEngineFacade ✅"]
     RE_MODELS["domain/core/models ✅"]
-    TARGET_0["*/domain/randomization-engine/core/* ❌"]
-    SB -. blocked .-> TARGET_0
-    TARGET_1["@domain/randomization-engine/core/* ❌"]
+    DOMAIN["domain/**/*.ts"]
+    TARGET_0["@angular/common/http/* ❌"]
+    DOMAIN -. blocked .-> TARGET_0
+    TARGET_1["@angular/common/http/* ❌"]
     SB -. blocked .-> TARGET_1
-    TARGET_2["*/domain/randomization-engine/worker/* ❌"]
+    TARGET_2["*/domain/randomization-engine/core/* ❌"]
     SB -. blocked .-> TARGET_2
-    TARGET_3["@domain/randomization-engine/worker/* ❌"]
+    TARGET_3["@domain/randomization-engine/core/* ❌"]
     SB -. blocked .-> TARGET_3
+    TARGET_4["*/domain/randomization-engine/worker/* ❌"]
+    SB -. blocked .-> TARGET_4
+    TARGET_5["@domain/randomization-engine/worker/* ❌"]
+    SB -. blocked .-> TARGET_5
     ALGO_FILE["randomization-engine/core/**"]
-    TARGET_4["@angular/* ❌"]
-    ALGO_FILE -. blocked .-> TARGET_4
+    TARGET_6["@angular/* ❌"]
+    ALGO_FILE -. blocked .-> TARGET_6
 
     SB --> RE_FACADE
     SB --> RE_MODELS
