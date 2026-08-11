@@ -46,6 +46,75 @@ module.exports = defineConfig([
     },
   },
 
+  {
+    files: ['src/app/domain/**/*.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'fetch',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          name: 'XMLHttpRequest',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          name: 'WebSocket',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          name: 'EventSource',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        }
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'window',
+          property: 'fetch',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          object: 'globalThis',
+          property: 'fetch',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          object: 'window',
+          property: 'XMLHttpRequest',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          object: 'globalThis',
+          property: 'XMLHttpRequest',
+          message: 'Browser-level network APIs are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        },
+        {
+          property: 'sendBeacon',
+          message: 'navigator.sendBeacon and similar network properties are restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+        }
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@angular/common/http',
+              message: 'Angular HttpClient is restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+            }
+          ],
+          patterns: [
+            {
+              group: ['@angular/common/http/*'],
+              message: 'Angular HttpClient is restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+            }
+          ]
+        }
+      ]
+    }
+  },
+
   // ---------------------------------------------------------------------------
   // Phase 2 (Ticket 19.B): Strict Domain Boundary Enforcement
   //
@@ -59,7 +128,17 @@ module.exports = defineConfig([
       'no-restricted-imports': [
         'error',
         {
+          paths: [
+            {
+              name: '@angular/common/http',
+              message: 'Angular HttpClient is restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+            }
+          ],
           patterns: [
+            {
+              group: ['@angular/common/http/*'],
+              message: 'Angular HttpClient is restricted within core simulation domains to enforce the offline-first zero-trust guarantee.'
+            },
             {
               group: ['*/domain/randomization-engine/core/*', '@domain/randomization-engine/core/*'],
               message:
