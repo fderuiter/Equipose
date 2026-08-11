@@ -74,7 +74,7 @@ test.describe('Download UX Smoke Tests', () => {
       const downloadPromise = page.waitForEvent('download');
       await downloadBtn.dispatchEvent('click');
       const download = await downloadPromise;
-      expect(download.suggestedFilename()).toContain(lang.extension);
+      expect(download.suggestedFilename()).toBe('randomization_schema.zip');
     }
 
     // 6. Close modal
