@@ -404,6 +404,6 @@ test.describe('Code generation fixtures for script execution checks', () => {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
     }
 
-    await assertSubprocessSuccess('node', ['scripts/validate-sas-syntax.mjs'], 'Generated SAS script static validation');
+    await assertSubprocessSuccess('npx', ['tsx', 'scripts/validate-sas-syntax.mjs'], 'Generated SAS script static validation');
   });
 });
