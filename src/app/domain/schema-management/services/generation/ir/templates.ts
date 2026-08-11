@@ -140,15 +140,27 @@ PRECISION_EPSILON = {{precisionEpsilon}}
 {{algorithmicLogic}}
 
 if schema:
-    first_row = schema[0]
-    headers = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode"]
-    for k in first_row.keys():
-        if k not in headers:
-            headers.append(k)
-    writer = csv.DictWriter(sys.stdout, fieldnames=headers, lineterminator='\\n')
-    writer.writeheader()
-    for row in schema:
-        writer.writerow(row)
+    if isinstance(schema, dict):
+        headers = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode"]
+        for k in schema.keys():
+            if k not in headers:
+                headers.append(k)
+        writer = csv.DictWriter(sys.stdout, fieldnames=headers, lineterminator='\\n')
+        writer.writeheader()
+        num_rows = len(schema[headers[0]]) if headers else 0
+        for i in range(num_rows):
+            row = {k: schema[k][i] for k in headers if i < len(schema[k])}
+            writer.writerow(row)
+    else:
+        first_row = schema[0]
+        headers = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode"]
+        for k in first_row.keys():
+            if k not in headers:
+                headers.append(k)
+        writer = csv.DictWriter(sys.stdout, fieldnames=headers, lineterminator='\\n')
+        writer.writeheader()
+        for row in schema:
+            writer.writerow(row)
 `;
 
 export const STATA_TEMPLATE = `
