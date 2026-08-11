@@ -5,6 +5,40 @@ import { FormattingUtil } from './formatting.util';
 
 export class StaticMappingGuard {
   static verify(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, output: string): void {
+    // 0. Verify Functional Signatures for Dynamic/Transactional mode
+    if (output.includes("randomize_subject") || output.includes("%macro randomize_subject")) {
+      const isMin = config.randomizationMethod === 'MINIMIZATION';
+      if (language === 'Python') {
+        const expectedSig = isMin 
+          ? "def randomize_subject(site, participant_factors, seed_index, marginal_totals):" 
+          : "def randomize_subject(site, stratum_code, seed_index, block_state):";
+        if (!output.includes(expectedSig)) {
+          throw new MappingMismatchError(language, `Functional signature mismatch. Expected: ${expectedSig}`, config);
+        }
+      } else if (language === 'R') {
+        const expectedSig = isMin
+          ? "randomize_subject <- function(site, participant_factors, seed_index, marginal_totals)"
+          : "randomize_subject <- function(site, stratum_code, seed_index, block_state)";
+        if (!output.includes(expectedSig)) {
+          throw new MappingMismatchError(language, `Functional signature mismatch. Expected: ${expectedSig}`, config);
+        }
+      } else if (language === 'SAS') {
+        const expectedSig = isMin
+          ? "%macro randomize_subject(site, participant_factors, seed_index, marginal_totals);"
+          : "%macro randomize_subject(site, stratum_code, seed_index, block_state);";
+        if (!output.includes(expectedSig)) {
+          throw new MappingMismatchError(language, `Functional signature mismatch. Expected: ${expectedSig}`, config);
+        }
+      } else if (language === 'STATA') {
+        const expectedSig = isMin
+          ? "randomize_subject(string scalar site, string rowvector participant_factors, real scalar seed_index, pointer marginal_totals)"
+          : "randomize_subject(string scalar site, string scalar stratum_code, real scalar seed_index, pointer block_state)";
+        if (!output.includes(expectedSig)) {
+          throw new MappingMismatchError(language, `Functional signature mismatch. Expected: ${expectedSig}`, config);
+        }
+      }
+    }
+
     // 1. Verify Seed
     const expectedSeed = ReproducibilityUtil.hashCode(config.seed).toString();
     if (!output.includes(expectedSeed)) {

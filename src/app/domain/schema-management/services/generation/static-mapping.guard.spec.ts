@@ -74,3 +74,53 @@ replace age=\`"<65"' in 1
     expect(() => StaticMappingGuard.verify('STATA', mockConfig, output)).toThrow(/Orphaned variable: Stratum "orphaned_strata"/);
   });
 });
+
+describe('StaticMappingGuard Transactional Signatures', () => {
+  const mockConfig: RandomizationConfig = {
+    protocolId: 'Simulation',
+    seed: '009f22b3edf94168e8b39bf218527051',
+    arms: [
+      { id: 'A', name: 'Active', ratio: 1 },
+      { id: 'B', name: 'Placebo', ratio: 1 },
+    ],
+    sites: ['101'],
+    strata: [
+      {
+        id: 'age',
+        name: 'Age Group',
+        levels: ['<65', '>=65'],
+      },
+    ],
+    blockSizes: [4],
+    randomizationMethod: 'MINIMIZATION',
+  } as any;
+
+  it('should validate exact python signature for minimization', () => {
+    const seedHash = "1530624355";
+    const validOutput = `
+      # seed hash ${seedHash}
+      # Active
+      # Placebo
+      # ratio 1
+      # age
+      # <65
+      # >=65
+      def randomize_subject(site, participant_factors, seed_index, marginal_totals):
+        pass
+    `;
+    expect(() => StaticMappingGuard.verify('Python', mockConfig, validOutput)).not.toThrow();
+
+    const invalidOutput = `
+      # seed hash ${seedHash}
+      # Active
+      # Placebo
+      # ratio 1
+      # age
+      # <65
+      # >=65
+      def randomize_subject(bad_signature_params):
+        pass
+    `;
+    expect(() => StaticMappingGuard.verify('Python', mockConfig, invalidOutput)).toThrow(/Functional signature mismatch/);
+  });
+});

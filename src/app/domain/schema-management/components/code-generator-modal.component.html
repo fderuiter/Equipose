@@ -36,7 +36,7 @@
                       <app-button variant="segmented" (onClick)="setExportMode('STATIC')" [segmentedActive]="exportMode() === 'STATIC'" segmentedPosition="first" role="radio" [ariaChecked]="exportMode() === 'STATIC' ? 'true' : 'false'">
                         Static Manifest
                       </app-button>
-                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [ariaChecked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'">
+                      <app-button variant="segmented" (onClick)="setExportMode('DYNAMIC')" [segmentedActive]="exportMode() === 'DYNAMIC'" segmentedPosition="middle" role="radio" [ariaChecked]="exportMode() === 'DYNAMIC' ? 'true' : 'false'" [appTooltip]="'Transactional mode requires the hosting application to store and pass the allocation state.'">
                         Dynamic Generator
                       </app-button>
                       <app-button variant="segmented" (onClick)="setExportMode('BOTH')" [segmentedActive]="exportMode() === 'BOTH'" segmentedPosition="last" role="radio" [ariaChecked]="exportMode() === 'BOTH' ? 'true' : 'false'">                        Both (ZIP Bundle)

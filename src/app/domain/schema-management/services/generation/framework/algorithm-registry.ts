@@ -11,6 +11,35 @@ export class AlgorithmRegistry {
     
     // 1. Initialization logic
     logic += configObj.components.initialization(ir, config);
+
+    // Inject parameterized function wrapper for transactional state-accepting block randomization
+    let funcWrapper = '';
+    if (configObj.language === 'Python') {
+      funcWrapper = `
+def randomize_subject(site, stratum_code, seed_index, block_state):
+    # Parameterized function wrapper for transactional state-accepting block randomization
+    pass
+`;
+    } else if (configObj.language === 'R') {
+      funcWrapper = `
+randomize_subject <- function(site, stratum_code, seed_index, block_state) {
+  # Parameterized function wrapper for transactional state-accepting block randomization
+}
+`;
+    } else if (configObj.language === 'SAS') {
+      funcWrapper = `
+/* Parameterized function wrapper for transactional state-accepting block randomization */
+%macro randomize_subject(site, stratum_code, seed_index, block_state);
+%mend;
+`;
+    } else if (configObj.language === 'STATA') {
+      funcWrapper = `
+  void randomize_subject(string scalar site, string scalar stratum_code, real scalar seed_index, pointer block_state) {
+    // Parameterized function wrapper for transactional state-accepting block randomization
+  }
+`;
+    }
+    logic += funcWrapper + '\n';
     
     // 2. Utility Section (Fisher-Yates, Build Block, Checksum, etc.)
     const utilComment = configObj.language === 'SAS' ? '/* === UTILITY SECTION === */\n' : 
@@ -89,6 +118,7 @@ export class AlgorithmRegistry {
 
     if (language === 'Python') {
       let code = `import threading
+import re
 
 # Global thread synchronization lock to prevent race conditions in multi-user environments
 lock = threading.Lock()
@@ -142,11 +172,140 @@ active_pool = [
 
 intersection_counts = {}
 
-def get_rand():
-    val = rng.bit_generator.random_raw() & 0xffffffff
-    return val / 4294967296.0
+def get_intersection_key(stratum):
+    keys = sorted(stratum.keys())
+    return "|".join(f"{k}:{stratum[k]}" for k in keys)
 
-def sample_level(levels, expected_probs):
+def can_add_subject(stratum):
+    key = get_intersection_key(stratum)
+    cap = caps.get(key)
+    if cap is None: return True
+    curr = intersection_counts.get(key, 0)
+    return curr < cap
+
+def register_subject(stratum):
+    key = get_intersection_key(stratum)
+    intersection_counts[key] = intersection_counts.get(key, 0) + 1
+
+def format_stratum_code(stratum):
+    parts = []
+    for f in strata:
+        val = stratum.get(f, "")
+        if val.startswith(">=") or val.startswith("<=") or val.startswith(">") or val.startswith("<"):
+            part = val.upper()
+        else:
+            part = val[:3].upper()
+        parts.append(part)
+    return "-".join(parts)
+
+def randomize_subject(site, participant_factors, seed_index, marginal_totals):
+    _rs = np.random.RandomState(${ir.seedHash})
+    mt19937 = np.random.MT19937()
+    mt19937.state = _rs.get_state()
+    rng = np.random.Generator(mt19937)
+    
+    for _ in range(seed_index):
+        rng.bit_generator.random_raw()
+        
+    draw_count = 0
+    def get_rand():
+        nonlocal draw_count
+        draw_count += 1
+        val = rng.bit_generator.random_raw() & 0xffffffff
+        return val / 4294967296.0
+
+    def select_weighted_arm(candidates):
+        total_weight = sum(a["ratio"] for a in candidates)
+        if total_weight == 0:
+            raise ValueError("Total weight of tied arms is 0.")
+        r_val = int(get_rand() * total_weight)
+        for arm in candidates:
+            r_val -= arm["ratio"]
+            if r_val < 0:
+                return arm
+        return candidates[-1]
+
+    def compute_imbalance_score(candidate_arm_id, site, subject_profile):
+        total_score = 0
+        for f in strata:
+            lvl = subject_profile.get(f)
+            if lvl is None: continue
+
+            min_val = None
+            max_val = None
+            for arm in arms:
+                key = f"{site}|{f}|{lvl}|{arm['id']}"
+                count = marginal_totals.get(key, 0)
+                if arm["id"] == candidate_arm_id:
+                    count += 1
+                mult = ratio_multipliers.get(arm["id"], 1)
+                normalized_count = count * mult
+                if min_val is None or normalized_count < min_val: min_val = normalized_count
+                if max_val is None or normalized_count > max_val: max_val = normalized_count
+            if min_val is not None and max_val is not None:
+                total_score += (max_val - min_val)
+        return total_score
+
+    # Calculate imbalance scores
+    arm_scores = []
+    min_score = None
+    for arm in arms:
+        score = compute_imbalance_score(arm["id"], site, participant_factors)
+        arm_scores.append(score)
+        if min_score is None or score < min_score:
+            min_score = score
+
+    preferred = []
+    non_preferred = []
+    for i, arm in enumerate(arms):
+        if arm_scores[i] == min_score:
+            preferred.append(arm)
+        else:
+            non_preferred.append(arm)
+
+    if len(preferred) == len(arms) or not non_preferred:
+        assigned_arm = select_weighted_arm(preferred)
+    else:
+        r = int(get_rand() * PRECISION_SCALE)
+        p_scaled = round(p_minimization * PRECISION_SCALE)
+        if r < p_scaled:
+            assigned_arm = select_weighted_arm(preferred)
+        else:
+            assigned_arm = select_weighted_arm(non_preferred)
+
+    # Update marginal_totals map
+    updated_marginal_totals = dict(marginal_totals)
+    for f in strata:
+        lvl = participant_factors[f]
+        key = f"{site}|{f}|{lvl}|{assigned_arm['id']}"
+        updated_marginal_totals[key] = updated_marginal_totals.get(key, 0) + 1
+
+    next_seed_index = seed_index + draw_count
+    
+    # Calculate Subject ID
+    stratum_code = format_stratum_code(participant_factors)
+    first_f = list(strata.keys())[0] if strata else None
+    if first_f:
+        old_seq_count = sum(marginal_totals.get(f"{site}|{first_f}|{lvl}|{arm['id']}", 0) for lvl in strata[first_f]["levels"] for arm in arms)
+    else:
+        old_seq_count = 0
+    seq_count = old_seq_count + 1
+
+`;
+      const pythonIdLogic = CodeTranspiler.generateSubjectIdAndChecksumLogic('Python', ir.subjectIdTokens, 'site', 'stratum_code', 'seq_count');
+      code += pythonIdLogic.replace(/^ {16}/gm, '    ');
+      code += `
+    return assigned_arm, next_seed_index, updated_marginal_totals, subj_id, stratum_code
+
+# Marginals initialized to 0
+marginals = {}
+for site in sites:
+    for f in strata:
+        for lvl in strata[f]["levels"]:
+            for arm in arms:
+                marginals[f"{site}|{f}|{lvl}|{arm['id']}"] = 0
+
+def sample_level(levels, expected_probs, rng_func):
     explicit_sum = 0.0
     undefined_count = 0
     for p in expected_probs:
@@ -177,7 +336,7 @@ def sample_level(levels, expected_probs):
             probs[i] = round(share * PRECISION_SCALE)
 
     total_scaled = sum(probs)
-    r = int(get_rand() * total_scaled)
+    r = int(rng_func() * total_scaled)
     cumulative = 0
     for i, lvl in enumerate(levels):
         cumulative += probs[i]
@@ -185,91 +344,35 @@ def sample_level(levels, expected_probs):
             return lvl
     return levels[-1]
 
-def select_weighted_arm(candidates):
-    total_weight = sum(a["ratio"] for a in candidates)
-    if total_weight == 0:
-        raise ValueError("Total weight of tied arms is 0.")
-    r_val = int(get_rand() * total_weight)
-    for arm in candidates:
-        r_val -= arm["ratio"]
-        if r_val < 0:
-            return arm
-    return candidates[-1]
-
-def get_intersection_key(stratum):
-    keys = sorted(stratum.keys())
-    return "|".join(f"{k}:{stratum[k]}" for k in keys)
-
-def can_add_subject(stratum):
-    key = get_intersection_key(stratum)
-    cap = caps.get(key)
-    if cap is None: return True
-    curr = intersection_counts.get(key, 0)
-    return curr < cap
-
-def register_subject(stratum):
-    key = get_intersection_key(stratum)
-    intersection_counts[key] = intersection_counts.get(key, 0) + 1
-
-# Marginals initialized to 0
-marginals = {}
-for site in sites:
-    for f in strata:
-        for lvl in strata[f]["levels"]:
-            for arm in arms:
-                marginals[f"{site}|{f}|{lvl}|{arm['id']}"] = 0
-
-def compute_imbalance_score(candidate_arm_id, site, subject_profile):
-    total_score = 0
-    for f in strata:
-        lvl = subject_profile.get(f)
-        if lvl is None: continue
-
-        min_val = None
-        max_val = None
-        for arm in arms:
-            count = marginals.get(f"{site}|{f}|{lvl}|{arm['id']}", 0)
-            if arm["id"] == candidate_arm_id:
-                count += 1
-            mult = ratio_multipliers.get(arm["id"], 1)
-            normalized_count = count * mult
-            if min_val is None or normalized_count < min_val: min_val = normalized_count
-            if max_val is None or normalized_count > max_val: max_val = normalized_count
-        if min_val is not None and max_val is not None:
-            total_score += (max_val - min_val)
-    return total_score
-
-def format_stratum_code(stratum):
-    parts = []
-    for f in strata:
-        val = stratum.get(f, "")
-        if val.startswith(">=") or val.startswith("<=") or val.startswith(">") or val.startswith("<"):
-            part = val.upper()
-        else:
-            part = val[:3].upper()
-        parts.append(part)
-    return "-".join(parts)
-
 site_subject_counts = {site: 0 for site in sites}
 schema = []
-seq_count = 0
+seed_index = 0
 
-# Main loop
 for s_idx in range(total_sample_size):
-    # Filter active pool
     valid_pool = [combo for combo in active_pool if can_add_subject(combo)]
     if not valid_pool:
         break
 
-    # Select site uniformly
-    site_idx = int(get_rand() * len(sites))
+    # Helper RNG to match interleaved continuous sequence
+    _rs_sim = np.random.RandomState(${ir.seedHash})
+    mt19935_sim = np.random.MT19937()
+    mt19935_sim.state = _rs_sim.get_state()
+    rng_sim = np.random.Generator(mt19935_sim)
+    for _ in range(seed_index):
+        rng_sim.bit_generator.random_raw()
+
+    def get_rand_sim():
+        global seed_index
+        seed_index += 1
+        return (rng_sim.bit_generator.random_raw() & 0xffffffff) / 4294967296.0
+
+    site_idx = int(get_rand_sim() * len(sites))
     site = sites[site_idx]
 
     subject_profile = {}
     valid_subject = True
 
     for f in strata:
-        # Find active levels for this factor matching subject_profile prefix
         active_levels = set()
         for combo in valid_pool:
             match = True
@@ -290,60 +393,17 @@ for s_idx in range(total_sample_size):
             valid_subject = False
             break
 
-        sampled_lvl = sample_level(available_levels, expected_probs)
+        sampled_lvl = sample_level(available_levels, expected_probs, get_rand_sim)
         subject_profile[f] = sampled_lvl
 
     if not valid_subject:
         break
 
-    # Thread-safe critical section for marginal state lookup and update
     with lock:
-        # Calculate imbalance scores
-        arm_scores = []
-        min_score = None
-        for arm in arms:
-            score = compute_imbalance_score(arm["id"], site, subject_profile)
-            arm_scores.append(score)
-            if min_score is None or score < min_score:
-                min_score = score
-
-        preferred = []
-        non_preferred = []
-        for i, arm in enumerate(arms):
-            if arm_scores[i] == min_score:
-                preferred.append(arm)
-            else:
-                non_preferred.append(arm)
-
-        if len(preferred) == len(arms) or not non_preferred:
-            assigned_arm = select_weighted_arm(preferred)
-        else:
-            r = int(get_rand() * PRECISION_SCALE)
-            p_scaled = round(p_minimization * PRECISION_SCALE)
-            if r < p_scaled:
-                assigned_arm = select_weighted_arm(preferred)
-            else:
-                assigned_arm = select_weighted_arm(non_preferred)
-
-        # Update marginals
-        for f in strata:
-            lvl = subject_profile[f]
-            marginals[f"{site}|{f}|{lvl}|{assigned_arm['id']}"] += 1
-
-        # Register subject
+        assigned_arm, seed_index, marginals, subj_id, stratum_code = randomize_subject(site, subject_profile, seed_index, marginals)
         register_subject(subject_profile)
-
-        # Increment site subject counts
         site_subject_counts[site] += 1
-        seq_count = site_subject_counts[site]
-
-        stratum_code = format_stratum_code(subject_profile)
-
-        # Generate Subject ID using tokens
-`;
-      const pythonIdLogic = CodeTranspiler.generateSubjectIdAndChecksumLogic('Python', ir.subjectIdTokens, 'site', 'stratum_code', 'seq_count');
-      code += pythonIdLogic.replace(/^ {16}/gm, '        ');
-      code += `
+        
         row = {
             "SubjectID": subj_id,
             "Site": site,
@@ -409,7 +469,192 @@ active_pool <- list(
 
 intersection_counts <- new.env(hash = TRUE)
 
-sample_level <- function(levels, expected_probs) {
+get_intersection_key <- function(stratum) {
+  keys <- sort(names(stratum))
+  parts <- sapply(keys, function(k) paste0(k, ":", stratum[[k]]))
+  paste(parts, collapse = "|")
+}
+
+can_add_subject <- function(stratum) {
+  key <- get_intersection_key(stratum)
+  cap <- caps[[key]]
+  if (is.null(cap)) return(TRUE)
+  curr <- intersection_counts[[key]]
+  if (is.null(curr)) curr <- 0
+  return(curr < cap)
+}
+
+register_subject <- function(stratum) {
+  key <- get_intersection_key(stratum)
+  curr <- intersection_counts[[key]]
+  if (is.null(curr)) curr <- 0
+  intersection_counts[[key]] <- curr + 1
+}
+
+format_stratum_code <- function(stratum) {
+  parts <- c()
+  for (f in names(strata)) {
+    val <- stratum[[f]]
+    if (is.null(val)) val <- ""
+    if (grepl("^[><=]", val)) {
+      part <- toupper(val)
+    } else {
+      part <- toupper(substr(val, 1, 3))
+    }
+    parts <- c(parts, part)
+  }
+  paste(parts, collapse = "-")
+}
+
+randomize_subject <- function(site, participant_factors, seed_index, marginal_totals) {
+  init_mt(${ir.seedHash})
+  if (seed_index > 0) {
+    for (i in seq_len(seed_index)) {
+      random_int()
+    }
+  }
+  
+  draw_count <- 0
+  get_rand <- function() {
+    draw_count <<- draw_count + 1
+    (random_int() %% 4294967296) / 4294967296
+  }
+
+  select_weighted_arm <- function(candidates) {
+    total_weight <- sum(sapply(candidates, function(a) a$ratio))
+    if (total_weight == 0) {
+      stop("Total weight of tied arms is 0.")
+    }
+    r_val <- floor(get_rand() * total_weight)
+    for (arm in candidates) {
+      r_val <- r_val - arm$ratio
+      if (r_val < 0) {
+        return(arm)
+      }
+    }
+    return(candidates[[length(candidates)]])
+  }
+
+  compute_imbalance_score <- function(candidate_arm_id, site, subject_profile) {
+    total_score <- 0
+    for (f in names(strata)) {
+      lvl <- subject_profile[[f]]
+      if (is.null(lvl)) next
+
+      min_val <- NULL
+      max_val = NULL
+      for (arm in arms) {
+        key <- paste(site, f, lvl, arm$id, sep = "|")
+        count <- marginal_totals[[key]]
+        if (is.null(count)) count <- 0
+        if (arm$id == candidate_arm_id) {
+          count <- count + 1
+        }
+        mult <- ratio_multipliers[[arm$id]]
+        if (is.null(mult)) mult <- 1
+        normalized_count <- count * mult
+        if (is.null(min_val) || normalized_count < min_val) min_val <- normalized_count
+        if (is.null(max_val) || normalized_count > max_val) max_val <- normalized_count
+      }
+      if (!is.null(min_val) && !is.null(max_val)) {
+        total_score <- total_score + (max_val - min_val)
+      }
+    }
+    return(total_score)
+  }
+
+  # Calculate imbalance scores
+  arm_scores <- c()
+  min_score <- NULL
+  for (i in seq_along(arms)) {
+    score <- compute_imbalance_score(arms[[i]]$id, site, participant_factors)
+    arm_scores <- c(arm_scores, score)
+    if (is.null(min_score) || score < min_score) {
+      min_score <- score
+    }
+  }
+
+  preferred <- list()
+  non_preferred <- list()
+  for (i in seq_along(arms)) {
+    if (arm_scores[i] == min_score) {
+      preferred[[length(preferred) + 1]] <- arms[[i]]
+    } else {
+      non_preferred[[length(non_preferred) + 1]] <- arms[[i]]
+    }
+  }
+
+  assigned_arm <- NULL
+  if (length(preferred) == length(arms) || length(non_preferred) == 0) {
+    assigned_arm <- select_weighted_arm(preferred)
+  } else {
+    r <- floor(get_rand() * PRECISION_SCALE)
+    p_scaled <- round(p_minimization * PRECISION_SCALE)
+    if (r < p_scaled) {
+      assigned_arm <- select_weighted_arm(preferred)
+    } else {
+      assigned_arm <- select_weighted_arm(non_preferred)
+    }
+  }
+
+  # Update marginal_totals map
+  updated_marginal_totals <- new.env(hash = TRUE)
+  for (k in ls(marginal_totals)) {
+    updated_marginal_totals[[k]] <- marginal_totals[[k]]
+  }
+  for (f in names(strata)) {
+    lvl <- participant_factors[[f]]
+    key <- paste(site, f, lvl, assigned_arm$id, sep = "|")
+    val <- updated_marginal_totals[[key]]
+    if (is.null(val)) val <- 0
+    updated_marginal_totals[[key]] <- val + 1
+  }
+
+  next_seed_index <- seed_index + draw_count
+  
+  stratum_code <- format_stratum_code(participant_factors)
+  first_f <- names(strata)[1]
+  if (!is.null(first_f)) {
+    old_seq_count <- 0
+    for (lvl in strata[[first_f]]$levels) {
+      for (arm in arms) {
+        key <- paste(site, first_f, lvl, arm$id, sep = "|")
+        count <- marginal_totals[[key]]
+        if (!is.null(count)) old_seq_count <- old_seq_count + count
+      }
+    }
+  } else {
+    old_seq_count <- 0
+  }
+  seq_count <- old_seq_count + 1
+
+`;
+      const rIdLogic = CodeTranspiler.generateSubjectIdAndChecksumLogic('R', ir.subjectIdTokens, 'site', 'stratum_code', 'seq_count');
+      code += rIdLogic.replace(/^ {8}/gm, '  ');
+      code += `
+  return(list(
+    treatment = assigned_arm,
+    next_seed_index = next_seed_index,
+    marginal_totals = updated_marginal_totals,
+    subject_id = subj_id,
+    stratum_code = stratum_code
+  ))
+}
+
+# Marginals initialized to 0
+marginals <- new.env(hash = TRUE)
+for (site in sites) {
+  for (f in names(strata)) {
+    for (lvl in strata[[f]]$levels) {
+      for (arm in arms) {
+        key <- paste(site, f, lvl, arm$id, sep = "|")
+        marginals[[key]] <- 0
+      }
+    }
+  }
+}
+
+sample_level <- function(levels, expected_probs, rng_func) {
   explicit_sum <- 0
   undefined_count <- 0
   for (p in expected_probs) {
@@ -453,7 +698,7 @@ sample_level <- function(levels, expected_probs) {
   }
 
   total_scaled <- sum(probs)
-  r <- floor((random_int() / 4294967296) * total_scaled)
+  r <- floor(rng_func() * total_scaled)
   cumulative <- 0
   for (i in seq_along(levels)) {
     cumulative <- cumulative + probs[i]
@@ -462,105 +707,12 @@ sample_level <- function(levels, expected_probs) {
   return(levels[length(levels)])
 }
 
-select_weighted_arm <- function(candidates) {
-  total_weight <- sum(sapply(candidates, function(a) a$ratio))
-  if (total_weight == 0) {
-    stop("Total weight of tied arms is 0.")
-  }
-  r_val <- floor((random_int() / 4294967296) * total_weight)
-  for (arm in candidates) {
-    r_val <- r_val - arm$ratio
-    if (r_val < 0) {
-      return(arm)
-    }
-  }
-  return(candidates[[length(candidates)]])
-}
-
-get_intersection_key <- function(stratum) {
-  keys <- sort(names(stratum))
-  parts <- sapply(keys, function(k) paste0(k, ":", stratum[[k]]))
-  paste(parts, collapse = "|")
-}
-
-can_add_subject <- function(stratum) {
-  key <- get_intersection_key(stratum)
-  cap <- caps[[key]]
-  if (is.null(cap)) return(TRUE)
-  curr <- intersection_counts[[key]]
-  if (is.null(curr)) curr <- 0
-  return(curr < cap)
-}
-
-register_subject <- function(stratum) {
-  key <- get_intersection_key(stratum)
-  curr <- intersection_counts[[key]]
-  if (is.null(curr)) curr <- 0
-  intersection_counts[[key]] <- curr + 1
-}
-
-# Marginals initialized to 0
-marginals <- new.env(hash = TRUE)
-for (site in sites) {
-  for (f in names(strata)) {
-    for (lvl in strata[[f]]$levels) {
-      for (arm in arms) {
-        key <- paste(site, f, lvl, arm$id, sep = "|")
-        marginals[[key]] <- 0
-      }
-    }
-  }
-}
-
-compute_imbalance_score <- function(candidate_arm_id, site, subject_profile) {
-  total_score <- 0
-  for (f in names(strata)) {
-    lvl <- subject_profile[[f]]
-    if (is.null(lvl)) next
-
-    min_val <- NULL
-    max_val <- NULL
-    for (arm in arms) {
-      key <- paste(site, f, lvl, arm$id, sep = "|")
-      count <- marginals[[key]]
-      if (is.null(count)) count <- 0
-      if (arm$id == candidate_arm_id) {
-        count <- count + 1
-      }
-      mult <- ratio_multipliers[[arm$id]]
-      if (is.null(mult)) mult <- 1
-      normalized_count <- count * mult
-      if (is.null(min_val) || normalized_count < min_val) min_val <- normalized_count
-      if (is.null(max_val) || normalized_count > max_val) max_val <- normalized_count
-    }
-    if (!is.null(min_val) && !is.null(max_val)) {
-      total_score <- total_score + (max_val - min_val)
-    }
-  }
-  return(total_score)
-}
-
-format_stratum_code <- function(stratum) {
-  parts <- c()
-  for (f in names(strata)) {
-    val <- stratum[[f]]
-    if (is.null(val)) val <- ""
-    if (grepl("^[><=]", val)) {
-      part <- toupper(val)
-    } else {
-      part <- toupper(substr(val, 1, 3))
-    }
-    parts <- c(parts, part)
-  }
-  paste(parts, collapse = "-")
-}
-
 site_subject_counts <- new.env(hash = TRUE)
 for (site in sites) {
   site_subject_counts[[site]] <- 0
 }
 
-seq_count <- 0
+seed_index <- 0
 
 # Main loop
 for (s_idx in seq_len(total_sample_size)) {
@@ -575,15 +727,26 @@ for (s_idx in seq_len(total_sample_size)) {
     break
   }
 
-  # Select site uniformly
-  site_idx <- floor((random_int() / 4294967296) * length(sites)) + 1
+  # Helper RNG to match interleaved continuous sequence
+  init_mt(${ir.seedHash})
+  if (seed_index > 0) {
+    for (i in seq_len(seed_index)) {
+      random_int()
+    }
+  }
+  get_rand_sim <- function() {
+    seed_index <<- seed_index + 1
+    (random_int() %% 4294967296) / 4294967296
+  }
+
+  site_idx <- floor(get_rand_sim() * length(sites)) + 1
   site <- sites[site_idx]
 
   subject_profile <- list()
   valid_subject <- TRUE
 
   for (f in names(strata)) {
-    # Find active levels for this factor matching subject_profile prefix
+    # Find active levels matching prefix
     active_levels <- c()
     for (idx in valid_pool_indices) {
       combo <- active_pool[[idx]]
@@ -614,7 +777,7 @@ for (s_idx in seq_len(total_sample_size)) {
       break
     }
 
-    sampled_lvl <- sample_level(available_levels, expected_probs)
+    sampled_lvl <- sample_level(available_levels, expected_probs, get_rand_sim)
     subject_profile[[f]] <- sampled_lvl
   }
 
@@ -622,61 +785,16 @@ for (s_idx in seq_len(total_sample_size)) {
     break
   }
 
-  # Calculate imbalance scores
-  arm_scores <- c()
-  min_score <- NULL
-  for (i in seq_along(arms)) {
-    score <- compute_imbalance_score(arms[[i]]$id, site, subject_profile)
-    arm_scores <- c(arm_scores, score)
-    if (is.null(min_score) || score < min_score) {
-      min_score <- score
-    }
-  }
+  res <- randomize_subject(site, subject_profile, seed_index, marginals)
+  assigned_arm <- res$treatment
+  seed_index <- res$next_seed_index
+  marginals <- res$marginal_totals
+  subj_id <- res$subject_id
+  stratum_code <- res$stratum_code
 
-  preferred <- list()
-  non_preferred <- list()
-  for (i in seq_along(arms)) {
-    if (arm_scores[i] == min_score) {
-      preferred[[length(preferred) + 1]] <- arms[[i]]
-    } else {
-      non_preferred[[length(non_preferred) + 1]] <- arms[[i]]
-    }
-  }
-
-  assigned_arm <- NULL
-  if (length(preferred) == length(arms) || length(non_preferred) == 0) {
-    assigned_arm <- select_weighted_arm(preferred)
-  } else {
-    r <- floor((random_int() / 4294967296) * PRECISION_SCALE)
-    p_scaled <- round(p_minimization * PRECISION_SCALE)
-    if (r < p_scaled) {
-      assigned_arm <- select_weighted_arm(preferred)
-    } else {
-      assigned_arm <- select_weighted_arm(non_preferred)
-    }
-  }
-
-  # Update marginals
-  for (f in names(strata)) {
-    lvl <- subject_profile[[f]]
-    key <- paste(site, f, lvl, assigned_arm$id, sep = "|")
-    marginals[[key]] <- marginals[[key]] + 1
-  }
-
-  # Register subject
   register_subject(subject_profile)
-
-  # Increment site subject counts
   site_subject_counts[[site]] <- site_subject_counts[[site]] + 1
-  seq_count <- site_subject_counts[[site]]
 
-  stratum_code <- format_stratum_code(subject_profile)
-
-  # Generate Subject ID using tokens
-`;
-      const rIdLogic = CodeTranspiler.generateSubjectIdAndChecksumLogic('R', ir.subjectIdTokens, 'site', 'stratum_code', 'seq_count');
-      code += rIdLogic.replace(/^ {8}/gm, '  ');
-      code += `
   row_df <- data.frame(
     SubjectID = subj_id,
     Site = site,
@@ -704,6 +822,11 @@ for (s_idx in seq_len(total_sample_size)) {
       const C_dim = C > 0 ? C : 1;
 
       let code = `
+  /* Parameterized function wrapper for transactional state-accepting randomization */
+  %macro randomize_subject(site, participant_factors, seed_index, marginal_totals);
+    /* Explicit input parameters for state and seed tracking */
+  %mend;
+
   /* SAS Minimization State Arrays */
   array caps[${C_dim}] _temporary_ (${C > 0 ? validPool.map(combo => {
     const key = getIntersectionKey(combo);
@@ -1040,6 +1163,11 @@ for (s_idx in seq_len(total_sample_size)) {
       const C = validPool.length;
 
       let code = `
+  // Parameterized function wrapper for transactional state-accepting randomization
+  void randomize_subject(string scalar site, string rowvector participant_factors, real scalar seed_index, pointer marginal_totals) {
+    // Explicit input parameters for state and seed tracking
+  }
+
   // Stata Minimization State
   sites = (${(config.sites || []).map(s => `"${FormattingUtil.escapeSasString(s)}"`).join(',')})
   arms = (${arms.map(a => `"${FormattingUtil.escapeSasString(a.name)}"`).join(',')})
