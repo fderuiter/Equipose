@@ -175,7 +175,7 @@ describe('CodeGeneratorService Dual-Mode', () => {
     it('should generate dynamic minimization code for SAS', () => {
       const code = service.generateDynamic('SAS', minimizationConfig);
       expect(code).toContain('round(&p_minimization * &PRECISION_SCALE)');
-      expect(code).toContain('marginals[');
+      expect(code).toContain('marginals_hash');
       expect(code).toContain('intersection_counts[');
     });
 
