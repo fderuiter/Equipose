@@ -27,7 +27,7 @@ test.describe('Schema Generation Flow', () => {
     await page.locator('[data-testid="org-segment-select"] select').selectOption('Academic');
 
     // Click the "Blinded" label to toggle
-    const unblindedToggleLabel = page.locator('span.cursor-pointer').filter({ hasText: 'Blinded' });
+    const unblindedToggleLabel = page.locator('label.cursor-pointer').filter({ hasText: 'Blinded' });
     await unblindedToggleLabel.dispatchEvent('click');
 
     // Assert the text changes from "*** BLINDED ***"

@@ -38,7 +38,7 @@
 
           <div class="flex items-center px-1 -ml-1">
             <app-toggle inputId="unblind-toggle" [ariaLabel]="'Toggle unblinded view'" [checked]="isUnblinded()" [disabled]="!personaValidator.canUnblind()" (checkedChange)="toggleBlinding()"></app-toggle>
-            <label for="unblind-toggle" class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" [class.opacity-50]="!personaValidator.canUnblind()" [attr.aria-disabled]="!personaValidator.canUnblind() ? 'true' : null" (click)="personaValidator.canUnblind() && toggleBlinding()">
+            <label for="unblind-toggle" class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" [class.opacity-50]="!personaValidator.canUnblind()" [attr.aria-disabled]="!personaValidator.canUnblind() ? 'true' : null">
               {{ isUnblinded() ? 'Unblinded' : 'Blinded' }}
             </label>
           </div>
