@@ -53,9 +53,6 @@ jobs:
       with:
         r-version: 'release'
 
-    - name: Install Python dependencies for generated scripts
-      run: pip install numpy pandas --quiet
-
     - name: Install Dependencies
       run: pnpm install --frozen-lockfile
 
@@ -197,9 +194,6 @@ jobs:
       with:
         r-version: 'release'
 
-    - name: Install Python dependencies for generated scripts
-      run: pip install numpy pandas --quiet
-
     - name: Download shared environment
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
       with:
@@ -264,9 +258,6 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
       with:
         python-version: '3.11'
-
-    - name: Install Python dependencies
-      run: pip install numpy pandas --quiet
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
@@ -572,9 +563,6 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install Python dependencies
-      run: pip install numpy pandas --quiet
-
     - name: Download shared environment
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
       with:
@@ -727,9 +715,6 @@ jobs:
       uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6
       with:
         r-version: 'release'
-
-    - name: Install Python dependencies
-      run: pip install numpy --quiet
 
     - name: Download code-generation fixture scripts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e

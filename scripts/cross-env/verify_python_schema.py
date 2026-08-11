@@ -29,7 +29,7 @@ Exit code 1 = one or more assertions failed.
 
 import sys
 import itertools
-import numpy as np
+import random
 
 # ---------------------------------------------------------------------------
 # Configuration (mirrors the Vitest fixture STRATIFIED_CONFIG)
@@ -70,7 +70,7 @@ EXPECTED_TOTAL = len(sites) * len(combos) * EXPECTED_PER_STRATUM_SITE
 # Block-generation helper (Fisher-Yates shuffle via numpy)
 # ---------------------------------------------------------------------------
 
-def generate_block(block_size: int, rng: np.random.Generator) -> list[str]:
+def generate_block(block_size: int, rng: random.Random) -> list[str]:
     multiplier = block_size // total_ratio
     block = []
     for arm in arms:
@@ -83,7 +83,7 @@ def generate_block(block_size: int, rng: np.random.Generator) -> list[str]:
 # ---------------------------------------------------------------------------
 
 def generate_schema(seed: int) -> list[dict]:
-    rng = np.random.default_rng(seed)
+    rng = random.Random(seed)
     schema: list[dict] = []
 
     for site in sites:

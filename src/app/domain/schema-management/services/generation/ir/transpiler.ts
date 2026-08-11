@@ -308,7 +308,7 @@ export class CodeTranspiler {
          } else if (token.type === 'seq') {
            baseBuilder += `str(${seqVar}).zfill(${token.length}) + `;
          } else if (token.type === 'rnd') {
-           baseBuilder += `''.join(ALPHANUMERIC[int((rng.bit_generator.random_raw() / 4294967296) * 36)] for _ in range(${token.length})) + `;
+           baseBuilder += `''.join(ALPHANUMERIC[int((rng.random_int() / 4294967296) * 36)] for _ in range(${token.length})) + `;
          } else if (token.type === 'checksum') {
            hasChecksum = true;
            baseBuilder += `"{CHECKSUM}" + `;

@@ -13,7 +13,7 @@ const execFileAsync = promisify(execFile);
 
 const checkPythonEnv = async (command: string): Promise<boolean> => {
   try {
-    await execFileAsync(command, ['-c', 'import numpy, pandas']);
+    await execFileAsync(command, ['-c', 'import csv, sys, re']);
     return true;
   } catch {
     return false;

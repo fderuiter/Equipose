@@ -2,7 +2,7 @@ export const ALGORITHM_TEMPLATES: Record<string, { fisherYates: string; buildBlo
   Python: {
     fisherYates: `def fisher_yates_shuffle(array):
     for i in range(len(array) - 1, 0, -1):
-        rand_int = int(rng.bit_generator.random_raw())
+        rand_int = rng.random_int()
         j = int((rand_int / 4294967296) * (i + 1))
         array[i], array[j] = array[j], array[i]
     return array`,
