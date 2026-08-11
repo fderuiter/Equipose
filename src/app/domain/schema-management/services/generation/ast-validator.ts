@@ -145,6 +145,7 @@ export class ASTValidator {
   static validateSAS(code: string, strata?: string[]): string[] {
     const errors: string[] = [];
     const rootNodes = this.parseSAS(code);
+    const lines = code.split('\n');
     
     // Symbolic evaluation
     const symbols = new Set<string>([
@@ -172,8 +173,22 @@ export class ASTValidator {
           // Scan for uninitialized stratification levels in macro declaration/compile
           if (strata && strata.length > 0) {
             for (const stratum of strata) {
-              const levelLetPattern = new RegExp(`%let\\s+${stratum}_levels\\s*=`, 'i');
-              const levelLetMatch = code.match(levelLetPattern);
+              const target = stratum.toLowerCase() + '_levels';
+              let levelLetMatch = false;
+              for (const line of lines) {
+                const lower = line.toLowerCase();
+                const index = lower.indexOf('%let');
+                if (index !== -1) {
+                  const sub = lower.slice(index + 4).trim();
+                  if (sub.startsWith(target)) {
+                    const after = sub.slice(target.length).trim();
+                    if (after.startsWith('=')) {
+                      levelLetMatch = true;
+                      break;
+                    }
+                  }
+                }
+              }
               if (!levelLetMatch) {
                 errors.push(`Line ${node.line}: SAS macro "${node.name}" is declared but stratification factor "${stratum}" levels are uninitialized.`);
               }
