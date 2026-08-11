@@ -43,7 +43,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPromiseR = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.dispatchEvent('click');
     const downloadR = await downloadPromiseR;
-    expect(downloadR.suggestedFilename()).toBe('randomization_schema.R');
+    expect(downloadR.suggestedFilename()).toBe('randomization_schema.zip');
 
     const pythonTab = modal.getByRole('tab', { name: /Python/i });
     await pythonTab.dispatchEvent('click');
@@ -51,7 +51,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.dispatchEvent('click');
     const downloadPy = await downloadPromisePy;
-    expect(downloadPy.suggestedFilename()).toBe('randomization_schema.py');
+    expect(downloadPy.suggestedFilename()).toBe('randomization_schema.zip');
 
     const sasTab = modal.getByRole('tab', { name: /SAS/i });
     await sasTab.dispatchEvent('click');
@@ -59,7 +59,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPromiseSas = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.dispatchEvent('click');
     const downloadSas = await downloadPromiseSas;
-    expect(downloadSas.suggestedFilename()).toBe('randomization_schema.sas');
+    expect(downloadSas.suggestedFilename()).toBe('randomization_schema.zip');
 
     const stataTab = modal.getByRole('tab', { name: /Stata/i });
     await stataTab.dispatchEvent('click');
@@ -67,7 +67,7 @@ test.describe('Code Generator Modal UI', () => {
     const downloadPromiseStata = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.dispatchEvent('click');
     const downloadStata = await downloadPromiseStata;
-    expect(downloadStata.suggestedFilename()).toBe('randomization_schema.do');
+    expect(downloadStata.suggestedFilename()).toBe('randomization_schema.zip');
 
     await modal.getByRole('button', { name: /Close/i }).first().dispatchEvent('click');
     await expect(modalHeading).toBeHidden();

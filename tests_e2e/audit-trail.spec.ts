@@ -73,6 +73,22 @@ async function readDownloadBuffer(download: import('@playwright/test').Download)
 async function readDownload(download: import('@playwright/test').Download): Promise<string> {
   const path = await download.path();
   if (!path) return '';
+  if (download.suggestedFilename().endsWith('.zip')) {
+    try {
+      const execSync = require('child_process').execSync;
+      const listOutput = execSync(`unzip -Z -1 "${path}"`).toString('utf-8');
+      const files = listOutput.split('\n').map(f => f.trim()).filter(Boolean);
+      const mainScript = files.find(f => 
+        (f.startsWith('randomization_schema.') || f.startsWith('randomization_schema_dynamic.') || f.startsWith('randomization_schema_static.')) &&
+        (f.endsWith('.R') || f.endsWith('.py') || f.endsWith('.sas') || f.endsWith('.do'))
+      );
+      if (mainScript) {
+        return execSync(`unzip -p "${path}" "${mainScript}"`).toString('utf-8');
+      }
+    } catch (err) {
+      console.error('Failed to unzip download', err);
+    }
+  }
   return readFile(path, 'utf-8');
 }
 
@@ -174,9 +190,9 @@ test.describe('21 CFR Part 11 – Audit Trail: generated code artifact provenanc
     expect(content).toContain(PROTOCOL_ID);
   });
 
-  test('R script filename has the correct .R extension', async ({ page }) => {
+  test('R script filename has the correct .zip extension', async ({ page }) => {
     const { filename } = await downloadCodeFile(page, 'R Script', PROTOCOL_ID);
-    expect(filename).toMatch(/\.R$/i);
+    expect(filename).toMatch(/\.zip$/i);
   });
 
   // [REQ-21CFR11-004]
@@ -203,9 +219,9 @@ test.describe('21 CFR Part 11 – Audit Trail: generated code artifact provenanc
     expect(content).toContain(PROTOCOL_ID);
   });
 
-  test('Python script filename has the correct .py extension', async ({ page }) => {
+  test('Python script filename has the correct .zip extension', async ({ page }) => {
     const { filename } = await downloadCodeFile(page, 'Python Script', PROTOCOL_ID);
-    expect(filename).toMatch(/\.py$/i);
+    expect(filename).toMatch(/\.zip$/i);
   });
 
   // [REQ-21CFR11-004]
@@ -232,9 +248,9 @@ test.describe('21 CFR Part 11 – Audit Trail: generated code artifact provenanc
     expect(content).toContain(PROTOCOL_ID);
   });
 
-  test('SAS script filename has the correct .sas extension', async ({ page }) => {
+  test('SAS script filename has the correct .zip extension', async ({ page }) => {
     const { filename } = await downloadCodeFile(page, 'SAS Script', PROTOCOL_ID);
-    expect(filename).toMatch(/\.sas$/i);
+    expect(filename).toMatch(/\.zip$/i);
   });
 
   // [REQ-21CFR11-004]
@@ -261,9 +277,9 @@ test.describe('21 CFR Part 11 – Audit Trail: generated code artifact provenanc
     expect(content).toContain(PROTOCOL_ID);
   });
 
-  test('Stata script filename has the correct .do extension', async ({ page }) => {
+  test('Stata script filename has the correct .zip extension', async ({ page }) => {
     const { filename } = await downloadCodeFile(page, 'Stata Script', PROTOCOL_ID);
-    expect(filename).toMatch(/\.do$/i);
+    expect(filename).toMatch(/\.zip$/i);
   });
 
   // [REQ-21CFR11-004]
