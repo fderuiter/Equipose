@@ -293,25 +293,25 @@ a `ConfigurationValidationError` is thrown before any code is emitted.
 | `PROPORTIONAL` | Same intersection-cap loop. Enriched header shows global cap + per-factor target percentages (looked up by level name). |
 | `MARGINAL_ONLY` | Active-pool loop: `marginal_caps` declarations, per-subject level-count checks, pool pruning, `block_number` increment, QC output. |
 
-### 12.3 Seed translation - `hashCode(seed)`
+### 12.3 Seed translation - `get31BitSeed(seed)`
 
-The web app stores seeds as arbitrary strings (e.g. `"abc123"` or a random
-alphanumeric). Statistical software requires a non-negative 32-bit integer for
-`set.seed()` / `call streaminit()` / `np.random.default_rng()` / `set seed`.
+The web app stores seeds as arbitrary strings (e.g., `"abc123"` or a random alphanumeric). However, statistical software packages require a non-negative 31-bit integer for `set.seed()`, `call streaminit()`, `np.random.default_rng()`, or `set seed`.
 
-`hashCode(seed: string): number` converts the string:
+To bridge this gap, the platform utilizes a robust two-stage seed translation mechanism via the `get31BitSeed(seed: string): number` function, which maps arbitrary-length strings into stable 31-bit integer seeds.
 
-```
-hash = 0
-for each character code c:
-    hash = (hash << 5) - hash + c   // djb2-style multiply-add
-    hash |= 0                        // coerce to signed 32-bit integer
-return (hash >>> 0) % 2_147_483_647  // unsigned right-shift → mod into 31-bit range
-```
+For a comprehensive explanation, mathematical proofs, and flow diagrams of this algorithm, please refer to the official [Seed Compression & Regulatory Compliance Explainer](../explanation/SEED_COMPLIANCE_EXPLAINER.md), which serves as the single source of truth for clinical trials regulatory compliance.
 
-The `>>> 0` unsigned right-shift avoids the `Math.abs(-2147483648) === 2147483648`
-edge case that would exceed the 31-bit limit. The result is always in
-`[0, 2_147_483_646]` - safe for all four language seed ranges.
+#### Algorithmic Overview
+
+1. **Stage 1: Hashing (`get128BitHash`)**
+   - If the input string is already a valid 32-character hexadecimal string, it is coerced to lowercase and used directly.
+   - Otherwise, a standard SHA-256 cryptographic hash of the input string is calculated, and the first 32 characters (128 bits) are taken.
+
+2. **Stage 2: 31-Bit FNV-1a Bitwise Compression**
+   - The 128-bit hex string is processed character-by-character using a customized FNV-1a 32-bit bitwise hash with the offset basis `2166136261` and multiplication shifts matching the FNV prime `16777619` without precision loss.
+   - The result is coerced to a 32-bit signed integer using a bitwise OR (`hash |= 0`), preventing floating-point precision issues.
+   - Finally, the signed hash is right-shifted (`>>> 0`) to coerce it to an unsigned integer, and restricted to the 31-bit range via `hash % 2147483647` (modulo $2^{31} - 1$).
+   - This ensures the final translated seed is strictly in the range `[0, 2147483646]`, completely eliminating overflow or sign-mismatch errors across R, Python, SAS, and Stata.
 
 ### 12.4 Overall pipeline
 
@@ -498,7 +498,7 @@ flowchart TD
 | **Library** | Custom MT19937 | Custom MT19937 | NumPy | Custom MT19937 | Custom MT19937 (Mata) |
 | **Algorithm** | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) | Mersenne Twister (MT19937) |
 | **Seed type** | Arbitrary string | 31-bit integer | 31-bit integer | 31-bit integer | 31-bit integer |
-| **Seed source** | User input or random string | `hashCode(webSeed)` | `hashCode(webSeed)` | `hashCode(webSeed)` | `hashCode(webSeed)` |
+| **Seed source** | User input or random string | `get31BitSeed(webSeed)` | `get31BitSeed(webSeed)` | `get31BitSeed(webSeed)` | `get31BitSeed(webSeed)` |
 | **Sequence matches web?** | N/A | ✅ Identical (Dynamic & Static) | ✅ Identical (Dynamic & Static) | ❌ Non-Identical (Dynamic) / ✅ Identical (Static) | ❌ Non-Identical (Dynamic) / ✅ Identical (Static) |
 | **Balance properties match?** | N/A | ✅ Same | ✅ Same | ✅ Same | ✅ Same |
 | **Reproducible within language?** | ✅ | ✅ | ✅ | ✅ | ✅ |
