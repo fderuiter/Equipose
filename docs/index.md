@@ -12,6 +12,7 @@ Welcome to the central documentation hub for Equipose. This documentation is org
 
 - [Release Checklist for Regulated and Statistical-Confidence Use](how-to/RELEASE_CHECKLIST.md)
 - [Manual Accessibility Audit Protocol](how-to/MANUAL_A11Y_AUDIT_PROTOCOL.md)
+- [Verification of Clinical Export Audit Trail Hash (21 CFR Part 11)](how-to/VERIFY_AUDIT_HASH.md)
 
 ## Reference
 *Information-oriented technical descriptions and reference materials.*
