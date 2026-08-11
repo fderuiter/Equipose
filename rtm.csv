@@ -1,37 +1,37 @@
-Requirement ID,Suite Name,Test Name,Status
-REQ-21CFR11-001,"21 CFR Part 11 – Audit Trail: generated code artifact provenance","R script contains application semantic version",UNKNOWN
-REQ-21CFR11-001,"","Python script contains application semantic version",UNKNOWN
-REQ-21CFR11-001,"","SAS script contains application semantic version",UNKNOWN
-REQ-21CFR11-001,"","Stata script contains application semantic version",UNKNOWN
-REQ-21CFR11-002,"","R script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
-REQ-21CFR11-002,"","Python script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
-REQ-21CFR11-002,"","SAS script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
-REQ-21CFR11-002,"","Stata script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
-REQ-21CFR11-003,"","R script contains the trial protocol identifier",UNKNOWN
-REQ-21CFR11-003,"","Python script contains the trial protocol identifier",UNKNOWN
-REQ-21CFR11-003,"","SAS script contains the trial protocol identifier",UNKNOWN
-REQ-21CFR11-003,"","Stata script contains the trial protocol identifier",UNKNOWN
-REQ-21CFR11-003,"","results header displays the protocol identifier",UNKNOWN
-REQ-21CFR11-004,"","R script contains the PRNG seed initialisation statement",UNKNOWN
-REQ-21CFR11-004,"","Python script contains the PRNG seed initialisation statement",UNKNOWN
-REQ-21CFR11-004,"","SAS script contains the PRNG seed initialisation statement",UNKNOWN
-REQ-21CFR11-004,"","Stata script contains the PRNG seed initialisation statement",UNKNOWN
-REQ-21CFR11-004,"21 CFR Part 11 – Audit Trail: results grid metadata stamping","results header displays the randomization seed used for the schema",UNKNOWN
-REQ-21CFR11-006,"21 CFR Part 11 – Audit Trail: PDF export provenance","PDF export contains the application semantic version",UNKNOWN
-REQ-21CFR11-006,"","PDF export contains a valid ISO 8601 generated-at timestamp",UNKNOWN
-REQ-21CFR11-006,"","PDF export contains the trial protocol identifier",UNKNOWN
-REQ-21CFR11-006,"","PDF export contains the PRNG seed value",UNKNOWN
-REQ-EXPORT-001,"","CSV download filename contains a date component for traceability",UNKNOWN
-REQ-EXPORT-002,"","PDF export filename matches the expected pattern",UNKNOWN
-REQ-EXPORT-002,"","should trigger a PDF download when the PDF button is clicked",UNKNOWN
-REQ-ICH-E6-001,"generateRandomizationSchema – new token syntax","{RND:n} produces no duplicate subject IDs across the schema",PASS
-REQ-ICH-E9-001,"Standalone Script","Execute scripts/cross-env/verify_python_schema.py",PASS
-REQ-ICH-E9-001,"ICH E9 – Law of Large Numbers: allocation ratio convergence","1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials",PASS
-REQ-ICH-E9-001,"","should generate a schema and display results grid",UNKNOWN
-REQ-ICH-E9-002,"ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded","per-stratum caps are never exceeded across 100 random seeds",PASS
-REQ-ICH-E9-003,"Standalone Script","Execute scripts/cross-env/verify_python_schema.py",PASS
-REQ-ICH-E9-003,"ICH E9 – Block Balance: strict intra-block arm balance","every block has exactly the correct count of each arm for a 1:1 ratio with block size 4",PASS
-REQ-SBOM-001,"CI Workflow","Job: sbom",UNKNOWN
-REQ-ZERO-TRUST-001,"Zero-Trust Architecture: no outbound network requests","schema generation produces zero outbound XHR/Fetch requests to external servers",UNKNOWN
-REQ-ZERO-TRUST-001,"","CSV export produces zero outbound requests to external servers",UNKNOWN
-REQ-ZERO-TRUST-001,"","PDF export produces zero outbound requests to external servers",UNKNOWN
+Requirement ID,Strategic Pillar,Suite Name,Test Name,Status
+REQ-21CFR11-001,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","21 CFR Part 11 – Audit Trail: generated code artifact provenance","R script contains application semantic version",UNKNOWN
+REQ-21CFR11-001,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Python script contains application semantic version",UNKNOWN
+REQ-21CFR11-001,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","SAS script contains application semantic version",UNKNOWN
+REQ-21CFR11-001,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Stata script contains application semantic version",UNKNOWN
+REQ-21CFR11-002,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","R script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
+REQ-21CFR11-002,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Python script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
+REQ-21CFR11-002,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","SAS script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
+REQ-21CFR11-002,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Stata script contains a valid ISO 8601 generated-at timestamp",UNKNOWN
+REQ-21CFR11-003,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","R script contains the trial protocol identifier",UNKNOWN
+REQ-21CFR11-003,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Python script contains the trial protocol identifier",UNKNOWN
+REQ-21CFR11-003,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","SAS script contains the trial protocol identifier",UNKNOWN
+REQ-21CFR11-003,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Stata script contains the trial protocol identifier",UNKNOWN
+REQ-21CFR11-003,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","results header displays the protocol identifier",UNKNOWN
+REQ-21CFR11-004,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","R script contains the PRNG seed initialisation statement",UNKNOWN
+REQ-21CFR11-004,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Python script contains the PRNG seed initialisation statement",UNKNOWN
+REQ-21CFR11-004,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","SAS script contains the PRNG seed initialisation statement",UNKNOWN
+REQ-21CFR11-004,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","Stata script contains the PRNG seed initialisation statement",UNKNOWN
+REQ-21CFR11-004,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","21 CFR Part 11 – Audit Trail: results grid metadata stamping","results header displays the randomization seed used for the schema",UNKNOWN
+REQ-21CFR11-006,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","21 CFR Part 11 – Audit Trail: PDF export provenance","PDF export contains the application semantic version",UNKNOWN
+REQ-21CFR11-006,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","PDF export contains a valid ISO 8601 generated-at timestamp",UNKNOWN
+REQ-21CFR11-006,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","PDF export contains the trial protocol identifier",UNKNOWN
+REQ-21CFR11-006,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","PDF export contains the PRNG seed value",UNKNOWN
+REQ-EXPORT-001,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","CSV download filename contains a date component for traceability",UNKNOWN
+REQ-EXPORT-002,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","PDF export filename matches the expected pattern",UNKNOWN
+REQ-EXPORT-002,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","","should trigger a PDF download when the PDF button is clicked",UNKNOWN
+REQ-ICH-E6-001,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","","{RND:n} produces no duplicate subject IDs across the schema",UNKNOWN
+REQ-ICH-E9-001,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","Standalone Script","Execute scripts/cross-env/verify_python_schema.py",UNKNOWN
+REQ-ICH-E9-001,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","ICH E9 – Law of Large Numbers: allocation ratio convergence","1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials",UNKNOWN
+REQ-ICH-E9-001,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","","should generate a schema and display results grid",UNKNOWN
+REQ-ICH-E9-002,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded","per-stratum caps are never exceeded across 100 random seeds",UNKNOWN
+REQ-ICH-E9-003,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","Standalone Script","Execute scripts/cross-env/verify_python_schema.py",UNKNOWN
+REQ-ICH-E9-003,"{""Name"":""Scientific Validity"",""name"":""Scientific Validity""}","ICH E9 – Block Balance: strict intra-block arm balance","every block has exactly the correct count of each arm for a 1:1 ratio with block size 4",UNKNOWN
+REQ-SBOM-001,"{""Name"":""Reproducibility"",""name"":""Reproducibility""}","CI Workflow","Job: sbom",UNKNOWN
+REQ-ZERO-TRUST-001,"{""Name"":""Zero-Trust"",""name"":""Zero-Trust""}","Zero-Trust Architecture: no outbound network requests","schema generation produces zero outbound XHR/Fetch requests to external servers",UNKNOWN
+REQ-ZERO-TRUST-001,"{""Name"":""Zero-Trust"",""name"":""Zero-Trust""}","","CSV export produces zero outbound requests to external servers",UNKNOWN
+REQ-ZERO-TRUST-001,"{""Name"":""Zero-Trust"",""name"":""Zero-Trust""}","","PDF export produces zero outbound requests to external servers",UNKNOWN

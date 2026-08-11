@@ -45,26 +45,104 @@ const outputPath         = getArg('--out')                 ?? 'Validation_Tracea
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot   = join(dirname(__filename), '..');
 
+// ── Strategic Pillars ──────────────────────────────────────────────────────────
+
+const VALID_PILLARS = [
+  'Zero-Trust',
+  'Reproducibility',
+  'Scientific Validity'
+];
+
+const PILLAR_MAPPING = {
+  'Zero-Trust': 'Zero-Trust',
+  'ZeroTrust': 'Zero-Trust',
+  'Reproducibility': 'Reproducibility',
+  'Scientific Validity': 'Scientific Validity',
+  'ScientificValidity': 'Scientific Validity'
+};
+
 // ── Regulatory requirements catalogue ─────────────────────────────────────────
 
 const REQUIREMENTS = {
-  'REQ-ICH-E9-001': 'Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3)',
-  'REQ-ICH-E9-002': 'Stratification factors must be applied correctly to the randomization schedule (ICH E9 §2.3.3)',
-  'REQ-ICH-E9-003': 'Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4)',
-  'REQ-ICH-E6-001': 'GCP – Subject IDs must be unique and fully traceable to site and block (ICH E6 §4.9)',
-  'REQ-ICH-E6-002': 'Site information must be captured and present in all exported records (ICH E6 §4.1)',
-  'REQ-21CFR11-001': '21 CFR Part 11 – All electronic records must embed the application semantic version',
-  'REQ-21CFR11-002': '21 CFR Part 11 – Electronic records must carry an ISO 8601 generation timestamp',
-  'REQ-21CFR11-003': '21 CFR Part 11 – The unique protocol identifier must appear in every generated artifact',
-  'REQ-21CFR11-004': '21 CFR Part 11 – Audit trail must record the exact PRNG seed used for schema generation',
-  'REQ-21CFR11-005': '21 CFR Part 11 – PDF/XLSX exports must embed a SHA-256 audit hash for integrity verification',
-  'REQ-21CFR11-006': '21 CFR Part 11 – PDF audit artifact must embed version, timestamp, protocol ID and PRNG seed',
-  'REQ-ZERO-TRUST-001': 'No subject or schema data may be transmitted to external servers (zero-trust architecture)',
-  'REQ-SBOM-001': 'A Software Bill of Materials (SBOM) must be generated for every production build',
-  'REQ-EXPORT-001': 'CSV/XLSX export filename must contain an 8-digit date component for per-generation traceability',
-  'REQ-EXPORT-002': 'PDF export must trigger a file download containing a properly named randomization artifact',
-  'REQ-EXPORT-003': 'Excel export must produce a two-sheet workbook (Schema + Audit & Configuration)',
+  'REQ-ICH-E9-001': {
+    description: 'Randomization algorithm must be deterministic and reproducible from a fixed PRNG seed (ICH E9 §2.3)',
+    pillar: 'Scientific Validity'
+  },
+  'REQ-ICH-E9-002': {
+    description: 'Stratification factors must be applied correctly to the randomization schedule (ICH E9 §2.3.3)',
+    pillar: 'Scientific Validity'
+  },
+  'REQ-ICH-E9-003': {
+    description: 'Block randomization must respect declared block sizes and produce balanced allocations (ICH E9 §2.3.4)',
+    pillar: 'Scientific Validity'
+  },
+  'REQ-ICH-E6-001': {
+    description: 'GCP – Subject IDs must be unique and fully traceable to site and block (ICH E6 §4.9)',
+    pillar: 'Scientific Validity'
+  },
+  'REQ-ICH-E6-002': {
+    description: 'Site information must be captured and present in all exported records (ICH E6 §4.1)',
+    pillar: 'Scientific Validity'
+  },
+  'REQ-21CFR11-001': {
+    description: '21 CFR Part 11 – All electronic records must embed the application semantic version',
+    pillar: 'Reproducibility'
+  },
+  'REQ-21CFR11-002': {
+    description: '21 CFR Part 11 – Electronic records must carry an ISO 8601 generation timestamp',
+    pillar: 'Reproducibility'
+  },
+  'REQ-21CFR11-003': {
+    description: '21 CFR Part 11 – The unique protocol identifier must appear in every generated artifact',
+    pillar: 'Reproducibility'
+  },
+  'REQ-21CFR11-004': {
+    description: '21 CFR Part 11 – Audit trail must record the exact PRNG seed used for schema generation',
+    pillar: 'Reproducibility'
+  },
+  'REQ-21CFR11-005': {
+    description: '21 CFR Part 11 – PDF/XLSX exports must embed a SHA-256 audit hash for integrity verification',
+    pillar: 'Reproducibility'
+  },
+  'REQ-21CFR11-006': {
+    description: '21 CFR Part 11 – PDF audit artifact must embed version, timestamp, protocol ID and PRNG seed',
+    pillar: 'Reproducibility'
+  },
+  'REQ-ZERO-TRUST-001': {
+    description: 'No subject or schema data may be transmitted to external servers (zero-trust architecture)',
+    pillar: 'Zero-Trust'
+  },
+  'REQ-SBOM-001': {
+    description: 'A Software Bill of Materials (SBOM) must be generated for every production build',
+    pillar: 'Reproducibility'
+  },
+  'REQ-EXPORT-001': {
+    description: 'CSV/XLSX export filename must contain an 8-digit date component for per-generation traceability',
+    pillar: 'Reproducibility'
+  },
+  'REQ-EXPORT-002': {
+    description: 'PDF export must trigger a file download containing a properly named randomization artifact',
+    pillar: 'Reproducibility'
+  },
+  'REQ-EXPORT-003': {
+    description: 'Excel export must produce a two-sheet workbook (Schema + Audit & Configuration)',
+    pillar: 'Reproducibility'
+  }
 };
+
+// Validate requirements registry has a direct, linked strategic pillar
+for (const [reqId, reqData] of Object.entries(REQUIREMENTS)) {
+  if (!reqData || typeof reqData !== 'object' || !reqData.pillar) {
+    console.error(`[generate-rtm] ERROR: Registered requirement '${reqId}' does not have a linked strategic pillar.`);
+    process.exit(1);
+  }
+  const canonical = PILLAR_MAPPING[reqData.pillar];
+  if (!canonical || !VALID_PILLARS.includes(canonical)) {
+    console.error(`[generate-rtm] ERROR: Registered requirement '${reqId}' has an unrecognized linked strategic pillar '${reqData.pillar}'.`);
+    process.exit(1);
+  }
+}
+
 
 // ── File discovery ─────────────────────────────────────────────────────────────
 
@@ -394,31 +472,37 @@ lines.push(`| Requirements with no test coverage | ${totalReqs - coveredReqs} |`
 lines.push(`| Total tagged test cases | ${totalTests} |\n`);
 lines.push('---');
 lines.push('\n## Traceability Matrix\n');
-lines.push(`| Requirement ID | Description | Test File | Line | Test Name | Suite | Status |`);
-lines.push(`|---|---|---|---|---|---|---|`);
+lines.push(`| Requirement ID | Strategic Pillar | Description | Test File | Line | Test Name | Suite | Status |`);
+lines.push(`|---|---|---|---|---|---|---|---|`);
 
 const csvRows = [];
-csvRows.push(`Requirement ID,Suite Name,Test Name,Status`);
+csvRows.push(`Requirement ID,Strategic Pillar,Suite Name,Test Name,Status`);
 
 const jsonExport = [];
 
 for (const reqId of sortedReqIds) {
   const entries = byReq.get(reqId) ?? [];
-  const desc = REQUIREMENTS[reqId] ?? '*(undocumented requirement)*';
+  const desc = REQUIREMENTS[reqId]?.description ?? '*(undocumented requirement)*';
+  const pillar = REQUIREMENTS[reqId]?.pillar ?? '—';
   if (entries.length === 0) {
-    lines.push(`| \`${reqId}\` | ${desc} | — | — | *(no tests tagged)* | — | ⚠️ NO COVERAGE |`);
+    lines.push(`| \`${reqId}\` | \`${pillar}\` | ${desc} | — | — | *(no tests tagged)* | — | ⚠️ NO COVERAGE |`);
   } else {
     for (const entry of entries) {
       const statusIcon = entry.status === 'PASS' ? '✅ PASS' : entry.status === 'SKIP' ? '⏭️ SKIP' : entry.status === 'UNKNOWN' ? '⬜ UNKNOWN' : '❌ FAIL';
       const safeTest = entry.testName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
       const safeSuite = entry.suiteName.replace(/\\/g, '\\\\').replace(/\|/g, '\\|');
-      lines.push(`| \`${reqId}\` | ${desc} | \`${entry.file}\` | ${entry.line} | ${safeTest} | ${safeSuite} | ${statusIcon} |`);
+      lines.push(`| \`${reqId}\` | \`${pillar}\` | ${desc} | \`${entry.file}\` | ${entry.line} | ${safeTest} | ${safeSuite} | ${statusIcon} |`);
       
       const escapeCsv = (str) => `"${str.replace(/"/g, '""')}"`;
-      csvRows.push(`${reqId},${escapeCsv(entry.suiteName)},${escapeCsv(entry.testName)},${entry.status}`);
+      const pillarObjString = JSON.stringify({ "Name": pillar, "name": pillar });
+      csvRows.push(`${reqId},${escapeCsv(pillarObjString)},${escapeCsv(entry.suiteName)},${escapeCsv(entry.testName)},${entry.status}`);
       
       jsonExport.push({
         "Requirement ID": reqId,
+        "Strategic Pillar": {
+          "Name": pillar,
+          "name": pillar
+        },
         "Suite Name": entry.suiteName,
         "Test Name": entry.testName,
         "Status": entry.status
@@ -502,19 +586,6 @@ for (const [personaName, occurrences] of foundPersonas.entries()) {
 }
 
 // ── Strategic Pillar Scanning & Alignment Verification ─────────────────────────
-const VALID_PILLARS = [
-  'Zero-Trust',
-  'Reproducibility',
-  'Scientific Validity'
-];
-
-const PILLAR_MAPPING = {
-  'Zero-Trust': 'Zero-Trust',
-  'ZeroTrust': 'Zero-Trust',
-  'Reproducibility': 'Reproducibility',
-  'Scientific Validity': 'Scientific Validity',
-  'ScientificValidity': 'Scientific Validity'
-};
 
 const foundPillars = new Map();
 for (const p of VALID_PILLARS) {
@@ -560,6 +631,9 @@ function findPillarTagsInLine(line) {
 for (const file of allSpecFiles) {
   const content = readFileSync(file, 'utf-8');
   const fileLines = content.split('\n');
+  const relFile = relative(repoRoot, file).replace(/\\/g, '/');
+  const blocks = fileReqBlocks.get(relFile);
+
   for (let i = 0; i < fileLines.length; i++) {
     const tags = findPillarTagsInLine(fileLines[i]);
     for (const tag of tags) {
@@ -569,7 +643,23 @@ for (const file of allSpecFiles) {
         process.exit(1);
       }
       
-      const relFile = relative(repoRoot, file).replace(/\\/g, '/');
+      // Two-Way Tag Alignment Verification
+      const pillarLine = i + 1;
+      const associatedBlock = blocks && blocks.find(b => 
+        (pillarLine >= b.startLine - 5 && pillarLine <= b.endLine + 5) ||
+        Math.abs(pillarLine - b.startLine) <= 5 ||
+        Math.abs(pillarLine - b.endLine) <= 5
+      );
+      if (associatedBlock) {
+        const registryPillar = REQUIREMENTS[associatedBlock.reqId]?.pillar;
+        if (registryPillar) {
+          const canonicalRegistryPillar = PILLAR_MAPPING[registryPillar];
+          if (canonicalPillar !== canonicalRegistryPillar) {
+            console.error(`[generate-rtm] ERROR: Mismatched tags in file '${relFile}'. Test-level requirement '${associatedBlock.reqId}' maps to registry pillar '${registryPillar}' ('${canonicalRegistryPillar}'), but the test file declares pillar '${tag}' ('${canonicalPillar}').`);
+            process.exit(1);
+          }
+        }
+      }
       
       let testName = "Associated Unit Test";
       let suiteName = "Pillar Verification";
