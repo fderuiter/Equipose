@@ -37,10 +37,10 @@
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
 
           <div class="flex items-center px-1 -ml-1">
-            <app-toggle [ariaLabel]="'Toggle unblinded view'" [checked]="isUnblinded()" [disabled]="!personaValidator.canUnblind()" (checkedChange)="toggleBlinding()"></app-toggle>
-            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" [class.opacity-50]="!personaValidator.canUnblind()" (click)="personaValidator.canUnblind() && toggleBlinding()">
+            <app-toggle inputId="unblind-toggle" [ariaLabel]="'Toggle unblinded view'" [checked]="isUnblinded()" [disabled]="!personaValidator.canUnblind()" (checkedChange)="toggleBlinding()"></app-toggle>
+            <label for="unblind-toggle" class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" [class.opacity-50]="!personaValidator.canUnblind()" [attr.aria-disabled]="!personaValidator.canUnblind() ? 'true' : null" (click)="personaValidator.canUnblind() && toggleBlinding()">
               {{ isUnblinded() ? 'Unblinded' : 'Blinded' }}
-            </span>
+            </label>
           </div>
           
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
