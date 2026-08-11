@@ -10,6 +10,7 @@ import { UpdateNotificationService } from '../../core/services/update-notificati
 import { computeAuditHash } from './core/crypto-hash';
 import { generateRandomizationSchema, generateCryptoSeed } from './core/randomization-algorithm';
 import { previewSubjectIdMask, validateSubjectIdMask } from './core/subject-id-engine';
+import { MT19937Internal } from './core/mt19937';
 import type {
   GenerationCommand,
   MonteCarloCommand,
@@ -70,6 +71,19 @@ export class RandomizationEngineFacade {
   // -------------------------------------------------------------------------
   // Public API
   // -------------------------------------------------------------------------
+
+  static get31BitSeed(seed: string | undefined): number {
+    return MT19937Internal.get31BitSeed(seed);
+  }
+
+  static get100IntValidationVector(seedHash: number): number[] {
+    const prng = new MT19937Internal(seedHash);
+    const valVec = [];
+    for (let i = 0; i < 100; i++) {
+      valVec.push(prng.random_int());
+    }
+    return valVec;
+  }
 
   previewSubjectIdMask(mask: string): string {
     return previewSubjectIdMask(mask);

@@ -1,5 +1,5 @@
 import { RandomizationConfig } from '@domain/core/models/randomization.model';
-import { MT19937Internal } from '@domain/randomization-engine/core/mt19937';
+import { RandomizationEngineFacade } from '@domain/randomization-engine/randomization-engine.facade';
 
 // Raw MT19937 Runtimes for embedding
 export const MT19937_R = `# MT19937 PRNG Runtime for R
@@ -269,14 +269,10 @@ export function generateCompanionTestFile(
 ): string {
   // 1. Calculate seedHash
   // For STATA, SAS, R:
-  const seedHash = MT19937Internal.get31BitSeed(config.seed);
+  const seedHash = RandomizationEngineFacade.get31BitSeed(config.seed);
   
   // 2. Compute 100-integer sequence validation vector
-  const prng = new MT19937Internal(seedHash);
-  const valVec = [];
-  for (let i = 0; i < 100; i++) {
-    valVec.push(prng.random_int());
-  }
+  const valVec = RandomizationEngineFacade.get100IntValidationVector(seedHash);
   
   const validationVectorComma = valVec.join(', ');
   
