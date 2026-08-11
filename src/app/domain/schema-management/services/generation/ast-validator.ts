@@ -145,7 +145,6 @@ export class ASTValidator {
   static validateSAS(code: string, strata?: string[]): string[] {
     const errors: string[] = [];
     const rootNodes = this.parseSAS(code);
-    const lines = code.split('\n');
     
     // Symbolic evaluation
     const symbols = new Set<string>([
@@ -172,24 +171,18 @@ export class ASTValidator {
           }
           // Scan for uninitialized stratification levels in macro declaration/compile
           if (strata && strata.length > 0) {
+            const letVars = new Set<string>();
+            const letRegex = /%let\s+([a-zA-Z_]\w*)/gi;
+            let match;
+            while ((match = letRegex.exec(code)) !== null) {
+              letVars.add(match[1].toLowerCase());
+            }
             for (const stratum of strata) {
-              const target = stratum.toLowerCase() + '_levels';
-              let levelLetMatch = false;
-              for (const line of lines) {
-                const lower = line.toLowerCase();
-                const index = lower.indexOf('%let');
-                if (index !== -1) {
-                  const sub = lower.slice(index + 4).trim();
-                  if (sub.startsWith(target)) {
-                    const after = sub.slice(target.length).trim();
-                    if (after.startsWith('=')) {
-                      levelLetMatch = true;
-                      break;
-                    }
-                  }
-                }
-              }
-              if (!levelLetMatch) {
+              const sLower = stratum.toLowerCase();
+              const sanitizedS = sLower.replace(/[^a-z0-9_]/g, '_');
+              const targetVar = `${sLower}_levels`;
+              const sanitizedTargetVar = `${sanitizedS}_levels`;
+              if (!letVars.has(targetVar) && !letVars.has(sanitizedTargetVar)) {
                 errors.push(`Line ${node.line}: SAS macro "${node.name}" is declared but stratification factor "${stratum}" levels are uninitialized.`);
               }
             }
