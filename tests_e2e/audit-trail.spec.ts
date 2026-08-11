@@ -48,7 +48,7 @@ const SEMVER_RE = /v\d+\.\d+\.\d+/;
  */
 const SEED_PATTERNS: Record<string, RegExp> = {
   'R Script':     /init_mt\(\d+\)/,
-  'Python Script':/np\.random\.RandomState\(\d+\)/,
+  'Python Script':/rng\s*=\s*MT19937\(-?\d+\)/,
   // The SAS generator always emits `%let seed = <number>;` at the top.
   // `call streaminit(&seed.)` is a downstream use of that macro variable, so
   // validating the definition (with its numeric value) is sufficient.
