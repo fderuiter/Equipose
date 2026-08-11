@@ -97,11 +97,18 @@ function generateBoundaryDiagram() {
       if (!graph.includes('ALGO_FILE')) {
          graph += `    ALGO_FILE["randomization-engine/core/**"]\n`;
       }
+    } else if (block.source === 'src/app/domain/**/*.ts') {
+      sourceNode = 'DOMAIN';
+      if (!graph.includes('DOMAIN')) {
+         graph += `    DOMAIN["domain/**/*.ts"]\n`;
+      }
     }
 
-    const targetId = `TARGET_${index}`;
-    graph += `    ${targetId}["${block.target} ❌"]\n`;
-    graph += `    ${sourceNode} -. blocked .-> ${targetId}\n`;
+    if (sourceNode) {
+      const targetId = `TARGET_${index}`;
+      graph += `    ${targetId}["${block.target} ❌"]\n`;
+      graph += `    ${sourceNode} -. blocked .-> ${targetId}\n`;
+    }
   });
 
   graph += '\n    SB --> RE_FACADE\n    SB --> RE_MODELS\n';
