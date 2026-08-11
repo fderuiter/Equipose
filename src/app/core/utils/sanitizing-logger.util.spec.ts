@@ -228,7 +228,7 @@ describe('SanitizingLogger & Utilities', () => {
       });
       (err as any).seed = 'sensitive-seed';
 
-      const sanitized = sanitize(err);
+      const sanitized: any = sanitize(err);
       expect(sanitized.name).toBe('Error');
       expect(sanitized.message).toBe('Test Error');
       expect(sanitized.dangerousProp).toBe('[Error accessing property]');
@@ -255,7 +255,7 @@ describe('SanitizingLogger & Utilities', () => {
         }
       });
 
-      const sanitized = sanitize(proxy);
+      const sanitized: any = sanitize(proxy);
       expect(sanitized.normal).toBe('value');
       expect(sanitized.seed).toBe('[REDACTED]');
       expect(sanitized.dangerous).toBe('[Error accessing property]');
