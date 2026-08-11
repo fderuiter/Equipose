@@ -37,8 +37,8 @@
           <div class="h-6 w-px bg-gray-300 dark:bg-slate-600 mx-1"></div>
 
           <div class="flex items-center px-1 -ml-1">
-            <app-toggle [ariaLabel]="'Toggle unblinded view'" [checked]="isUnblinded()" (checkedChange)="toggleBlinding()"></app-toggle>
-            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" (click)="toggleBlinding()">
+            <app-toggle [ariaLabel]="'Toggle unblinded view'" [checked]="isUnblinded()" [disabled]="!personaValidator.canUnblind()" (checkedChange)="toggleBlinding()"></app-toggle>
+            <span class="ml-3 text-sm font-medium text-gray-700 dark:text-slate-300 cursor-pointer" [class.opacity-50]="!personaValidator.canUnblind()" (click)="personaValidator.canUnblind() && toggleBlinding()">
               {{ isUnblinded() ? 'Unblinded' : 'Blinded' }}
             </span>
           </div>
@@ -81,15 +81,71 @@
             variant="secondary"
             (onClick)="exportJson()"
             data-testid="export-json-btn"
-            [disabled]="!isUnblinded()"
-            [appTooltip]="isUnblinded() ? 'Download unblinded results as JSON for reproducibility verification' : 'Unblind the schema to enable JSON export'"
-            [ariaLabel]="isUnblinded() ? 'Export JSON' : 'JSON export requires unblinded schema'"
+            [disabled]="!isUnblinded() && !personaValidator.canBypassBlinding()"
+            [appTooltip]="isUnblinded() || personaValidator.canBypassBlinding() ? 'Download unblinded results as JSON for reproducibility verification' : 'Unblind the schema to enable JSON export'"
+            [ariaLabel]="isUnblinded() || personaValidator.canBypassBlinding() ? 'Export JSON' : 'JSON export requires unblinded schema'"
             customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             JSON
           </app-button>
+          @if (personaValidator.activeSegment() === 'CRO') {
+            <app-button
+              variant="secondary"
+              (onClick)="downloadValidationManifest()"
+              data-testid="download-manifest-btn"
+              [appTooltip]="'Download Machine-Readable Validation Manifest (JSON)'"
+              [ariaLabel]="'Download Validation Manifest'"
+              customClass="min-h-[44px] text-sm px-3 py-1.5 rounded-lg font-medium flex items-center gap-1 border-brand-300 text-brand-700 bg-brand-50 hover:bg-brand-100 dark:bg-slate-800 dark:text-brand-400 dark:border-brand-900/50">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Manifest
+            </app-button>
+          }
+        </div>
+      </div>
+
+      <!-- Dual-Tier Role Matrix Local Session Selector -->
+      <div class="px-4 py-3 bg-subtle dark:bg-slate-800/50 border-b border-border-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span class="text-xs font-bold uppercase tracking-wider text-muted">Simulated Session Context (Dual-Tier Matrix)</span>
+        </div>
+        
+        <div class="flex items-center gap-4 flex-wrap">
+          <!-- Org Segment Selection -->
+          <div class="flex items-center gap-2">
+            <label for="org-segment-select" class="text-sm font-medium text-main">Org Segment:</label>
+            <app-select
+              inputId="org-segment-select"
+              data-testid="org-segment-select"
+              customClass="!py-1.5"
+              [value]="personaValidator.activeSegment()"
+              (change)="onOrgSegmentChange($event)">
+              <option value="Sponsor">Sponsor (Standard)</option>
+              <option value="Academic">Academic Researcher</option>
+              <option value="CRO">CRO Partner</option>
+            </app-select>
+          </div>
+
+          <!-- Functional Role Selection -->
+          <div class="flex items-center gap-2">
+            <label for="functional-role-select" class="text-sm font-medium text-main">Functional Role:</label>
+            <app-select
+              inputId="functional-role-select"
+              data-testid="functional-role-select"
+              customClass="!py-1.5"
+              [value]="personaValidator.activePersona()"
+              (change)="onFunctionalRoleChange($event)">
+              <option value="Biostatistician">Biostatistician</option>
+              <option value="TrialManager">Trial Manager</option>
+              <option value="ComplianceOfficer">Compliance Officer</option>
+            </app-select>
+          </div>
         </div>
       </div>
 

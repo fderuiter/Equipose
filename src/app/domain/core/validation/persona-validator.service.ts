@@ -1,6 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 
 export type PersonaType = 'Biostatistician' | 'TrialManager' | 'ComplianceOfficer';
+export type OrgSegment = 'Sponsor' | 'Academic' | 'CRO';
 
 /**
  * PersonaValidationService
@@ -10,6 +11,12 @@ export type PersonaType = 'Biostatistician' | 'TrialManager' | 'ComplianceOffice
  */
 @Injectable({ providedIn: 'root' })
 export class PersonaValidationService {
+  /**
+   * The currently active segment running client-side.
+   * Default to 'Sponsor' as standard context.
+   */
+  readonly activeSegment = signal<OrgSegment>('Sponsor');
+
   /**
    * The currently active persona running entirely client-side.
    * Default to 'TrialManager' as a secure, blinded baseline.
@@ -22,6 +29,14 @@ export class PersonaValidationService {
    */
   readonly canBypassBlinding = computed(() => {
     return this.activePersona() === 'Biostatistician';
+  });
+
+  /**
+   * Reactive signal indicating if the combined dual-tier persona/segment can unblind/toggle unblinding.
+   * Academic users, or Biostatisticians from any segment, are authorized.
+   */
+  readonly canUnblind = computed(() => {
+    return this.activeSegment() === 'Academic' || this.activePersona() === 'Biostatistician';
   });
 
   /**
@@ -38,7 +53,7 @@ export class PersonaValidationService {
 
   /**
    * Enforces centralized blinding policy by automatically replacing treatment allocations with masked markers
-   * based on the active persona and current unblinded state.
+   * based on the active segment, persona and current unblinded state.
    */
   getMaskedTreatment(treatmentArm: string, isUnblinded: boolean): string {
     // Biostatisticians require full access to verify correctness, regardless of UI unblinding state
@@ -46,7 +61,12 @@ export class PersonaValidationService {
       return treatmentArm;
     }
     
-    // Trial Managers and Compliance Officers view masked markers unless unblinded
-    return isUnblinded ? treatmentArm : '*** BLINDED ***';
+    // Academic users view masked markers unless unblinded
+    if (this.activeSegment() === 'Academic' && isUnblinded) {
+      return treatmentArm;
+    }
+    
+    // Standard users in other segments cannot bypass masking
+    return '*** BLINDED ***';
   }
 }
