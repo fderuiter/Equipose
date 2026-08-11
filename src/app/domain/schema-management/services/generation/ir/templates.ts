@@ -85,12 +85,48 @@ export const PYTHON_TEMPLATE = `
 # App Version: {{appVersion}}
 # Generated At: {{dateStr}}
 # Algorithm: {{algorithm}}
-import numpy as np
-import pandas as pd
-_rs = np.random.RandomState({{seedHash}})
-mt19937 = np.random.MT19937()
-mt19937.state = _rs.get_state()
-rng = np.random.Generator(mt19937)
+import csv
+import sys
+import re
+
+class MT19937:
+    def __init__(self, seed):
+        self.mt = [0] * 624
+        self.mt[0] = seed & 0xffffffff
+        for i in range(1, 624):
+            prev = self.mt[i - 1]
+            val = (1812433253 * (prev ^ (prev >> 30)) + i) & 0xffffffff
+            self.mt[i] = val
+        self.mti = 624
+
+    def random_int(self):
+        mag01 = [0x0, 0x9908b0df]
+        if self.mti >= 624:
+            kk = 0
+            while kk < 227:
+                y = (self.mt[kk] & 0x80000000) | (self.mt[kk + 1] & 0x7fffffff)
+                self.mt[kk] = (self.mt[kk + 397] ^ (y >> 1) ^ mag01[y & 0x1]) & 0xffffffff
+                kk += 1
+            while kk < 623:
+                y = (self.mt[kk] & 0x80000000) | (self.mt[kk + 1] & 0x7fffffff)
+                self.mt[kk] = (self.mt[kk - 227] ^ (y >> 1) ^ mag01[y & 0x1]) & 0xffffffff
+                kk += 1
+            y = (self.mt[623] & 0x80000000) | (self.mt[0] & 0x7fffffff)
+            self.mt[623] = (self.mt[396] ^ (y >> 1) ^ mag01[y & 0x1]) & 0xffffffff
+            self.mti = 0
+
+        y = self.mt[self.mti]
+        self.mti += 1
+
+        y ^= (y >> 11)
+        y ^= (y << 7) & 0x9d2c5680
+        y ^= (y << 15) & 0xefc60000
+        y ^= (y >> 18)
+
+        return y & 0xffffffff
+
+rng = MT19937({{seedHash}})
+
 # Arms: {{arms}}
 # Ratios: {{ratios}}
 {{strataComments}}
@@ -102,8 +138,17 @@ PRECISION_EPSILON = {{precisionEpsilon}}
 # --- SINGLE-SOURCE TRANSPILED LOGIC ---
 {{minimizationParam}}
 {{algorithmicLogic}}
-df = pd.DataFrame(schema)
-print(df.to_csv(index=False))
+
+if schema:
+    first_row = schema[0]
+    headers = ["SubjectID", "Site", "Treatment", "BlockNumber", "BlockSize", "StratumCode"]
+    for k in first_row.keys():
+        if k not in headers:
+            headers.append(k)
+    writer = csv.DictWriter(sys.stdout, fieldnames=headers, lineterminator='\\n')
+    writer.writeheader()
+    for row in schema:
+        writer.writerow(row)
 `;
 
 export const STATA_TEMPLATE = `

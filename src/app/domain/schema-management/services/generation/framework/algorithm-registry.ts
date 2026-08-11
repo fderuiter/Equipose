@@ -143,7 +143,7 @@ active_pool = [
 intersection_counts = {}
 
 def get_rand():
-    val = rng.bit_generator.random_raw() & 0xffffffff
+    val = rng.random_int()
     return val / 4294967296.0
 
 def sample_level(levels, expected_probs):
@@ -253,6 +253,7 @@ def format_stratum_code(stratum):
 site_subject_counts = {site: 0 for site in sites}
 schema = []
 seq_count = 0
+audit_trail = []
 
 # Main loop
 for s_idx in range(total_sample_size):
@@ -315,6 +316,7 @@ for s_idx in range(total_sample_size):
             else:
                 non_preferred.append(arm)
 
+        r = -1
         if len(preferred) == len(arms) or not non_preferred:
             assigned_arm = select_weighted_arm(preferred)
         else:
@@ -354,6 +356,26 @@ for s_idx in range(total_sample_size):
         }
         row.update(subject_profile)
         schema.append(row)
+
+        arm_scores_str = "; ".join(f"{arm['name']}:{arm_scores[i]}" for i, arm in enumerate(arms))
+        preferred_prob = "1.0" if (len(preferred) == len(arms) or not non_preferred) else str(p_minimization)
+        rand_val_scaled = str(r / PRECISION_SCALE) if r >= 0 else "1.0"
+        audit_row = {
+            "SubjectID": subj_id,
+            "Site": site,
+            "StratumCode": stratum_code,
+            "AllocatedArm": assigned_arm["name"],
+            "ImbalanceScores": arm_scores_str,
+            "PreferredArmProb": preferred_prob,
+            "RandomValue": rand_val_scaled
+        }
+        audit_trail.append(audit_row)
+
+if audit_trail:
+    with open("audit_trail.csv", "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["SubjectID", "Site", "StratumCode", "AllocatedArm", "ImbalanceScores", "PreferredArmProb", "RandomValue"])
+        writer.writeheader()
+        writer.writerows(audit_trail)
 `;
       return code;
     }
@@ -561,6 +583,7 @@ for (site in sites) {
 }
 
 seq_count <- 0
+audit_trail_list <- list()
 
 # Main loop
 for (s_idx in seq_len(total_sample_size)) {
@@ -644,6 +667,7 @@ for (s_idx in seq_len(total_sample_size)) {
   }
 
   assigned_arm <- NULL
+  r <- -1
   if (length(preferred) == length(arms) || length(non_preferred) == 0) {
     assigned_arm <- select_weighted_arm(preferred)
   } else {
@@ -690,6 +714,26 @@ for (s_idx in seq_len(total_sample_size)) {
     row_df[[f]] <- subject_profile[[f]]
   }
   schema_list[[length(schema_list) + 1]] <- row_df
+
+  arm_scores_str <- paste(sapply(seq_along(arms), function(i) paste0(arms[[i]]$name, ":", arm_scores[i])), collapse="; ")
+  preferred_prob <- if (length(preferred) == length(arms) || length(non_preferred) == 0) "1.0" else as.character(p_minimization)
+  rand_val_scaled <- if (r >= 0) as.character(r / PRECISION_SCALE) else "1.0"
+  audit_row <- data.frame(
+    SubjectID = subj_id,
+    Site = site,
+    StratumCode = stratum_code,
+    AllocatedArm = assigned_arm$name,
+    ImbalanceScores = arm_scores_str,
+    PreferredArmProb = preferred_prob,
+    RandomValue = rand_val_scaled,
+    stringsAsFactors = FALSE
+  )
+  audit_trail_list[[length(audit_trail_list) + 1]] <- audit_row
+}
+
+audit_trail_df <- do.call(rbind, audit_trail_list)
+if (!is.null(audit_trail_df)) {
+  write.csv(audit_trail_df, "audit_trail.csv", row.names = FALSE)
 }
 `;
       return code;
@@ -734,6 +778,9 @@ for (s_idx in seq_len(total_sample_size)) {
   array arm_scores[${A}] _temporary_;
   array preferred_arms[${A}] _temporary_;
   array non_preferred_arms[${A}] _temporary_;
+
+  length ImbalanceScores $200 PreferredArmProb $10 RandomValue $20;
+  length temp_arm_name $50 score_str $10;
 `;
 
       code += `
@@ -916,6 +963,7 @@ for (s_idx in seq_len(total_sample_size)) {
       end;
     end;
 
+    r = -1;
     assigned_arm_idx = 1;
     if num_preferred = ${A} or num_non_preferred = 0 then do;
       total_weight = 0;
@@ -1028,8 +1076,38 @@ for (s_idx in seq_len(total_sample_size)) {
     /* Generate Subject ID using tokens */
 `;
       code += CodeTranspiler.generateSubjectIdAndChecksumLogic('SAS', ir.subjectIdTokens, 'Site', 'StratumCode', 'seq_count');
+      
+      let armNamesMapping = '';
+      arms.forEach((arm, armidx) => {
+        armNamesMapping += `      else if a_idx = ${armidx + 1} then temp_arm_name = "${FormattingUtil.escapeSasString(arm.name)}";\n`;
+      });
+
       code += `
     output;
+
+    if s_idx = 1 then do;
+      file "audit_trail.csv" dsd dlm=",";
+      put "SubjectID" "," "Site" "," "StratumCode" "," "AllocatedArm" "," "ImbalanceScores" "," "PreferredArmProb" "," "RandomValue";
+    end;
+
+    ImbalanceScores = "";
+    do a_idx = 1 to ${A};
+      if 0 then;
+${armNamesMapping}
+      score_str = put(arm_scores[a_idx], 8.);
+      if ImbalanceScores = "" then ImbalanceScores = trim(temp_arm_name) || ":" || trim(left(score_str));
+      else ImbalanceScores = trim(ImbalanceScores) || "; " || trim(temp_arm_name) || ":" || trim(left(score_str));
+    end;
+
+    if num_preferred = ${A} or num_non_preferred = 0 then PreferredArmProb = "1.0";
+    else PreferredArmProb = put(&p_minimization, 8.4);
+
+    if r < 0 then RandomValue = "1.0";
+    else RandomValue = put(r / &PRECISION_SCALE, 12.8);
+
+    file "audit_trail.csv" dsd dlm=",";
+    put SubjectID Site StratumCode Treatment ImbalanceScores PreferredArmProb RandomValue;
+    file log;
   end;
 `;
       return code;
@@ -1254,6 +1332,7 @@ for (s_idx in seq_len(total_sample_size)) {
   }
 
   schema_out = J(0, ${6 + F}, "")
+  audit_out = J(0, 7, "")
   seq_count = 0
 
   for (s_idx=1; s_idx<=total_sample_size; s_idx++) {
@@ -1345,6 +1424,7 @@ for (s_idx in seq_len(total_sample_size)) {
       }
     }
 
+    r = -1
     if (cols(preferred_indices) == cols(arms) | cols(non_preferred_indices) == 0) {
       assigned_arm_idx = select_weighted_arm(preferred_indices)
     } else {
@@ -1379,6 +1459,39 @@ for (s_idx in seq_len(total_sample_size)) {
       row_res = row_res, subject_profile
     }
     schema_out = schema_out \\ row_res
+
+    imbalance_scores_str = ""
+    for (arm_i=1; arm_i<=cols(arms); arm_i++) {
+      score_val = arm_scores[arm_i]
+      arm_name = arms[arm_i]
+      if (imbalance_scores_str == "") {
+        imbalance_scores_str = arm_name + ":" + strofreal(score_val)
+      } else {
+        imbalance_scores_str = imbalance_scores_str + "; " + arm_name + ":" + strofreal(score_val)
+      }
+    }
+    
+    pref_prob_str = "1.0"
+    if (cols(preferred_indices) != cols(arms) & cols(non_preferred_indices) > 0) {
+      pref_prob_str = strofreal(p_minimization)
+    }
+    
+    rand_val_str = "1.0"
+    if (r >= 0) {
+      rand_val_str = strofreal(r / ${PRECISION_SCALE})
+    }
+
+    audit_row = (subj_id, site, stratum_code, arms[assigned_arm_idx], imbalance_scores_str, pref_prob_str, rand_val_str)
+    audit_out = audit_out \\ audit_row
+  }
+
+  if (rows(audit_out) > 0) {
+    fh = fopen("audit_trail.csv", "w")
+    fput(fh, "SubjectID,Site,StratumCode,AllocatedArm,ImbalanceScores,PreferredArmProb,RandomValue")
+    for (i=1; i<=rows(audit_out); i++) {
+      fput(fh, audit_out[i, 1] + "," + audit_out[i, 2] + "," + audit_out[i, 3] + "," + audit_out[i, 4] + ',"' + audit_out[i, 5] + '",' + audit_out[i, 6] + "," + audit_out[i, 7])
+    }
+    fclose(fh)
   }
 `;
       return code;
