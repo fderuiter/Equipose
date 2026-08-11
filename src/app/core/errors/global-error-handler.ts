@@ -40,7 +40,11 @@ export class GlobalErrorHandler implements ErrorHandler {
             window.location.hostname.endsWith('.localhost');
 
           if (isTestOrDev) {
-            SanitizingLogger.warn('Chunk load error reload skipped in testing/development environment.');
+            try {
+              SanitizingLogger.warn('Chunk load error reload skipped in testing/development environment.');
+            } catch {
+              // Ignore logging errors to protect execution flow
+            }
             return;
           }
 
@@ -56,7 +60,11 @@ export class GlobalErrorHandler implements ErrorHandler {
               // Ignore in test/non-browser environment
             }
           } else {
-            SanitizingLogger.warn('Chunk load error reload skipped to prevent infinite reload loop.');
+            try {
+              SanitizingLogger.warn('Chunk load error reload skipped to prevent infinite reload loop.');
+            } catch {
+              // Ignore logging errors to protect execution flow
+            }
           }
         }
       }
@@ -64,7 +72,16 @@ export class GlobalErrorHandler implements ErrorHandler {
       // Never throw from within GlobalErrorHandler
     }
 
-    // Call the default behavior to log to console
-    SanitizingLogger.error(error);
+    // Call the default behavior to log to console safely in an isolated boundary
+    try {
+      SanitizingLogger.error(error);
+    } catch (loggingError) {
+      try {
+        console.error('SanitizingLogger failed, falling back to direct console.error:', loggingError);
+        console.error(error);
+      } catch {
+        // Absorb to absolutely prevent crashing
+      }
+    }
   }
 }

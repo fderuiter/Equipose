@@ -201,5 +201,77 @@ describe('SanitizingLogger & Utilities', () => {
         context: { seed: '[REDACTED]', blockSizes: '[REDACTED]', ok: true }
       });
     });
+
+    it('should successfully sanitize objects with throwing getters without crashing', () => {
+      const objWithThrowingGetter = {
+        name: 'Safe Object',
+        get dangerousProp() {
+          throw new Error('Getter failure!');
+        },
+        seed: 'trial-seed'
+      };
+      
+      const sanitized = sanitize(objWithThrowingGetter);
+      expect(sanitized.name).toBe('Safe Object');
+      expect(sanitized.dangerousProp).toBe('[Error accessing property]');
+      expect(sanitized.seed).toBe('[REDACTED]');
+    });
+
+    it('should successfully sanitize errors with throwing getters without crashing', () => {
+      const err = new Error('Test Error');
+      Object.defineProperty(err, 'dangerousProp', {
+        get() {
+          throw new Error('Getter failure!');
+        },
+        enumerable: true,
+        configurable: true
+      });
+      (err as any).seed = 'sensitive-seed';
+
+      const sanitized: any = sanitize(err);
+      expect(sanitized.name).toBe('Error');
+      expect(sanitized.message).toBe('Test Error');
+      expect(sanitized.dangerousProp).toBe('[Error accessing property]');
+      expect(sanitized.seed).toBe('[REDACTED]');
+    });
+
+    it('should successfully sanitize objects with proxy traps that throw without crashing', () => {
+      const target = {
+        normal: 'value',
+        seed: 'proxied-seed'
+      };
+      const proxy = new Proxy(target, {
+        get(t, prop) {
+          if (prop === 'dangerous') {
+            throw new Error('Proxy trap failed!');
+          }
+          return (t as any)[prop];
+        },
+        ownKeys(_t) {
+          return ['normal', 'seed', 'dangerous'];
+        },
+        getOwnPropertyDescriptor(_t, _prop) {
+          return { enumerable: true, configurable: true };
+        }
+      });
+
+      const sanitized: any = sanitize(proxy);
+      expect(sanitized.normal).toBe('value');
+      expect(sanitized.seed).toBe('[REDACTED]');
+      expect(sanitized.dangerous).toBe('[Error accessing property]');
+    });
+
+    it('should handle safeJsonStringify with throwing properties safely', () => {
+      const err = new Error('JSON stringify test error');
+      Object.defineProperty(err, 'throwingKey', {
+        get() { throw new Error('trap!'); },
+        enumerable: true
+      });
+      const jsonStr = safeJsonStringify(err);
+      const parsed = JSON.parse(jsonStr);
+      expect(parsed.name).toBe('Error');
+      expect(parsed.message).toBe('JSON stringify test error');
+      expect(parsed.throwingKey).toBe('[Error accessing property]');
+    });
   });
 });

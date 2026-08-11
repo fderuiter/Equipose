@@ -1,6 +1,7 @@
 import { GlobalErrorHandler } from './global-error-handler';
 import { TestBed } from '@angular/core/testing';
 import { UpdateNotificationService } from '../services/update-notification.service';
+import { SanitizingLogger } from '../utils/sanitizing-logger.util';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('GlobalErrorHandler', () => {
@@ -179,5 +180,35 @@ describe('GlobalErrorHandler', () => {
     } finally {
       window.location = originalLocation;
     }
+  });
+
+  it('should not crash when handling an error containing throwing getters or proxy traps', () => {
+    const error = new Error('ChunkLoadError: loading chunk failed');
+    Object.defineProperty(error, 'throwingProp', {
+      get() {
+        throw new Error('Getter failed!');
+      },
+      enumerable: true
+    });
+
+    expect(() => errorHandler.handleError(error)).not.toThrow();
+  });
+
+  it('should execute the application reload sequence uninterrupted when logging throws an exception', () => {
+    // Import SanitizingLogger dynamically or reference it to mock
+    const errorSpy = vi.spyOn(SanitizingLogger, 'error').mockImplementation(() => {
+      throw new Error('Logging system failure!');
+    });
+
+    const error = new Error('Failed to fetch dynamically imported module: ...');
+    
+    // The execution should not throw a crash to the caller
+    expect(() => errorHandler.handleError(error)).not.toThrow();
+
+    // Verify reload sequence executed successfully
+    expect(updateServiceMock.requireUpdate).toHaveBeenCalled();
+    expect(mockReload).toHaveBeenCalledTimes(1);
+
+    errorSpy.mockRestore();
   });
 });

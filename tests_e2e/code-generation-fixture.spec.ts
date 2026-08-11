@@ -24,7 +24,7 @@ const execFileAsync = promisify(execFile);
 
 const languageTabs: { language: Language; tabName: RegExp; extension: string; marker: string }[] = [
   { language: 'R', tabName: /^R$/i, extension: 'R', marker: 'init_mt' },
-  { language: 'Python', tabName: /^Python$/i, extension: 'py', marker: 'import pandas as pd' },
+  { language: 'Python', tabName: /^Python$/i, extension: 'py', marker: 'class MT19937' },
   { language: 'SAS', tabName: /^SAS$/i, extension: 'sas', marker: '%let seed' },
   { language: 'Stata', tabName: /^Stata$/i, extension: 'do', marker: 'mata:' },
 ];
@@ -374,7 +374,7 @@ test.describe('Code generation fixtures for script execution checks', () => {
 
     await assertSubprocessSuccess(
       pythonExecutable,
-      ['-c', 'import numpy, pandas'],
+      ['-c', 'import csv, sys, re'],
       'Python dependency preflight check for generated scripts',
     );
 
@@ -404,6 +404,6 @@ test.describe('Code generation fixtures for script execution checks', () => {
       throw new Error('Rscript is required in CI for generated R script execution checks.');
     }
 
-    await assertSubprocessSuccess('node', ['scripts/validate-sas-syntax.mjs'], 'Generated SAS script static validation');
+    await assertSubprocessSuccess('npx', ['tsx', 'scripts/validate-sas-syntax.mjs'], 'Generated SAS script static validation');
   });
 });

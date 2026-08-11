@@ -6,7 +6,7 @@ import { generateRandomizationSchema } from '../../randomization-engine/core/ran
 import { CodeTranspiler } from './generation/ir/transpiler';
 import { vi } from 'vitest';
 import { execFileSync } from 'child_process';
-import { writeFileSync, unlinkSync } from 'fs';
+import { writeFileSync, unlinkSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 
@@ -227,6 +227,14 @@ describe('CodeGeneratorService Dual-Mode', () => {
           expect(pyRow['StratumCode']).toBe(tsRow.stratumCode);
           expect(pyRow['age']).toBe(tsRow.stratum['age']);
         }
+
+        const auditFile = join(process.cwd(), 'audit_trail.csv');
+        expect(existsSync(auditFile)).toBe(true);
+        const auditContent = readFileSync(auditFile, 'utf-8');
+        const auditLines = auditContent.trim().replace(/\r/g, '').split('\n');
+        expect(auditLines[0]).toBe('SubjectID,Site,StratumCode,AllocatedArm,ImbalanceScores,PreferredArmProb,RandomValue');
+        expect(auditLines.length - 1).toBe(tsSchema.length);
+        unlinkSync(auditFile);
       } finally {
         unlinkSync(tempFile);
       }

@@ -47,7 +47,7 @@ test.describe('Code Generator Modal UI', () => {
 
     const pythonTab = modal.getByRole('tab', { name: /Python/i });
     await pythonTab.dispatchEvent('click');
-    await expect(generatedCode).toContainText(/import numpy as np/i, { timeout: 10000 });
+    await expect(generatedCode).toContainText(/class MT19937/i, { timeout: 10000 });
     const downloadPromisePy = page.waitForEvent('download', { timeout: 10000 });
     await downloadBtn.dispatchEvent('click');
     const downloadPy = await downloadPromisePy;

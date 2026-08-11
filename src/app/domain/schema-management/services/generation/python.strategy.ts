@@ -50,7 +50,7 @@ export const PYTHON_CONFIG: LanguageConfig = {
       algorithmicLogic += `    for task in tasks:\n`;
       algorithmicLogic += `        if task["count"] < task["cap"]:\n`;
       algorithmicLogic += `            added_in_pass = True\n`;
-      algorithmicLogic += `            rand_int = int(rng.bit_generator.random_raw())\n`;
+      algorithmicLogic += `            rand_int = rng.random_int()\n`;
       algorithmicLogic += `            size = block_sizes[int((rand_int / 4294967296) * len(block_sizes))]\n`;
       algorithmicLogic += `            block = build_block(size, total_ratio, arms)\n`;
       algorithmicLogic += `            for trt in block:\n`;

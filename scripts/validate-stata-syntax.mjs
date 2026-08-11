@@ -7,6 +7,7 @@
 
 import { readdir, readFile } from 'fs/promises';
 import { join, resolve } from 'path';
+import { ASTValidator } from '../src/app/domain/schema-management/services/generation/ast-validator';
 
 const FIXTURE_ROOT = resolve(process.cwd(), 'artifacts', 'code-generation-fixtures');
 
@@ -48,9 +49,15 @@ async function validateFile(filePath) {
     // Check for missing global scope definition
   });
 
-  // Structural properties checking
-  // Block size verification mock check. The problem requires block sizes verified against UI schema config.
-  // We'll leave it basic.
+  // AST-based validations
+  const strata = [];
+  const strataRegex = /local\s+strata_\d+\s+(?:\x60\"|")([^"'\s]+)(?:\"\'|")/g;
+  let match;
+  while ((match = strataRegex.exec(src)) !== null) {
+    strata.push(match[1]);
+  }
+  const astErrors = ASTValidator.validateStata(src, strata);
+  errors.push(...astErrors);
 
   return errors;
 }
