@@ -23,6 +23,7 @@
 
 import { readdir, readFile } from 'fs/promises';
 import { join, resolve } from 'path';
+import { ASTValidator } from '../src/app/domain/schema-management/services/generation/ast-validator';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -281,6 +282,19 @@ async function validateFile(filePath) {
   // 8. Null-Safety Linting
   const nullSafetyErrors = checkNullSafety(tokens);
   errors.push(...nullSafetyErrors);
+
+  // 9. AST-based validations
+  const strataFactorsMatch = src.match(/%let\s+strata_factors\s*=\s*(.*?);/i);
+  const strata = [];
+  if (strataFactorsMatch) {
+    const regex = /"([^"]+)"/g;
+    let match;
+    while ((match = regex.exec(strataFactorsMatch[1])) !== null) {
+      strata.push(match[1]);
+    }
+  }
+  const astErrors = ASTValidator.validateSAS(src, strata);
+  errors.push(...astErrors);
 
   return errors;
 }

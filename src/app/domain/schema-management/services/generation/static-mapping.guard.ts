@@ -2,6 +2,7 @@ import { RandomizationConfig } from '../../../core/models/randomization.model';
 import { MappingMismatchError } from '../../errors/code-generation-errors';
 import { ReproducibilityUtil } from './reproducibility.util';
 import { FormattingUtil } from './formatting.util';
+import { ASTValidator } from './ast-validator';
 
 export class StaticMappingGuard {
   static verify(language: 'R' | 'SAS' | 'Python' | 'STATA', config: RandomizationConfig, output: string): void {
@@ -101,6 +102,19 @@ export class StaticMappingGuard {
         if (!schemaStrata.includes(ds) && !sanitizedSchemaStrata.includes(ds)) {
           throw new MappingMismatchError(language, `Orphaned variable: Stratum "${ds}" found in script but not in schema.`, config);
         }
+      }
+    }
+
+    // 5. AST-based validations
+    if (language === 'SAS') {
+      const sasErrors = ASTValidator.validateSAS(output, (config.strata || []).map(s => s.id));
+      if (sasErrors.length > 0) {
+        throw new MappingMismatchError(language, `SAS AST validation failed: ${sasErrors.join('; ')}`, config);
+      }
+    } else if (language === 'STATA') {
+      const stataErrors = ASTValidator.validateStata(output, (config.strata || []).map(s => s.id));
+      if (stataErrors.length > 0) {
+        throw new MappingMismatchError(language, `STATA AST validation failed: ${stataErrors.join('; ')}`, config);
       }
     }
   }
