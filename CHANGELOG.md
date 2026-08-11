@@ -1,3 +1,20 @@
+# [1.45.0](https://github.com/fderuiter/Equipose/compare/v1.44.0...v1.45.0) (2026-08-11)
+
+
+### Bug Fixes
+
+* **ci:** run validate-adr.js directly with node instead of pnpm ([50baddd](https://github.com/fderuiter/Equipose/commit/50baddd86608719e7885fb17ae2953cd221e5393))
+* **test:** remove Jasmine withContext method from theme service spec to fix Angular CLI build compilation failure ([4834c18](https://github.com/fderuiter/Equipose/commit/4834c181d24d22c14f21dd4192e49dbe7b381e4a))
+
+
+### Features
+
+* **adr:** implement automated ADR validation and retrofitted exemplar ([846890d](https://github.com/fderuiter/Equipose/commit/846890da09171c3d5001d22a24fbdceff74001ca))
+* implement code-level strategic pillar annotations with validation scanner ([1c1e83c](https://github.com/fderuiter/Equipose/commit/1c1e83c74a7b92a8094112cf1903c9caca3e7bac))
+* implement thread-safe mutex and locking boilerplate for dynamic Python scripts, enable dynamic minimization selection in UI and show concurrency warnings ([383ef7f](https://github.com/fderuiter/Equipose/commit/383ef7ff39f986ed9aec17ae94bf3a953215b616))
+* implement trailing slash normalization for router and must-revalidate cache headers for sitemap and robots ([57ccc18](https://github.com/fderuiter/Equipose/commit/57ccc188d16205afbc3cd1d759f42e63811106f2))
+* implement visual density service and adaptive compact/comfortable layouts ([a0f7551](https://github.com/fderuiter/Equipose/commit/a0f7551943363738263144b1b578c7cd29cf944c))
+
 # [1.44.0](https://github.com/fderuiter/Equipose/compare/v1.43.0...v1.44.0) (2026-08-08)
 
 
