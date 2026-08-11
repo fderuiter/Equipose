@@ -93,8 +93,17 @@ export class AlgorithmRegistry {
 # Global thread synchronization lock to prevent race conditions in multi-user environments
 lock = threading.Lock()
 
+class KeyException(Exception):
+    pass
+
+class RobustDict(dict):
+    def __getitem__(self, key):
+        if key not in self:
+            raise KeyException(f"Key '{key}' not found in configuration.")
+        return super().__getitem__(key)
+
 # Strata configuration
-strata = {
+strata = RobustDict()
 `;
       strata.forEach(f => {
         const levelsStr = f.levels.map(l => `"${FormattingUtil.escapeString(l)}"`).join(', ');
@@ -102,45 +111,44 @@ strata = {
           const det = f.levelDetails?.find(d => d.name === lvl);
           return det && det.expectedProbability !== undefined ? det.expectedProbability : 'None';
         }).join(', ');
-        code += `    "${FormattingUtil.escapeString(f.id)}": {"levels": [${levelsStr}], "expected_probs": [${probsStr}]},\n`;
+        code += `strata["${FormattingUtil.escapeString(f.id)}"] = RobustDict({"levels": [${levelsStr}], "expected_probs": [${probsStr}]})\n`;
       });
-      code += `}
-
+      code += `
 arms = [
 `;
       arms.forEach(a => {
-        code += `    {"id": "${FormattingUtil.escapeString(a.id)}", "name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}},\n`;
+        code += `    RobustDict({"id": "${FormattingUtil.escapeString(a.id)}", "name": "${FormattingUtil.escapeString(a.name)}", "ratio": ${a.ratio}}),\n`;
       });
       code += `]
 
-ratio_multipliers = {
+ratio_multipliers = RobustDict({
 `;
       for (const [aid, mult] of Object.entries(ratioMultipliers)) {
         code += `    "${FormattingUtil.escapeString(aid)}": ${mult},\n`;
       }
-      code += `}
+      code += `})
 
 p_minimization = ${ir.minimizationP}
 total_sample_size = ${config.minimizationConfig?.totalSampleSize || 100}
 sites = [${(config.sites || []).map(s => `"${FormattingUtil.escapeString(s)}"`).join(', ')}]
 
 # Caps
-caps = {
+caps = RobustDict({
 `;
       for (const [key, cap] of Object.entries(capsDict)) {
         code += `    "${FormattingUtil.escapeString(key)}": ${cap},\n`;
       }
-      code += `}
+      code += `})
 
 active_pool = [
 `;
       validPool.forEach(combo => {
         const elements = Object.keys(combo).map(k => `"${FormattingUtil.escapeString(k)}": "${FormattingUtil.escapeString(combo[k])}"`).join(', ');
-        code += `    {${elements}},\n`;
+        code += `    RobustDict({${elements}}),\n`;
       });
       code += `]
 
-intersection_counts = {}
+intersection_counts = RobustDict()
 
 def get_rand():
     val = rng.bit_generator.random_raw() & 0xffffffff
@@ -198,6 +206,11 @@ def select_weighted_arm(candidates):
 
 def get_intersection_key(stratum):
     keys = sorted(stratum.keys())
+    for f in keys:
+        if f not in strata:
+            raise KeyException(f"Factor '{f}' not configured in trial schema.")
+        if stratum[f] not in strata[f]["levels"]:
+            raise KeyException(f"Level '{stratum[f]}' for factor '{f}' not configured in trial schema.")
     return "|".join(f"{k}:{stratum[k]}" for k in keys)
 
 def can_add_subject(stratum):
@@ -211,13 +224,26 @@ def register_subject(stratum):
     key = get_intersection_key(stratum)
     intersection_counts[key] = intersection_counts.get(key, 0) + 1
 
-# Marginals initialized to 0
-marginals = {}
+def validate_attributes(site, f, lvl, arm_id=None):
+    if site not in sites:
+        raise KeyException(f"Site '{site}' not configured in trial schema.")
+    if f not in strata:
+        raise KeyException(f"Factor '{f}' not configured in trial schema.")
+    if lvl not in strata[f]["levels"]:
+        raise KeyException(f"Level '{lvl}' for factor '{f}' not configured in trial schema.")
+    if arm_id is not None and arm_id not in [a["id"] for a in arms]:
+        raise KeyException(f"Arm '{arm_id}' not configured in trial schema.")
+
+# Marginals initialized as nested RobustDicts
+marginals = RobustDict()
 for site in sites:
+    marginals[site] = RobustDict()
     for f in strata:
+        marginals[site][f] = RobustDict()
         for lvl in strata[f]["levels"]:
+            marginals[site][f][lvl] = RobustDict()
             for arm in arms:
-                marginals[f"{site}|{f}|{lvl}|{arm['id']}"] = 0
+                marginals[site][f][lvl][arm['id']] = 0
 
 def compute_imbalance_score(candidate_arm_id, site, subject_profile):
     total_score = 0
@@ -225,13 +251,17 @@ def compute_imbalance_score(candidate_arm_id, site, subject_profile):
         lvl = subject_profile.get(f)
         if lvl is None: continue
 
+        validate_attributes(site, f, lvl, candidate_arm_id)
+
         min_val = None
         max_val = None
         for arm in arms:
-            count = marginals.get(f"{site}|{f}|{lvl}|{arm['id']}", 0)
-            if arm["id"] == candidate_arm_id:
+            arm_id = arm["id"]
+            validate_attributes(site, f, lvl, arm_id)
+            count = marginals[site][f][lvl][arm_id]
+            if arm_id == candidate_arm_id:
                 count += 1
-            mult = ratio_multipliers.get(arm["id"], 1)
+            mult = ratio_multipliers[arm_id]
             normalized_count = count * mult
             if min_val is None or normalized_count < min_val: min_val = normalized_count
             if max_val is None or normalized_count > max_val: max_val = normalized_count
@@ -239,10 +269,10 @@ def compute_imbalance_score(candidate_arm_id, site, subject_profile):
             total_score += (max_val - min_val)
     return total_score
 
-def format_stratum_code(stratum):
+def format_stratum_code(subject_profile):
     parts = []
     for f in strata:
-        val = stratum.get(f, "")
+        val = subject_profile.get(f, "")
         if val.startswith(">=") or val.startswith("<=") or val.startswith(">") or val.startswith("<"):
             part = val.upper()
         else:
@@ -250,7 +280,7 @@ def format_stratum_code(stratum):
         parts.append(part)
     return "-".join(parts)
 
-site_subject_counts = {site: 0 for site in sites}
+site_subject_counts = RobustDict({site: 0 for site in sites})
 schema = []
 seq_count = 0
 
@@ -265,7 +295,7 @@ for s_idx in range(total_sample_size):
     site_idx = int(get_rand() * len(sites))
     site = sites[site_idx]
 
-    subject_profile = {}
+    subject_profile = RobustDict()
     valid_subject = True
 
     for f in strata:
@@ -296,6 +326,12 @@ for s_idx in range(total_sample_size):
     if not valid_subject:
         break
 
+    # Explicit validation of generated subject attributes against trial schema
+    if site not in sites:
+        raise KeyException(f"Site '{site}' not configured in trial schema.")
+    for f in subject_profile:
+        validate_attributes(site, f, subject_profile[f])
+
     # Thread-safe critical section for marginal state lookup and update
     with lock:
         # Calculate imbalance scores
@@ -325,10 +361,11 @@ for s_idx in range(total_sample_size):
             else:
                 assigned_arm = select_weighted_arm(non_preferred)
 
-        # Update marginals
+        # Update marginals nested dictionaries safely
         for f in strata:
             lvl = subject_profile[f]
-            marginals[f"{site}|{f}|{lvl}|{assigned_arm['id']}"] += 1
+            validate_attributes(site, f, lvl, assigned_arm["id"])
+            marginals[site][f][lvl][assigned_arm["id"]] += 1
 
         # Register subject
         register_subject(subject_profile)
@@ -392,7 +429,7 @@ total_sample_size <- ${config.minimizationConfig?.totalSampleSize || 100}
 sites <- c(${(config.sites || []).map(s => `"${FormattingUtil.escapeString(s)}"`).join(', ')})
 
 # Caps
-caps <- new.env(hash = TRUE)
+caps <- new.env(parent = emptyenv(), hash = TRUE)
 `;
       for (const [key, cap] of Object.entries(capsDict)) {
         code += `caps[["${FormattingUtil.escapeString(key)}"]] <- ${cap}\n`;
@@ -407,7 +444,7 @@ active_pool <- list(
       });
       code += `)
 
-intersection_counts <- new.env(hash = TRUE)
+intersection_counts <- new.env(parent = emptyenv(), hash = TRUE)
 
 sample_level <- function(levels, expected_probs) {
   explicit_sum <- 0
@@ -477,39 +514,79 @@ select_weighted_arm <- function(candidates) {
   return(candidates[[length(candidates)]])
 }
 
+get_safe_nested <- function(env, keys, error_msg) {
+  curr <- env
+  for (key in keys) {
+    if (is.null(key) || is.na(key) || !exists(key, envir = curr, inherits = FALSE)) {
+      stop(error_msg)
+    }
+    curr <- get(key, envir = curr, inherits = FALSE)
+  }
+  return(curr)
+}
+
+validate_attributes <- function(site, f, lvl, arm_id = NULL) {
+  if (is.null(site) || is.na(site) || !(site %in% sites)) {
+    stop(paste("Invalid or unconfigured site queried:", site))
+  }
+  if (is.null(f) || is.na(f) || !(f %in% names(strata))) {
+    stop(paste("Invalid or unconfigured factor queried:", f))
+  }
+  if (is.null(lvl) || is.na(lvl) || !(lvl %in% strata[[f]]$levels)) {
+    stop(paste("Invalid or unconfigured level queried:", lvl, "for factor:", f))
+  }
+  if (!is.null(arm_id)) {
+    arm_ids <- sapply(arms, function(a) a$id)
+    if (!(arm_id %in% arm_ids)) {
+      stop(paste("Invalid or unconfigured treatment arm queried:", arm_id))
+    }
+  }
+}
+
 get_intersection_key <- function(stratum) {
   keys <- sort(names(stratum))
+  for (f in keys) {
+    if (!(f %in% names(strata))) {
+      stop(paste("Factor not configured in schema:", f))
+    }
+    if (!(stratum[[f]] %in% strata[[f]]$levels)) {
+      stop(paste("Level not configured in schema for factor", f, ":", stratum[[f]]))
+    }
+  }
   parts <- sapply(keys, function(k) paste0(k, ":", stratum[[k]]))
   paste(parts, collapse = "|")
 }
 
 can_add_subject <- function(stratum) {
   key <- get_intersection_key(stratum)
-  cap <- caps[[key]]
+  cap <- if (exists(key, envir = caps, inherits = FALSE)) get(key, envir = caps, inherits = FALSE) else NULL
   if (is.null(cap)) return(TRUE)
-  curr <- intersection_counts[[key]]
-  if (is.null(curr)) curr <- 0
+  curr <- if (exists(key, envir = intersection_counts, inherits = FALSE)) get(key, envir = intersection_counts, inherits = FALSE) else 0
   return(curr < cap)
 }
 
 register_subject <- function(stratum) {
   key <- get_intersection_key(stratum)
-  curr <- intersection_counts[[key]]
-  if (is.null(curr)) curr <- 0
+  curr <- if (exists(key, envir = intersection_counts, inherits = FALSE)) get(key, envir = intersection_counts, inherits = FALSE) else 0
   intersection_counts[[key]] <- curr + 1
 }
 
-# Marginals initialized to 0
-marginals <- new.env(hash = TRUE)
+# Marginals initialized as nested environments
+marginals <- new.env(parent = emptyenv(), hash = TRUE)
 for (site in sites) {
+  site_env <- new.env(parent = emptyenv(), hash = TRUE)
   for (f in names(strata)) {
+    f_env <- new.env(parent = emptyenv(), hash = TRUE)
     for (lvl in strata[[f]]$levels) {
+      lvl_env <- new.env(parent = emptyenv(), hash = TRUE)
       for (arm in arms) {
-        key <- paste(site, f, lvl, arm$id, sep = "|")
-        marginals[[key]] <- 0
+        lvl_env[[arm$id]] <- 0
       }
+      f_env[[lvl]] <- lvl_env
     }
+    site_env[[f]] <- f_env
   }
+  marginals[[site]] <- site_env
 }
 
 compute_imbalance_score <- function(candidate_arm_id, site, subject_profile) {
@@ -518,17 +595,20 @@ compute_imbalance_score <- function(candidate_arm_id, site, subject_profile) {
     lvl <- subject_profile[[f]]
     if (is.null(lvl)) next
 
+    validate_attributes(site, f, lvl, candidate_arm_id)
+
     min_val <- NULL
     max_val <- NULL
     for (arm in arms) {
-      key <- paste(site, f, lvl, arm$id, sep = "|")
-      count <- marginals[[key]]
-      if (is.null(count)) count <- 0
+      validate_attributes(site, f, lvl, arm$id)
+      count <- get_safe_nested(marginals, c(site, f, lvl, arm$id), "Strata key not found")
       if (arm$id == candidate_arm_id) {
         count <- count + 1
       }
       mult <- ratio_multipliers[[arm$id]]
-      if (is.null(mult)) mult <- 1
+      if (is.na(mult)) {
+        stop(paste("Invalid or unconfigured arm id in multipliers:", arm$id))
+      }
       normalized_count <- count * mult
       if (is.null(min_val) || normalized_count < min_val) min_val <- normalized_count
       if (is.null(max_val) || normalized_count > max_val) max_val <- normalized_count
@@ -555,7 +635,7 @@ format_stratum_code <- function(stratum) {
   paste(parts, collapse = "-")
 }
 
-site_subject_counts <- new.env(hash = TRUE)
+site_subject_counts <- new.env(parent = emptyenv(), hash = TRUE)
 for (site in sites) {
   site_subject_counts[[site]] <- 0
 }
@@ -578,6 +658,7 @@ for (s_idx in seq_len(total_sample_size)) {
   # Select site uniformly
   site_idx <- floor((random_int() / 4294967296) * length(sites)) + 1
   site <- sites[site_idx]
+  if (!(site %in% sites)) stop(paste("Site not configured:", site))
 
   subject_profile <- list()
   valid_subject <- TRUE
@@ -622,6 +703,14 @@ for (s_idx in seq_len(total_sample_size)) {
     break
   }
 
+  # Explicit validation of generated subject profile and site against schemas
+  if (!(site %in% sites)) {
+    stop(paste("Invalid or unconfigured site generated:", site))
+  }
+  for (f in names(subject_profile)) {
+    validate_attributes(site, f, subject_profile[[f]])
+  }
+
   # Calculate imbalance scores
   arm_scores <- c()
   min_score <- NULL
@@ -656,11 +745,12 @@ for (s_idx in seq_len(total_sample_size)) {
     }
   }
 
-  # Update marginals
+  # Update marginals nested environments safely
   for (f in names(strata)) {
     lvl <- subject_profile[[f]]
-    key <- paste(site, f, lvl, assigned_arm$id, sep = "|")
-    marginals[[key]] <- marginals[[key]] + 1
+    validate_attributes(site, f, lvl, assigned_arm$id)
+    lvl_env <- get_safe_nested(marginals, c(site, f, lvl), "Strata key not found")
+    lvl_env[[assigned_arm$id]] <- lvl_env[[assigned_arm$id]] + 1
   }
 
   # Register subject
@@ -721,7 +811,6 @@ for (s_idx in seq_len(total_sample_size)) {
 
   array ratio_multipliers[${A}] _temporary_ (${arms.map(a => ratioMultipliers[a.id]).join(' ')});
   array arm_ratios[${A}] _temporary_ (${arms.map(a => a.ratio).join(' ')});
-  array marginals[${S * F * L_max * A}] _temporary_ (${S * F * L_max * A} * 0);
   array site_subject_counts[${S}] _temporary_ (${S} * 0);
   array subject_profile[${F || 1}] _temporary_;
 
@@ -734,6 +823,28 @@ for (s_idx in seq_len(total_sample_size)) {
   array arm_scores[${A}] _temporary_;
   array preferred_arms[${A}] _temporary_;
   array non_preferred_arms[${A}] _temporary_;
+
+  retain h_site_idx h_f_idx h_lvl_idx h_arm_idx h_count 0;
+
+  if _N_ = 1 then do;
+     declare hash marginals_hash();
+     rc = marginals_hash.defineKey('h_site_idx', 'h_f_idx', 'h_lvl_idx', 'h_arm_idx');
+     rc = marginals_hash.defineData('h_count');
+     rc = marginals_hash.defineDone();
+     call missing(h_site_idx, h_f_idx, h_lvl_idx, h_arm_idx, h_count);
+
+     /* Pre-populate with 0s */
+     do h_site_idx = 1 to ${S};
+       do h_f_idx = 1 to ${F};
+         do h_lvl_idx = 1 to ${L_max};
+           do h_arm_idx = 1 to ${A};
+             h_count = 0;
+             rc = marginals_hash.add();
+           end;
+         end;
+       end;
+     end;
+  end;
 `;
 
       code += `
@@ -889,8 +1000,18 @@ for (s_idx in seq_len(total_sample_size)) {
         min_val = 99999999;
         max_val = -99999999;
         do a_i = 1 to ${A};
-          flat_idx = (site_idx - 1) * ${F * L_max * A} + (f_i - 1) * ${L_max * A} + (lvl_i - 1) * ${A} + a_i;
-          count = marginals[flat_idx];
+          h_site_idx = site_idx;
+          h_f_idx = f_i;
+          h_lvl_idx = lvl_i;
+          h_arm_idx = a_i;
+          if h_site_idx < 1 or h_site_idx > ${S} or h_f_idx < 1 or h_f_idx > ${F} or h_lvl_idx < 1 or h_lvl_idx > ${L_max} or h_arm_idx < 1 or h_arm_idx > ${A} then do;
+             h_count = 0;
+          end;
+          else do;
+             rc = marginals_hash.find();
+             if rc ne 0 then h_count = 0;
+          end;
+          count = h_count;
           if a_i = arm_idx then count = count + 1;
 
           normalized_count = count * ratio_multipliers[a_i];
@@ -978,11 +1099,22 @@ for (s_idx in seq_len(total_sample_size)) {
       });
 
       code += `
-    /* Update marginals */
+    /* Update marginals in Hash Object */
     do f_i = 1 to ${F};
       lvl_i = subject_profile[f_i];
-      flat_idx = (site_idx - 1) * ${F * L_max * A} + (f_i - 1) * ${L_max * A} + (lvl_i - 1) * ${A} + assigned_arm_idx;
-      marginals[flat_idx] = marginals[flat_idx] + 1;
+      h_site_idx = site_idx;
+      h_f_idx = f_i;
+      h_lvl_idx = lvl_i;
+      h_arm_idx = assigned_arm_idx;
+      if h_site_idx >= 1 and h_site_idx <= ${S} and h_f_idx >= 1 and h_f_idx <= ${F} and h_lvl_idx >= 1 and h_lvl_idx <= ${L_max} and h_arm_idx >= 1 and h_arm_idx <= ${A} then do;
+         rc = marginals_hash.find();
+         if rc ne 0 then h_count = 0;
+         h_count = h_count + 1;
+         rc = marginals_hash.replace();
+      end;
+      else do;
+         put "WARNING: Cleanly rejected out-of-bounds update: SiteIdx=" h_site_idx " FactorIdx=" h_f_idx " LevelIdx=" h_lvl_idx " ArmIdx=" h_arm_idx;
+      end;
     end;
 
     /* Register subject */
@@ -1031,6 +1163,8 @@ for (s_idx in seq_len(total_sample_size)) {
       code += `
     output;
   end;
+
+  drop h_site_idx h_f_idx h_lvl_idx h_arm_idx h_count rc;
 `;
       return code;
     }
