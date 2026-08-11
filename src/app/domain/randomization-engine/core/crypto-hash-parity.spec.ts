@@ -46,7 +46,7 @@ describe('Crypto Hash Cross-Language Parity Integration Suite', () => {
           stratumCaps: [],
           seed: 'fixedseed123',
           subjectIdMask: '{SITE}-{SEQ:3}',
-          randomizationMethod: 'PERMUTED_BLOCK'
+          randomizationMethod: 'PERMUTED_BLOCK' as any
         },
         auditHash: ''
       },
