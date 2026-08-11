@@ -74,7 +74,7 @@ test.describe('Results Grid Operations', () => {
     // Select Academic segment first to authorize unblinding for Trial Manager!
     await page.locator('[data-testid="org-segment-select"] select').selectOption('Academic');
 
-    const toggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
+    const toggleLabel = page.locator('#results-section label.cursor-pointer').filter({ hasText: 'Blinded' });
     await toggleLabel.dispatchEvent('click');
 
     const firstRow = page.locator('[data-testid="result-row"]').first();
@@ -87,14 +87,14 @@ test.describe('Results Grid Operations', () => {
     // Select Academic segment first to authorize unblinding for Trial Manager!
     await page.locator('[data-testid="org-segment-select"] select').selectOption('Academic');
 
-    const unblindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
+    const unblindToggleLabel = page.locator('#results-section label.cursor-pointer').filter({ hasText: 'Blinded' });
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
 
     await unblindToggleLabel.dispatchEvent('click'); // unblind
     await expect(armCell).not.toContainText('*** BLINDED ***');
 
-    const blindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Unblinded' });
+    const blindToggleLabel = page.locator('#results-section label.cursor-pointer').filter({ hasText: 'Unblinded' });
     await blindToggleLabel.dispatchEvent('click'); // re-blind
     await expect(armCell).toContainText('*** BLINDED ***');
   });
