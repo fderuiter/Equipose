@@ -1,3 +1,20 @@
+# [1.46.0](https://github.com/fderuiter/Equipose/compare/v1.45.0...v1.46.0) (2026-08-11)
+
+
+### Bug Fixes
+
+* **ci:** fix SAS AST validation for empty strata and run syntax validator with tsx ([b6afe2b](https://github.com/fderuiter/Equipose/commit/b6afe2b68b18767afb07b0b525681c0d4398c896))
+* **sas:** optimize SAS validation and safely handle special characters/spaces in strata factor names without dynamic RegExp ([dd2dc47](https://github.com/fderuiter/Equipose/commit/dd2dc478a11bf7e53d218bf45aa9ccea81acec2c))
+* **security:** resolve Semgrep ReDoS warning for dynamic RegExp on SAS ast-validator ([c1a77b9](https://github.com/fderuiter/Equipose/commit/c1a77b958f4e8f68f53738a663443a3027c248b3))
+* **test:** resolve TypeScript compilation errors in sanitizing-logger unit tests ([8dc33cc](https://github.com/fderuiter/Equipose/commit/8dc33ccd8263ff45d10fa7b532a1573d3c6b7d74))
+
+
+### Features
+
+* implement pure Python MT19937 PRNG and standardized dynamic matrix audit trail for R, Python, SAS, STATA ([#762](https://github.com/fderuiter/Equipose/issues/762)) ([19fc95b](https://github.com/fderuiter/Equipose/commit/19fc95bd82e3c5d5f41f7d2e6eacec32b471c77f))
+* implement Semantic AST and Symbolic Validator for SAS and Stata scripts ([31e7ec0](https://github.com/fderuiter/Equipose/commit/31e7ec077a8a29ad642e4fd6cd0f77daa0778184))
+* **telemetry:** implement property lookup isolation and defensive double-wrap for global logger ([034433a](https://github.com/fderuiter/Equipose/commit/034433a85031cc7b1f5dc4f5f22d4807d3279539))
+
 # [1.45.0](https://github.com/fderuiter/Equipose/compare/v1.44.0...v1.45.0) (2026-08-11)
 
 
