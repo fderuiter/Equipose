@@ -16,6 +16,7 @@ import { PersonaValidationService } from '../../core/validation/persona-validato
 
 import { FocusManagerDirective } from '../../../core/directives/focus-manager.directive';
 import { ToggleComponent } from '../../../core/components/ui/toggle.component';
+import { SelectComponent } from '../../../core/components/ui/select.component';
 
 export type SortDirection = 'asc' | 'desc' | 'none';
 
@@ -62,7 +63,7 @@ export type GridRow = BlockHeader | DataRow | BlockSummary;
   selector: 'app-results-grid',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent, TextInputComponent],
+  imports: [KeyValuePipe, AppTooltipDirective, FocusManagerDirective, ToggleComponent, ButtonComponent, TextInputComponent, SelectComponent],
   templateUrl: './results-grid.component.html'
 })
 export class ResultsGridComponent {
@@ -241,6 +242,102 @@ export class ResultsGridComponent {
     effect(() => {
       this.viewState.syncResults(this.state.results());
     });
+
+    // If the active persona/segment combination becomes unauthorized to unblind, reset unblinded state to false.
+    effect(() => {
+      if (!this.personaValidator.canUnblind()) {
+        this.viewState.isUnblinded.set(false);
+      }
+    });
+  }
+
+  onOrgSegmentChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    if (select) {
+      this.personaValidator.activeSegment.set(select.value as any);
+    }
+  }
+
+  onFunctionalRoleChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    if (select) {
+      this.personaValidator.activePersona.set(select.value as any);
+    }
+  }
+
+  downloadValidationManifest(): void {
+    const data = this.state.results();
+    if (!data) return;
+
+    if (this.personaValidator.activeSegment() !== 'CRO') {
+      this.toast.showError('Unauthorized. Only CRO users are authorized to download the validation manifest.');
+      return;
+    }
+
+    const config = data.metadata.config;
+    const ratioSum = config.arms.reduce((sum, arm) => sum + (arm.ratio || 0), 0);
+
+    const manifest = {
+      $schema: 'https://clinical-randomization.org/schemas/validation-manifest-v1.json',
+      manifestVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      studyContext: {
+        protocolId: config.protocolId,
+        studyName: config.studyName,
+        phase: config.phase,
+        seed: config.seed,
+        subjectIdMask: config.subjectIdMask
+      },
+      randomizationMethod: config.randomizationMethod || 'BLOCK',
+      treatmentArms: config.arms.map(arm => ({
+        id: arm.id,
+        name: arm.name,
+        ratio: arm.ratio
+      })),
+      validationRules: {
+        minimumSeedLength: config.seed ? config.seed.length : 0,
+        seedNumericOnly: config.seed ? /^\d+$/.test(config.seed) : false,
+        activeArmRatios: config.arms.reduce((acc, arm) => {
+          acc[arm.id] = arm.ratio;
+          return acc;
+        }, {} as Record<string, number>),
+        ratioSum: ratioSum,
+        blockSizeMultiples: config.blockSizes || [],
+        strataFactors: config.strata.map(s => ({
+          id: s.id,
+          name: s.name,
+          levels: s.levels
+        })),
+        strataCaps: config.stratumCaps || [],
+        capStrategy: config.capStrategy || 'MANUAL_MATRIX',
+        globalCap: config.globalCap || null,
+        hasSiteBlockOverrides: !!config.siteBlockOverrides && Object.keys(config.siteBlockOverrides).length > 0,
+        hasStratumBlockOverrides: !!config.stratumBlockOverrides && Object.keys(config.stratumBlockOverrides).length > 0,
+        minimizationConfig: config.minimizationConfig || null
+      },
+      audit: {
+        generatedAt: data.metadata.generatedAt,
+        totalSubjects: data.schema.length,
+        auditHash: data.metadata.auditHash
+      }
+    };
+
+    const safeProtocol = FileSecurityUtil.sanitizeFilename(config.protocolId);
+    const json = JSON.stringify(manifest, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `validation_manifest_${safeProtocol}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+
+    this.toast.showSuccess('Validation manifest downloaded successfully.');
   }
 
   toggleBlinding() {
@@ -443,7 +540,9 @@ export class ResultsGridComponent {
       return;
     }
 
-    if (!this.isUnblinded()) {
+    const isUnblinded = this.isUnblinded() && this.personaValidator.canUnblind();
+
+    if (!isUnblinded && !this.personaValidator.canBypassBlinding()) {
       this.toast.showInfo(
         'JSON export is only available in unblinded mode. Please unblind the schema before exporting JSON.'
       );
@@ -453,8 +552,16 @@ export class ResultsGridComponent {
     const safeProtocol = FileSecurityUtil.sanitizeFilename(data.metadata.protocolId);
     const safeSeed = FileSecurityUtil.sanitizeFilename(data.metadata.seed);
 
+    // Dynamic masking for JSON export to match active unmasking state and block unauthorized unmasking bypasses
+    const maskedSchema = data.schema.map(r => ({
+      ...r,
+      treatmentArm: this.personaValidator.getMaskedTreatment(r.treatmentArm, isUnblinded),
+      treatmentArmId: isUnblinded || this.personaValidator.canBypassBlinding() ? r.treatmentArmId : '*** BLINDED ***'
+    }));
+
     const exportPayload = {
       ...data,
+      schema: maskedSchema,
       metadata: {
         ...data.metadata,
         methodologySpecification: this.methodologySpec.generateNarrative(data.metadata.config),

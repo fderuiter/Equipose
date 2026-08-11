@@ -95,6 +95,7 @@ describe('ResultsGridComponent (domain)', () => {
 
     fixture = TestBed.createComponent(ResultsGridComponent);
     component = fixture.componentInstance;
+    component.personaValidator.activeSegment.set('Academic');
   });
 
   it('should create', () => {
@@ -685,8 +686,9 @@ describe('ResultsGridComponent (domain)', () => {
     });
 
     // @persona:TrialManager
-    it('should enforce blinding configurations for Trial Manager and mask treatment arms unless toggled', () => {
+    it('should enforce blinding configurations for Trial Manager and mask treatment arms unless toggled under Academic segment', () => {
       component.personaValidator.activePersona.set('TrialManager');
+      component.personaValidator.activeSegment.set('Academic'); // set to Academic segment so Trial Manager is authorized to unblind
       component.viewState.isUnblinded.set(false);
       expect(component.getMaskedTreatment('Active Arm')).toBe('*** BLINDED ***');
       component.viewState.isUnblinded.set(true);
@@ -698,6 +700,46 @@ describe('ResultsGridComponent (domain)', () => {
       component.personaValidator.activePersona.set('ComplianceOfficer');
       expect(component.personaValidator.canExportSchema('Simulation')).toBe(false);
       expect(component.personaValidator.canExportSchema('Formal-Trial')).toBe(true);
+    });
+
+    it('should support segment and role switching via events', () => {
+      const segmentEvent = { target: { value: 'Academic' } } as any;
+      component.onOrgSegmentChange(segmentEvent);
+      expect(component.personaValidator.activeSegment()).toBe('Academic');
+
+      const roleEvent = { target: { value: 'ComplianceOfficer' } } as any;
+      component.onFunctionalRoleChange(roleEvent);
+      expect(component.personaValidator.activePersona()).toBe('ComplianceOfficer');
+    });
+
+    it('should reset isUnblinded to false when switching to an unauthorized segment/role', () => {
+      // Start authorized
+      component.personaValidator.activeSegment.set('Academic');
+      component.personaValidator.activePersona.set('TrialManager');
+      component.viewState.isUnblinded.set(true);
+
+      // Transition to unauthorized Sponsor segment
+      component.personaValidator.activeSegment.set('Sponsor');
+      fixture.detectChanges(); // trigger effect to reset isUnblinded
+      expect(component.viewState.isUnblinded()).toBe(false);
+    });
+
+    it('should allow CRO users to download the validation manifest, but block others', () => {
+      const mockResult = generateMockData(2);
+      (mockFacade as any).results.set(mockResult);
+      fixture.detectChanges();
+
+      // Standard user cannot download / gets blocked
+      component.personaValidator.activeSegment.set('Sponsor');
+      component.downloadValidationManifest();
+      expect(mockToastService.showError).toHaveBeenCalledWith('Unauthorized. Only CRO users are authorized to download the validation manifest.');
+
+      // CRO user can download
+      mockToastService.showError.mockClear();
+      component.personaValidator.activeSegment.set('CRO');
+      component.downloadValidationManifest();
+      expect(mockToastService.showError).not.toHaveBeenCalled();
+      expect(mockToastService.showSuccess).toHaveBeenCalledWith('Validation manifest downloaded successfully.');
     });
   });
 });
