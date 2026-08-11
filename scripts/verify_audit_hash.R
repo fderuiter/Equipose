@@ -26,7 +26,17 @@ suppressPackageStartupMessages({
   if (!dir.exists(local_lib)) {
     dir.create(local_lib, recursive = TRUE, showWarnings = FALSE)
   }
-  .libPaths(c(local_lib, .libPaths()))
+  
+  # Include standard system library paths so that pre-installed Debian/Ubuntu
+  # packages (e.g. via apt-get in CI/CD) are visible even if a custom R runtime is active.
+  system_libs <- c(
+    "/usr/lib/R/site-library",
+    "/usr/local/lib/R/site-library",
+    "/usr/lib/R/library"
+  )
+  existing_system_libs <- system_libs[dir.exists(system_libs)]
+  
+  .libPaths(c(local_lib, existing_system_libs, .libPaths()))
 
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
     install.packages("jsonlite", repos = "https://cloud.r-project.org", lib = local_lib, INSTALL_opts = "--no-lock")
