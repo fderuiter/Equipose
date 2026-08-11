@@ -201,6 +201,8 @@ export class ASTValidator {
               // If it's a stratum levels assignment, it is uninitialized stratification levels
               if (strata && strata.some(s => varName.toLowerCase().startsWith(s.toLowerCase()))) {
                 errors.push(`Line ${node.line}: SAS macro variable "${varName}" for stratification levels is uninitialized (assigned empty value).`);
+              } else if (['strata_factors', 'block_sizes', 'p_minimization'].includes(varName.toLowerCase())) {
+                // These macro variables are allowed to be empty/blank when not used or configured
               } else {
                 errors.push(`Line ${node.line}: SAS macro variable "${varName}" is uninitialized.`);
               }
