@@ -158,26 +158,26 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
 
       await component.setActiveTab(language);
-      component.downloadCode();
+      await component.downloadCode();
 
       const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchorEl.getAttribute('download')).toBe(expectedFilename);
     };
 
-    it('should use randomization_schema.R as the filename for R code', async () => {
-      await verifyDownloadFilename('R', 'randomization_schema.R');
+    it('should use randomization_schema.zip as the filename for R code', async () => {
+      await verifyDownloadFilename('R', 'randomization_schema.zip');
     });
 
-    it('should use randomization_schema.sas as the filename for SAS code', async () => {
-      await verifyDownloadFilename('SAS', 'randomization_schema.sas');
+    it('should use randomization_schema.zip as the filename for SAS code', async () => {
+      await verifyDownloadFilename('SAS', 'randomization_schema.zip');
     });
 
-    it('should use randomization_schema.py as the filename for Python code', async () => {
-      await verifyDownloadFilename('Python', 'randomization_schema.py');
+    it('should use randomization_schema.zip as the filename for Python code', async () => {
+      await verifyDownloadFilename('Python', 'randomization_schema.zip');
     });
 
-    it('should use randomization_schema.do as the filename for STATA code', async () => {
-      await verifyDownloadFilename('STATA', 'randomization_schema.do');
+    it('should use randomization_schema.zip as the filename for STATA code', async () => {
+      await verifyDownloadFilename('STATA', 'randomization_schema.zip');
     });
 
     it('should call URL.createObjectURL with a Blob', async () => {
@@ -185,7 +185,7 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
 
       await component.setActiveTab('R');
-      component.downloadCode();
+      await component.downloadCode();
 
       expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
     });

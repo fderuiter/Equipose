@@ -187,53 +187,76 @@ export class CodeGeneratorModalComponent implements OnInit {
     }
 
     try {
-      if (this.exportMode() === 'BOTH') {
-        const { ZipWriter } = await import('@core/utils/zip.util');
-        const zip = new ZipWriter();
+      const { ZipWriter } = await import('@core/utils/zip.util');
+      const {
+        generateTestDataCsv,
+        generateCompanionTestFile,
+        MT19937_R,
+        MT19937_SAS,
+        MT19937_DO
+      } = await import('../utils/companion-package.util');
+      const { generateRandomizationSchema } = await import('@domain/randomization-engine/core/randomization-algorithm');
 
+      const zip = new ZipWriter();
+      const encoder = new TextEncoder();
+
+      // 1. Generate core schema to get subject assignments for the CSV
+      const schemaResult = generateRandomizationSchema(config);
+
+      // 2. Add primary scripts based on export mode
+      if (this.exportMode() === 'BOTH') {
         const staticCode = this.codeGenService.generateStatic(tab, config, metadata);
         const dynamicCode = this.codeGenService.generateDynamic(tab, config, metadata);
-
-        const encoder = new TextEncoder();
         zip.addFile(`randomization_schema_static.${extension}`, encoder.encode(staticCode));
         zip.addFile(`randomization_schema_dynamic.${extension}`, encoder.encode(dynamicCode));
-
-        const zipBytes = await zip.generateAsync();
-        const blob = new Blob([zipBytes as any], { type: 'application/zip' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `randomization_schema_bundle.zip`);
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 100);
+      } else if (this.exportMode() === 'STATIC') {
+        const staticCode = this.currentCode;
+        if (!staticCode) return;
+        zip.addFile(`randomization_schema.${extension}`, encoder.encode(staticCode));
       } else {
-        const code = this.currentCode;
-        if (!code) return; // Abort if required artifact is unavailable!
-
-        const blob = new Blob([code], { type: 'text/plain;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-
-        if (this.exportMode() === 'STATIC') {
-          link.setAttribute('download', `randomization_schema.${extension}`);
-        } else {
-          link.setAttribute('download', `randomization_schema_dynamic.${extension}`);
-        }
-
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 100);
+        const dynamicCode = this.currentCode;
+        if (!dynamicCode) return;
+        zip.addFile(`randomization_schema_dynamic.${extension}`, encoder.encode(dynamicCode));
       }
+
+      // 3. Add companion test file
+      const testCode = generateCompanionTestFile(tab, config);
+      zip.addFile(`test_randomization.${extension}`, encoder.encode(testCode));
+
+      // 4. Add test_data.csv containing 100 mock trial assignments
+      const csvContent = generateTestDataCsv(config, schemaResult.schema);
+      zip.addFile(`test_data.csv`, encoder.encode(csvContent));
+
+      // 5. Add MT19937 runtimes as dependencies
+      if (tab === 'R') {
+        zip.addFile(`mt19937_v1.0.0.r`, encoder.encode(MT19937_R));
+      } else if (tab === 'SAS') {
+        zip.addFile(`mt19937_v1.0.0.sas`, encoder.encode(MT19937_SAS));
+      } else if (tab === 'STATA') {
+        zip.addFile(`mt19937_v1.0.0.do`, encoder.encode(MT19937_DO));
+      }
+
+      const zipBytes = await zip.generateAsync();
+      const blob = new Blob([zipBytes as any], { type: 'application/zip' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+
+      let zipFilename = 'randomization_schema_bundle.zip';
+      if (this.exportMode() === 'STATIC') {
+        zipFilename = 'randomization_schema.zip';
+      } else if (this.exportMode() === 'DYNAMIC') {
+        zipFilename = 'randomization_schema_dynamic.zip';
+      }
+      link.setAttribute('download', zipFilename);
+
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
     } catch (e) {
       SanitizingLogger.error('Error downloading code:', e);
     }
