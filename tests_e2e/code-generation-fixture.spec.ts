@@ -67,7 +67,27 @@ const test = base.extend<ScriptFixture>({
         const download = await downloadPromise;
 
         const outputFile = `${scenario.id}.${extension}`;
-        await download.saveAs(join(scenarioDir, outputFile));
+        const tempZipPath = join(scenarioDir, 'temp.zip');
+        await download.saveAs(tempZipPath);
+
+        // Find the main randomization_schema file inside temp.zip
+        const { stdout: filesListRaw } = await execFileAsync('unzip', ['-Z', '-1', tempZipPath]);
+        const filesInZip = filesListRaw.split('\n').map(f => f.trim()).filter(Boolean);
+        const mainScript = filesInZip.find(f =>
+          (f.startsWith('randomization_schema.') || f.startsWith('randomization_schema_dynamic.') || f.startsWith('randomization_schema_static.')) &&
+          f.endsWith(`.${extension}`)
+        );
+
+        if (mainScript) {
+          // Extract the main script content directly to memory
+          const { stdout: fileContent } = await execFileAsync('unzip', ['-p', tempZipPath, mainScript]);
+          const finalScriptPath = join(scenarioDir, outputFile);
+          await writeFile(finalScriptPath, fileContent, 'utf-8');
+        }
+
+        // Clean up temp.zip
+        await rm(tempZipPath, { force: true });
+
         files.push({ language, file: outputFile });
       }
 
