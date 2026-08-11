@@ -59,6 +59,9 @@ const fontSmoothingStyle = `
   [data-testid="footer-update-indicator"] {
     display: none !important;
   }
+  [data-testid="session-context-selector"] {
+    display: none !important;
+  }
 `;
 
 const screenshotOptions = { fullPage: true, maxDiffPixelRatio: 0.05, animations: 'disabled', style: fontSmoothingStyle, timeout: 20000 } as const;

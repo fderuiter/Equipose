@@ -23,6 +23,9 @@ test.describe('Schema Generation Flow', () => {
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
     await expect(armCell).toContainText('*** BLINDED ***');
 
+    // Select Academic segment first to authorize unblinding for Trial Manager!
+    await page.locator('[data-testid="org-segment-select"] select').selectOption('Academic');
+
     // Click the "Blinded" label to toggle
     const unblindedToggleLabel = page.locator('span.cursor-pointer').filter({ hasText: 'Blinded' });
     await unblindedToggleLabel.dispatchEvent('click');

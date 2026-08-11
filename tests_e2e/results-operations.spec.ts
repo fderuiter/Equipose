@@ -71,6 +71,9 @@ test.describe('Results Grid Operations', () => {
   });
 
   test('should reveal treatment arms after clicking the blinding toggle', async ({ page }) => {
+    // Select Academic segment first to authorize unblinding for Trial Manager!
+    await page.locator('[data-testid="org-segment-select"] select').selectOption('Academic');
+
     const toggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
     await toggleLabel.dispatchEvent('click');
 
@@ -81,6 +84,9 @@ test.describe('Results Grid Operations', () => {
   });
 
   test('should re-blind the schema when the toggle is clicked a second time', async ({ page }) => {
+    // Select Academic segment first to authorize unblinding for Trial Manager!
+    await page.locator('[data-testid="org-segment-select"] select').selectOption('Academic');
+
     const unblindToggleLabel = page.locator('#results-section span.cursor-pointer').filter({ hasText: 'Blinded' });
     const firstRow = page.locator('[data-testid="result-row"]').first();
     const armCell = firstRow.locator('[data-testid="result-arm-cell"]');
