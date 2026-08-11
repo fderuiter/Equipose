@@ -22,11 +22,23 @@
 
 # Ensure required packages are loaded
 suppressPackageStartupMessages({
+  local_lib <- "/tmp/.Rlibs"
+  if (!dir.exists(local_lib)) {
+    dir.create(local_lib, recursive = TRUE, showWarnings = FALSE)
+  }
+  .libPaths(c(local_lib, .libPaths()))
+
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    stop("Package 'jsonlite' is required. Please install it with install.packages('jsonlite')")
+    install.packages("jsonlite", repos = "https://cloud.r-project.org", lib = local_lib, INSTALL_opts = "--no-lock")
   }
   if (!requireNamespace("digest", quietly = TRUE)) {
-    stop("Package 'digest' is required. Please install it with install.packages('digest')")
+    install.packages("digest", repos = "https://cloud.r-project.org", lib = local_lib, INSTALL_opts = "--no-lock")
+  }
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    stop("Package 'jsonlite' is required but could not be installed automatically.")
+  }
+  if (!requireNamespace("digest", quietly = TRUE)) {
+    stop("Package 'digest' is required but could not be installed automatically.")
   }
 })
 

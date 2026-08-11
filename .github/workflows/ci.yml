@@ -53,6 +53,10 @@ jobs:
       with:
         r-version: 'release'
 
+    - name: Pre-install R package dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y r-cran-jsonlite r-cran-digest
+
     - name: Install Dependencies
       run: pnpm install --frozen-lockfile
 
