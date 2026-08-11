@@ -24,6 +24,7 @@ Welcome to the central documentation hub for Equipose. This documentation is org
 *Understanding-oriented discussions that clarify concepts and background.*
 
 - [Architecture Concepts - Equipose](explanation/ARCHITECTURE_CONCEPTS.md)
+- [Seed Compression & Regulatory Compliance Explainer](explanation/SEED_COMPLIANCE_EXPLAINER.md)
 - [Standardized Persona Framework and Validation Strategy](explanation/PERSONA_STRATEGY.md)
 - [SAS & Stata Cross-Environment Exception Report](explanation/SAS_Stata_Exception_Report.md)
 - [ADR Template](explanation/adr/template.md)
