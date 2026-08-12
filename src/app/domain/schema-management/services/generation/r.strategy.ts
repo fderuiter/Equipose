@@ -34,11 +34,12 @@ export const R_CONFIG: LanguageConfig = {
     roundRobinLoop: (ir, config) => {
       let algorithmicLogic = `tasks <- list()\n`;
       for (const t of ir.tasks) {
-         let strataStr = '';
+         let strataElements: string[] = [];
          for (const s of config.strata || []) {
-             strataStr += `, "${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(t.stratumDetails[s.id])}"`;
+             strataElements.push(`"${FormattingUtil.escapeString(s.id)}"="${FormattingUtil.escapeString(t.stratumDetails[s.id])}"`);
          }
-         algorithmicLogic += `tasks[[length(tasks)+1]] <- list(site="${FormattingUtil.escapeString(t.site)}", stratumCode="${FormattingUtil.escapeString(t.stratumCode)}", cap=${t.cap}, count=0, block_num=1, strata='${strataStr}')\n`;
+         const strataStr = `list(${strataElements.join(', ')})`;
+         algorithmicLogic += `tasks[[length(tasks)+1]] <- list(site="${FormattingUtil.escapeString(t.site)}", stratumCode="${FormattingUtil.escapeString(t.stratumCode)}", cap=${t.cap}, count=0, block_num=1, strata=${strataStr})\n`;
       }
       algorithmicLogic += `\n`;
 
@@ -59,7 +60,7 @@ export const R_CONFIG: LanguageConfig = {
       
       algorithmicLogic += CodeTranspiler.generateSubjectIdAndChecksumLogic('R', ir.subjectIdTokens, 'tasks[[t_idx]]$site', 'tasks[[t_idx]]$stratumCode', 'seq_count');
       
-      algorithmicLogic += `        strata_eval <- eval(parse(text=paste0("list(", substr(tasks[[t_idx]]$strata, 3, nchar(tasks[[t_idx]]$strata)), ")")))\n`;
+      algorithmicLogic += `        strata_eval <- tasks[[t_idx]]$strata\n`;
       algorithmicLogic += `        row_df <- data.frame(SubjectID=subj_id, Site=tasks[[t_idx]]$site, Treatment=trt, BlockNumber=tasks[[t_idx]]$block_num, BlockSize=size, StratumCode=tasks[[t_idx]]$stratumCode, stringsAsFactors=FALSE)\n`;
       algorithmicLogic += `        if (length(strata_eval) > 0) row_df <- cbind(row_df, as.data.frame(strata_eval, stringsAsFactors=FALSE))\n`;
       algorithmicLogic += `        schema_list[[length(schema_list)+1]] <- row_df\n`;
