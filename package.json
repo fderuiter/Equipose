@@ -55,7 +55,7 @@
     "@stryker-mutator/vitest-runner": "^9.6.1",
     "@tailwindcss/postcss": "^4.3.2",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.2.0",
     "@types/pdf-parse": "^1.1.5",
     "angular-eslint": "21.4.0",
     "axe-core": "^4.12.1",
