@@ -1,3 +1,17 @@
+# [1.48.0](https://github.com/fderuiter/Equipose/compare/v1.47.0...v1.48.0) (2026-08-12)
+
+
+### Bug Fixes
+
+* **ci:** expose system R library paths to custom setup-r build to avoid downloading packages from blocked CRAN ([8076ac5](https://github.com/fderuiter/Equipose/commit/8076ac56e42f72ee1d379b8e1b43dd28b04c4d83))
+* pre-install R packages r-cran-jsonlite and r-cran-digest in CI and add self-healing local fallback ([508c691](https://github.com/fderuiter/Equipose/commit/508c69110653d4f323e1cf365600c625c8d1aabe))
+* **tests:** resolve type mismatch in crypto-hash-parity spec ([1f79d6b](https://github.com/fderuiter/Equipose/commit/1f79d6b2798a1489a5a76ba951f14d6d752bb98c))
+
+
+### Features
+
+* implement verified cross-language audit hash parity and CI test suite [REQ-21CFR11-005] ([2f08208](https://github.com/fderuiter/Equipose/commit/2f082084b9a135a3cfda94602802d374eba3f506))
+
 # [1.47.0](https://github.com/fderuiter/Equipose/compare/v1.46.0...v1.47.0) (2026-08-12)
 
 
