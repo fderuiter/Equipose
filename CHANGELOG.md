@@ -1,3 +1,24 @@
+# [1.47.0](https://github.com/fderuiter/Equipose/compare/v1.46.0...v1.47.0) (2026-08-12)
+
+
+### Bug Fixes
+
+* **a11y:** resolve color-contrast violation for disabled blinding toggle label by associating it semantically ([3de8189](https://github.com/fderuiter/Equipose/commit/3de818912d97cb3aa303d28daf4ab9cd73026c45))
+* **docs:** resolve architecture diagram sync failure by mapping domain level boundaries and preventing empty source nodes ([e9a5a86](https://github.com/fderuiter/Equipose/commit/e9a5a866fca95fef8ea9a394ee3cc7ebb0b9854d))
+* **e2e:** authorize simulated session context and fix layout height regression in screenshots ([8c4edde](https://github.com/fderuiter/Equipose/commit/8c4eddedef72c1650fcfd583ece7529b32c334d9))
+* **e2e:** extract only the main schema script from downloaded companion ZIP package in fixtures generation test ([9c667bc](https://github.com/fderuiter/Equipose/commit/9c667bc562c0ae1882b1ed2c79a807ca422da52b))
+* **e2e:** update blinding toggle label selector and resolve redundant click double-triggering bug ([1d56a08](https://github.com/fderuiter/Equipose/commit/1d56a08b50655242dd77c6d0e9dbeaa801bdc101))
+* **e2e:** update E2E tests to assert on ZIP bundle file downloads ([9d1f572](https://github.com/fderuiter/Equipose/commit/9d1f5724f1b4981579c7a5d36f2adf2e6dee279a))
+* **schema-management:** resolve forbidden core MT19937 imports using facade static methods ([17ae455](https://github.com/fderuiter/Equipose/commit/17ae45581eb3a24a421e99205795cd064785e4da))
+
+
+### Features
+
+* implement dual-tier role matrix with localized selectors and validation manifests ([ac01c6a](https://github.com/fderuiter/Equipose/commit/ac01c6a927cff4be85fc23e7027e7687ba132583))
+* implement two-way registry verification and strategic pillar integrated reporting ([3540e0c](https://github.com/fderuiter/Equipose/commit/3540e0c5bc9333f06f5a22a11e14c43aa247697f))
+* **schema-management:** implement modular companion test packages for R, Python, SAS, STATA exports ([6050160](https://github.com/fderuiter/Equipose/commit/6050160a5f9672ca6b39be41b4c88523533d9242))
+* **security:** enforce domain-level network restrictions via static ESLint boundaries ([51371f6](https://github.com/fderuiter/Equipose/commit/51371f654f0975278ff6da4c911029432b2f1d1b))
+
 # [1.46.0](https://github.com/fderuiter/Equipose/compare/v1.45.0...v1.46.0) (2026-08-11)
 
 
