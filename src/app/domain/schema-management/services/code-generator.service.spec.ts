@@ -119,6 +119,27 @@ describe('CodeGeneratorService Dual-Mode', () => {
       expect(code).not.toContain('schema_list[[1]] <- data.frame(');
     });
 
+    it('should generate secure R strata logic using native nesting and zero eval(parse)', () => {
+      const complexStrataConfig: RandomizationConfig = {
+        ...standardBlockConfig,
+        strata: [{ id: 'cohort', name: 'Cohort', levels: ["Patient's \"Cohort\" \\ Label"] }],
+        stratumCaps: [
+          { levelIds: { cohort: "Patient's \"Cohort\" \\ Label" }, cap: 10 }
+        ]
+      };
+      
+      const code = service.generateDynamic('R', complexStrataConfig);
+      
+      // Zero instances of eval(parse(text=...))
+      expect(code).not.toContain('eval(parse(text=');
+      
+      // Native nested R lists represent strata configuration
+      expect(code).toContain('strata=list("cohort"="Patient\'s \\"Cohort\\" \\\\ Label")');
+      
+      // Direct assignment instead of parse/evaluation
+      expect(code).toContain('strata_eval <- tasks[[t_idx]]$strata');
+    });
+
     it('should generate dynamic code for Python', () => {
       const code = service.generateDynamic('Python', standardBlockConfig);
       expect(code).toContain('def build_block');
