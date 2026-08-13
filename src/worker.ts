@@ -144,8 +144,30 @@ export default {
       return env.ASSETS.fetch(request);
     }
 
-    const rules = await getRules(request, env);
     const isFile = isFileRequest(pathname);
+
+    // Redirect capitalized valid SPA pages to lowercase
+    if (!isFile) {
+      const lowercasePath = pathname.toLowerCase();
+      const normalizedPath = lowercasePath.endsWith('/') && lowercasePath.length > 1
+        ? lowercasePath.slice(0, -1)
+        : lowercasePath;
+
+      const validPages = ['/about', '/generator', '/verify', '/exception-report'];
+
+      if ((validPages.includes(normalizedPath) || normalizedPath === '/') && /[A-Z]/.test(pathname)) {
+        const redirectUrl = new URL(request.url);
+        redirectUrl.pathname = lowercasePath;
+        return new Response(null, {
+          status: 301,
+          headers: {
+            'Location': redirectUrl.toString()
+          }
+        });
+      }
+    }
+
+    const rules = await getRules(request, env);
 
     if (isFile) {
       // Fetch the file directly
