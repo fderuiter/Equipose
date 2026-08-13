@@ -12,6 +12,7 @@
     "test": "ng test",
     "test:unit": "vitest run",
     "test:schema": "tsx scripts/cross-env/verify_r_schema_ci.ts",
+    "test:syntax": "tsx scripts/validate-syntax.mjs",
     "test:e2e:a11y": "playwright test tests_e2e/a11y.spec.ts",
     "lint:code": "ng lint",
     "lint:md": "node scripts/check-markdown-links.js && node scripts/check-orphaned-docs.js",

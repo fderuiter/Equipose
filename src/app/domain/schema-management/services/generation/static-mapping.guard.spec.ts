@@ -44,7 +44,6 @@ replace StratumCode=\`"AGE"' in 1
 replace age=\`"<65"' in 1
     `;
 
-    // This is expected to fail (not throw) because the regex is currently broken and won't find arm_name_3
     expect(() => StaticMappingGuard.verify('STATA', mockConfig, output)).toThrow(/Orphaned variable: Treatment arm "OrphanedArm"/);
   });
 
@@ -70,7 +69,114 @@ replace StratumCode=\`"AGE"' in 1
 replace age=\`"<65"' in 1
     `;
 
-    // This is expected to fail because the regex is currently broken
     expect(() => StaticMappingGuard.verify('STATA', mockConfig, output)).toThrow(/Orphaned variable: Stratum "orphaned_strata"/);
+  });
+});
+
+describe('StaticMappingGuard R Orphaned Variables', () => {
+  const mockConfig: RandomizationConfig = {
+    protocolId: 'Simulation',
+    seed: '009f22b3edf94168e8b39bf218527051',
+    arms: [
+      { id: 'A', name: 'Active', ratio: 1 },
+      { id: 'B', name: 'Placebo', ratio: 1 },
+    ],
+    sites: ['101'],
+    strata: [
+      {
+        id: 'age',
+        name: 'Age Group',
+        levels: ['<65', '>=65'],
+      },
+    ],
+    blockSizes: [4],
+    randomizationMethod: 'BLOCK',
+  } as any;
+
+  it('should catch R orphaned treatment arms', () => {
+    const seedHash = "1530624355";
+    const output = `
+# build_block
+init_mt(${seedHash})
+# Ratios: 1, 1
+# Stratum: age, Levels: <65, >=65
+arms <- list(
+  list(name = "Active", ratio = 1),
+  list(name = "Placebo", ratio = 1),
+  list(name = "OrphanedArm", ratio = 1)
+)
+strata=list("age"="<65")
+    `;
+    expect(() => StaticMappingGuard.verify('R', mockConfig, output)).toThrow(/Orphaned variable: Treatment arm "OrphanedArm"/);
+  });
+
+  it('should catch R orphaned strata', () => {
+    const seedHash = "1530624355";
+    const output = `
+# build_block
+init_mt(${seedHash})
+# Ratios: 1, 1
+# Stratum: age, Levels: <65, >=65
+arms <- list(
+  list(name = "Active", ratio = 1),
+  list(name = "Placebo", ratio = 1)
+)
+strata=list("age"="<65", "orphaned_strata"="something")
+    `;
+    expect(() => StaticMappingGuard.verify('R', mockConfig, output)).toThrow(/Orphaned variable: Stratum "orphaned_strata"/);
+  });
+});
+
+describe('StaticMappingGuard Python Orphaned Variables', () => {
+  const mockConfig: RandomizationConfig = {
+    protocolId: 'Simulation',
+    seed: '009f22b3edf94168e8b39bf218527051',
+    arms: [
+      { id: 'A', name: 'Active', ratio: 1 },
+      { id: 'B', name: 'Placebo', ratio: 1 },
+    ],
+    sites: ['101'],
+    strata: [
+      {
+        id: 'age',
+        name: 'Age Group',
+        levels: ['<65', '>=65'],
+      },
+    ],
+    blockSizes: [4],
+    randomizationMethod: 'BLOCK',
+  } as any;
+
+  it('should catch Python orphaned treatment arms', () => {
+    const seedHash = "1530624355";
+    const output = `
+# build_block
+MT19937(${seedHash})
+# Ratios: 1, 1
+# Stratum: age, Levels: <65, >=65
+arms = [
+  {"name": "Active", "ratio": 1},
+  {"name": "Placebo", "ratio": 1},
+  {"name": "OrphanedArm", "ratio": 1}
+]
+"strata_dict": {"age": "<65"}
+    `;
+    expect(() => StaticMappingGuard.verify('Python', mockConfig, output)).toThrow(/Orphaned variable: Treatment arm "OrphanedArm"/);
+  });
+
+  it('should catch Python orphaned strata', () => {
+    const seedHash = "1530624355";
+    const output = `
+# build_block
+MT19937(${seedHash})
+# Ratios: 1, 1
+# Stratum: age, Levels: <65, >=65
+arms = [
+  {"name": "Active", "ratio": 1},
+  {"name": "Placebo", "ratio": 1}
+]
+"strata_dict": {"age": "<65", "orphaned_strata": "something"}
+    `;
+    expect(() => StaticMappingGuard.verify('Python', mockConfig, output)).toThrow(/Orphaned variable: Stratum "orphaned_strata"/);
   });
 });
