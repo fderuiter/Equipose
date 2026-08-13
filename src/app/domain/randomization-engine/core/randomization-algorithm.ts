@@ -135,7 +135,8 @@ function generateStandard(
   totalRatio: number,
   schema: GeneratedSchema[],
   usedSubjectIds: Set<string>,
-  registry: SubjectRegistry
+  registry: SubjectRegistry,
+  rngId: () => number
 ): void {
   const stateMap = new Map<string, { blockNumber: number; blockState: any; rule: any }>();
   const siteSubjectCounts = new Map<string, number>();
@@ -177,7 +178,7 @@ function generateStandard(
             resolvedConfig.subjectIdMask,
             { site, stratumCode, sequence: siteSubjectCounts.get(site)! },
             usedSubjectIds,
-            rng
+            rngId
           );
 
           schema.push({ subjectId, site, stratum, stratumCode, blockNumber: state.blockNumber, blockSize, treatmentArm: arm.name, treatmentArmId: arm.id });
@@ -209,7 +210,8 @@ function generateMarginalOnly(
   totalRatio: number,
   schema: GeneratedSchema[],
   usedSubjectIds: Set<string>,
-  registry: SubjectRegistry
+  registry: SubjectRegistry,
+  rngId: () => number
 ): void {
   for (const site of resolvedConfig.sites) {
     let siteSubjectCount = 0;
@@ -249,7 +251,7 @@ function generateMarginalOnly(
           resolvedConfig.subjectIdMask,
           { site, stratumCode, sequence: siteSubjectCount },
           usedSubjectIds,
-          rng
+          rngId
         );
 
         schema.push({
@@ -298,8 +300,14 @@ export function generateRandomizationSchema(
     ? config
     : { ...config, seed: generateCryptoSeed() };
 
-  const mt = new MT19937Internal(MT19937Internal.get31BitSeed(resolvedConfig.seed));
+  const primarySeed = resolvedConfig.seed;
+  const secondarySeed = primarySeed + '-id';
+
+  const mt = new MT19937Internal(MT19937Internal.get31BitSeed(primarySeed));
   const rng = () => mt.random();
+
+  const mtSecondary = new MT19937Internal(MT19937Internal.get31BitSeed(secondarySeed));
+  const rngId = () => mtSecondary.random();
 
   // Generate all strata combinations
   let strataCombinations: Record<string, string>[] = [{}];
@@ -355,12 +363,12 @@ export function generateRandomizationSchema(
   const usedSubjectIds = new Set<string>();
 
   if (internalConfig.randomizationMethod === 'MINIMIZATION') {
-    schema.push(...generateMinimization(internalConfig, rng, registry, siteWeights));
+    schema.push(...generateMinimization(internalConfig, rng, registry, siteWeights, rngId));
   } else if (internalConfig.capStrategy === 'MARGINAL_ONLY') {
-    generateMarginalOnly(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
+    generateMarginalOnly(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry, rngId);
   } else {
     // Both 'MANUAL_MATRIX' (default) and 'PROPORTIONAL' use intersection caps.
-    generateStandard(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry);
+    generateStandard(internalConfig, rng, strataCombinations, totalRatio, schema, usedSubjectIds, registry, rngId);
   }
 
   return {

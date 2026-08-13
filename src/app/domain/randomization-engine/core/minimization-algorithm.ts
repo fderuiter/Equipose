@@ -3,6 +3,7 @@ import { RandomizationConfig, GeneratedSchema, TreatmentArm } from '../../core/m
 import { PRECISION_SCALE } from '../../../core/constants/precision.config';
 import { generateSubjectId } from './subject-id-engine';
 import { SubjectRegistry } from './subject-registry';
+import { MT19937Internal } from './mt19937';
 
 import { MathUtil } from '../../core/utils/math.util';
 
@@ -87,8 +88,15 @@ export function generateMinimization(
   config: RandomizationConfig,
   rng: () => number,
   registry: SubjectRegistry,
-  siteWeights?: Record<string, number>
+  siteWeights?: Record<string, number>,
+  rngId?: () => number
 ): GeneratedSchema[] {
+  const resolvedRngId = rngId ?? (config.seed ? (() => {
+    const secondarySeed = config.seed + '-id';
+    const mtSecondary = new MT19937Internal(MT19937Internal.get31BitSeed(secondarySeed));
+    return () => mtSecondary.random();
+  })() : rng);
+
   const { arms, strata, sites, minimizationConfig } = config;
   const p = minimizationConfig?.p ?? 0.8;
   const totalSampleSize = minimizationConfig?.totalSampleSize ?? 100;
@@ -348,7 +356,7 @@ export function generateMinimization(
       config.subjectIdMask,
       { site, stratumCode, sequence: siteSeq },
       usedSubjectIds,
-      rng
+      resolvedRngId
     );
 
     schema.push({
