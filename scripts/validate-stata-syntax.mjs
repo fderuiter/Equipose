@@ -7,7 +7,9 @@
 
 import { readdir, readFile } from 'fs/promises';
 import { join, resolve } from 'path';
-import { ASTValidator } from '../src/app/domain/schema-management/services/generation/ast-validator';
+import { fileURLToPath } from 'url';
+import astValPkg from '../src/app/domain/schema-management/services/generation/ast-validator';
+const ASTValidator = astValPkg.ASTValidator || astValPkg;
 
 const FIXTURE_ROOT = resolve(process.cwd(), 'artifacts', 'code-generation-fixtures');
 
@@ -21,7 +23,7 @@ const REQUIRED_HEADER_PATTERNS = [
 
 const ISO_TIMESTAMP_RE = /Generated At:\s*(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/i;
 
-async function validateFile(filePath) {
+export async function validateFile(filePath) {
   const src = await readFile(filePath, 'utf-8');
   const errors = [];
   const lines = src.split('\n');
@@ -85,7 +87,12 @@ async function main() {
   console.log('Stata Static Syntax Validator');
   console.log(`  Scanning: ${FIXTURE_ROOT}`);
 
-  const stataFiles = await collectStataFiles(FIXTURE_ROOT);
+  let stataFiles;
+  if (process.argv[2]) {
+    stataFiles = [resolve(process.argv[2])];
+  } else {
+    stataFiles = await collectStataFiles(FIXTURE_ROOT);
+  }
 
   if (stataFiles.length === 0) {
     console.error(
@@ -128,7 +135,9 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error('Unexpected error:', err);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main().catch(err => {
+    console.error('Unexpected error:', err);
+    process.exit(1);
+  });
+}
