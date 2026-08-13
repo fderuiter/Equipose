@@ -211,4 +211,35 @@ describe('GlobalErrorHandler', () => {
 
     errorSpy.mockRestore();
   });
+
+  it('should trigger reload sequence even when sessionStorage throws exceptions on access', () => {
+    const originalSessionStorage = window.sessionStorage;
+
+    const blockedStorage = {
+      length: 0,
+      clear: () => { throw new Error('SecurityError: Blocked'); },
+      getItem: () => { throw new Error('SecurityError: Blocked'); },
+      key: () => { throw new Error('SecurityError: Blocked'); },
+      removeItem: () => { throw new Error('SecurityError: Blocked'); },
+      setItem: () => { throw new Error('SecurityError: Blocked'); },
+    } as unknown as Storage;
+
+    Object.defineProperty(window, 'sessionStorage', {
+      value: blockedStorage,
+      writable: true,
+      configurable: true,
+    });
+
+    const error = new Error('Failed to fetch dynamically imported module: ...');
+    
+    expect(() => errorHandler.handleError(error)).not.toThrow();
+    expect(updateServiceMock.requireUpdate).toHaveBeenCalled();
+    expect(mockReload).toHaveBeenCalledTimes(1);
+
+    Object.defineProperty(window, 'sessionStorage', {
+      value: originalSessionStorage,
+      writable: true,
+      configurable: true,
+    });
+  });
 });

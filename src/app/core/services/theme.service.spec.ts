@@ -194,4 +194,57 @@ describe('ThemeService', () => {
     service.setDensity('Compact');
     expect(service.layout().cardPadding).toBe('p-4');
   });
+
+  it('should fall back to default theme settings and not throw when localStorage is blocked', () => {
+    const originalLocalStorage = window.localStorage;
+
+    const blockedStorage = {
+      length: 0,
+      clear: () => { throw new Error('SecurityError: Blocked'); },
+      getItem: () => { throw new Error('SecurityError: Blocked'); },
+      key: () => { throw new Error('SecurityError: Blocked'); },
+      removeItem: () => { throw new Error('SecurityError: Blocked'); },
+      setItem: () => { throw new Error('SecurityError: Blocked'); },
+    } as unknown as Storage;
+
+    Object.defineProperty(window, 'localStorage', {
+      value: blockedStorage,
+      writable: true,
+      configurable: true,
+    });
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        ThemeService,
+        { provide: PLATFORM_ID, useValue: 'browser' },
+        { provide: DOCUMENT, useValue: mockDocument }
+      ]
+    });
+
+    let newService: ThemeService | undefined;
+    expect(() => {
+      newService = TestBed.inject(ThemeService);
+    }).not.toThrow();
+
+    expect(newService).toBeDefined();
+    expect(newService!.mode()).toBe('System');
+    expect(newService!.density()).toBe('Comfortable');
+
+    expect(() => {
+      newService!.setMode('Dark');
+    }).not.toThrow();
+    expect(newService!.mode()).toBe('Dark');
+
+    expect(() => {
+      newService!.setDensity('Compact');
+    }).not.toThrow();
+    expect(newService!.density()).toBe('Compact');
+
+    Object.defineProperty(window, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
+      configurable: true,
+    });
+  });
 });

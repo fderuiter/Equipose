@@ -1,6 +1,7 @@
 import { ErrorHandler, Injectable, inject, Injector } from '@angular/core';
 import { UpdateNotificationService } from '../services/update-notification.service';
 import { SanitizingLogger } from '../utils/sanitizing-logger.util';
+import { safeSessionStorage } from '../utils/storage.util';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
@@ -30,7 +31,7 @@ export class GlobalErrorHandler implements ErrorHandler {
         const updateService = this.injector.get(UpdateNotificationService);
         updateService.requireUpdate();
 
-        if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+        if (typeof window !== 'undefined') {
           const isTestOrDev =
             (typeof navigator !== 'undefined' && navigator.webdriver) ||
             window.location.hostname === 'localhost' ||
@@ -49,11 +50,11 @@ export class GlobalErrorHandler implements ErrorHandler {
           }
 
           const now = Date.now();
-          const lastReloadStr = sessionStorage.getItem('last-chunk-load-reload');
+          const lastReloadStr = safeSessionStorage.getItem('last-chunk-load-reload');
           const lastReload = lastReloadStr ? parseInt(lastReloadStr, 10) : 0;
           
           if (now - lastReload >= 10000) {
-            sessionStorage.setItem('last-chunk-load-reload', String(now));
+            safeSessionStorage.setItem('last-chunk-load-reload', String(now));
             try {
               window.location.reload();
             } catch {
