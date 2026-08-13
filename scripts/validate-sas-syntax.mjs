@@ -23,7 +23,9 @@
 
 import { readdir, readFile } from 'fs/promises';
 import { join, resolve } from 'path';
-import { ASTValidator } from '../src/app/domain/schema-management/services/generation/ast-validator';
+import { fileURLToPath } from 'url';
+import astValPkg from '../src/app/domain/schema-management/services/generation/ast-validator';
+const ASTValidator = astValPkg.ASTValidator || astValPkg;
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -234,7 +236,7 @@ function checkNullSafety(tokens) {
 // Per-file validator
 // ---------------------------------------------------------------------------
 
-async function validateFile(filePath) {
+export async function validateFile(filePath) {
   const src = await readFile(filePath, 'utf-8');
   const errors = [];
 
@@ -330,7 +332,12 @@ async function main() {
   console.log('SAS Static Syntax Validator');
   console.log(`  Scanning: ${FIXTURE_ROOT}`);
 
-  const sasFiles = await collectSasFiles(FIXTURE_ROOT);
+  let sasFiles;
+  if (process.argv[2]) {
+    sasFiles = [resolve(process.argv[2])];
+  } else {
+    sasFiles = await collectSasFiles(FIXTURE_ROOT);
+  }
 
   if (sasFiles.length === 0) {
     console.error(
@@ -377,7 +384,9 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error('Unexpected error:', err);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  main().catch(err => {
+    console.error('Unexpected error:', err);
+    process.exit(1);
+  });
+}
