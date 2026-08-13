@@ -90,12 +90,16 @@ export class BaseOrchestrator implements CodeGenerationStrategy {
     const dateStr = DateUtil.getIsoTimestamp();
     const algorithm = method === 'MINIMIZATION' ? 'Pocock-Simon Minimization' : 'PRNG Algorithm: MT19937';
 
+    const secondarySeed = resolvedConfig.seed + '-id';
+    const seedHashSecondary = MT19937Internal.get31BitSeed(secondarySeed);
+
     const data: Record<string, string | number> = {
       protocolId: config.protocolId,
       appVersion: APP_VERSION,
       dateStr,
       algorithm,
       seedHash: ir.seedHash,
+      seedHashSecondary: seedHashSecondary,
       validationVector: valVec.join(', '),
       validationVectorSpace: valVec.join(' '),
       precisionScale: PRECISION_SCALE,

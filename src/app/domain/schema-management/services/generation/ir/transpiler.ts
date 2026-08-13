@@ -265,7 +265,7 @@ export class CodeTranspiler {
          } else if (token.type === 'seq') {
            baseBuilder += `sprintf("%0${token.length}d", ${seqVar}), `;
          } else if (token.type === 'rnd') {
-           baseBuilder += `paste0(ALPHANUMERIC[floor((random_int() / 4294967296) * 36) + 1][1:${token.length}], collapse=""), `;
+           baseBuilder += `paste0(ALPHANUMERIC[floor((random_int_id() / 4294967296) * 36) + 1][1:${token.length}], collapse=""), `;
          } else if (token.type === 'checksum') {
            hasChecksum = true;
            baseBuilder += `"{CHECKSUM}", `;
@@ -308,7 +308,7 @@ export class CodeTranspiler {
          } else if (token.type === 'seq') {
            baseBuilder += `str(${seqVar}).zfill(${token.length}) + `;
          } else if (token.type === 'rnd') {
-           baseBuilder += `''.join(ALPHANUMERIC[int((rng.random_int() / 4294967296) * 36)] for _ in range(${token.length})) + `;
+           baseBuilder += `''.join(ALPHANUMERIC[int((rng_id.random_int() / 4294967296) * 36)] for _ in range(${token.length})) + `;
          } else if (token.type === 'checksum') {
            hasChecksum = true;
            baseBuilder += `"{CHECKSUM}" + `;
@@ -352,8 +352,8 @@ export class CodeTranspiler {
            code += `        length rnd_str_${rndCounter} $ ${token.length};\n`;
            code += `        rnd_str_${rndCounter} = "";\n`;
            code += `        do _k = 1 to ${token.length};\n`;
-           code += `          link get_rand_int;\n`;
-           code += `          char_idx = int((rand_int / 4294967296) * 36) + 1;\n`;
+           code += `          link get_rand_int_id;\n`;
+           code += `          char_idx = int((rand_int_id / 4294967296) * 36) + 1;\n`;
            code += `          rnd_str_${rndCounter} = trim(rnd_str_${rndCounter}) || substr(ALPHANUMERIC, char_idx, 1);\n`;
            code += `        end;\n`;
            baseBuilder += `trim(rnd_str_${rndCounter}) || `;

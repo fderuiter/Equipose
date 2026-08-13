@@ -76,7 +76,7 @@ export const STATA_CONFIG: LanguageConfig = {
       utils += `string scalar stata_rnd_str(real scalar len) {\n`;
       utils += `    string scalar res; res = "";\n`;
       utils += `    real scalar k;\n`;
-      utils += `    for (k=1; k<=len; k++) { res = res + substr("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", trunc((random_int() / 4294967296) * 36) + 1, 1); }\n`;
+      utils += `    for (k=1; k<=len; k++) { res = res + substr("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", trunc((random_int_id() / 4294967296) * 36) + 1, 1); }\n`;
       utils += `    return(res);\n`;
       utils += `}\n\n`;
 

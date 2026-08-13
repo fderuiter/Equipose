@@ -993,5 +993,28 @@ describe('generateRandomizationSchema – hierarchical block strategy', () => {
       expect(() => generateRandomizationSchema(config)).toThrow(/marginalCap/i);
     });
   });
+
+  describe('Dual Seeded PRNG State Isolation', () => {
+    it('results in identical treatment assignments when changing subject ID mask from sequential to random', () => {
+      const configSequential: RandomizationConfig = {
+        ...BASE_CONFIG,
+        subjectIdMask: '{SITE}-{SEQ:4}'
+      };
+
+      const configRandom: RandomizationConfig = {
+        ...BASE_CONFIG,
+        subjectIdMask: '{SITE}-{RND:6}'
+      };
+
+      const resultSequential = generateRandomizationSchema(configSequential);
+      const resultRandom = generateRandomizationSchema(configRandom);
+
+      // Verify subject IDs are indeed different
+      expect(resultSequential.schema.map(r => r.subjectId)).not.toEqual(resultRandom.schema.map(r => r.subjectId));
+
+      // Verify treatment assignments are completely identical
+      expect(resultSequential.schema.map(r => r.treatmentArmId)).toEqual(resultRandom.schema.map(r => r.treatmentArmId));
+    });
+  });
 });
 
