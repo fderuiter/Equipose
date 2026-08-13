@@ -60,7 +60,7 @@
     "@types/pdf-parse": "^1.1.5",
     "angular-eslint": "21.4.0",
     "axe-core": "^4.12.1",
-    "eslint": "^10.4.0",
+    "eslint": "^10.8.1",
     "fast-check": "^4.8.0",
     "glob": "^13.0.6",
     "jscpd": "^5.0.12",
