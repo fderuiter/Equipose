@@ -1,3 +1,10 @@
+# [1.50.0](https://github.com/fderuiter/Equipose/compare/v1.49.0...v1.50.0) (2026-08-13)
+
+
+### Features
+
+* **core:** implement robust storage fallback and self-healing recovery ([6c2cef6](https://github.com/fderuiter/Equipose/commit/6c2cef6d541a8625463a688a1e9c9fa559021152))
+
 # [1.49.0](https://github.com/fderuiter/Equipose/compare/v1.48.0...v1.49.0) (2026-08-13)
 
 
