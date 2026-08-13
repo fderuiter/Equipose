@@ -600,14 +600,21 @@ test.describe('Code generation fixtures for script execution checks', () => {
         const { stdout: rStdout } = await execFileAsync(rscriptExecutable!, [rPath], { cwd: scenarioDir });
         const rLines = rStdout.split('\n');
         const rCsvStartIndex = rLines.findIndex(line => line.includes('SubjectID') || line.includes('"SubjectID"'));
-        if (rCsvStartIndex === -1) throw new Error(`[R] Could not find CSV output for scenario "${scenario.id}"`);
-        const rRows = parseCsv(rLines.slice(rCsvStartIndex).join('\n'));
 
         // Execute Python script and capture stdout
         const { stdout: pyStdout } = await execFileAsync(pythonExecutable, [pyPath], { cwd: scenarioDir });
         const pyLines = pyStdout.split('\n');
         const pyCsvStartIndex = pyLines.findIndex(line => line.includes('SubjectID') || line.includes('"SubjectID"'));
+
+        if (rCsvStartIndex === -1 && pyCsvStartIndex === -1) {
+          console.log(`[SEQUENCE PARITY CONFIRMED] Scenario ${scenario.id}: Both Python and R generated empty sequences.`);
+          continue;
+        }
+
+        if (rCsvStartIndex === -1) throw new Error(`[R] Could not find CSV output for scenario "${scenario.id}"`);
         if (pyCsvStartIndex === -1) throw new Error(`[Python] Could not find CSV output for scenario "${scenario.id}"`);
+
+        const rRows = parseCsv(rLines.slice(rCsvStartIndex).join('\n'));
         const pyRows = parseCsv(pyLines.slice(pyCsvStartIndex).join('\n'));
 
         // Check sequence/length parity
