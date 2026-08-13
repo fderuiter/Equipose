@@ -1,3 +1,10 @@
+# [1.49.0](https://github.com/fderuiter/Equipose/compare/v1.48.0...v1.49.0) (2026-08-13)
+
+
+### Features
+
+* **r-generator:** secure-by-design native nested R list structure for strata ([8ac3356](https://github.com/fderuiter/Equipose/commit/8ac33561e33cb49fd85545a5bc666f99aa47ebc0))
+
 # [1.48.0](https://github.com/fderuiter/Equipose/compare/v1.47.0...v1.48.0) (2026-08-12)
 
 
