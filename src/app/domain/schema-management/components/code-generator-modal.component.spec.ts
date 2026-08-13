@@ -158,14 +158,19 @@ describe('CodeGeneratorModalComponent (domain)', () => {
     });
 
     const verifyDownloadFilename = async (language: 'R' | 'SAS' | 'Python' | 'STATA', expectedFilename: string) => {
-      const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const appendSpy = vi.spyOn(document.body, 'appendChild');
+      const removeSpy = vi.spyOn(document.body, 'removeChild');
 
       await component.setActiveTab(language);
       await component.downloadCode();
 
       const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchorEl.getAttribute('download')).toBe(expectedFilename);
+
+      vi.advanceTimersByTime(100);
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
     };
 
     it('should use randomization_schema.zip as the filename for R code', async () => {
@@ -185,18 +190,23 @@ describe('CodeGeneratorModalComponent (domain)', () => {
     });
 
     it('should call URL.createObjectURL with a Blob', async () => {
-      vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const appendSpy = vi.spyOn(document.body, 'appendChild');
+      const removeSpy = vi.spyOn(document.body, 'removeChild');
 
       await component.setActiveTab('R');
       await component.downloadCode();
 
       expect(globalThis.URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+
+      vi.advanceTimersByTime(100);
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
     });
 
     it('should initiate ZIP file generation when exportMode is BOTH', async () => {
-      const appendSpy = vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      const removeSpy = vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const appendSpy = vi.spyOn(document.body, 'appendChild');
+      const removeSpy = vi.spyOn(document.body, 'removeChild');
       const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
       component.exportMode.set('BOTH');
@@ -210,6 +220,8 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       const anchorEl = appendSpy.mock.calls[0][0] as HTMLAnchorElement;
       expect(anchorEl.getAttribute('download')).toBe('randomization_schema_bundle.zip');
       expect(clickSpy).toHaveBeenCalled();
+
+      vi.advanceTimersByTime(100);
 
       appendSpy.mockRestore();
       removeSpy.mockRestore();
@@ -346,6 +358,7 @@ describe('CodeGeneratorModalComponent (domain)', () => {
     let minConfig: RandomizationConfig;
 
     beforeEach(async () => {
+      vi.useFakeTimers();
       minConfig = {
         protocolId: 'MIN-TEST',
         studyName: 'Minimization Study',
@@ -363,6 +376,10 @@ describe('CodeGeneratorModalComponent (domain)', () => {
       mockFacade.config.set(minConfig);
       fixture.detectChanges();
       await fixture.whenStable();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
     it('should detect minimization and set isMinimization to true', () => {
@@ -388,13 +405,18 @@ describe('CodeGeneratorModalComponent (domain)', () => {
 
     it('should fall back to STATIC in downloadCode for minimization', async () => {
       component.exportMode.set('DYNAMIC');
-      vi.spyOn(document.body, 'appendChild').mockImplementation((n) => n as Node);
-      vi.spyOn(document.body, 'removeChild').mockImplementation((n) => n as Node);
+      const appendSpy = vi.spyOn(document.body, 'appendChild');
+      const removeSpy = vi.spyOn(document.body, 'removeChild');
       globalThis.URL.createObjectURL = vi.fn(() => "mock://url") as unknown as (obj: Blob | MediaSource) => string;
       globalThis.URL.revokeObjectURL = vi.fn() as unknown as (url: string) => void;
 
       await component.downloadCode();
       expect(component.exportMode()).toBe('STATIC');
+
+      vi.advanceTimersByTime(100);
+
+      appendSpy.mockRestore();
+      removeSpy.mockRestore();
     });
   });
 
