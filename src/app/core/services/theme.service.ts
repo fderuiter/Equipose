@@ -2,6 +2,7 @@ import { Injectable, signal, computed, effect, inject, PLATFORM_ID } from '@angu
 import { isPlatformBrowser } from '@angular/common';
 import { DOCUMENT } from '@angular/common';
 import { injectMediaQuery } from '../utils/media-query';
+import { safeLocalStorage } from '../utils/storage.util';
 
 export type ThemeMode = 'Light' | 'Dark' | 'System';
 export type DensityMode = 'Comfortable' | 'Compact';
@@ -98,11 +99,11 @@ export class ThemeService {
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
-      const saved = localStorage.getItem(this.STORAGE_KEY) as ThemeMode | null;
+      const saved = safeLocalStorage.getItem(this.STORAGE_KEY) as ThemeMode | null;
       if (saved === 'Light' || saved === 'Dark' || saved === 'System') {
         this.mode.set(saved);
       }
-      const savedDensity = localStorage.getItem(this.DENSITY_STORAGE_KEY) as DensityMode | null;
+      const savedDensity = safeLocalStorage.getItem(this.DENSITY_STORAGE_KEY) as DensityMode | null;
       if (savedDensity === 'Comfortable' || savedDensity === 'Compact') {
         this.density.set(savedDensity);
       }
@@ -134,14 +135,14 @@ export class ThemeService {
   setMode(mode: ThemeMode): void {
     this.mode.set(mode);
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.STORAGE_KEY, mode);
+      safeLocalStorage.setItem(this.STORAGE_KEY, mode);
     }
   }
 
   setDensity(density: DensityMode): void {
     this.density.set(density);
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.DENSITY_STORAGE_KEY, density);
+      safeLocalStorage.setItem(this.DENSITY_STORAGE_KEY, density);
     }
   }
 

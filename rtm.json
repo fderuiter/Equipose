@@ -187,7 +187,7 @@
     },
     "Suite Name": "Standalone Script",
     "Test Name": "Execute scripts/verify_audit_hash.py",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-21CFR11-005",
@@ -195,9 +195,9 @@
       "Name": "Reproducibility",
       "name": "Reproducibility"
     },
-    "Suite Name": "Crypto Hash Cross-Language Parity Integration Suite",
+    "Suite Name": "",
     "Test Name": "should generate the exact same SHA-256 hash as the Python verification utility for the reference mock payload",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-21CFR11-005",
@@ -205,49 +205,9 @@
       "Name": "Reproducibility",
       "name": "Reproducibility"
     },
-    "Suite Name": "Crypto Hash Cross-Language Parity Integration Suite",
-    "Test Name": "should successfully verify the audit hash for \"standard_block\" scenario using external scripts",
-    "Status": "PASS"
-  },
-  {
-    "Requirement ID": "REQ-21CFR11-005",
-    "Strategic Pillar": {
-      "Name": "Reproducibility",
-      "name": "Reproducibility"
-    },
-    "Suite Name": "Crypto Hash Cross-Language Parity Integration Suite",
-    "Test Name": "should successfully verify the audit hash for \"minimization\" scenario using external scripts",
-    "Status": "PASS"
-  },
-  {
-    "Requirement ID": "REQ-21CFR11-005",
-    "Strategic Pillar": {
-      "Name": "Reproducibility",
-      "name": "Reproducibility"
-    },
-    "Suite Name": "Crypto Hash Cross-Language Parity Integration Suite",
-    "Test Name": "should successfully verify the audit hash for \"capped\" scenario using external scripts",
-    "Status": "PASS"
-  },
-  {
-    "Requirement ID": "REQ-21CFR11-005",
-    "Strategic Pillar": {
-      "Name": "Reproducibility",
-      "name": "Reproducibility"
-    },
-    "Suite Name": "Crypto Hash Cross-Language Parity Integration Suite",
-    "Test Name": "should successfully verify the audit hash for \"zero_padding\" scenario using external scripts",
-    "Status": "PASS"
-  },
-  {
-    "Requirement ID": "REQ-21CFR11-005",
-    "Strategic Pillar": {
-      "Name": "Reproducibility",
-      "name": "Reproducibility"
-    },
-    "Suite Name": "Crypto Hash Cross-Language Parity Integration Suite",
-    "Test Name": "should successfully verify the audit hash for \"complex_multi_strata\" scenario using external scripts",
-    "Status": "PASS"
+    "Suite Name": "",
+    "Test Name": "should successfully verify the audit hash for ",
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-21CFR11-006",
@@ -325,9 +285,9 @@
       "Name": "Scientific Validity",
       "name": "Scientific Validity"
     },
-    "Suite Name": "generateRandomizationSchema – new token syntax",
+    "Suite Name": "",
     "Test Name": "{RND:n} produces no duplicate subject IDs across the schema",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-ICH-E9-001",
@@ -337,7 +297,7 @@
     },
     "Suite Name": "Standalone Script",
     "Test Name": "Execute scripts/cross-env/verify_python_schema.py",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-ICH-E9-001",
@@ -347,7 +307,7 @@
     },
     "Suite Name": "ICH E9 – Law of Large Numbers: allocation ratio convergence",
     "Test Name": "1:1 ratio converges to 50 % per arm across 200 Monte Carlo trials",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-ICH-E9-001",
@@ -367,7 +327,7 @@
     },
     "Suite Name": "ICH E9 – Stratum Cap Enforcement: dynamic caps are never exceeded",
     "Test Name": "per-stratum caps are never exceeded across 100 random seeds",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-ICH-E9-003",
@@ -377,7 +337,7 @@
     },
     "Suite Name": "Standalone Script",
     "Test Name": "Execute scripts/cross-env/verify_python_schema.py",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-ICH-E9-003",
@@ -387,7 +347,7 @@
     },
     "Suite Name": "ICH E9 – Block Balance: strict intra-block arm balance",
     "Test Name": "every block has exactly the correct count of each arm for a 1:1 ratio with block size 4",
-    "Status": "PASS"
+    "Status": "UNKNOWN"
   },
   {
     "Requirement ID": "REQ-SBOM-001",
