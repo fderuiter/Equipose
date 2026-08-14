@@ -1,3 +1,19 @@
+# [1.51.0](https://github.com/fderuiter/equipose-randomization/compare/v1.50.0...v1.51.0) (2026-08-14)
+
+
+### Bug Fixes
+
+* **ci:** create separate tsconfig for Cloudflare worker and test files to resolve ESLint project service parsing error ([3487dbb](https://github.com/fderuiter/equipose-randomization/commit/3487dbb2f33c55c5440feab1023d44734695a2f8))
+* **tests:** handle empty CSV outputs in sequence parity checks ([c99941e](https://github.com/fderuiter/equipose-randomization/commit/c99941ede6f51c12f96aad1e4dd9eac9e2a7f453))
+
+
+### Features
+
+* **edge:** implement HTTP 301 redirects for capitalized valid SPA pages with spec coverage ([a98591f](https://github.com/fderuiter/equipose-randomization/commit/a98591f89838f2334d04d01f18b466164721e3ee))
+* implement dual-seed PRNG isolation for clinical allocations and subject ID generation ([#789](https://github.com/fderuiter/equipose-randomization/issues/789)) ([8ef4475](https://github.com/fderuiter/equipose-randomization/commit/8ef4475780ea40862124e961e856133da33cdff9))
+* **r-verify:** re-implement verify_audit_hash.R as dependency-free Base-R utility ([fad9d2c](https://github.com/fderuiter/equipose-randomization/commit/fad9d2cfbd539a114420275c1ac9431ec2c69680))
+* Structured Syntax Regex Validation & Syntactic Variable Auditing for R and Python ([#788](https://github.com/fderuiter/equipose-randomization/issues/788)) ([316c6ca](https://github.com/fderuiter/equipose-randomization/commit/316c6caedf366de3d9d0ad0c5a56d38f3abe0730))
+
 # [1.50.0](https://github.com/fderuiter/Equipose/compare/v1.49.0...v1.50.0) (2026-08-13)
 
 
