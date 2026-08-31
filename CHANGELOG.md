@@ -1,3 +1,11 @@
+# [1.52.0](https://github.com/fderuiter/equipose-randomization/compare/v1.51.0...v1.52.0) (2026-08-31)
+
+
+### Features
+
+* implement UX fallback for Pocock-Simon Minimization in Dynamic Code Generator ([4d343a1](https://github.com/fderuiter/equipose-randomization/commit/4d343a1a2e1ca15ef26a9058c9d2c84dd7899204))
+* implement UX fallback for Pocock-Simon Minimization in Dynamic Code Generator ([26a80e7](https://github.com/fderuiter/equipose-randomization/commit/26a80e78de1adf3a7a5bd965f14b22d3c3b7d8a4))
+
 # [1.51.0](https://github.com/fderuiter/equipose-randomization/compare/v1.50.0...v1.51.0) (2026-08-14)
 
 
